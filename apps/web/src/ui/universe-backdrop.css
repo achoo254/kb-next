@@ -4,7 +4,8 @@
   position: relative;
   isolation: isolate;
   min-height: 100%;
-  overflow: hidden;
+  /* clip, not hidden: no scroll container of its own, so a contained modal can stay in view while the page scrolls */
+  overflow: clip;
   background: var(--c-bg);
   color: var(--c-text);
   font-family: var(--font-sans);

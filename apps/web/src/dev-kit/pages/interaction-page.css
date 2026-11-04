@@ -115,20 +115,8 @@
   outline-offset: 2px;
 }
 
-/* The board's layer orbs: lit at 35% 30%, base colour to 60%, a deep navy edge. */
 .ix-layer-orb.kf-planet {
-  background: radial-gradient(circle at 35% 30%, var(--planet-hi), var(--planet-base) 60%, var(--ix-orb-deep));
   animation: ix-pulse 2.4s ease-in-out infinite;
-}
-
-.ix-orb-collection.kf-planet {
-  --planet-hi: var(--purple-200);
-  --planet-base: var(--purple-500);
-}
-
-.ix-orb-document.kf-planet {
-  --planet-hi: var(--ix-document-hi);
-  --planet-base: var(--ix-document);
 }
 
 @keyframes ix-pulse {
@@ -550,8 +538,6 @@
 
 .ix-gesture-key.kf-chip {
   align-self: flex-start;
-  /* the board's key is content-box: a 36px minimum plus 6px padding each side */
-  min-width: 48px;
 }
 
 .ix-gesture-name {

@@ -34,4 +34,17 @@ describe('content cards and effects', () => {
       { x: 37, y: 64, r: 2, delay: 0.4 },
     ]);
   });
+
+  it('a planet carries its tone and shade (the lit sphere by default)', () => {
+    const { container } = renderWithI18n(
+      <>
+        <Planet size={52} tone="purple" shade="orb" glow="none" />
+        <Planet size={48} tone="cobalt" />
+      </>,
+    );
+    const [collection, document] = Array.from(container.querySelectorAll<HTMLElement>('.kf-planet'));
+    expect(collection?.dataset).toMatchObject({ tone: 'purple', shade: 'orb', glow: 'none' });
+    expect(collection?.style.width).toBe('52px');
+    expect(document?.dataset).toMatchObject({ tone: 'cobalt', shade: 'sphere' });
+  });
 });

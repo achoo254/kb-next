@@ -18,7 +18,6 @@ body {
   background: var(--c-bg);
   color: var(--c-text);
   font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
 }
 
 a {

@@ -24,8 +24,8 @@ interface Layer {
 const LAYERS: readonly Layer[] = [
   { id: 'universe', name: 'Universe', sub: 'Toàn cảnh · tìm · gần đây', href: '/u', tone: 'violet', size: 68, icon: 'layer-universe' },
   { id: 'space', name: 'Space', sub: 'Hành tinh · lĩnh vực', href: '/s/networking', tone: 'cyan', size: 60, icon: 'layer-space' },
-  { id: 'collection', name: 'Collection', sub: 'Mặt trăng · bộ sưu tập', href: '/s/networking', tone: 'violet', size: 52, icon: 'layer-collection' },
-  { id: 'document', name: 'Document', sub: 'Đọc · sửa · phiên bản', href: '/d/dhcp', tone: 'blue', size: 48, icon: 'layer-document' },
+  { id: 'collection', name: 'Collection', sub: 'Mặt trăng · bộ sưu tập', href: '/s/networking', tone: 'purple', size: 52, icon: 'layer-collection' },
+  { id: 'document', name: 'Document', sub: 'Đọc · sửa · phiên bản', href: '/d/dhcp', tone: 'cobalt', size: 48, icon: 'layer-document' },
 ];
 
 const SCOPES = ['Universe', 'Space', 'Collection', 'Document'] as const;
@@ -105,7 +105,7 @@ function NavigationLayers(): ReactNode {
           {LAYERS.map((layer, index) => (
             <div key={layer.id} className="ix-layer-step">
               <a className="ix-layer" href={layer.href} data-id={`ix-layer-${layer.id}`}>
-                <Planet size={layer.size} tone={layer.tone} glow="none" className={`ix-layer-orb ix-orb-${layer.id}`}>
+                <Planet size={layer.size} tone={layer.tone} glow="none" shade="orb" className="ix-layer-orb">
                   <Icon name={layer.icon} size={24} />
                 </Planet>
                 <span className="ix-layer-name">{layer.name}</span>

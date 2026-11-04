@@ -148,9 +148,10 @@
 .kf-loader[data-variant="spinner"] {
   display: inline-block;
   flex: none;
+  /* the content box, as on the boards: the ring adds to it (18px + 2.5px rings) */
+  box-sizing: content-box;
   width: 18px;
   height: 18px;
-  box-sizing: border-box;
   border-radius: 50%;
   border: 2.5px solid color-mix(in srgb, var(--cyan-400) 30%, transparent);
   border-top-color: var(--cyan-400);

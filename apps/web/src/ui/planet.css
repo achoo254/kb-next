@@ -20,6 +20,14 @@
   --planet-hi: var(--blue-400);
   --planet-base: var(--glow-k8s);
 }
+.kf-planet[data-tone="purple"] {
+  --planet-hi: var(--purple-200);
+  --planet-base: var(--purple-500);
+}
+.kf-planet[data-tone="cobalt"] {
+  --planet-hi: var(--blue-200);
+  --planet-base: var(--blue-600);
+}
 .kf-planet[data-tone="emerald"] {
   --planet-hi: var(--emerald-200);
   --planet-base: var(--emerald-500);
@@ -32,6 +40,12 @@
   --planet-hi: var(--purple-200);
   --planet-base: var(--violet-400);
   background: radial-gradient(circle at 35% 30%, var(--planet-hi), var(--planet-base));
+}
+
+/* the layer orbs of the Interaction board: lit at 35% 30%, base colour to 60%, a deep navy edge */
+.kf-planet[data-shade="orb"] {
+  --planet-deep: var(--planet-orb-deep);
+  background: radial-gradient(circle at 35% 30%, var(--planet-hi), var(--planet-base) 60%, var(--planet-deep));
 }
 
 .kf-planet[data-glow="soft"] {

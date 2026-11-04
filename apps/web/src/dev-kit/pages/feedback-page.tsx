@@ -325,8 +325,7 @@ function SystemSection(): ReactNode {
           </div>
           <div className="fb-wrap fb-gap-8">
             <Button
-              variant="glow"
-              tone="accent"
+              variant="accent"
               size="md"
               onClick={() => setAttempt((n) => (n >= MAX_RECONNECT ? 1 : n + 1))}
               dataId="fb-reconnect"
@@ -418,6 +417,7 @@ export function FeedbackPage(): ReactNode {
         <Modal
           open={confirming}
           onClose={() => setConfirming(false)}
+          contained
           tone="danger"
           art="crystal-cracked"
           title={'Xoá "Ghi chú: ARP"?'}
@@ -430,8 +430,7 @@ export function FeedbackPage(): ReactNode {
                 Giữ lại
               </Button>
               <Button
-                variant="glow"
-                tone="danger"
+                variant="danger-solid"
                 size="xxl"
                 onClick={() => {
                   setConfirming(false);

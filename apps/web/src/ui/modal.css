@@ -4,14 +4,27 @@
   position: fixed;
   inset: 0;
   z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--overlay);
 }
 
+.kf-modal-frame {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contained: the backdrop covers the positioned parent (a kit board), which may be taller than the window. The frame
+   sticks to the top of the window and is at most one window tall, so the dialog is centred in the part on screen
+   (in the whole parent when it is shorter than the window). */
 .kf-modal-backdrop[data-contained] {
   position: absolute;
+}
+
+.kf-modal-backdrop[data-contained] .kf-modal-frame {
+  position: sticky;
+  top: 0;
+  height: min(100%, 100dvh);
 }
 
 .kf-modal {

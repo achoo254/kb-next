@@ -9,13 +9,32 @@ import './button.css';
  * - `glass`: the secondary frosted button; `outline`: the lavender outline on a dark well (X03);
  * - `subtle`: a bg2 fill (small inline actions, the DesignSystem disabled sample);
  * - `warn`: solid warning fill (destructive confirm of DesignSystem);
- * - `glow`: a tone-coloured glowing fill, `ring`: a tone-coloured ring on a dark fill (X01);
+ * - `accent`: solid cyan fill with dark text, `danger-solid`: solid red fill with white text (X01 reconnect and
+ *   confirm-delete);
+ * - `glow`: a tone-coloured glowing fill (violet: the rim button of X01/X03), `ring`: a tone-coloured ring on a dark
+ *   fill (X01);
  * - `danger`: the red outline of a destructive trigger (X01);
  * - `trigger`: a tone-ringed button on a well, usually with a tone `dot` (X01 toast triggers).
  */
-export type ButtonVariant = 'primary' | 'ghost' | 'rim' | 'glass' | 'outline' | 'subtle' | 'warn' | 'glow' | 'ring' | 'danger' | 'trigger';
+export type ButtonVariant =
+  | 'primary'
+  | 'ghost'
+  | 'rim'
+  | 'glass'
+  | 'outline'
+  | 'subtle'
+  | 'warn'
+  | 'accent'
+  | 'danger-solid'
+  | 'glow'
+  | 'ring'
+  | 'danger'
+  | 'trigger';
 export type ButtonTone = 'violet' | 'accent' | 'warn' | 'success' | 'danger';
-/** Height: sm 36 · md 40 · lg 44 (touch target) · xl 46 · xxl 50. */
+/**
+ * Height: xs 30 · sm 36 · md 40 · lg 44 (touch target) · xl 46 · xxl 50. As on the boards, a link button (`href`) is
+ * content-box: its rim adds to the height.
+ */
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
 
 interface ButtonProps {

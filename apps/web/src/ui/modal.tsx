@@ -59,7 +59,10 @@ interface ModalProps extends DialogCardProps {
   open: boolean;
   /** Escape, a click on the backdrop or a cancel button closes it. */
   onClose(): void;
-  /** Cover only the positioned parent (a kit board) instead of the whole viewport. */
+  /**
+   * Cover only the positioned parent (a kit board) instead of the whole viewport. The dialog stays centred in the
+   * part of the parent on screen, so the parent must not be a scroll container (use `overflow: clip`, not `hidden`).
+   */
   contained?: boolean;
   dataId?: string;
 }
@@ -102,10 +105,14 @@ export function Modal({ open, onClose, contained = false, dataId, ...card }: Mod
       role="presentation"
       className="kf-modal-backdrop"
       data-contained={contained || undefined}
-      onClick={(event) => event.target === event.currentTarget && onClose()}
+      onClick={(event) => {
+        if (!(event.target instanceof Node) || !dialogRef.current?.contains(event.target)) onClose();
+      }}
     >
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className="kf-modal" data-id={dataId}>
-        <DialogCard size="lg" {...card} titleId={titleId} />
+      <div className="kf-modal-frame">
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className="kf-modal" data-id={dataId}>
+          <DialogCard size="lg" {...card} titleId={titleId} />
+        </div>
       </div>
     </div>
   );

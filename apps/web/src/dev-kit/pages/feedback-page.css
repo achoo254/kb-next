@@ -111,11 +111,6 @@
   padding: 20px;
 }
 
-/* the board's CTA links are content-box: 44px plus their ring */
-.fb-empty .kf-empty-action.kf-btn {
-  box-sizing: content-box;
-}
-
 /* Skeleton and loading tiles: wells with the board's 18px corners */
 .fb-page .kf-panel.fb-tile {
   border-radius: 18px;

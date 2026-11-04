@@ -1,5 +1,7 @@
 .kf-chip {
-  box-sizing: border-box;
+  /* sizes are the content box, as on the boards: a 30px board chip with 1.5px rims is 33px tall, a key's 36px
+     minimum width comes on top of its padding */
+  box-sizing: content-box;
   display: inline-flex;
   align-items: center;
   gap: 6px;

@@ -3,6 +3,8 @@
 .kf-btn {
   --tone: var(--violet-400);
   --tone-rim: var(--violet-300);
+  /* Sized like the boards, which keep the browser defaults: a <button> is border-box (a 36px button is 36px with
+     its rim), a link button is content-box (its rim adds to the height, see below). */
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -24,8 +26,15 @@
     background var(--motion-feedback);
 }
 
+a.kf-btn {
+  box-sizing: content-box;
+}
+
 .kf-btn-block {
-  width: 100%;
+  /* the whole row, rims and padding included (a link button is content-box) */
+  width: -webkit-fill-available;
+  width: -moz-available;
+  width: stretch;
 }
 
 .kf-btn[data-size="xs"] {
@@ -157,6 +166,19 @@
   font-weight: 700;
 }
 
+/* solid fills with text on them (X01 "Thử ngay" and the confirm "Xoá") */
+.kf-btn[data-variant="accent"] {
+  background: var(--c-accent-fill);
+  color: var(--c-on-accent-fill);
+  font-weight: 700;
+}
+
+.kf-btn[data-variant="danger-solid"] {
+  background: var(--c-danger-fill);
+  color: var(--c-on-danger-fill);
+  font-weight: 700;
+}
+
 .kf-btn[data-variant="glow"] {
   background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 32%, transparent) 0%, color-mix(in srgb, var(--night-well) 85%, transparent) 100%);
   border: 1.5px solid var(--tone-rim);
@@ -166,13 +188,11 @@
   color: var(--white);
   font-weight: 700;
 }
+/* the violet one is the rim button of the X01/X03 boards: a tighter glow than the C09 active pill (`rim`) */
 .kf-btn[data-variant="glow"][data-tone="violet"] {
-  background: var(--rim-active-bg);
+  background: var(--rim-button-bg);
   border-color: var(--rim-active-border);
-  box-shadow:
-    inset 0 0 12px color-mix(in srgb, var(--violet-300) 42%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--white) 30%, transparent),
-    0 0 14px color-mix(in srgb, var(--violet-500) 60%, transparent);
+  box-shadow: var(--rim-button-shadow);
 }
 
 .kf-btn[data-variant="ring"] {

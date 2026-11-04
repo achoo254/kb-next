@@ -126,7 +126,7 @@ function NoResultsVis(): ReactNode {
   return (
     <CompactEmpty art="telescope-empty" text={'Không tìm thấy “dhcpv7”\nThử: DHCP · lease · DORA'}>
       <span className="x03-actions">
-        <Button variant="rim" size="sm">
+        <Button variant="glow" size="sm">
           Hỏi AI
         </Button>
         <Button variant="outline" size="sm">
@@ -186,7 +186,7 @@ function ParsingFailedVis(): ReactNode {
       </span>
       <span className="x03-mut x03-left">Ảnh scan mờ, OCR không đọc được chữ. Thử tệp rõ hơn hoặc bỏ qua bước OCR.</span>
       <span className="x03-actions">
-        <Button variant="rim" size="sm">
+        <Button variant="glow" size="sm">
           Thử lại
         </Button>
         <Button variant="outline" size="sm">
@@ -233,7 +233,7 @@ function DeleteConfirmVis(): ReactNode {
         <Button variant="outline" size="sm">
           Huỷ
         </Button>
-        <Button variant="rim" size="sm" className="x03-btn-warn">
+        <Button variant="glow" size="sm" className="x03-btn-warn">
           Chuyển vào thùng rác
         </Button>
       </span>
@@ -260,7 +260,7 @@ function ConflictVis(): ReactNode {
         <Button variant="outline" size="sm">
           Giữ bản này
         </Button>
-        <Button variant="rim" size="sm">
+        <Button variant="glow" size="sm">
           Giữ cả hai
         </Button>
       </span>
@@ -313,7 +313,7 @@ function PermissionChangedVis(): ReactNode {
         </div>
       </div>
       <span className="x03-actions">
-        <Button variant="rim" size="sm">
+        <Button variant="glow" size="sm">
           Tải lại
         </Button>
         <Button variant="outline" size="sm">
@@ -394,7 +394,7 @@ function RetryRecoverVis(): ReactNode {
       <span className="x03-note x03-note-body">{step.body}</span>
       <ProgressBar value={step.value} tone={look.bar} label={step.title} />
       <span className="x03-actions">
-        <Button variant="rim" size="sm" onClick={() => setIndex((current) => Math.min(current + 1, RETRY_STEPS.length - 1))}>
+        <Button variant="glow" size="sm" onClick={() => setIndex((current) => Math.min(current + 1, RETRY_STEPS.length - 1))}>
           {step.button}
         </Button>
         <Button variant="outline" size="sm" onClick={() => setIndex(0)}>

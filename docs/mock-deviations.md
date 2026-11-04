@@ -19,3 +19,4 @@ của bộ kiểm giống mock ([`parity-testing.md`](parity-testing.md)) chỉ 
 | Mã màn | Khác gì | Vì sao | Ngưỡng |
 |---|---|---|---|
 | DesignSystem (token) | Accent của chế độ Sáng là `#0E718C` thay cho `#0E7490` của board; focus Sáng giữ `#0E7490` | `#0E7490` chỉ đạt 4,48:1 trên nền `bg2` (`#ECE8FF`), nơi chữ accent thật sự nằm; `#0E718C` đạt chuẩn chữ 4,5:1 mà mắt gần như không phân biệt (04/11/2026) | |
+| X01 (token) | Nút đỏ đặc (xác nhận "Xoá") dùng `#DC2626` thay cho `#EF4444` của board, cả hai chế độ | Chữ trắng trên `#EF4444` chỉ đạt 3,76:1; `#DC2626` đạt 4,83:1 (chuẩn chữ 4,5:1). Nút này không nằm trong khung so pixel của board (04/11/2026) | |

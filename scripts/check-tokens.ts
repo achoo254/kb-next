@@ -28,6 +28,8 @@ const SCREEN_BACKGROUNDS = ['bg', 'bg2', 'surface-solid'];
 const FILLS: ReadonlyArray<readonly [string, readonly string[]]> = [
   ['primary', ['on-primary']],
   ['warn', ['on-warn']],
+  ['accent-fill', ['on-accent-fill']],
+  ['danger-fill', ['on-danger-fill']],
   ['tooltip-bg', ['tooltip-text']],
 ];
 /** Non-text marks at 3:1 (focus ring, state borders and icons) on what they sit on. */

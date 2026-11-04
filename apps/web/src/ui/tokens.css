@@ -66,6 +66,12 @@
   --dark-on-warn: #1c1206;
   --dark-danger: #f87171;
   --dark-danger-text: #fca5a5;
+  /* solid fills with text (X01 buttons): cyan with ink text, red with white text. The board's red #EF4444 carries
+     white text at 3.76:1 only; #DC2626 (the light theme's danger) reads 4.83:1 */
+  --dark-accent-fill: #22d3ee;
+  --dark-on-accent-fill: #06041a;
+  --dark-danger-fill: #dc2626;
+  --dark-on-danger-fill: #ffffff;
   --dark-focus: #22d3ee;
   --dark-star: #ffffff;
   --dark-nebula: rgb(124 58 237 / 0.25);
@@ -96,6 +102,10 @@
   --light-on-warn: #ffffff;
   --light-danger: #dc2626;
   --light-danger-text: #b91c1c;
+  --light-accent-fill: #22d3ee;
+  --light-on-accent-fill: #06041a;
+  --light-danger-fill: #dc2626;
+  --light-on-danger-fill: #ffffff;
   --light-focus: #0e7490;
   --light-star: #c4b5fd;
   --light-nebula: rgb(124 58 237 / 0.1);
@@ -118,6 +128,8 @@
   --violet-700: #6d28d9;
   --violet-900: #4c1d95;
   --violet-deep: #2e1065;
+  /* the deep navy edge of the Interaction board's layer orbs (Planet shade="orb") */
+  --planet-orb-deep: #1e0a52;
   --purple-200: #e9d5ff;
   --purple-100: #f3e8ff;
   --purple-300: #d8b4fe;
@@ -126,7 +138,9 @@
   --indigo-500: #6366f1;
   --sky-300: #7dd3fc;
   --sky-50: #f0f9ff;
+  --blue-200: #bfdbfe;
   --blue-400: #60a5fa;
+  --blue-600: #2563eb;
   --cyan-100: #cffafe;
   --cyan-200: #a5f3fc;
   --cyan-300: #67e8f9;
@@ -220,6 +234,10 @@
   --c-on-warn: light-dark(var(--light-on-warn), var(--dark-on-warn));
   --c-danger: light-dark(var(--light-danger), var(--dark-danger));
   --c-danger-text: light-dark(var(--light-danger-text), var(--dark-danger-text));
+  --c-accent-fill: light-dark(var(--light-accent-fill), var(--dark-accent-fill));
+  --c-on-accent-fill: light-dark(var(--light-on-accent-fill), var(--dark-on-accent-fill));
+  --c-danger-fill: light-dark(var(--light-danger-fill), var(--dark-danger-fill));
+  --c-on-danger-fill: light-dark(var(--light-on-danger-fill), var(--dark-on-danger-fill));
   --c-focus: light-dark(var(--light-focus), var(--dark-focus));
   --c-star: light-dark(var(--light-star), var(--dark-star));
   --c-nebula: light-dark(var(--light-nebula), var(--dark-nebula));
@@ -313,6 +331,12 @@
     inset 0 1px 0 rgb(255 255 255 / 0.35),
     0 0 16px rgb(139 92 246 / 0.75),
     0 0 34px rgb(124 58 237 / 0.35);
+  /* the rim button of the X01/X03 boards (.btn): a little denser than the active pill, without its 34px halo */
+  --rim-button-bg: linear-gradient(180deg, rgb(88 60 200 / 0.6) 0%, rgb(44 26 112 / 0.82) 100%);
+  --rim-button-shadow:
+    inset 0 0 12px rgb(196 181 253 / 0.42),
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    0 0 14px rgb(139 92 246 / 0.6);
 
   /* light-theme stand-ins for the dark-only rim chrome (nav, rail) */
   --rail-bg: light-dark(
@@ -387,10 +411,6 @@
 :root {
   /* the demo stages and the zoom tag */
   --ix-stage-bg: rgb(10 7 34 / 0.78);
-  /* the deep edge of the navigation layer orbs, the Collection and Document orb colours */
-  --ix-orb-deep: #1e0a52;
-  --ix-document: #2563eb;
-  --ix-document-hi: #bfdbfe;
   /* the AI Copilot bar: a rim of its own, lighter than the active pill */
   --ix-copilot-bg: linear-gradient(180deg, rgb(88 60 200 / 0.4) 0%, rgb(44 26 112 / 0.6) 100%);
   --ix-copilot-border: rgb(196 181 253 / 0.8);

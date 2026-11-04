@@ -17,6 +17,25 @@ describe('Button', () => {
     expect(onClick).toHaveBeenCalledOnce();
   });
 
+  it('renders the solid accent and danger fills', () => {
+    render(
+      <>
+        <Button variant="accent" size="md">
+          Thử ngay
+        </Button>
+        <Button variant="danger-solid" size="xxl">
+          Xoá
+        </Button>
+      </>,
+    );
+    const retry = screen.getByRole('button', { name: 'Thử ngay' });
+    expect(retry.dataset.variant).toBe('accent');
+    expect(retry.dataset.size).toBe('md');
+    const remove = screen.getByRole('button', { name: 'Xoá' });
+    expect(remove.dataset.variant).toBe('danger-solid');
+    expect(remove.dataset.size).toBe('xxl');
+  });
+
   it('renders a link when given href, and a disabled button instead of a dead link', () => {
     const { rerender } = render(<Button href="/u">Universe</Button>);
     expect(screen.getByRole('link', { name: 'Universe' }).getAttribute('href')).toBe('/u');
