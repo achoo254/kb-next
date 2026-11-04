@@ -14,7 +14,7 @@ import { ApiError } from '../api/api-client';
 import { type DocumentView, LANGS, fetchDocument } from '../api/content-api';
 import { STREAM_ERRORS, type StreamErrorCode, streamTranslation } from '../api/copilot-api';
 import { type KeysResponse, fetchKeys } from '../api/keys-api';
-import { AppShell } from '../layout/app-shell';
+import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { ILLUSTRATIONS } from '../ui/art';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -29,7 +29,7 @@ import './translate-screen.css';
 type Lang = (typeof LANGS)[number];
 
 /** Own keys (F03). */
-export const KEYS_PAGE = '/settings/keys';
+export const KEYS_PAGE = SHELL_PATHS.keys;
 
 type Setup = { status: 'loading' } | { status: 'failed'; error: ReaderFailure } | { status: 'ready'; view: DocumentView; keys: KeysResponse };
 

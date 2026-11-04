@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentComments, DocumentSummary, DocumentView } from '../api/content-api';
+import { KEYS_OPENAI, KEYS_NONE, answer, eventStream } from '../test/api-fakes';
 import { renderWithI18n } from '../test/render';
 import { timeAgo } from './reader-messages';
 import { SAVE_DELAY_MS, scrolledPercent } from './reader-progress';
@@ -97,17 +98,18 @@ const COMMENTS: DocumentComments = {
   ],
 };
 
-function answer(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-}
-
 type Route = (url: string, init?: RequestInit) => Response | Promise<Response>;
 let fetchMock: ReturnType<typeof vi.fn>;
+/** The reader's keys and the AI's answers (POST /api/ask). */
+let keysRoute: Route = () => answer(200, KEYS_NONE);
+let askRoute: Route = () => answer(403, { error: 'NO_USER_KEY' });
 
 function serve(doc: Route, comments: Route = () => answer(200, COMMENTS)): void {
   fetchMock.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     if (url.includes('/comments')) return comments(url, init);
+    if (url.includes('/api/me/keys')) return keysRoute(url, init);
+    if (url.includes('/api/ask')) return askRoute(url, init);
     if (url.includes('/progress')) {
       const body = JSON.parse(String(init?.body)) as { progress: number; anchor: string | null };
       return answer(200, body);
@@ -117,11 +119,14 @@ function serve(doc: Route, comments: Route = () => answer(200, COMMENTS)): void 
 }
 
 beforeEach(() => {
+  keysRoute = () => answer(200, KEYS_NONE);
+  askRoute = () => answer(403, { error: 'NO_USER_KEY' });
   window.history.replaceState(null, '', '/d/dhcp');
   fetchMock = vi.fn();
   vi.stubGlobal('fetch', fetchMock);
   serve(() => answer(200, view()));
   Element.prototype.scrollTo = vi.fn();
+  Element.prototype.scrollIntoView = vi.fn();
 });
 
 afterEach(() => {
@@ -200,19 +205,63 @@ describe('ReaderScreen', () => {
   it('asks for the reader’s own key before AI explains or summarises', async () => {
     renderWithI18n(<ReaderScreen id="dhcp" />);
     const explain = await screen.findByRole('button', { name: 'Explain this passage' });
-    expect(screen.getByText('No key yet · AI needs your own key, Jev still suggests')).toBeTruthy();
+    expect(await screen.findByText('No key yet · AI needs your own key, Jev still suggests')).toBeTruthy();
     fireEvent.click(explain);
-    const notice = screen.getByRole('status');
-    expect(notice.textContent).toContain('AI needs your own key to explain.');
-    expect(within(notice).getByRole('link', { name: 'Add a key' }).getAttribute('href')).toBe('/settings');
+    const card = await screen.findByRole('region', { name: 'AI result' });
+    await waitFor(() => expect(card.textContent).toContain('AI needs your own key to explain.'));
+    expect(within(card).getByRole('link', { name: 'Add a key' }).getAttribute('href')).toBe('/settings/keys');
+    const body = JSON.parse(String(fetchMock.mock.calls.find(([url]) => String(url) === '/api/ask')?.[1]?.body)) as Record<string, unknown>;
+    expect(body).toMatchObject({ task: 'explain', scope: { kind: 'document', id: 'dhcp' } });
     fireEvent.click(screen.getByRole('button', { name: 'Summarise' }));
-    expect(screen.getByRole('status').textContent).toContain('to summarise');
+    await waitFor(() => expect(screen.getByRole('region', { name: 'AI result' }).textContent).toContain('to summarise'));
+  });
+
+  it('explains a selected passage from its toolbar, with sources, Jev’s check and the key', async () => {
+    keysRoute = () => answer(200, KEYS_OPENAI);
+    askRoute = () =>
+      eventStream([
+        ['status', { stage: 'searching', jev: 'ok', found: 0 }],
+        ['sources', { sources: [{ n: 1, documentId: 'dhcp', anchor: 'broadcast', title: 'DHCP', section: 'Discover', spaceName: 'Networking', collectionName: null, origin: 'official', status: 'approved' }] }],
+        ['status', { stage: 'writing', jev: 'ok', found: 1 }],
+        ['delta', { text: 'Bạn hỏi to cả lớp [1].' }],
+        ['check', { citations: [{ n: 1, supported: true }] }],
+        ['done', { questionId: 'q1', provider: 'openai', model: 'gpt-4.1-mini', last4: 'a1b2' }],
+      ]);
+    Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+    Range.prototype.getBoundingClientRect = () => new DOMRect(0, 0, 10, 10);
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    expect(await screen.findByText('Uses your OpenAI key ••••a1b2 · Jev checks citations for free')).toBeTruthy();
+    const strong = document.querySelector('#broadcast strong');
+    if (!strong?.firstChild) throw new Error('passage text missing');
+    const range = document.createRange();
+    range.selectNodeContents(strong);
+    document.getSelection()?.removeAllRanges();
+    document.getSelection()?.addRange(range);
+    act(() => {
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    const toolbar = await screen.findByRole('toolbar', { name: 'Actions on the selection' });
+    expect(within(toolbar).getByRole('button', { name: 'Highlight' }).hasAttribute('disabled')).toBe(true);
+    expect(within(toolbar).getByRole('link', { name: 'Ask Copilot' }).getAttribute('href')).toBe(
+      `/copilot?${new URLSearchParams({ q: 'What does “255.255.255.255” mean?', scope: 'document:dhcp', from: 'dhcp' }).toString()}`,
+    );
+    fireEvent.click(within(toolbar).getByRole('button', { name: 'Explain' }));
+    const card = await screen.findByRole('region', { name: 'AI result' });
+    await waitFor(() => expect(card.getAttribute('data-state')).toBe('done'));
+    expect(card.textContent).toContain('Explaining the selection');
+    expect(within(card).getByRole('link', { name: '[1] DHCP § Discover' }).getAttribute('href')).toBe('/d/dhcp#broadcast');
+    expect(within(card).getByRole('link', { name: 'Citation 1: DHCP § Discover' })).toBeTruthy();
+    expect(card.textContent).toContain('Checked by Jev 1/1');
+    expect(card.textContent).toContain('OpenAI key ••••a1b2');
+    expect(within(toolbar).getByRole('button', { name: 'Explain' }).getAttribute('aria-pressed')).toBe('true');
+    const body = JSON.parse(String(fetchMock.mock.calls.find(([url]) => String(url) === '/api/ask')?.[1]?.body)) as Record<string, unknown>;
+    expect(body).toEqual({ task: 'explain', selection: '255.255.255.255', scope: { kind: 'document', id: 'dhcp' } });
   });
 
   it('offers an AI translation when the text is not in the reader’s language', async () => {
     serve(() => answer(200, view({ translationAvailable: false })));
     renderWithI18n(<ReaderScreen id="dhcp" />);
-    expect((await screen.findByRole('link', { name: 'Translate with AI' })).getAttribute('href')).toBe('/settings');
+    expect((await screen.findByRole('link', { name: 'Translate with AI' })).getAttribute('href')).toBe('/d/dhcp/translate?to=en');
   });
 
   it('shows comments as plain text and posts a new one', async () => {

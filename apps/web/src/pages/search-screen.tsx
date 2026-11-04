@@ -17,7 +17,7 @@ import { RimPanel } from '../ui/rim-panel';
 import { stateArtSrc } from '../ui/art';
 import { allResults, type SearchFailure, type SearchState, useSearch } from './search-data';
 import { FilterPanel, type SearchAddress, type SearchFilters, addressOf, readAddress, searchParamsOf } from './search-filters';
-import { copilotHref } from './search-links';
+import { copilotHref } from './copilot-links';
 import { type SearchTranslate, useSearchText } from './search-messages';
 import { Highlighted, ResultCard, SearchSkeleton, SpaceOrb, resultPath } from './search-results';
 import { originOf } from './space-labels';

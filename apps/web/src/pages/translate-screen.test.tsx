@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentView } from '../api/content-api';
-import type { KeysResponse } from '../api/keys-api';
+import { KEYS_OPENAI, answer, openStream, sse } from '../test/api-fakes';
 import { renderWithI18n } from '../test/render';
 import { TranslateScreen, targetLanguage } from './translate-screen';
 import { roundedWords, sourceParagraphs, splitParagraphs, translatedPercent, wordCount } from './translate-source';
@@ -61,37 +61,7 @@ function view(overrides: Partial<DocumentView> = {}): DocumentView {
   };
 }
 
-const KEYS: KeysResponse = {
-  available: true,
-  keys: [{ provider: 'openai', last4: 'a1b2', status: 'ok', updatedAt: T, lastCheckedAt: T }],
-  prefs: null,
-  active: { provider: 'openai', model: 'gpt-4.1-mini', last4: 'a1b2' },
-  models: { openai: [{ id: 'gpt-4.1-mini', label: 'GPT-4.1 mini' }], gemini: [], anthropic: [] },
-};
-
-function answer(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-}
-
-function sse(event: string, data: unknown): string {
-  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-}
-
-/** An event-stream answer the test writes to, event by event; `signal` reports whether the page aborted it. */
-function openStream(): { response: Response; send(event: string, data: unknown): void; end(): void } {
-  const encoder = new TextEncoder();
-  let controller: ReadableStreamDefaultController<Uint8Array> | null = null;
-  const body = new ReadableStream<Uint8Array>({
-    start(c) {
-      controller = c;
-    },
-  });
-  return {
-    response: new Response(body, { status: 200, headers: { 'Content-Type': 'text/event-stream' } }),
-    send: (event, data) => controller?.enqueue(encoder.encode(sse(event, data))),
-    end: () => controller?.close(),
-  };
-}
+const KEYS = KEYS_OPENAI;
 
 let fetchMock: ReturnType<typeof vi.fn>;
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;

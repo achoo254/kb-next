@@ -6,6 +6,7 @@ import { AppShell, type RailId, type ViewId } from './layout/app-shell';
 import { ScreenPage } from './layout/screen-page';
 import { SessionProvider } from './layout/session-context';
 import type { BackdropVeil } from './ui/universe-backdrop';
+import { CopilotScreen } from './pages/copilot-screen';
 import { ErrorScreen } from './pages/error-screen';
 import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
@@ -85,6 +86,8 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <ReaderScreen id={routeParam(route, path)} />;
     case 'C12':
       return <SearchScreen />;
+    case 'C14':
+      return <CopilotScreen />;
     case 'F03':
       return <KeysScreen />;
     case 'F04':

@@ -50,7 +50,7 @@ const EMPTIES: readonly EmptySample[] = [
   { art: 'crystal-personal', title: 'Chưa có ghi chú', description: 'Viết điều vừa học, Jev tự xếp vào đúng vùng.', cta: 'Viết ghi chú', href: '/u', tone: 'violet' },
   { art: 'journey-path', title: 'Chưa có lối đi', description: 'Nối vài hành tinh thành một chuyến đi để chia sẻ.', cta: 'Tạo lối đi', href: '/u', tone: 'accent' },
   { art: 'telescope-empty', title: 'Không tìm thấy', description: 'Thử từ khác, bỏ dấu, hoặc hỏi AI.', cta: 'Hỏi AI', href: '/copilot', tone: 'warn' },
-  { art: 'key-crystal', title: 'Chưa có key', description: 'Vẫn tìm được. Thêm key để AI viết câu trả lời.', cta: 'Thêm key', href: '/settings', tone: 'success' },
+  { art: 'key-crystal', title: 'Chưa có key', description: 'Vẫn tìm được. Thêm key để AI viết câu trả lời.', cta: 'Thêm key', href: '/settings/keys', tone: 'success' },
 ];
 
 const BADGES: readonly { name: string; tone: BadgeTone; icon: IconName }[] = [

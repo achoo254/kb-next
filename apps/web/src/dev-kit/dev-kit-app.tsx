@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { CopilotStatesPage } from './pages/copilot-states-page';
 import { DesignSystemPage } from './pages/design-system-page';
 import { ErrorsBoardPage } from './pages/errors-board-page';
 import { FeedbackPage } from './pages/feedback-page';
@@ -22,6 +23,7 @@ export const KIT_PAGES = [
   // documentation boards.
   { path: '/dev/kit/sign-in', board: 'S02-Login', Page: SignInBoardPage },
   { path: '/dev/kit/errors', board: 'X02-Errors', Page: ErrorsBoardPage },
+  { path: '/dev/kit/copilot-states', board: 'F02-CopilotStates', Page: CopilotStatesPage },
   { path: '/dev/kit/sitemap', board: 'Z01-Sitemap', Page: SitemapPage },
   { path: '/dev/kit/spatial', board: 'Z02-Spatial3D', Page: SpatialPage },
 ] as const;

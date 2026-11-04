@@ -10,6 +10,7 @@ import { SPACE_ICON, SPACE_KINDS, type SpaceKind } from '../ui/art';
 import { Icon, type IconName } from '../ui/icon';
 import { type OrbitDot, OrbitField, type OrbitPath } from '../ui/orbit-field';
 import { RimPanel } from '../ui/rim-panel';
+import { copilotHref } from './copilot-links';
 import { langList, languagesOf, relevanceText } from './space-labels';
 import { type ScreenTranslate, type SpaceMessageKey, useSpaceText } from './space-messages';
 
@@ -94,7 +95,7 @@ export function SpaceHeader({ detail, locale, t }: { detail: SpaceDetail; locale
         <a href={SHELL_PATHS.canvas}>{t('space.view.canvas')}</a>
         <a href={SHELL_PATHS.graph}>{t('space.view.graph')}</a>
       </nav>
-      <a className="space-copilot" href={`${SHELL_PATHS.copilot}?space=${encodeURIComponent(space.slug)}`} data-id="space-copilot">
+      <a className="space-copilot" href={copilotHref(undefined, { scope: { kind: 'space', id: space.slug } })} data-id="space-copilot">
         <Icon name="sparkles" size={16} />
         {t('space.askCopilot')}
       </a>

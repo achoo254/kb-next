@@ -1,0 +1,697 @@
+/* A Copilot turn (copilot-turn.tsx): the question, the answer and the F02 states, sized as board C14 draws them
+   (`data-size="full"`); the F02 board and the C09 panel tune the text sizes of their smaller cards. */
+
+:root {
+  /* the boards' faint white pill (dark), a faint violet one in the light theme */
+  --copilot-soft-bg: light-dark(color-mix(in srgb, var(--violet-600) 7%, transparent), color-mix(in srgb, var(--white) 6%, transparent));
+  --copilot-soft-border: light-dark(color-mix(in srgb, var(--violet-700) 24%, transparent), color-mix(in srgb, var(--white) 14%, transparent));
+}
+
+.copilot-q.kf-bubble[data-from="user"] {
+  max-width: 500px;
+}
+
+.copilot-q.kf-bubble[data-size="md"] {
+  padding: 12px 18px;
+  font-size: 15px;
+}
+
+/* F02 F: the question waits for a connection */
+.copilot-q-queued.kf-bubble[data-from="user"] {
+  background: color-mix(in srgb, var(--bubble-bottom) 35%, transparent);
+  border: 1px dashed var(--violet-300);
+  box-shadow: none;
+  color: var(--c-text);
+}
+
+/* ── the answer ── */
+
+.copilot-box {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+  background: light-dark(color-mix(in srgb, var(--violet-100) 70%, transparent), color-mix(in srgb, var(--night-answer) 55%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 18%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 6%, transparent);
+  font-size: 13px;
+  line-height: 1.5;
+  animation: kf-rise 0.6s ease-out 0.25s both;
+}
+
+.copilot-box[data-size="full"] {
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.copilot-text {
+  overflow-wrap: anywhere;
+}
+
+.copilot-text > * {
+  margin: 0;
+}
+
+.copilot-text > * + * {
+  margin-top: 12px;
+}
+
+.copilot-text ul,
+.copilot-text ol {
+  padding-left: 22px;
+}
+
+.copilot-text a:not(.copilot-cite) {
+  color: var(--c-link);
+  font-weight: 600;
+}
+
+.copilot-text code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--night-well) 80%, transparent);
+  font-size: 0.92em;
+}
+
+.copilot-text pre {
+  padding: 12px;
+  border-radius: 12px;
+  overflow-x: auto;
+  background: color-mix(in srgb, var(--night-well) 85%, transparent);
+  font-size: 13px;
+}
+
+.copilot-text pre code {
+  padding: 0;
+  background: none;
+}
+
+.copilot-text table {
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.copilot-text th,
+.copilot-text td {
+  padding: 4px 8px;
+  border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
+  text-align: left;
+}
+
+/* the caret after the last block while the answer is written */
+.copilot-text[data-writing] > :last-child::after {
+  content: "|";
+  margin-left: 1px;
+  color: var(--c-accent);
+  font-weight: 700;
+  animation: copilot-caret 1s step-end infinite;
+}
+
+@keyframes copilot-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* a citation number: opens the reader at the cited passage */
+.copilot-cite {
+  /* content-box like the board: 22px wide at least, plus its padding */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  margin: 0 2px;
+  padding: 0 4px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--violet-600) 60%, transparent);
+  color: var(--white);
+  font: 700 11px var(--font-display);
+  text-decoration: none;
+  vertical-align: 2px;
+}
+
+.copilot-cite:hover {
+  background: var(--violet-600);
+}
+
+.copilot-cite:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* F02 G: a citation its source does not confirm, and the sentence it closes */
+.copilot-cite[data-doubt] {
+  background: none;
+  border: 1px dashed var(--c-warn);
+  color: var(--c-warn-text);
+}
+
+.copilot-claim {
+  text-decoration: underline wavy var(--c-warn);
+  text-underline-offset: 3px;
+}
+
+.copilot-doubt {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--amber-500) 12%, transparent);
+  color: light-dark(var(--light-warn-text), var(--amber-200));
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.copilot-doubt svg {
+  flex: none;
+  color: light-dark(var(--light-warn-text), var(--amber-300));
+}
+
+/* Jev's check of the citations */
+.copilot-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  background: color-mix(in srgb, var(--violet-400) 14%, transparent);
+  color: var(--c-text-muted);
+}
+
+.copilot-check[data-tone="success"] {
+  background: color-mix(in srgb, var(--emerald-500) 18%, transparent);
+  color: var(--c-success-text);
+}
+
+.copilot-check[data-tone="warn"] {
+  background: color-mix(in srgb, var(--amber-500) 14%, transparent);
+  color: var(--c-warn-text);
+}
+
+/* ── the diagram ── */
+
+.copilot-diagram {
+  margin-inline: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: light-dark(color-mix(in srgb, var(--white) 70%, transparent), color-mix(in srgb, var(--night-inset) 72%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 14%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.copilot-diagram-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.copilot-diagram-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.copilot-diagram-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.copilot-diagram-code {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  overflow-x: auto;
+  background: light-dark(var(--light-tooltip-bg), var(--night-cell));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 18%, transparent);
+  color: var(--violet-100);
+  font: 500 13px/1.6 ui-monospace, "JetBrains Mono", Menlo, monospace;
+  white-space: pre;
+}
+
+.copilot-mermaid {
+  overflow-x: auto;
+}
+
+.copilot-mermaid svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* a two-participant sequence, as board C14 draws "DHCP DORA" */
+.copilot-seq {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 150px;
+  gap: 6px 10px;
+  align-items: center;
+}
+
+.copilot-seq-actor {
+  /* content-box like the board: 40px plus its border */
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--violet-300) 55%, transparent);
+  background: light-dark(color-mix(in srgb, var(--white) 85%, transparent), color-mix(in srgb, var(--night-card) 85%, transparent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.copilot-seq-actor[data-side="right"] {
+  border-color: color-mix(in srgb, var(--cyan-300) 55%, transparent);
+}
+
+.copilot-seq-row {
+  grid-column: 2;
+}
+
+.copilot-seq-msg {
+  --seq: light-dark(var(--violet-700), var(--violet-300));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copilot-seq-msg[data-from="right"] {
+  --seq: light-dark(var(--light-accent), var(--cyan-300));
+  flex-direction: row-reverse;
+}
+
+.copilot-seq-line {
+  flex: 1;
+  height: 2px;
+  background: var(--seq);
+  box-shadow: 0 0 6px var(--seq);
+}
+
+.copilot-seq-label {
+  padding: 5px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--seq);
+  background: light-dark(color-mix(in srgb, var(--white) 85%, transparent), color-mix(in srgb, var(--night-card) 85%, transparent));
+  color: light-dark(var(--light-text), var(--violet-50));
+  font: 700 12px var(--font-display);
+  white-space: nowrap;
+}
+
+.copilot-seq-arrow {
+  flex: none;
+  fill: var(--seq);
+}
+
+.copilot-seq-msg[data-from="right"] .copilot-seq-arrow {
+  transform: rotate(180deg);
+}
+
+/* a pill button of the answer (diagram code, copy, ask again) */
+.copilot-pill {
+  box-sizing: border-box;
+  flex: none;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  border: 1px solid var(--copilot-soft-border);
+  background: var(--copilot-soft-bg);
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.copilot-pill[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--violet-600) 35%, transparent);
+}
+
+.copilot-pill:hover {
+  background: color-mix(in srgb, var(--violet-600) 25%, transparent);
+}
+
+.copilot-pill:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* ── the states (F02) ── */
+
+.copilot-thinking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.copilot-orb {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+}
+
+.copilot-orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--cyan-400);
+  animation: copilot-spin 1.6s linear infinite;
+}
+
+.copilot-orb-ring-inner {
+  inset: 8px;
+  border-top-color: transparent;
+  border-bottom-color: var(--violet-400);
+  animation-direction: reverse;
+  animation-duration: 2.4s;
+}
+
+.copilot-orb img {
+  position: absolute;
+  inset: 4px;
+  object-fit: contain;
+}
+
+@keyframes copilot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.copilot-thinking-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.copilot-thinking-sub {
+  font-size: 11px;
+  color: var(--c-success-text);
+}
+
+.copilot-skeletons {
+  display: flex;
+  gap: 6px;
+}
+
+.copilot-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.copilot-btn.kf-btn {
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* the main rim button of the F02 cards: the active pill without its wide halo */
+.copilot-btn.kf-btn[data-variant="rim"] {
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--violet-300) 45%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 35%, transparent),
+    0 0 16px color-mix(in srgb, var(--violet-500) 75%, transparent);
+}
+
+.copilot-btn.kf-btn[data-variant="glass"] {
+  border-color: var(--copilot-soft-border);
+  background: var(--copilot-soft-bg);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: light-dark(var(--light-text), var(--violet-100));
+}
+
+/* the amber key button of F02 C ("Sửa key") and the no-key state */
+.copilot-btn.kf-btn[data-variant="glow"][data-tone="warn"] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, color-mix(in srgb, var(--amber-500) 73%, var(--ink)) 55%, transparent),
+    color-mix(in srgb, color-mix(in srgb, var(--amber-500) 45%, var(--ink)) 80%, transparent)
+  );
+  border-color: color-mix(in srgb, var(--amber-200) 85%, transparent);
+  box-shadow:
+    inset 0 0 12px color-mix(in srgb, var(--amber-200) 35%, transparent),
+    0 0 16px color-mix(in srgb, var(--amber-500) 55%, transparent);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.copilot-btn.kf-btn:disabled {
+  opacity: 0.6;
+}
+
+.copilot-btn-grow,
+.copilot-later.copilot-btn-grow {
+  flex: 1;
+}
+
+.copilot-btn-start {
+  align-self: flex-start;
+}
+
+.copilot-later {
+  display: flex;
+}
+
+.copilot-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: light-dark(color-mix(in srgb, var(--violet-100) 70%, transparent), color-mix(in srgb, var(--night-answer) 55%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 18%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 6%, transparent);
+}
+
+.copilot-state[data-tone="warn"] {
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: none;
+  box-shadow: none;
+  background: color-mix(in srgb, var(--amber-500) 12%, transparent);
+}
+
+/* F02 D: the ring sits on the card itself */
+.copilot-state[data-plain] {
+  gap: 14px;
+  padding: 0;
+  background: none;
+}
+
+.copilot-art {
+  flex: none;
+  object-fit: contain;
+}
+
+.copilot-state-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.copilot-state[data-tone="warn"] .copilot-state-text,
+.copilot-state[data-plain] .copilot-state-text {
+  gap: 4px;
+}
+
+.copilot-state-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.copilot-state[data-tone="warn"] .copilot-state-title,
+.copilot-state[data-plain] .copilot-state-title {
+  color: var(--c-warn-text);
+}
+
+.copilot-state-sub {
+  font-size: 12px;
+  line-height: normal;
+  color: light-dark(var(--light-sub), var(--violet-200));
+}
+
+.copilot-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+/* F02 B: nothing in the knowledge base */
+.copilot-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.copilot-empty img {
+  object-fit: contain;
+}
+
+.copilot-empty-title {
+  font: 700 20px var(--font-display);
+}
+
+.copilot-empty-free {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-success-text);
+}
+
+/* F02 C: the sources Jev found */
+.copilot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.copilot-chip {
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--violet-600) 35%, transparent);
+  color: var(--c-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.copilot-chip:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* F02 D and E: a ring with a short word */
+.copilot-ring {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--amber-500);
+}
+
+.copilot-ring > span {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: light-dark(var(--white), color-mix(in srgb, var(--night-inset) 95%, transparent));
+  color: var(--c-warn-text);
+  font: 700 13px var(--font-display);
+}
+
+.copilot-ring[data-tone="success"] {
+  background: var(--emerald-500);
+  opacity: 0.6;
+}
+
+.copilot-ring[data-tone="success"] > span {
+  color: var(--c-success-text);
+  font-size: 12px;
+}
+
+/* F02 E: keyword search only */
+.copilot-jev-off {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.copilot-jev-off-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.copilot-jev-off-head .copilot-state-text {
+  gap: 4px;
+}
+
+.copilot-jev-off-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.copilot-jev-off-row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: light-dark(color-mix(in srgb, var(--violet-100) 70%, transparent), color-mix(in srgb, var(--night-answer) 55%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 18%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 6%, transparent);
+  color: var(--c-text);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.copilot-jev-off-row[data-off] {
+  opacity: 0.5;
+}
+
+.copilot-jev-off-row mark {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cyan-400) 30%, transparent);
+  color: var(--c-text);
+}
+
+.copilot-jev-off-dot {
+  flex: none;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--violet-600);
+}
+
+.copilot-jev-off-dot[data-off] {
+  background: none;
+  border: 1px dashed var(--violet-300);
+}
+
+.copilot-jev-off-note {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copilot-orb-ring,
+  .copilot-text[data-writing] > :last-child::after,
+  .copilot-box {
+    animation: none;
+  }
+}

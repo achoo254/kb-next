@@ -7,5 +7,7 @@ export const SHELL_PATHS = {
   copilot: '/copilot',
   mine: '/me',
   settings: '/settings',
+  /** Own AI keys (F03). */
+  keys: '/settings/keys',
   inbox: '/inbox',
 } as const;

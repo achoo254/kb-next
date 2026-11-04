@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { renderWithI18n } from '../../test/render';
+import { CopilotStatesPage } from './copilot-states-page';
 import { ErrorsBoardPage } from './errors-board-page';
 import { SignInBoardPage } from './sign-in-board-page';
 import { SitemapPage } from './sitemap-page';
@@ -16,6 +17,17 @@ describe('state boards', () => {
     expect(document.querySelector('[data-screen="S02-Login"]')).not.toBeNull();
     expect(document.querySelectorAll('.auth-card')).toHaveLength(3);
     expect(screen.getByText('A · Chuyển sang IdP')).toBeTruthy();
+  });
+
+  it('lays out the eight Copilot states of F02 with the components of C14', () => {
+    renderWithI18n(<CopilotStatesPage />);
+    expect(document.querySelector('[data-screen="F02-CopilotStates"]')).not.toBeNull();
+    expect(document.querySelectorAll('.f02-card')).toHaveLength(8);
+    for (const text of ['Jev is looking for sources…', 'The knowledge base has no answer yet', 'OpenAI key ••••a1b2 was refused', 'Your Gemini account is out of credit', 'Keyword search only for now', 'Your question is waiting', 'The answer was cut off']) {
+      expect(screen.getByText(text)).toBeTruthy();
+    }
+    expect(screen.getByRole('button', { name: 'Switch to Claude' })).toBeTruthy();
+    expect(screen.getByRole('alert').textContent).toContain('Source [2] does not confirm');
   });
 
   it('lays out the four errors of X02', () => {

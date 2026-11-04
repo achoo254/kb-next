@@ -1,8 +1,8 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SpaceListItem } from '../api/content-api';
+import { KEYS_OPENAI, eventStream } from '../test/api-fakes';
 import { renderWithI18n } from '../test/render';
-import { copilotHref } from './universe-ai-panel';
 import { SLOW_LOAD_MS, isEmptyUniverse } from './universe-data';
 import { UniverseScreen } from './universe-screen';
 import { BOARD_SPACES, doc, space } from './universe-test-data';
@@ -14,10 +14,12 @@ function json(body: unknown, status = 200): Response {
 const RECENT = [doc('dhcp', { title: 'Giao thức DHCP', readProgress: 72 }), doc('k8s', { title: 'Kiến trúc cụm K8s' })];
 
 /** Serves the Universe's API: `spaces` answers /api/spaces (a function may hold or fail it). */
-function serve(spaces: SpaceListItem[] | (() => Promise<Response>)): ReturnType<typeof vi.fn> {
+function serve(spaces: SpaceListItem[] | (() => Promise<Response>), ask: () => Response = () => json({ error: 'NO_USER_KEY' }, 403)): ReturnType<typeof vi.fn> {
   const fetch = vi.fn(async (url: string) => {
     if (url === '/api/spaces') return typeof spaces === 'function' ? spaces() : json({ spaces });
     if (url === '/api/recent') return json({ documents: RECENT });
+    if (url === '/api/me/keys') return json(KEYS_OPENAI);
+    if (url === '/api/ask') return ask();
     return json({ error: 'not-found' }, 404);
   });
   vi.stubGlobal('fetch', fetch);
@@ -60,9 +62,30 @@ describe('UniverseScreen', () => {
     expect(screen.getByRole('link', { name: 'Networking · 8 labs' })).toBeTruthy();
     // the stage reads on with the started text, the panel offers a question about it
     expect(document.querySelector('[data-id="stage-card-continue"]')?.textContent).toContain('Giao thức DHCP');
-    expect(screen.getByRole('link', { name: 'Explain “Giao thức DHCP”' }).getAttribute('href')).toBe(copilotHref('Explain “Giao thức DHCP”'));
+    expect(screen.getByRole('button', { name: 'Explain “Giao thức DHCP”' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Open AI Copilot' }).getAttribute('href')).toBe('/copilot');
     expect(screen.getByText('Copilot answers with sources, from the 21 documents you can read in 7 Spaces:')).toBeTruthy();
+  });
+
+  it('asks Copilot in the AI panel itself, with the answer’s sources and a way to open it in C14', async () => {
+    const fetch = serve(BOARD_SPACES, () =>
+      eventStream([
+        ['status', { stage: 'searching', jev: 'ok', found: 0 }],
+        ['sources', { sources: [{ n: 1, documentId: 'dhcp', anchor: 'tong-quan', title: 'Giao thức DHCP', section: 'DORA', spaceName: 'Networking', collectionName: null, origin: 'official', status: 'approved' }] }],
+        ['delta', { text: 'Máy mới xin IP qua 4 bước DORA [1].' }],
+        ['done', { questionId: 'q7', provider: 'openai', model: 'gpt-4.1-mini', last4: 'a1b2' }],
+      ]),
+    );
+    renderWithI18n(<UniverseScreen />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Explain “Giao thức DHCP”' }));
+    const thread = await screen.findByText('Máy mới xin IP qua 4 bước DORA', { exact: false });
+    expect(thread).toBeTruthy();
+    await waitFor(() => expect(document.querySelector('[data-id="universe-ai-thread"]')?.getAttribute('data-state')).toBe('done'));
+    const ask = fetch.mock.calls.find(([url]) => url === '/api/ask');
+    expect(JSON.parse(String((ask?.[1] as RequestInit).body))).toEqual({ question: 'Explain “Giao thức DHCP”', scope: { kind: 'universe' } });
+    expect(screen.getByRole('link', { name: 'Citation 1: Giao thức DHCP § DORA' }).getAttribute('href')).toBe('/d/dhcp#tong-quan');
+    expect(screen.getByText('Sources:')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Open AI Copilot' }).getAttribute('href')).toBe('/copilot?h=q7');
   });
 
   it('offers to try again when the load takes longer than 1.5 s', async () => {

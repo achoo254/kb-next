@@ -2,20 +2,21 @@
  * The right column of the reader (board C11): document actions, "AI với tài liệu này", backlinks, related documents
  * (scored in code by the API), versions and the keyboard hints.
  *
- * AI explain and summarise run on the reader's own key (phase 7). Until keys exist the buttons show the board's
- * needs-key state: what is missing and where to add a key.
+ * "Giải thích đoạn này" and "Tóm tắt" ask Copilot about the current passage or the whole text with the reader's own
+ * key; the answer (or why there is none) shows in the AI card of the article (reader-ai.tsx).
  */
 import { type ReactNode, useState } from 'react';
 import type { DocumentView, LinkedDocument } from '../api/content-api';
 import { SHELL_PATHS } from '../layout/app-shell';
 import { AiAvatar } from '../ui/ai-avatar';
 import { Icon } from '../ui/icon';
+import type { KeysLoad } from './copilot-run';
+import { PROVIDERS } from './keys-messages';
+import type { ReaderTask } from './reader-ai';
 import { shortDate, useReaderText } from './reader-messages';
 import { kindLabel, relevanceText } from './space-labels';
 import { useSpaceText } from './space-messages';
 
-/** Where the reader adds an AI key (settings, F03). */
-export const KEYS_HREF = SHELL_PATHS.settings;
 const RELATED_SHOWN = 3;
 
 export function ReaderActions(): ReactNode {
@@ -41,11 +42,23 @@ export function ReaderActions(): ReactNode {
   );
 }
 
-type AiAsk = 'explain' | 'summarize';
+interface AiPanelProps {
+  offline: boolean;
+  keys: KeysLoad;
+  /** The task the article's AI card answers when it was asked from here. */
+  pressed: ReaderTask | null;
+  onAsk(task: ReaderTask): void;
+}
 
-export function AiPanel({ offline }: { offline: boolean }): ReactNode {
+export function AiPanel({ offline, keys, pressed, onAsk }: AiPanelProps): ReactNode {
   const { t } = useReaderText();
-  const [asked, setAsked] = useState<AiAsk | null>(null);
+  const off = keys.status === 'ready' && !keys.keys.available;
+  const active = keys.status === 'ready' ? keys.keys.active : null;
+  let note = '';
+  if (offline) note = t('reader.ai.offline');
+  else if (off) note = t('reader.ai.off');
+  else if (active) note = t('reader.ai.withKey', { provider: PROVIDERS[active.provider].name, last4: active.last4 });
+  else if (keys.status === 'ready') note = t('reader.ai.noKey');
   return (
     <section className="reader-card reader-ai" aria-labelledby="reader-ai-title" data-id="reader-ai">
       <h2 id="reader-ai-title" className="reader-ai-title">
@@ -53,23 +66,16 @@ export function AiPanel({ offline }: { offline: boolean }): ReactNode {
         {t('reader.ai.title')}
       </h2>
       <div className="reader-ai-buttons">
-        <button type="button" className="reader-ai-button" disabled={offline} aria-pressed={asked === 'explain'} onClick={() => setAsked('explain')} data-id="reader-ai-explain">
+        <button type="button" className="reader-ai-button" disabled={offline || off} aria-pressed={pressed === 'explain'} onClick={() => onAsk('explain')} data-id="reader-ai-explain">
           {t('reader.ai.explain')}
         </button>
-        <button type="button" className="reader-ai-button" disabled={offline} aria-pressed={asked === 'summarize'} onClick={() => setAsked('summarize')} data-id="reader-ai-summarize">
+        <button type="button" className="reader-ai-button" disabled={offline || off} aria-pressed={pressed === 'summarize'} onClick={() => onAsk('summarize')} data-id="reader-ai-summarize">
           {t('reader.ai.summarize')}
         </button>
       </div>
-      {asked && !offline ? (
-        <div className="reader-ai-needkey" role="status" data-id="reader-ai-needkey">
-          <span>{t(asked === 'explain' ? 'reader.ai.needKeyExplain' : 'reader.ai.needKeySummarize')}</span>
-          <a href={KEYS_HREF} className="reader-ai-addkey">
-            {t('reader.ai.addKey')}
-          </a>
-        </div>
-      ) : (
-        <span className="reader-small">{t(offline ? 'reader.ai.offline' : 'reader.ai.noKey')}</span>
-      )}
+      <span className="reader-small" data-id="reader-ai-note">
+        {note}
+      </span>
     </section>
   );
 }

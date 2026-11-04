@@ -34,6 +34,8 @@ interface AppShellProps {
   view?: ViewId;
   /** "Universe › Space › Collection › Document", under the top bar; left out on the Universe itself. */
   breadcrumb?: readonly BreadcrumbItem[];
+  /** A link after the breadcrumb (C14 "Mở từ: Giao thức DHCP"). */
+  crumbAction?: ReactNode;
   /** The veil over the landscape: `scene` for the Universe views, `strong` for reading and editing (KIT §2). */
   veil?: BackdropVeil;
   /** The twinkling stars (C09); off on work screens. */
@@ -77,7 +79,7 @@ export function accountInitial(user: SessionUser): string {
   return first ? first.toLocaleUpperCase() : '·';
 }
 
-function Breadcrumb({ items, label }: { items: readonly BreadcrumbItem[]; label: string }): ReactNode {
+function Breadcrumb({ items, label, action }: { items: readonly BreadcrumbItem[]; label: string; action?: ReactNode }): ReactNode {
   return (
     <nav aria-label={label} className="app-shell-crumbs" data-id="breadcrumb">
       <ol>
@@ -103,6 +105,7 @@ function Breadcrumb({ items, label }: { items: readonly BreadcrumbItem[]; label:
           );
         })}
       </ol>
+      {action}
     </nav>
   );
 }
@@ -138,6 +141,7 @@ export function AppShell({
   rail,
   view,
   breadcrumb,
+  crumbAction,
   veil = 'scene',
   stars = true,
   spaceHref = SHELL_PATHS.universe,
@@ -164,7 +168,7 @@ export function AppShell({
         <ViewNav label={t('shell.views')} items={viewItems(t, docHref)} activeId={view ?? ''} className="app-shell-nav" />
         <TopActions inboxHref={SHELL_PATHS.inbox} unread={unread} searchHref={SHELL_PATHS.search} onCommand={palette.toggle} commandOpen={palette.open} className="app-shell-top" />
         <LensRail label={t('shell.rail')} items={railItems(t, spaceHref)} activeId={rail} account={account} className="app-shell-rail" />
-        {breadcrumb && breadcrumb.length > 0 && <Breadcrumb items={breadcrumb} label={t('shell.breadcrumb')} />}
+        {breadcrumb && breadcrumb.length > 0 && <Breadcrumb items={breadcrumb} label={t('shell.breadcrumb')} action={crumbAction} />}
       </div>
       <main id="content" className="app-shell-main board-frame-main" data-screen={screen} data-id={`screen-${screen}`}>
         {children}

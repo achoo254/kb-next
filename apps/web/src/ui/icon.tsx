@@ -101,6 +101,10 @@ const ICONS = {
   type: { body: <path d="M4 7V5h16v2M9 19h6M12 5v14" />, cap: 'round' },
   'info-circle': { body: <><circle cx="12" cy="12" r="9" /><path d="M12 8v.5M12 11v5" /></>, cap: 'round' },
   'chevron-right': { body: <path d="M9 6l6 6-6 6" />, stroke: 2.4, cap: 'round' },
+  'chevron-left': { body: <path d="M15 6l-6 6 6 6" />, stroke: 2.4, cap: 'round' },
+  /* C14 answer vote (the thumbs-down is this one turned over) */
+  thumb: { body: <path d="M7 11v9H4v-9zM7 11l4-8a2 2 0 0 1 3 2l-1 5h6a2 2 0 0 1 2 2l-2 7a2 2 0 0 1-2 1H7" />, cap: 'round', join: 'round' },
+  'doc-plus': { body: <path d="M6 3h8l4 4v14H6zM12 11v6M9 14h6" />, stroke: 2.2, cap: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

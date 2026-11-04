@@ -4,7 +4,7 @@
  * loading, normal, no access, hidden by an admin, offline (no answer), plus the offline banner when the connection
  * drops while reading the loaded copy.
  */
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, type ReactNode, type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import { type DocumentView, fetchDocument, readErrorOf } from '../api/content-api';
 import { brand } from '../brand';
@@ -21,7 +21,8 @@ import { COMMENTS_ANCHOR, ReaderComments } from './reader-comments';
 import { ReaderMarkdown } from './reader-markdown';
 import { shortDate, useReaderText } from './reader-messages';
 import { useReading } from './reader-progress';
-import { AiPanel, Backlinks, KEYS_HREF, KeyHints, ReaderActions, RelatedDocuments, Versions } from './reader-side';
+import { type PassageSelection, type ReaderAi, type ReaderTask, ReaderAiCard, SelectionToolbar, usePassageSelection, useReaderAi } from './reader-ai';
+import { AiPanel, Backlinks, KeyHints, ReaderActions, RelatedDocuments, Versions } from './reader-side';
 import { originOf } from './space-labels';
 import { spaceName } from './space-panels';
 import './reader-screen.css';
@@ -172,17 +173,28 @@ function DocumentMeta({ view }: { view: DocumentView }): ReactNode {
   );
 }
 
-function ReaderArticle({ view, offline }: { view: DocumentView; offline: boolean }): ReactNode {
+interface ArticleProps {
+  view: DocumentView;
+  offline: boolean;
+  articleRef: RefObject<HTMLElement | null>;
+  selection: PassageSelection | null;
+  ai: ReaderAi;
+}
+
+function ReaderArticle({ view, offline, articleRef, selection, ai }: ArticleProps): ReactNode {
   const { t, locale } = useReaderText();
   const levels = new Map(view.toc.map((entry) => [entry.anchor, entry.level]));
+  const documentId = view.document.id;
+  const asked = ai.asked;
+  const pressed = selection && asked?.about === 'selection' && asked.anchor === selection.anchor && asked.text === selection.text ? asked.task : null;
   return (
-    <article className="reader-article" data-id="reader-article">
+    <article ref={articleRef} className="reader-article" data-id="reader-article">
       <DocumentMeta view={view} />
       <h1 className="reader-title">{view.document.title}</h1>
       {!view.translationAvailable && (
         <div className="reader-translate" data-id="reader-translate">
           <span>{t('reader.translateNote', { lang: locale.toUpperCase() })}</span>
-          <Button variant="glass" size="md" icon="translate" href={KEYS_HREF} dataId="reader-translate-ai">
+          <Button variant="glass" size="md" icon="translate" href={`/d/${encodeURIComponent(documentId)}/translate?to=${locale}`} dataId="reader-translate-ai">
             {t('reader.translate')}
           </Button>
         </div>
@@ -190,21 +202,43 @@ function ReaderArticle({ view, offline }: { view: DocumentView; offline: boolean
       {view.chunks.map((chunk) => {
         const Heading = levels.get(chunk.anchor) === 3 ? 'h3' : 'h2';
         return (
-          <section key={chunk.anchor} id={chunk.anchor} className="reader-passage" data-overview={chunk.heading === null || undefined} aria-label={chunk.heading ?? t('reader.overview')}>
-            {chunk.heading !== null && <Heading className="reader-heading">{chunk.heading}</Heading>}
-            <ReaderMarkdown markdown={chunk.markdown} />
-          </section>
+          <Fragment key={chunk.anchor}>
+            <section id={chunk.anchor} className="reader-passage" data-overview={chunk.heading === null || undefined} aria-label={chunk.heading ?? t('reader.overview')}>
+              {chunk.heading !== null && <Heading className="reader-heading">{chunk.heading}</Heading>}
+              <ReaderMarkdown markdown={chunk.markdown} />
+              {selection?.anchor === chunk.anchor && !offline && (
+                <SelectionToolbar
+                  selection={selection}
+                  documentId={documentId}
+                  pressed={pressed}
+                  onAsk={(task) => ai.ask({ task, about: 'selection', anchor: selection.anchor, text: selection.text })}
+                />
+              )}
+            </section>
+            {asked?.anchor === chunk.anchor && <ReaderAiCard ai={ai} />}
+          </Fragment>
         );
       })}
-      <ReaderComments documentId={view.document.id} offline={offline} />
+      <ReaderComments documentId={documentId} offline={offline} />
     </article>
   );
+}
+
+/** The text the side panel's AI buttons read: the current passage, or the whole document. */
+function sideAsk(view: DocumentView, current: string | null, task: ReaderTask, overview: string): Parameters<ReaderAi['ask']>[0] | null {
+  const chunks = view.chunks;
+  const first = chunks[0];
+  if (!first) return null;
+  if (task === 'summarize') return { task, about: 'document', anchor: first.anchor, text: chunks.map((chunk) => [chunk.heading, chunk.markdown].filter(Boolean).join('\n\n')).join('\n\n') };
+  const chunk = chunks.find((c) => c.anchor === current) ?? chunks.at(-1) ?? first;
+  return { task, about: 'passage', anchor: chunk.anchor, text: chunk.markdown, heading: chunk.heading ?? overview };
 }
 
 function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }): ReactNode {
   const { t } = useReaderText();
   const offline = useOffline();
   const panelRef = useRef<HTMLDivElement>(null);
+  const articleRef = useRef<HTMLElement>(null);
   const passages = useMemo(() => view.chunks.map((chunk) => chunk.anchor), [view]);
   const { current, goTo } = useReading(panelRef, {
     documentId: view.document.id,
@@ -213,6 +247,9 @@ function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }
     readAnchor: view.document.readAnchor,
     track: view.document.readProgress !== null,
   });
+  const ai = useReaderAi(view.document.id);
+  const selection = usePassageSelection(articleRef);
+  const sidePressed = ai.asked && ai.asked.about !== 'selection' ? ai.asked.task : null;
   const time = new Date(loadedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
   return (
     <>
@@ -229,11 +266,19 @@ function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }
             {t('reader.offlineBanner', { time })}
           </div>
         )}
-        <ReaderArticle view={view} offline={offline} />
+        <ReaderArticle view={view} offline={offline} articleRef={articleRef} selection={selection} ai={ai} />
       </div>
       <aside className="reader-side" aria-label={view.document.title} data-id="reader-side">
         <ReaderActions />
-        <AiPanel offline={offline} />
+        <AiPanel
+          offline={offline}
+          keys={ai.keys}
+          pressed={sidePressed}
+          onAsk={(task) => {
+            const next = sideAsk(view, current, task, t('reader.overview'));
+            if (next) ai.ask(next);
+          }}
+        />
         <Backlinks links={view.backlinks} />
         <RelatedDocuments related={view.related} />
         <Versions view={view} />

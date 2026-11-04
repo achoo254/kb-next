@@ -1,4 +1,4 @@
-import { F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
+import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
 
 /**
  * The screens the parity check compares with their mock board (design/mock-png/<board>.png), with the route that
@@ -23,6 +23,10 @@ export interface ParityScreen {
   /** Keys pressed once the screen shows (e.g. `Control+k` opens the ⌘K palette), then `type` typed. */
   keys?: readonly string[];
   type?: string;
+  /** Text selected inside the element `within` once the screen shows (C11's selected passage). */
+  select?: { within: string; text: string };
+  /** An element clicked after that (C11's "Giải thích"). */
+  click?: string;
 }
 
 /**
@@ -32,9 +36,10 @@ export interface ParityScreen {
  * asks about stay as seeded, as the board draws them); `search-c12` / `search-f01`: /api/search answers the board's
  * results (search-boards.ts: E2E has neither Meilisearch nor a Jev key), and on C12 /api/spaces the board's five
  * Spaces of the filter; `keys-f03` / `translate-f04`: /api/me/keys answers the board's three keys, and on F04 the
- * document and the translation stream are the board's, held mid-stream (ai-boards.ts: E2E has no AI provider).
+ * document and the translation stream are the board's, held mid-stream (ai-boards.ts: E2E has no AI provider);
+ * `copilot-c14`: the board's keys, Copilot history and finished answer; `ask-c11`: the board's keys and AI card answer.
  */
-export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04';
+export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04' | 'copilot-c14' | 'ask-c11';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -59,8 +64,18 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // The seeded Space and document of the boards (KB_SEED=mock): Networking on "Giao thức nền tảng", and DHCP read
   // by the seed's owner (its progress, backlinks, comments "2 giờ trước"), at the seed's last update.
   { board: 'C10-Space', path: '/s/networking', signedIn: true, status: 'built', clock: SEED_CLOCK },
-  // maxDiff: the board's default shows an AI answer on a selected passage (own key, phase 7); docs/mock-deviations.md.
-  { board: 'C11-Reader', path: '/d/989fedf1-beab-4f13-894d-111654ebdc45', signedIn: true, status: 'built', maxDiff: 0.09, clock: SEED_CLOCK },
+  // The board's default: the broadcast sentence selected, its toolbar, and the AI card explaining it.
+  {
+    board: 'C11-Reader',
+    path: `/d/${F04_DOCUMENT_ID}`,
+    signedIn: true,
+    status: 'built',
+    clock: SEED_CLOCK,
+    mocks: ['ask-c11'],
+    select: { within: '#broadcast-la-gi', text: C11_SELECTION },
+    click: '[data-id="reader-sel-explain"]',
+    waitFor: '[data-id="reader-ai-card"][data-state="done"]',
+  },
   // Search (C12) on the board's query and results, and the ⌘K palette (F01) opened over the Universe and given "dhcp".
   { board: 'C12-Search', path: '/search?q=c%E1%BA%A5p%20ph%C3%A1t%20ip', signedIn: true, status: 'built', mocks: ['search-c12'], waitFor: '[data-id="search-screen"][data-state="results"]' },
   // maxDiff: the palette opens over the real Universe (hero, AI panel, stage) the board leaves out; docs/mock-deviations.md.
@@ -79,6 +94,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // Own keys (F03) with the board's keys, and AI translation (F04) of the board's DHCP text, 70% through.
   { board: 'F03-Keys', path: '/settings/keys', signedIn: true, status: 'built', mocks: ['keys-f03'], clock: F03_CLOCK },
   { board: 'F04-Translate', path: `/d/${F04_DOCUMENT_ID}/translate`, signedIn: true, status: 'built', mocks: ['translate-f04'] },
+  // Copilot (C14) asked from the DHCP text about the Space, its answer finished; its eight states (F02) side by side.
+  { board: 'C14-Copilot', path: C14_PATH, signedIn: true, status: 'built', mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The UI kit (dev server only, apps/web/src/dev-kit).
@@ -89,6 +106,7 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // Boards that show every state of a screen side by side, built from the screens' own components.
   { board: 'S02-Login', path: '/dev/kit/sign-in', signedIn: false, status: 'built' },
   { board: 'X02-Errors', path: '/dev/kit/errors', signedIn: false, status: 'built' },
+  { board: 'F02-CopilotStates', path: '/dev/kit/copilot-states', signedIn: false, status: 'built' },
   // The documentation boards.
   { board: 'Z01-Sitemap', path: '/dev/kit/sitemap', signedIn: false, status: 'built' },
   { board: 'Z02-Spatial3D', path: '/dev/kit/spatial', signedIn: false, status: 'built' },

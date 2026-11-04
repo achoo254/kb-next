@@ -173,8 +173,38 @@
 .universe-ai-question {
   display: flex;
   justify-content: flex-end;
-  text-decoration: none;
+  padding: 0;
+  border: none;
   border-radius: 16px;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* the question asked in the panel and its answer (copilot-turn.tsx), scrolling inside the panel */
+.universe-ai-thread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--violet-400) 35%, transparent) transparent;
+}
+
+.universe-ai-thread > * {
+  flex: none;
+}
+
+.universe-ai-thread .copilot-actions {
+  margin-top: 0;
+}
+
+.universe-ai-thread .copilot-empty {
+  flex: none;
+  padding: 8px 0;
 }
 
 .universe-ai-question:focus-visible {

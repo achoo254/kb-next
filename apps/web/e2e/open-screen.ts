@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import type { ParityMock, ParityScreen } from './parity-screens';
-import { F03_KEYS, F04_DOCUMENT, F04_DOCUMENT_ID, F04_STREAM } from './ai-boards';
+import { C11_STREAM, C14_HISTORY, C14_STREAM, F03_KEYS, F04_DOCUMENT, F04_DOCUMENT_ID, F04_STREAM } from './ai-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
 import { signInAt } from './sign-in';
 
@@ -40,7 +40,14 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
   }
   // C12's Space filter lists the board's five Spaces, matching its results.
   if (mocks.includes('search-c12')) await page.route('**/api/spaces', (route) => route.fulfill({ json: C12_SPACES }));
-  if (mocks.includes('keys-f03')) await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
+  if (mocks.includes('keys-f03') || mocks.includes('copilot-c14') || mocks.includes('ask-c11')) await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
+  for (const [mock, body] of [
+    ['copilot-c14', C14_STREAM],
+    ['ask-c11', C11_STREAM],
+  ] as const) {
+    if (mocks.includes(mock)) await page.route('**/api/ask', (route) => route.fulfill({ status: 200, contentType: 'text/event-stream', body }));
+  }
+  if (mocks.includes('copilot-c14')) await page.route('**/api/copilot/history', (route) => route.fulfill({ json: C14_HISTORY }));
   if (mocks.includes('translate-f04')) {
     await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
     await page.route(`**/api/documents/${F04_DOCUMENT_ID}`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: F04_DOCUMENT }) : route.fallback()));
@@ -75,6 +82,25 @@ export async function openScreen(page: Page, screen: ParityScreen): Promise<void
     for (const key of screen.keys ?? []) await page.keyboard.press(key);
     if (screen.type) await page.keyboard.type(screen.type);
   }
+  if (screen.select) {
+    await page.waitForLoadState('networkidle');
+    await page.evaluate(({ within, text }) => {
+      const root = document.querySelector(within);
+      const walker = root ? document.createTreeWalker(root, NodeFilter.SHOW_TEXT) : null;
+      for (let node = walker?.nextNode(); node; node = walker?.nextNode()) {
+        const start = node.textContent?.indexOf(text) ?? -1;
+        if (start < 0) continue;
+        const range = document.createRange();
+        range.setStart(node, start);
+        range.setEnd(node, start + text.length);
+        document.getSelection()?.removeAllRanges();
+        document.getSelection()?.addRange(range);
+        return;
+      }
+      throw new Error(`"${text}" not found in ${within}`);
+    }, screen.select);
+  }
+  if (screen.click) await page.locator(screen.click).click();
   if (screen.waitFor) await page.locator(screen.waitFor).waitFor();
   else await page.waitForLoadState('networkidle');
 }

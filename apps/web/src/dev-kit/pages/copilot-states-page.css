@@ -1,0 +1,160 @@
+/* Board F02-CopilotStates (design/mock/F02-CopilotStates.dc.html): the title row from 112,84 and a 4×2 grid of
+   state cards down to 24px from the bottom, 28px from the right edge. The cards draw the turn of C14 in their
+   smaller type. */
+
+.f02-board {
+  position: absolute;
+  left: 112px;
+  top: 84px;
+  right: 28px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.f02-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.f02-title {
+  margin: 0;
+  font: 700 30px var(--font-sans);
+  letter-spacing: -0.6px;
+  background: var(--hero-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.f02-lead {
+  flex: 1;
+  font-size: 14px;
+  color: var(--c-text-sub);
+}
+
+.f02-open.kf-btn {
+  box-sizing: border-box;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.f02-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.f02-card {
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.f02-card[data-tight] {
+  gap: 10px;
+}
+
+.f02-card[data-tone="warn"] {
+  border-color: color-mix(in srgb, var(--amber-300) 60%, transparent);
+  box-shadow:
+    inset 0 0 26px color-mix(in srgb, var(--amber-500) 22%, transparent),
+    inset 0 0 3px color-mix(in srgb, var(--amber-200) 50%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 20%, transparent),
+    0 0 28px color-mix(in srgb, var(--amber-500) 22%, transparent);
+}
+
+.f02-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.f02-card-title {
+  font: 700 13px var(--font-display);
+  color: var(--c-accent);
+}
+
+.f02-card[data-tone="warn"] .f02-card-title {
+  color: var(--c-warn);
+}
+
+.f02-card-cause {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.f02-offline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-warn-text);
+}
+
+.f02-offline > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber-500);
+}
+
+/* E alone fills its card: its note sits at the bottom */
+.f02-card .copilot-jev-off {
+  flex: 1;
+}
+
+/* the cards' smaller type */
+.f02-card .copilot-q.kf-bubble[data-size="md"] {
+  padding: 9px 13px;
+  font-size: 13px;
+}
+
+.f02-card .copilot-box,
+.f02-card .copilot-box[data-size="full"] {
+  padding: 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.f02-card[data-tight] .copilot-box {
+  line-height: 1.55;
+}
+
+.f02-card .copilot-empty img {
+  width: 96px;
+  height: 96px;
+}
+
+/* the cards' inline citation numbers */
+.f02-card .copilot-cite {
+  display: inline;
+  min-width: 0;
+  height: auto;
+  margin: 0;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  vertical-align: baseline;
+}
+
+.f02-card .copilot-cite[data-doubt] {
+  background: none;
+}

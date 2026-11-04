@@ -29,7 +29,12 @@ Báo cáo kèm ảnh chụp của app (`<board>-actual.png`) và ảnh khác bi�
   (`MAX_DIFF_RATIO`), so bằng `pixelmatch` với ngưỡng màu mặc định 0,1 (bỏ qua khử răng cưa).
 - Màn có nhiều trạng thái (đang tải, trống…) giữ màn ở trạng thái của board bằng cách đổi câu trả lời API ngay trong
   bài kiểm (`mocks`: `onboarded`, `spaces-pending`, `spaces-without-own`), không thêm công tắc vào app. `waitFor` chụp khi
-  một phần tử hiện ra (màn đang tải không bao giờ yên mạng); `clock` cố định giờ trình duyệt cho màn có thời gian tương đối.
+  một phần tử hiện ra (màn đang tải không bao giờ yên mạng); `clock` cố định giờ trình duyệt cho màn có thời gian tương đối;
+  `keys`/`type` gõ phím (mở palette ⌘K), `select` chọn một đoạn chữ và `click` bấm một nút (C11: chọn câu broadcast rồi
+  bấm "Giải thích"). Câu trả lời AI (C11, C14) là luồng `/api/ask` ghi sẵn trong `apps/web/e2e/ai-boards.ts` vì E2E không
+  có nhà cung cấp AI.
+- Board ghép nhiều trạng thái của một màn cạnh nhau (S02, X02, F02) được so trên trang kit `/dev/kit/…` dựng từ chính
+  component của màn đó, mỗi trạng thái một ô như board.
 - Làm xong một màn: đổi `status` sang `built`, seed dữ liệu giống mock cho màn đó, chạy lại. Vượt ngưỡng thì sửa màn;
   chỉ khi buộc phải khác mới ghi lý do vào [`mock-deviations.md`](mock-deviations.md) và đặt `maxDiff` riêng.
 - Mock tải font từ Google, app tự host cùng font qua `@fontsource`. Nếu chữ lệch vài pixel do bản font khác nhau, ghi

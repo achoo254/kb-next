@@ -1,32 +1,25 @@
 import type { ReactNode } from 'react';
 import type { DocumentSummary, SpaceListItem } from '../api/content-api';
 import { type Locale, type Translate, useI18n } from '../i18n/i18n';
-import { SHELL_PATHS } from '../layout/app-shell';
 import { AiAvatar } from '../ui/ai-avatar';
 import { AskInput } from '../ui/ask-input';
 import { ChatBubble } from '../ui/chat-bubble';
 import { IconButton } from '../ui/icon-button';
 import { RimPanel } from '../ui/rim-panel';
 import { SourceRow } from '../ui/source-row';
+import { sourceHref, sourceTitle } from './copilot-answer';
+import { copilotHref } from './copilot-links';
+import { type Copilot, type CopilotTurn, useAiKeys, useCopilot } from './copilot-run';
+import { TurnView } from './copilot-turn';
 import { documentHref } from './universe-dock';
 import { spaceHref, spaceName } from './universe-spaces';
-
-/** Copilot (C14) with a question to ask. */
-export function copilotHref(question?: string): string {
-  return question ? `${SHELL_PATHS.copilot}?${new URLSearchParams({ q: question }).toString()}` : SHELL_PATHS.copilot;
-}
-
-/** Sends a question typed in the panel on to Copilot. */
-export function askCopilot(question: string): void {
-  window.location.assign(copilotHref(question));
-}
 
 /** A question about a text the reader has on the stage: "Giải thích “Giao thức DHCP”". */
 export function questionAbout(doc: DocumentSummary, t: Translate): string {
   return t('universe.ai.explain', { title: doc.title });
 }
 
-function originLabel(doc: DocumentSummary, t: Translate): string {
+function originLabel(doc: Pick<DocumentSummary, 'origin' | 'status'>, t: Translate): string {
   if (doc.status === 'pending') return t('origin.pending');
   if (doc.origin === 'own') return t('origin.private');
   return doc.origin === 'community' ? t('origin.community') : t('origin.official');
@@ -44,29 +37,16 @@ interface UniversePanelProps {
   focus: DocumentSummary | undefined;
 }
 
-/**
- * C09's AI panel. Copilot has no conversation to show here, so the panel shows what it would answer from: a question
- * about the text on the stage (opens Copilot with it), how many texts in how many Spaces it reads, and the latest
- * texts as sources. The field sends any question on to Copilot (C14).
- */
-export function UniverseAiPanel({ spaces, recent, focus }: UniversePanelProps): ReactNode {
+/** What the panel shows before a question: what Copilot answers from (the Spaces, the latest texts). */
+function PanelIntro({ spaces, recent, question, onAsk }: Omit<UniversePanelProps, 'focus'> & { question: string | undefined; onAsk(question: string): void }): ReactNode {
   const { t, locale } = useI18n();
   const documents = spaces.reduce((sum, space) => sum + space.documentCount, 0);
-  const question = focus ? questionAbout(focus, t) : undefined;
   return (
-    <RimPanel as="section" variant="rim" radius="panel" label={t('universe.ai.title')} className="universe-ai" dataId="universe-ai">
-      <div className="universe-ai-head">
-        <AiAvatar />
-        <div className="universe-ai-heading">
-          <span className="universe-ai-title">{t('universe.ai.title')}</span>
-          <span className="universe-ai-sub">{t('universe.ai.sub')}</span>
-        </div>
-        <IconButton label={t('universe.ai.open')} icon="expand" href={copilotHref()} variant="soft" dataId="universe-ai-open" />
-      </div>
+    <>
       {question && (
-        <a className="universe-ai-question" href={copilotHref(question)} data-id="universe-ai-question">
+        <button type="button" className="universe-ai-question" onClick={() => onAsk(question)} data-id="universe-ai-question">
           <ChatBubble from="user">{question}</ChatBubble>
-        </a>
+        </button>
       )}
       <ChatBubble from="ai">
         <span>{t('universe.ai.scope', { documents, spaces: spaces.length })}</span>
@@ -86,7 +66,60 @@ export function UniverseAiPanel({ spaces, recent, focus }: UniversePanelProps): 
         <SourceRow key={doc.id} title={doc.title} meta={documentMeta(doc, t, locale)} tag={doc.lang.toUpperCase()} href={documentHref(doc.id)} dataId={`universe-source-${doc.id}`} />
       ))}
       <div className="universe-ai-fill" />
-      <AskInput label={t('universe.ai.askLabel')} placeholder={t('universe.ai.askPlaceholder')} onAsk={askCopilot} dataId="universe-ask" />
+    </>
+  );
+}
+
+/** The panel's question and answer (or F02 state), and the answer's sources; the keys load once a question is asked. */
+function PanelThread({ turn, copilot }: { turn: CopilotTurn; copilot: Copilot }): ReactNode {
+  const { t } = useI18n();
+  const { load: keys, switchTo } = useAiKeys();
+  const sources = turn.sources.filter((source) => source.available !== false);
+  return (
+    <div className="universe-ai-thread" data-id="universe-ai-thread" data-state={turn.failure ?? turn.stage}>
+      <TurnView turn={turn} keys={keys} actions={{ onStop: copilot.stop, onRetry: copilot.retry, onCancel: copilot.cancel, onSwitch: switchTo }} size="compact" />
+      {turn.stage === 'done' && sources.length > 0 && (
+        <>
+          <span className="universe-ai-sources">{t('universe.ai.answerSources')}</span>
+          {sources.map((source) => (
+            <SourceRow
+              key={source.n}
+              title={sourceTitle(source)}
+              meta={[source.spaceName, source.collectionName].filter(Boolean).join(' › ')}
+              tag={String(source.n)}
+              href={sourceHref(source)}
+              dataId={`universe-answer-source-${source.n}`}
+            />
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
+/**
+ * C09's AI panel: asks Copilot in place (the whole Universe) with the same turn as C14 (copilot-run.ts), every F02
+ * state included. Before a question it shows what Copilot answers from: a question about the text on the stage, how
+ * many texts in how many Spaces it reads, and the latest texts. The expand button opens C14, on the answer once
+ * there is one.
+ */
+export function UniverseAiPanel({ spaces, recent, focus }: UniversePanelProps): ReactNode {
+  const { t } = useI18n();
+  const copilot = useCopilot();
+  const turn = copilot.turn;
+  const ask = (question: string): void => copilot.ask({ question, scope: { kind: 'universe' } });
+  return (
+    <RimPanel as="section" variant="rim" radius="panel" label={t('universe.ai.title')} className="universe-ai" dataId="universe-ai">
+      <div className="universe-ai-head">
+        <AiAvatar />
+        <div className="universe-ai-heading">
+          <span className="universe-ai-title">{t('universe.ai.title')}</span>
+          <span className="universe-ai-sub">{t('universe.ai.sub')}</span>
+        </div>
+        <IconButton label={t('universe.ai.open')} icon="expand" href={copilotHref(undefined, { item: turn?.questionId ?? undefined })} variant="soft" dataId="universe-ai-open" />
+      </div>
+      {turn ? <PanelThread turn={turn} copilot={copilot} /> : <PanelIntro spaces={spaces} recent={recent} question={focus ? questionAbout(focus, t) : undefined} onAsk={ask} />}
+      <AskInput label={t('universe.ai.askLabel')} placeholder={t('universe.ai.askPlaceholder')} onAsk={ask} dataId="universe-ask" />
     </RimPanel>
   );
 }
