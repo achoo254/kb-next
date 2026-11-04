@@ -60,7 +60,8 @@ export interface SpaceListItem extends SpaceCard {
 export type WithRelevance<T> = T & { relevance: number };
 
 export interface SpaceDetailResponse {
-  space: SpaceCard;
+  /** The Space with its one-line description (C10, under the name), in both languages; null when not written. */
+  space: SpaceCard & { descriptionVi: string | null; descriptionEn: string | null };
   /** C10 "Thành viên & quyền", owners and admins first. */
   members: SpaceMember[];
   /** What the viewer may do in this Space. */
@@ -228,7 +229,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
     const [card, ...relatedCards] = await spaceCards(viewer, [space, ...related]);
     if (!card) throw new Error('space card missing');
     const body: SpaceDetailResponse = {
-      space: card,
+      space: { ...card, descriptionVi: space.descriptionVi, descriptionEn: space.descriptionEn },
       members: await spaceMembers(db, config.adminSubs, space),
       permissions: await spacePermissions(db, viewer, space),
       collections,

@@ -1,13 +1,26 @@
-import { fireEvent, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SessionState } from '../api/session-api';
 import { renderWithI18n } from '../test/render';
 import { LandingPage } from './landing-page';
+import { BOARD_SPACES } from './universe-test-data';
+
+/** /api/spaces as a guest sees it: the public Spaces (no personal one), or failing. */
+function serveSpaces(ok = true): void {
+  const spaces = BOARD_SPACES.filter((space) => space.kind !== 'personal');
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => (ok ? new Response(JSON.stringify({ spaces }), { headers: { 'Content-Type': 'application/json' } }) : new Response('{}', { status: 500 }))),
+  );
+}
+
+beforeEach(() => serveSpaces());
 
 const OUT: SessionState = { status: 'ready', signedIn: false, signInAvailable: true };
 const IN: SessionState = { status: 'ready', signedIn: true, signInAvailable: true };
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   document.cookie = 'hd_lang=; Max-Age=0; path=/';
   localStorage.clear();
 });
@@ -21,13 +34,20 @@ describe('LandingPage', () => {
     expect(screen.getByText('Knowledge OS · kb.hoandat.com')).toBeTruthy();
   });
 
-  it('previews the Universe: seven crystals that open their Space, the orb that opens the Universe', () => {
+  it('previews the Universe from the public Spaces, with the visitor’s own Space as a promise', async () => {
     renderWithI18n(<LandingPage session={OUT} />);
     const preview = screen.getByRole('region', { name: 'Universe preview' });
-    expect(preview.querySelectorAll('.kf-crystal')).toHaveLength(7);
+    await waitFor(() => expect(preview.querySelectorAll('.kf-crystal')).toHaveLength(7));
     expect(screen.getByRole('link', { name: 'Networking · 8 labs' }).getAttribute('href')).toBe('/s/networking');
-    expect(screen.getByRole('link', { name: 'Your universe · 3 files · private' }).getAttribute('href')).toBe('/u');
+    expect(screen.getByRole('link', { name: 'Your universe · private' }).getAttribute('href')).toBe('/u');
     expect(screen.getByRole('link', { name: 'Enter the Học Cloud Universe' }).textContent).toContain('7 Spaces');
+  });
+
+  it('keeps the orb and the visitor’s own Space when the Spaces cannot be loaded', async () => {
+    serveSpaces(false);
+    renderWithI18n(<LandingPage session={OUT} />);
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Enter the Học Cloud Universe' }).textContent).toContain('1 Spaces'));
+    expect(document.querySelectorAll('.kf-crystal')).toHaveLength(1);
   });
 
   it('lets a signed-in visitor go straight in', () => {

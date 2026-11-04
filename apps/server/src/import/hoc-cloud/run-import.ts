@@ -37,6 +37,8 @@ export async function runImport(db: Db, source: HocCloudSource, content: Content
       art: s.art,
       unitVi: s.unit.vi,
       unitEn: s.unit.en,
+      descriptionVi: s.description.vi,
+      descriptionEn: s.description.en,
       sortOrder: s.sortOrder,
     })),
     collections: prepared.collections,

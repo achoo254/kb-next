@@ -94,7 +94,13 @@ describe('GET /api/spaces/:slug', () => {
   it('gives C10: collections in order with their documents, origins and authors, and the related Spaces', async () => {
     const { status, body } = await get<SpaceDetailResponse>('/api/spaces/networking', owner);
     expect(status).toBe(200);
-    expect(body.space).toMatchObject({ slug: 'networking', collectionCount: 4, documentCount: 12 });
+    expect(body.space).toMatchObject({
+      slug: 'networking',
+      collectionCount: 4,
+      documentCount: 12,
+      descriptionVi: 'Máy tính nói chuyện với nhau thế nào, từ cắm dây tới mở web.',
+      descriptionEn: 'How computers talk to each other, from plugging in a cable to opening a web page.',
+    });
     const [core, web] = body.collections;
     expect(core?.documents.map((d) => d.title)).toEqual([
       'Giao thức ARP',
@@ -112,9 +118,9 @@ describe('GET /api/spaces/:slug', () => {
     expect(web?.documents.map((d) => d.title)).toEqual(['Tìm hiểu HTTP', 'TCP vs UDP', 'HTTP/3 bằng hình']);
     expect(body.collections[3]?.documents.map((d) => d.title)).toEqual(['Máy mới vào mạng']);
     expect(body.uncollected).toEqual([]);
-    // Linked from Linux (syslog) and Observability (VictoriaLogs), as C10 shows.
+    // Linked from Linux (syslog, twice) and Observability (VictoriaLogs), as C10 shows.
     expect(body.related.map((s) => [s.slug, s.relevance])).toEqual([
-      ['linux', 60],
+      ['linux', 70],
       ['observability', 60],
     ]);
     // The owner's reading progress, as C10's rows show it.
@@ -129,6 +135,8 @@ describe('GET /api/spaces/:slug', () => {
     expect(byName('Minh')).toMatchObject({ role: 'member', documentCount: 1 });
     expect(byName('An')).toMatchObject({ role: 'member', documentCount: 1 });
     expect(byName('Linh')).toMatchObject({ role: 'reviewer', documentCount: 0 });
+    // Same role and count: who contributed first comes first (Minh's note predates An's).
+    expect(body.members.map((m) => m.name).filter((name) => name === 'Minh' || name === 'An')).toEqual(['Minh', 'An']);
     expect(body.members[0]?.role).toBe('admin');
     expect(body.members.map((m) => m.role)).toEqual([...body.members.map((m) => m.role)].sort((a, b) => ['owner', 'admin', 'reviewer', 'member'].indexOf(a) - ['owner', 'admin', 'reviewer', 'member'].indexOf(b)));
     expect(body.permissions).toEqual({ canCreate: true, canReview: false, canAdmin: false });
@@ -190,32 +198,40 @@ describe('GET /api/documents/:id', () => {
       aiTranslated: false,
       authorName: 'Đạt',
       readingMinutes: 1,
-      reviewedBy: null,
+      reviewedBy: 'Linh',
       sourceUrl: null,
       collection: { id: seedId('collection:net:0'), nameVi: 'Giao thức nền tảng' },
       space: { slug: 'networking', nameVi: 'Networking', kind: 'public' },
     });
     expect(body.translations).toEqual([{ id: doc('dhcp'), lang: 'vi', aiTranslated: false }]);
     expect(body.toc).toEqual([
-      { anchor: 'dhcp-la-gi', title: 'DHCP là gì', level: 2 },
-      { anchor: 'dora', title: 'DORA 4 bước', level: 2 },
-      { anchor: 'thoi-han-thue', title: 'Thời hạn thuê', level: 2 },
+      { anchor: 'tong-quan', title: null, level: 2 },
+      { anchor: 'broadcast-la-gi', title: 'Broadcast là gì', level: 2 },
+      { anchor: 'lease-va-gia-han', title: 'Lease và gia hạn', level: 2 },
+      { anchor: 'rui-ro-dhcp-gia-mao', title: 'Rủi ro: DHCP giả mạo', level: 2 },
     ]);
-    expect(body.chunks[1]).toMatchObject({ anchor: 'dora', heading: 'DORA 4 bước' });
-    expect(body.chunks[1]?.markdown).toContain('Discover, Offer, Request, Acknowledge');
-    expect(body.outgoing.map((l) => l.document.title)).toEqual(['Giao thức ARP']);
+    expect(body.chunks[0]).toMatchObject({ anchor: 'tong-quan', heading: null });
+    expect(body.chunks[0]?.markdown).toContain('1. **Discover** Hét lên cả mạng xin IP');
+    expect(body.outgoing.map((l) => l.document.title).sort()).toEqual(['Ghi chú: DHCP giả mạo', 'Giao thức ARP']);
     // The owner's private note links here too, but another member never learns of it.
-    expect(body.backlinks.map((l) => l.document.title).sort()).toEqual(['Ghi chú: DHCP giả mạo', 'Máy mới vào mạng', 'Đọc log hệ thống với syslog']);
+    expect(body.backlinks.map((l) => l.document.title).sort()).toEqual(['Giao thức ARP', 'Máy mới vào mạng']);
     expect(body.backlinks.find((l) => l.kind === 'relation')).toMatchObject({ label: 'bước 1', document: { type: 'journey' } });
     // Scored in code: linked + same collection + shared words first; the hidden ICMP lab never shows.
     expect(body.related.map((d) => [d.title, d.relevance])).toEqual([
       ['Giao thức ARP', 75],
-      ['Ghi chú: DHCP giả mạo', 62],
-      ['Máy mới vào mạng', 62],
-      ['Đọc log hệ thống với syslog', 40],
+      ['Ghi chú: DHCP giả mạo', 68],
+      ['Máy mới vào mạng', 60],
       ['Tìm hiểu giao thức DNS', 34],
+      ['Tìm hiểu HTTP', 20],
     ]);
-    expect(body.versions).toEqual([{ version: 1, editorName: 'Đạt', createdAt: expect.any(String) as string }]);
+    // Four versions, newest first; Linh approved the latest (C11 "v4", "Đã duyệt bởi Linh").
+    expect(body.versions.map((v) => [v.version, v.editorName])).toEqual([
+      [4, 'Đạt'],
+      [3, 'Đạt'],
+      [2, 'Linh'],
+      [1, 'Đạt'],
+    ]);
+    expect(body.versions[0]?.createdAt).toBe('2026-11-03T14:05:00.000Z');
     // Another member has not started it; a guest has no progress at all.
     expect(body.document).toMatchObject({ readProgress: 0, readAnchor: null });
     const guest = await get<DocumentResponse>(`/api/documents/${doc('dhcp')}`);
@@ -225,13 +241,13 @@ describe('GET /api/documents/:id', () => {
 
   it('gives its reader their progress and where to resume (seeded as C10 shows)', async () => {
     const { body } = await get<DocumentResponse>(`/api/documents/${doc('dhcp')}`, owner);
-    expect(body.document).toMatchObject({ readProgress: 72, readAnchor: 'dora' });
+    expect(body.document).toMatchObject({ readProgress: 72, readAnchor: 'broadcast-la-gi' });
     expect(body.related.find((d) => d.title === 'Giao thức ARP')?.readProgress).toBe(100);
   });
 
   it('shows its author the backlink from a private note', async () => {
     const { body } = await get<DocumentResponse>(`/api/documents/${doc('dhcp')}`, owner);
-    expect(body.backlinks.map((l) => l.document.title)).toContain('DHCP trên router nhà');
+    expect(body.backlinks.map((l) => l.document.title)).toEqual(expect.arrayContaining(['DHCP trên router nhà', 'lab-notes.docx']));
   });
 
   it('picks the reader’s language: the translation when there is one, else the original', async () => {

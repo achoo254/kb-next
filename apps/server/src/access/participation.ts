@@ -125,23 +125,28 @@ export interface Contributor {
   role: 'member' | 'reviewer';
   /** Published texts of the Space they wrote (a text and its translations count once). */
   documents: number;
+  /** When their earliest published text of the Space was created: who joined the Space first. */
+  firstContribution: Date;
 }
 
-/** Authors of the Space's published documents (what everyone sees), most prolific first. */
+/** Authors of the Space's published documents (what everyone sees), most prolific first, then earliest first. */
 export async function spaceContributors(db: Db, spaceId: string): Promise<Contributor[]> {
   if (!isUuid(spaceId)) return [];
   const texts = sql<number>`count(distinct coalesce(${documents.translationGroupId}, ${documents.id}))`;
+  const first = sql<Date | string>`min(${documents.createdAt})`;
   const rows = await db
-    .select({ userId: users.id, name: users.name, picture: users.picture, sub: users.sub, role: users.role, n: texts })
+    .select({ userId: users.id, name: users.name, picture: users.picture, sub: users.sub, role: users.role, n: texts, first })
     .from(documents)
     .innerJoin(users, eq(users.id, documents.authorId))
     .where(and(eq(documents.spaceId, spaceId), visibleTo(GUEST)))
     .groupBy(users.id, users.name, users.picture, users.sub, users.role);
-  return rows.map((r) => ({ userId: r.userId, name: r.name, picture: r.picture, sub: r.sub, role: r.role, documents: Number(r.n) })).sort((a, b) => b.documents - a.documents);
+  return rows
+    .map((r) => ({ userId: r.userId, name: r.name, picture: r.picture, sub: r.sub, role: r.role, documents: Number(r.n), firstContribution: new Date(r.first) }))
+    .sort((a, b) => b.documents - a.documents || a.firstContribution.getTime() - b.firstContribution.getTime());
 }
 
 /** Accounts that review or administer (reviewers by role, admins by IdP sub), whatever they wrote. */
-export async function staffAccounts(db: Db, adminSubs: ReadonlySet<string>): Promise<Array<Omit<Contributor, 'documents'>>> {
+export async function staffAccounts(db: Db, adminSubs: ReadonlySet<string>): Promise<Array<Omit<Contributor, 'documents' | 'firstContribution'>>> {
   const subs = [...adminSubs];
   return db
     .select({ userId: users.id, name: users.name, picture: users.picture, sub: users.sub, role: users.role })

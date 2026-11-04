@@ -2,9 +2,10 @@ import type { IconName } from './icon';
 
 /**
  * The Spaces of the Universe and their art: each Space has an AI-drawn crystal (apps/web/public/art) and a tint
- * (KIT §0; the colours are tokens --tint-<space>/--glow-<space> in tokens.css).
+ * (KIT §0; the colours are tokens --tint-<space>/--glow-<space> in tokens.css). A Space is data: its art, tint and glow
+ * come from the API, so the kind only picks the icon, the board slot and the fallback look.
  */
-export const SPACE_KINDS = ['networking', 'kubernetes', 'linux', 'observability', 'docker', 'weekly', 'personal'] as const;
+export const SPACE_KINDS = ['networking', 'kubernetes', 'linux', 'observability', 'docker', 'weekly', 'personal', 'cloud'] as const;
 export type SpaceKind = (typeof SPACE_KINDS)[number];
 
 export const CRYSTAL_ART: Record<SpaceKind, string> = {
@@ -15,6 +16,8 @@ export const CRYSTAL_ART: Record<SpaceKind, string> = {
   docker: '/art/crystal-docker.webp',
   weekly: '/art/crystal-weekly.webp',
   personal: '/art/crystal-personal.webp',
+  // No crystal drawn for Cloud yet: the orb stands in, as in the import curation (content/hoc-cloud/curation.json).
+  cloud: '/art/orb-universe.webp',
 };
 
 export const SPACE_ICON: Record<SpaceKind, IconName> = {
@@ -25,6 +28,7 @@ export const SPACE_ICON: Record<SpaceKind, IconName> = {
   docker: 'space-docker',
   weekly: 'space-weekly',
   personal: 'space-personal',
+  cloud: 'space-cloud',
 };
 
 /** The central orb and the neon stage of C09. */

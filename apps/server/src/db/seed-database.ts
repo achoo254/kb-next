@@ -6,10 +6,12 @@
 import { createHash } from 'node:crypto';
 import { inArray, sql } from 'drizzle-orm';
 import type { Db } from './client';
-import { chunks, collections, comments, documentVersions, documents, links, readingProgress, spaces, users } from './schema';
+import { chunks, collections, comments, documentVersions, documents, links, readingProgress, reviewEvents, spaces, users } from './schema';
 import {
   SEED_COMMENTS,
   SEED_DOCUMENTS,
+  SEED_FIRST_CREATED,
+  SEED_HISTORY,
   SEED_LATEST_UPDATE,
   SEED_LINKS,
   SEED_PROGRESS,
@@ -17,10 +19,17 @@ import {
   SEED_SPACES,
   SEED_USERS,
   type SeedAuthor,
+  type SeedDocument,
 } from './seed-data';
 
 const TEN_MINUTES = 10 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
+
+/** A document's Markdown from its title and its first `count` chunks (all by default); the overview has no heading line. */
+function documentMarkdown(doc: SeedDocument, count = doc.chunks.length): string {
+  const sections = doc.chunks.slice(0, count).map(([, heading, text]) => (heading === null ? text : `## ${heading}\n\n${text}`));
+  return [`# ${doc.title}`, ...sections].join('\n\n');
+}
 
 /** The seed documents' keys, most recently updated first (see SEED_RECENT_FIRST). */
 function recencyOrder(): string[] {
@@ -78,6 +87,8 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
       ownerId: personal ? owner.id : null,
       unitVi: space.unitVi,
       unitEn: space.unitEn,
+      descriptionVi: space.description.vi,
+      descriptionEn: space.description.en,
       sortOrder: order,
     };
     await db.insert(spaces).values(values).onConflictDoUpdate({ target: spaces.id, set: values });
@@ -104,7 +115,8 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
   const updatedAt = (key: string): Date => new Date(SEED_LATEST_UPDATE.getTime() - recency.indexOf(key) * TEN_MINUTES);
   for (const [order, doc] of SEED_DOCUMENTS.entries()) {
     const id = seedId(`document:${doc.key}`);
-    const markdown = [`# ${doc.title}`, ...doc.chunks.map(([, heading, text]) => `## ${heading}\n\n${text}`)].join('\n\n');
+    const markdown = documentMarkdown(doc);
+    const createdAt = new Date(SEED_FIRST_CREATED.getTime() + order * HOUR);
     const collectionId = doc.collection === null ? null : collectionIds.get(doc.space)?.[doc.collection];
     if (collectionId === undefined) throw new Error(`seed document ${doc.key}: no collection ${doc.collection}`);
     const values = {
@@ -120,12 +132,36 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
       authorId: userId(doc.author),
       contentHash: createHash('sha256').update(markdown).digest('hex'),
       sortOrder: order,
+      createdAt,
       updatedAt: updatedAt(doc.key),
       deletedAt: null,
     };
     await db.insert(documents).values(values).onConflictDoUpdate({ target: documents.id, set: values });
-    const version = { id: seedId(`version:${doc.key}:1`), documentId: id, version: 1, markdown, editorId: values.authorId };
-    await db.insert(documentVersions).values(version).onConflictDoUpdate({ target: documentVersions.id, set: version });
+    // Version 1 by the author; a document with history (SEED_HISTORY) grows a section per version up to the full text.
+    const history = SEED_HISTORY.find((h) => h.key === doc.key);
+    const later = history?.versions ?? [];
+    const total = 1 + later.length;
+    const editions: Array<{ editorId: string; at: Date }> = [
+      { editorId: values.authorId, at: createdAt },
+      ...later.map(([editor, hoursBefore]) => ({ editorId: userId(editor), at: new Date(SEED_LATEST_UPDATE.getTime() - hoursBefore * HOUR) })),
+    ];
+    for (const [index, edition] of editions.entries()) {
+      const number = index + 1;
+      const shown = Math.max(1, doc.chunks.length - (total - number));
+      const version = {
+        id: seedId(`version:${doc.key}:${number}`),
+        documentId: id,
+        version: number,
+        markdown: number === total ? markdown : documentMarkdown(doc, shown),
+        editorId: edition.editorId,
+        createdAt: edition.at,
+      };
+      await db.insert(documentVersions).values(version).onConflictDoUpdate({ target: documentVersions.id, set: version });
+    }
+    if (history) {
+      const review = { id: seedId(`review:${doc.key}`), documentId: id, actorId: userId(history.approvedBy), action: 'approved' as const, createdAt: SEED_LATEST_UPDATE };
+      await db.insert(reviewEvents).values(review).onConflictDoUpdate({ target: reviewEvents.id, set: review });
+    }
   }
   await db.delete(chunks).where(inArray(chunks.documentId, documentIds));
   await db.insert(chunks).values(

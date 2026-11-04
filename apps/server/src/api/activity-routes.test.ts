@@ -82,9 +82,9 @@ describe('comments', () => {
   });
 
   it('adds a comment from a signed-in reader, trimmed, optionally on a passage', async () => {
-    const created = await post('dhcp', { body: '  Cảm ơn, rõ rồi!  ', anchor: 'dora' });
+    const created = await post('dhcp', { body: '  Cảm ơn, rõ rồi!  ', anchor: 'broadcast-la-gi' });
     expect(created.status).toBe(201);
-    expect(created.body).toMatchObject({ body: 'Cảm ơn, rõ rồi!', anchor: 'dora', mine: true, author: { name: 'Người Đọc', role: 'member' } });
+    expect(created.body).toMatchObject({ body: 'Cảm ơn, rõ rồi!', anchor: 'broadcast-la-gi', mine: true, author: { name: 'Người Đọc', role: 'member' } });
     const after = await list('dhcp', reader);
     expect(after.body.comments.at(-1)?.id).toBe(created.body.id);
     // Seen by someone else: not theirs.

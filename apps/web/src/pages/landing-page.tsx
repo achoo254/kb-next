@@ -1,43 +1,46 @@
 import { writePreference } from '@achoo254/app-shell/preferences';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
+import { type SpaceListItem, fetchSpaces } from '../api/content-api';
 import type { SessionState } from '../api/session-api';
 import { brand } from '../brand';
 import { type Locale, type Translate, useI18n } from '../i18n/i18n';
 import { BRAND_WORDS } from '../layout/brand-words';
 import { ScreenPage } from '../layout/screen-page';
 import { type SceneSpace, UniverseScene } from '../layout/universe-scene';
-import type { SpaceKind } from '../ui/art';
 import { Button } from '../ui/button';
 import { GradientTitle } from '../ui/gradient-title';
 import { type StageCard, StageCards } from '../ui/stage-cards';
 import { gateHref } from './login-page';
+import { sceneSpaces } from './universe-spaces';
 import './landing-page.css';
 
 /** Where a visitor lands after signing in from the landing page. */
 const AFTER_SIGN_IN = '/u';
 
 /**
- * The Học Cloud Spaces the landing shows as its Universe preview (board S01), with the size of each collection at
- * launch. A showcase for signed-out visitors, not live data: each crystal opens the Space itself after sign-in.
+ * The Universe preview of the landing (board S01): the Spaces a guest may read (/api/spaces, public), with their
+ * captions. The visitor's own Space has no shared address and holds nothing until they sign in, so a visitor without
+ * one sees its crystal as a promise ("private") that opens the Universe.
  */
-const SHOWCASE: ReadonlyArray<{ kind: SpaceKind; slug: string | null }> = [
-  { kind: 'networking', slug: 'networking' },
-  { kind: 'kubernetes', slug: 'kubernetes' },
-  { kind: 'linux', slug: 'linux' },
-  { kind: 'observability', slug: 'observability' },
-  { kind: 'docker', slug: 'docker' },
-  { kind: 'weekly', slug: 'weekly' },
-  // The visitor's own Space has no shared address: it opens with the Universe.
-  { kind: 'personal', slug: null },
-];
+function previewSpaces(spaces: readonly SpaceListItem[], t: Translate, locale: Locale): SceneSpace[] {
+  const scene = sceneSpaces(spaces, locale);
+  if (scene.some((space) => space.kind === 'personal')) return scene;
+  return [...scene, { key: 'personal', kind: 'personal', name: t('landing.space.personal'), count: t('landing.space.personalCaption'), href: AFTER_SIGN_IN }];
+}
 
-function showcase(t: Translate): SceneSpace[] {
-  return SHOWCASE.map(({ kind, slug }) => ({
-    kind,
-    name: t(`landing.space.${kind}`),
-    count: t(`landing.space.${kind}Count`),
-    href: slug ? `/s/${slug}` : AFTER_SIGN_IN,
-  }));
+/** The public Spaces, or none while they load or when the API cannot be reached (the preview keeps its orb). */
+function usePublicSpaces(): readonly SpaceListItem[] {
+  const [spaces, setSpaces] = useState<readonly SpaceListItem[]>([]);
+  useEffect(() => {
+    let live = true;
+    fetchSpaces()
+      .then((list) => live && setSpaces(list))
+      .catch(() => live && setSpaces([]));
+    return () => {
+      live = false;
+    };
+  }, []);
+  return spaces;
 }
 
 function tiles(t: Translate): StageCard[] {
@@ -57,7 +60,8 @@ const OTHER_LOCALE: Record<Locale, Locale> = { vi: 'en', en: 'vi' };
 export function LandingPage({ session }: { session: SessionState }): ReactNode {
   const { t, locale, setLocale } = useI18n();
   const signedIn = session.status === 'ready' && session.signedIn;
-  const spaces = showcase(t);
+  const loaded = usePublicSpaces();
+  const spaces = previewSpaces(loaded, t, locale);
   const switchLanguage = (): void => {
     const next = OTHER_LOCALE[locale];
     writePreference('lang', next, { domain: brand.primaryTenant.domain });

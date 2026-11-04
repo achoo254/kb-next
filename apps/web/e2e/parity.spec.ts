@@ -6,10 +6,10 @@
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { expect, test } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
-import { MAX_DIFF_RATIO, PARITY_SCREENS } from './parity-screens';
+import { MAX_DIFF_RATIO, PARITY_SCREENS, type ParityMock } from './parity-screens';
 import { signInAt } from './sign-in';
 
 const MOCK_PNG_DIR = new URL('../../../design/mock-png/', import.meta.url);
@@ -23,14 +23,42 @@ function compare(actual: PNG, expected: PNG): { ratio: number; diff: PNG } {
   return { ratio: changed / (width * height), diff };
 }
 
+/** Changes the API's answers for one shot (see ParityMock); everything else goes to the real API. */
+async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> {
+  if (mocks.includes('onboarded')) {
+    await page.route('**/api/me', async (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      const response = await route.fetch();
+      if (!response.ok()) return route.fulfill({ response });
+      const me = (await response.json()) as Record<string, unknown>;
+      return route.fulfill({ response, json: { ...me, onboardedAt: me.onboardedAt ?? '2026-11-03T14:05:00.000Z' } });
+    });
+  }
+  if (mocks.includes('spaces-pending')) {
+    // never answered: the screen stays in its loading state for the shot
+    await page.route('**/api/spaces', () => undefined);
+  }
+  if (mocks.includes('spaces-without-own')) {
+    await page.route('**/api/spaces', async (route) => {
+      const response = await route.fetch();
+      if (!response.ok()) return route.fulfill({ response });
+      const body = (await response.json()) as { spaces: Array<{ kind: string }> };
+      return route.fulfill({ response, json: { spaces: body.spaces.filter((space) => space.kind !== 'personal') } });
+    });
+  }
+}
+
 for (const screen of PARITY_SCREENS) {
   test(`${screen.board} matches its mock board`, async ({ page }, testInfo) => {
     const expected = PNG.sync.read(readFileSync(fileURLToPath(new URL(`${screen.board}.png`, MOCK_PNG_DIR))));
     await page.setViewportSize({ width: expected.width, height: expected.height });
+    if (screen.clock) await page.clock.setFixedTime(new Date(screen.clock));
+    if (screen.mocks) await mockApi(page, screen.mocks);
     if (screen.signedIn) await signInAt(page, screen.path);
     else await page.goto(screen.path);
     await page.evaluate(() => document.fonts.ready);
-    await page.waitForLoadState('networkidle');
+    if (screen.waitFor) await page.locator(screen.waitFor).waitFor();
+    else await page.waitForLoadState('networkidle');
     const actual = PNG.sync.read(await page.screenshot({ fullPage: false }));
     expect([actual.width, actual.height]).toEqual([expected.width, expected.height]);
 

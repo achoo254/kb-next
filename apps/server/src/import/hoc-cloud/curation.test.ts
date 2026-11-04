@@ -16,7 +16,7 @@ describe('content/ for the Học Cloud import', () => {
   it('rejects a curation that places a document in a collection it does not define', () => {
     const parsed = Curation.safeParse({
       version: 1,
-      spaces: [{ slug: 's', name: { vi: 'S', en: 'S' }, tint: '#000000', glow: '#ffffff', art: '/art/x.webp', unit: { vi: 'bài', en: 'articles' }, sortOrder: 0, collections: [{ key: 'c', name: { vi: 'C', en: 'C' } }] }],
+      spaces: [{ slug: 's', name: { vi: 'S', en: 'S' }, description: { vi: 'Về S', en: 'About S' }, tint: '#000000', glow: '#ffffff', art: '/art/x.webp', unit: { vi: 'bài', en: 'articles' }, sortOrder: 0, collections: [{ key: 'c', name: { vi: 'C', en: 'C' } }] }],
       documents: [{ key: 'lab/x', space: 's', collection: 'nope', order: 1 }],
     });
     expect(parsed.success).toBe(false);

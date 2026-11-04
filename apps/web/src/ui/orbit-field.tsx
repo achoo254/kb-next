@@ -16,6 +16,8 @@ export interface OrbitTint {
   cx: number;
   cy: number;
   space: SpaceKind;
+  /** The Space's own orbit colour (its glow from the API), over the kind's token. */
+  color?: string;
 }
 
 /** A glowing dot running along an orbit. */
@@ -103,7 +105,7 @@ export function OrbitField({
   const [canRunDots] = useState(supportsOffsetPath);
   const ids = { h: `${id}-h`, v: `${id}-v`, bloom: `${id}-bloom`, fade: `${id}-fade` };
   const tintGroup = (tint: OrbitTint, index: number): ReactNode => (
-    <g key={index} mask={`url(#${id}-tint-${index})`} fill="none" className="kf-orbit-tint" data-space={tint.space}>
+    <g key={index} mask={`url(#${id}-tint-${index})`} fill="none" className="kf-orbit-tint" data-space={tint.space} style={tint.color ? { stroke: tint.color } : undefined}>
       <g strokeWidth={6} opacity={0.7} filter={`url(#${ids.bloom})`}>
         {orbits.map((orbit) => (
           <path key={orbit.d} d={orbit.d} />

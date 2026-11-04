@@ -482,3 +482,17 @@
     --c-veil-doc: var(--light-veil-doc);
   }
 }
+
+/* ── Space (C10) and reader (C11) screens ──────────────────────────────────────────────────────────────────────── */
+:root {
+  /* the deep ends of the avatar gradients of people (members, comment authors) */
+  --cyan-600: #0891b2;
+  --cyan-700: #0e7490;
+  --amber-700: #b45309;
+  --emerald-300: #6ee7b7;
+  --emerald-700: #047857;
+  --avatar-violet: linear-gradient(140deg, var(--violet-400), var(--violet-600));
+  --avatar-cyan: linear-gradient(140deg, var(--cyan-300), var(--cyan-700));
+  --avatar-amber: linear-gradient(140deg, var(--amber-300), var(--amber-700));
+  --avatar-emerald: linear-gradient(140deg, var(--emerald-300), var(--emerald-700));
+}

@@ -37,15 +37,22 @@ export async function spaceMembers(db: Db, adminSubs: ReadonlySet<string>, space
     const [owner] = await db.select({ name: users.name, picture: users.picture }).from(users).where(eq(users.id, space.ownerId));
     return owner ? [{ ...owner, role: 'owner', documentCount: 0 }] : [];
   }
-  const people = new Map<string, SpaceMember>();
+  const people = new Map<string, SpaceMember & { first: number }>();
   const roleOf = (sub: string, role: 'member' | 'reviewer'): MemberRole => (adminSubs.has(sub) ? 'admin' : role);
   for (const c of await spaceContributors(db, space.id)) {
-    people.set(c.userId, { name: c.name, picture: c.picture, role: roleOf(c.sub, c.role), documentCount: c.documents });
+    people.set(c.userId, { name: c.name, picture: c.picture, role: roleOf(c.sub, c.role), documentCount: c.documents, first: c.firstContribution.getTime() });
   }
   for (const s of await staffAccounts(db, adminSubs)) {
-    if (!people.has(s.userId)) people.set(s.userId, { name: s.name, picture: s.picture, role: roleOf(s.sub, s.role), documentCount: 0 });
+    if (!people.has(s.userId)) people.set(s.userId, { name: s.name, picture: s.picture, role: roleOf(s.sub, s.role), documentCount: 0, first: Number.POSITIVE_INFINITY });
   }
-  return [...people.values()].sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || b.documentCount - a.documentCount || (a.name ?? '').localeCompare(b.name ?? '', 'vi'));
+  return [...people.values()]
+    .sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role] || b.documentCount - a.documentCount || compareFirst(a.first, b.first) || (a.name ?? '').localeCompare(b.name ?? '', 'vi'))
+    .map(({ first: _first, ...member }) => member);
+}
+
+/** Earlier first contribution first; two staff accounts without any (Infinity) tie. */
+function compareFirst(a: number, b: number): number {
+  return a === b ? 0 : a < b ? -1 : 1;
 }
 
 export async function spacePermissions(db: Db, viewer: Viewer, space: SpaceRow): Promise<SpacePermissions> {

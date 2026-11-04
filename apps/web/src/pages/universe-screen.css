@@ -1,0 +1,544 @@
+/* The Universe (design/mock/C09-Universe.dc.html) and its states S04 (loading) and S05 (empty, offline), placed in
+   the 1440×900 board space. The scene, the stage, the panels and the skeletons come from the kit; this file places
+   them like the boards and draws the few things only these boards have (the 3D swap, the warp into a Space, the
+   dashed "first planet", the offline notice, the "Thử lại" chip). */
+
+.universe-board {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.universe-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  pointer-events: none;
+}
+
+.universe-scene.kf-scene {
+  position: absolute;
+}
+
+/* ---------- 3D layer: drawn under the HTML labels; the 2D art fades out once its first frame is on screen ---------- */
+
+.universe-3d {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+.universe-main[data-mode="3d"] .universe-3d {
+  opacity: 1;
+}
+
+.universe-main .kf-scene-orbits,
+.universe-main .kf-crystal-art,
+.universe-main .kf-scene-orb-art {
+  transition: opacity 0.4s ease-out;
+}
+
+.universe-main[data-mode="3d"] .kf-scene-orbits,
+.universe-main[data-mode="3d"] .kf-crystal-art,
+.universe-main[data-mode="3d"] .kf-scene-orb-art {
+  opacity: 0;
+}
+
+/* the orb's bloom is drawn in 3D */
+.universe-main[data-mode="3d"] .kf-scene-orb {
+  animation: none;
+}
+
+/* Esc: no fade, no rise */
+.universe-main[data-skip] .universe-3d,
+.universe-main[data-skip] .kf-scene-orbits,
+.universe-main[data-skip] .kf-crystal-art,
+.universe-main[data-skip] .kf-scene-orb-art {
+  transition: none;
+}
+
+.universe-main[data-skip] .kf-bubble {
+  animation: none;
+}
+
+/* the warp into a Space: the world rushes towards the picked crystal */
+.universe-main[data-warp] .universe-world {
+  transform: scale(2.4);
+  opacity: 0;
+  transition:
+    transform 0.65s cubic-bezier(0.65, 0, 0.2, 1),
+    opacity 0.65s ease-in;
+}
+
+/* ---------- Hero text (top left) ---------- */
+
+.universe-hero {
+  position: absolute;
+  left: 112px;
+  top: 96px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.universe-hero a {
+  pointer-events: auto;
+  color: var(--c-link);
+}
+
+.universe-kicker {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 14%, transparent);
+  color: var(--start-ghost-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.universe-title.kf-gradient-title {
+  letter-spacing: -0.8px;
+  white-space: pre-line;
+}
+
+.universe-sub {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--c-text-sub);
+}
+
+/* ---------- The stage ("Gần đây", the ways to start) ---------- */
+
+.universe-stage.kf-stage {
+  position: absolute;
+  left: 198px;
+  top: 596px;
+}
+
+/* ---------- AI panel (right) ---------- */
+
+.universe-ai.kf-panel {
+  position: absolute;
+  left: 1034px;
+  top: 82px;
+  width: 386px;
+  height: 630px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* As on the board, the question field sits under the last source: when the panel is full it hangs below its rim. */
+.universe-ai > .kf-ask {
+  flex: none;
+}
+
+.universe-ai-head {
+  display: flex;
+  align-items: center;
+  /* 12px after the board's avatar, which is 53px wide with its rim */
+  gap: 15px;
+}
+
+.universe-ai-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.universe-ai-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.universe-ai-sub {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.universe-ai-question {
+  display: flex;
+  justify-content: flex-end;
+  text-decoration: none;
+  border-radius: 16px;
+}
+
+.universe-ai-question:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.universe-ai-scope {
+  margin: 0;
+  padding: 12px 10px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  border-radius: 14px;
+  background: light-dark(color-mix(in srgb, var(--white) 60%, transparent), color-mix(in srgb, var(--night-well) 72%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 14%, transparent);
+  /* the height of the board's answer diagram */
+  min-height: 205px;
+  box-sizing: border-box;
+  align-content: center;
+}
+
+.universe-ai-space {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 7px 4px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--cyan-300) 55%, transparent);
+  color: var(--c-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+}
+
+.universe-ai-space:hover {
+  background: color-mix(in srgb, var(--violet-600) 25%, transparent);
+}
+
+.universe-ai-space:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 1px;
+}
+
+.universe-ai-space-count {
+  font-weight: 500;
+  color: var(--c-text-muted);
+}
+
+.universe-ai-sources {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.universe-ai-fill {
+  flex: 1;
+}
+
+/* ---------- S04: loading ---------- */
+
+.universe-skel-orbits {
+  position: absolute;
+  left: 0;
+  top: 0;
+  fill: none;
+  stroke: color-mix(in srgb, var(--violet-400) 28%, transparent);
+  stroke-width: 1.4;
+  pointer-events: none;
+  animation: universe-pulse 1.8s ease-in-out infinite;
+}
+
+.kf-skeleton.universe-skel-orb {
+  position: absolute;
+  left: 585px;
+  top: 220px;
+  box-shadow: 0 0 40px color-mix(in srgb, var(--violet-600) 35%, transparent);
+}
+
+.universe-skel-ghost {
+  position: absolute;
+}
+
+.kf-skeleton.universe-skel-hex {
+  border-radius: 0;
+  box-shadow: none;
+  clip-path: polygon(50% 0, 92% 24%, 92% 76%, 50% 100%, 8% 76%, 8% 24%);
+}
+
+.universe-skel-label {
+  position: absolute;
+  left: 560px;
+  top: 466px;
+  width: 280px;
+  margin: 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--violet-300);
+  animation: universe-pulse 1.8s ease-in-out infinite;
+}
+
+.universe-skel-hero {
+  position: absolute;
+  left: 112px;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.universe-skel-cards {
+  position: absolute;
+  left: 300px;
+  top: 626px;
+  width: 760px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.kf-stage-card.universe-skel-card {
+  width: 132px;
+  padding: 16px;
+  gap: 10px;
+}
+
+.universe-ai.universe-skel-panel {
+  gap: 14px;
+}
+
+.universe-skel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.universe-skel-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kf-skeleton.universe-skel-question {
+  align-self: flex-end;
+}
+
+.universe-skel-slow {
+  position: absolute;
+  left: 560px;
+  top: 540px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 20px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-size: 12px;
+  color: var(--c-text-sub);
+}
+
+.universe-skel-retry {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  color: var(--start-ghost-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.universe-skel-retry:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+@keyframes universe-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------- S05: empty and offline ---------- */
+
+/* the shared Spaces wait, dimmed */
+.universe-empty-scene .kf-crystal {
+  opacity: 0.38;
+}
+
+.universe-first {
+  position: absolute;
+  box-sizing: border-box;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--orbit-tint-personal) 85%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--glow-personal) 18%, transparent), transparent 70%);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--glow-personal) 35%, transparent);
+  color: var(--tint-personal);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  white-space: pre-line;
+  text-decoration: none;
+}
+
+.universe-first:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 4px;
+}
+
+/* three wide cards, fanned like the board (the kit fans five) */
+.universe-empty-stage .kf-stage-card,
+.universe-empty-stage .kf-stage-card[data-highlight] {
+  width: 170px;
+  height: 140px;
+  padding: 16px;
+  gap: 8px;
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: left;
+  transform: perspective(900px) rotateX(-6deg) rotateY(10deg) !important;
+  transform-origin: right center !important;
+  margin-top: 16px !important;
+}
+
+.universe-empty-stage .kf-stage-card[data-highlight] {
+  height: 160px;
+  transform: perspective(900px) rotateX(-6deg) !important;
+  transform-origin: center !important;
+  margin-top: 0 !important;
+}
+
+.universe-empty-stage .kf-stage-card:last-child {
+  transform: perspective(900px) rotateX(-6deg) rotateY(-10deg) !important;
+  transform-origin: left center !important;
+}
+
+.universe-empty-stage .kf-stage-icon,
+.universe-empty-stage .kf-stage-card[data-highlight] .kf-stage-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--violet-200);
+  filter: none;
+}
+
+.universe-empty-stage .kf-stage-title,
+.universe-empty-stage .kf-stage-card[data-highlight] .kf-stage-title {
+  font-size: 14px;
+  text-shadow: none;
+}
+
+.universe-empty-stage .kf-stage-sub,
+.universe-empty-stage .kf-stage-card[data-highlight] .kf-stage-sub {
+  color: var(--violet-300);
+}
+
+.universe-try.kf-panel {
+  position: absolute;
+  left: 1034px;
+  top: 82px;
+  width: 386px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.universe-try-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.universe-try-sub {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.universe-try-question {
+  box-sizing: border-box;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: light-dark(color-mix(in srgb, var(--white) 60%, transparent), color-mix(in srgb, var(--night-inset) 72%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-300) 30%, transparent);
+  color: var(--c-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.universe-try-question:hover {
+  border-color: color-mix(in srgb, var(--violet-300) 60%, transparent);
+}
+
+.universe-try-open {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  color: var(--start-ghost-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.universe-try-question:focus-visible,
+.universe-try-open:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.universe-offline {
+  position: absolute;
+  left: 400px;
+  top: 80px;
+  z-index: 6;
+  box-sizing: border-box;
+  width: 620px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 18px;
+  border-radius: 23px;
+  background: color-mix(in srgb, color-mix(in srgb, var(--amber-500) 16%, var(--ink)) 82%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--amber-400) 70%, transparent);
+  box-shadow:
+    inset 0 0 16px color-mix(in srgb, var(--amber-400) 25%, transparent),
+    0 0 22px color-mix(in srgb, var(--amber-500) 35%, transparent);
+}
+
+.universe-offline img {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--amber-500) 45%, transparent));
+}
+
+.universe-offline span {
+  flex: 1;
+  font-size: 13px;
+  color: var(--amber-200);
+}

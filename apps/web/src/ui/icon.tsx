@@ -91,6 +91,11 @@ const ICONS = {
   /* Start and error screens (S01, S02, X02): the sign-in arrow of S01's button and the stacked layers of the orb */
   'sign-in': { body: <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />, stroke: 2.2, cap: 'round', join: 'round' },
   layers: { body: <><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 13l9 5 9-5" /><path d="M3 9l9 5 9-5" /></>, stroke: 1.8, join: 'round' },
+  /* Universe screen (C09): the crystal icon of the Cloud Space (the cloud of the board's AI answer, crystal stroke) */
+  'space-cloud': { body: <path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z" />, stroke: 2.1, cap: 'round', join: 'round' },
+  /* the ways to start of the empty Universe (S05): upload an Office file, make a journey */
+  upload: { body: <path d="M12 16V4M7 9l5-5 5 5M4 20h16" />, cap: 'round', join: 'round' },
+  journey: { body: <path d="M5 18a2.5 2.5 0 1 0 0 .1M19 6a2.5 2.5 0 1 0 0 .1M7 16c4-1 3-7 10-9" />, cap: 'round', join: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

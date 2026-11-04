@@ -4,8 +4,13 @@ import { CRYSTAL_ART, SPACE_ICON, type SpaceKind } from './art';
 import './crystal.css';
 
 interface CrystalProps {
-  /** Which Space: picks the crystal art, its tint and default icon. */
+  /** Which Space: picks the default icon, and the art and tint when the Space's own are not given. */
   space: SpaceKind;
+  /** The Space's own crystal image (the API's `art`), over the kind's. */
+  art?: string;
+  /** The Space's light tint (icon) and deep tint (glow) from its data, over the kind's tokens. */
+  tint?: string;
+  glow?: string;
   name: string;
   /** What it holds, e.g. "8 lab"; shown under the name (full size) and always in the accessible name. */
   count?: string;
@@ -30,6 +35,9 @@ interface CrystalProps {
  */
 export function Crystal({
   space,
+  art,
+  tint,
+  glow,
   name,
   count,
   icon,
@@ -46,7 +54,7 @@ export function Crystal({
   const label = count ? `${name} · ${count}` : name;
   const body = (
     <>
-      <img className="kf-crystal-art" src={CRYSTAL_ART[space]} alt="" />
+      <img className="kf-crystal-art" src={art ?? CRYSTAL_ART[space]} alt="" />
       <span className="kf-crystal-core" aria-hidden="true" />
       <span className="kf-crystal-label">
         <Icon name={icon ?? SPACE_ICON[space]} size={mini ? 16 : 28} className="kf-crystal-icon" />
@@ -55,8 +63,11 @@ export function Crystal({
       </span>
     </>
   );
+  // Custom properties of the Space's own colours (CSSProperties has no index for `--*` names).
+  const colours = { ...(tint ? { '--tint': tint } : {}), ...(glow ? { '--glow': glow } : {}) } as CSSProperties;
   const shared = {
     className: 'kf-crystal',
+    style: tint || glow ? colours : undefined,
     'aria-label': label,
     'data-space': space,
     'data-size': size,

@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode, useId } from 'react';
+import { type CSSProperties, type ReactNode, useId, useState } from 'react';
 import { Icon, type IconName } from './icon';
 import './lens-rail.css';
 
@@ -16,9 +16,26 @@ export interface LensRailItem {
 interface LensRailAccount {
   /** Accessible name, e.g. "Tài khoản của Đạt". */
   label: string;
-  /** The letter in the avatar. */
+  /** The letter in the avatar, shown when there is no picture or it fails to load. */
   initial: string;
+  /** The account's picture (from the IdP), drawn in the avatar circle. */
+  picture?: string | null;
   href: string;
+}
+
+/** The account avatar: the picture when there is one and it loads, else the initial. */
+function Avatar({ account }: { account: LensRailAccount }): ReactNode {
+  const [failed, setFailed] = useState<string | null>(null);
+  const picture = account.picture && failed !== account.picture ? account.picture : null;
+  return (
+    <a href={account.href} aria-label={account.label} className="kf-rail-avatar" data-id="rail-account" data-picture={picture ? true : undefined}>
+      {picture ? (
+        <img className="kf-rail-avatar-img" src={picture} alt="" referrerPolicy="no-referrer" onError={() => setFailed(picture)} />
+      ) : (
+        account.initial
+      )}
+    </a>
+  );
 }
 
 interface LensRailProps {
@@ -121,11 +138,7 @@ export function LensRail({ label, items, activeId, account, size = 'full', class
           );
         })}
       </nav>
-      {account && !mini && (
-        <a href={account.href} aria-label={account.label} className="kf-rail-avatar" data-id="rail-account">
-          {account.initial}
-        </a>
-      )}
+      {account && !mini && <Avatar account={account} />}
     </div>
   );
 }

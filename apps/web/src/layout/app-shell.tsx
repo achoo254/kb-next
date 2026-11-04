@@ -139,6 +139,7 @@ export function AppShell({
     ? {
         label: user.name ? t('shell.account', { name: user.name }) : t('shell.accountUnnamed'),
         initial: accountInitial(user),
+        picture: user.picture,
         href: SHELL_PATHS.settings,
       }
     : undefined;

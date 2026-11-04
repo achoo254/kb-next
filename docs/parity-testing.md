@@ -27,6 +27,9 @@ Báo cáo kèm ảnh chụp của app (`<board>-actual.png`) và ảnh khác bi�
 - Danh sách màn: [`apps/web/e2e/parity-screens.ts`](../apps/web/e2e/parity-screens.ts) (board, route, cần đăng nhập
   không, `pending` hay `built`). Màn `pending` chỉ in khác biệt; màn `built` phải có tối đa 3% pixel khác
   (`MAX_DIFF_RATIO`), so bằng `pixelmatch` với ngưỡng màu mặc định 0,1 (bỏ qua khử răng cưa).
+- Màn có nhiều trạng thái (đang tải, trống…) giữ màn ở trạng thái của board bằng cách đổi câu trả lời API ngay trong
+  bài kiểm (`mocks`: `onboarded`, `spaces-pending`, `spaces-without-own`), không thêm công tắc vào app. `waitFor` chụp khi
+  một phần tử hiện ra (màn đang tải không bao giờ yên mạng); `clock` cố định giờ trình duyệt cho màn có thời gian tương đối.
 - Làm xong một màn: đổi `status` sang `built`, seed dữ liệu giống mock cho màn đó, chạy lại. Vượt ngưỡng thì sửa màn;
   chỉ khi buộc phải khác mới ghi lý do vào [`mock-deviations.md`](mock-deviations.md) và đặt `maxDiff` riêng.
 - Mock tải font từ Google, app tự host cùng font qua `@fontsource`. Nếu chữ lệch vài pixel do bản font khác nhau, ghi

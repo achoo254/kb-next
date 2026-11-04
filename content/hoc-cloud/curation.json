@@ -1,11 +1,15 @@
 {
-  "version": 2,
+  "version": 3,
   "spaces": [
     {
       "slug": "networking",
       "name": {
         "vi": "Networking",
         "en": "Networking"
+      },
+      "description": {
+        "vi": "Máy tính nói chuyện với nhau thế nào, từ cắm dây tới mở web.",
+        "en": "How computers talk to each other, from plugging in a cable to opening a web page."
       },
       "tint": "#C4B5FD",
       "glow": "#8B5CF6",
@@ -52,6 +56,10 @@
         "vi": "Kubernetes",
         "en": "Kubernetes"
       },
+      "description": {
+        "vi": "Kubernetes từ khái niệm và kiến trúc cụm tới tự dựng cụm bằng kubeadm và làm việc với Pod.",
+        "en": "Kubernetes from its concepts and cluster architecture to building a cluster with kubeadm and working with Pods."
+      },
       "tint": "#93C5FD",
       "glow": "#3B82F6",
       "art": "/art/crystal-kubernetes.webp",
@@ -90,6 +98,10 @@
         "vi": "Linux",
         "en": "Linux"
       },
+      "description": {
+        "vi": "Bài tập Linux: quá trình khởi động, swap, log tập trung với rsyslog và ghi lại lệnh đã gõ.",
+        "en": "Linux exercises: the boot process, swap, central logging with rsyslog and recording the commands typed."
+      },
       "tint": "#A5F3FC",
       "glow": "#22D3EE",
       "art": "/art/crystal-linux.webp",
@@ -121,6 +133,10 @@
         "vi": "Observability",
         "en": "Observability"
       },
+      "description": {
+        "vi": "Thu thập và truy vấn log tập trung với VictoriaLogs.",
+        "en": "Collecting and querying logs in one place with VictoriaLogs."
+      },
       "tint": "#86EFAC",
       "glow": "#10B981",
       "art": "/art/crystal-observability.webp",
@@ -144,6 +160,10 @@
       "name": {
         "vi": "Docker",
         "en": "Docker"
+      },
+      "description": {
+        "vi": "Docker qua ba phần: nền tảng và vòng đời container, image cùng lưu trữ và log, rồi Compose.",
+        "en": "Docker in three parts: basics and the container lifecycle, images with storage and logs, then Compose."
       },
       "tint": "#FDE68A",
       "glow": "#F59E0B",
@@ -183,6 +203,10 @@
         "vi": "Cloud",
         "en": "Cloud"
       },
+      "description": {
+        "vi": "Cloud là gì theo định nghĩa NIST: năm đặc điểm, ba mô hình dịch vụ và bốn mô hình triển khai.",
+        "en": "What cloud is by the NIST definition: five characteristics, three service models and four deployment models."
+      },
       "tint": "#FDBA74",
       "glow": "#F97316",
       "art": "/art/orb-universe.webp",
@@ -206,6 +230,10 @@
       "name": {
         "vi": "Học hàng tuần",
         "en": "Weekly learning"
+      },
+      "description": {
+        "vi": "Nhật ký từng buổi học: thực hành Docker, Compose và dựng cụm Kubernetes.",
+        "en": "A journal of each study session: hands-on Docker, Compose and building a Kubernetes cluster."
       },
       "tint": "#F0ABFC",
       "glow": "#C026D3",

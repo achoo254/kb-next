@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { ORB_ART, type SpaceKind } from '../ui/art';
 import { Crystal } from '../ui/crystal';
 import { Icon } from '../ui/icon';
@@ -10,7 +10,10 @@ import './universe-scene.css';
  * up to seven Space crystals on fixed slots, one per Space art. Copied from the boards so the screens line up with them.
  */
 
-/** Top-left corner of the 140px crystal of each Space art (C09 `raw`). */
+/**
+ * Top-left corner of the 140px crystal of each Space kind: the seven slots of board C09 (`raw`), and Cloud's slot left
+ * of Docker, under the hero text (the real Universe has eight Spaces; the board shows seven).
+ */
 export const SCENE_SLOTS: Record<SpaceKind, { x: number; y: number }> = {
   networking: { x: 520, y: 84 },
   kubernetes: { x: 752, y: 88 },
@@ -19,10 +22,14 @@ export const SCENE_SLOTS: Record<SpaceKind, { x: number; y: number }> = {
   docker: { x: 405, y: 365 },
   weekly: { x: 585, y: 462 },
   personal: { x: 829, y: 394 },
+  cloud: { x: 250, y: 330 },
 };
 
+/** Where a Space without a slot of its own goes (a kind already placed, or a Space the app has no kind for). */
+export const EXTRA_SLOTS: readonly { x: number; y: number }[] = [{ x: 240, y: 478 }];
+
 /** The order the crystals float in (each bobs 0.7 s after the previous one). */
-const FLOAT_ORDER: readonly SpaceKind[] = ['networking', 'kubernetes', 'linux', 'observability', 'docker', 'weekly', 'personal'];
+const FLOAT_ORDER: readonly SpaceKind[] = ['networking', 'kubernetes', 'linux', 'observability', 'docker', 'weekly', 'personal', 'cloud'];
 
 /** Centre of the orb. */
 export const SCENE_CENTRE = { x: 700, y: 335 } as const;
@@ -33,7 +40,8 @@ const WIDE = 'M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 
 
 export const SCENE_ORBITS: readonly OrbitPath[] = [{ d: MAIN }, { d: TILTED, width: 1.2 }, { d: WIDE, width: 1.2, gradient: 'v' }];
 
-const GUIDES: readonly string[] = [
+/** The dotted guide ellipses behind the orbits. */
+export const SCENE_GUIDES: readonly string[] = [
   'M1001.6 335.0 A301.6 232.0 0.0 1 1 398.4 335.0 A301.6 232.0 0.0 1 1 1001.6 335.0',
   'M963.5 425.7 A278.7 104.0 19.0 1 1 436.5 244.3 A278.7 104.0 19.0 1 1 963.5 425.7',
 ];
@@ -55,12 +63,61 @@ export const SCENE_DOTS: readonly OrbitDot[] = [
 
 /** A Space on the scene. */
 export interface SceneSpace {
-  /** Which art (and slot) the Space uses. */
-  kind: SpaceKind;
+  /** Stable id (the slug, or `personal`). */
+  key: string;
+  /** The board slot and icon; none for a Space the app has no kind for (an extra slot, the orbit icon). */
+  kind?: SpaceKind;
+  /** The Space's own crystal image, tint and glow (API data); the kind's when left out. */
+  art?: string;
+  tint?: string;
+  glow?: string;
   name: string;
   /** What it holds, e.g. "8 lab". */
   count: string;
   href: string;
+}
+
+/** A Space with its place on the scene. */
+export interface PlacedSpace {
+  space: SceneSpace;
+  /** Top-left of its 140px crystal in the board space. */
+  x: number;
+  y: number;
+  /** Seconds of delay of its float. */
+  floatDelay: number;
+}
+
+/** Kinds whose orbit colour is a token (orbit-field.css); other Spaces tint the orbits with their own glow. */
+const TOKEN_TINTS: ReadonlySet<SpaceKind> = new Set(['networking', 'kubernetes', 'linux', 'observability', 'docker', 'weekly', 'personal']);
+
+/** Clockwise angle around the orb, starting a little left of 12 o'clock so Networking (top left) comes first. */
+function orbitAngle(x: number, y: number): number {
+  const angle = Math.atan2(x + 70 - SCENE_CENTRE.x, SCENE_CENTRE.y - (y + 70)) + Math.PI / 4;
+  return (angle + 2 * Math.PI) % (2 * Math.PI);
+}
+
+/**
+ * Gives each Space its slot (its kind's board slot, else the next extra slot) and orders them along the orbit,
+ * clockwise from the top: the order of the keyboard (Tab) and of the screen reader. Spaces beyond the free slots are
+ * left off the scene (the caller lists them elsewhere).
+ */
+export function placeSpaces(spaces: readonly SceneSpace[]): PlacedSpace[] {
+  const taken = new Set<SpaceKind>();
+  const extras = [...EXTRA_SLOTS];
+  const placed: PlacedSpace[] = [];
+  spaces.forEach((space, index) => {
+    let slot: { x: number; y: number } | undefined;
+    if (space.kind && !taken.has(space.kind)) {
+      taken.add(space.kind);
+      slot = SCENE_SLOTS[space.kind];
+    } else {
+      slot = extras.shift();
+    }
+    if (!slot) return;
+    const order = space.kind ? FLOAT_ORDER.indexOf(space.kind) : FLOAT_ORDER.length + index;
+    placed.push({ space, x: slot.x, y: slot.y, floatDelay: order * 0.7 });
+  });
+  return placed.sort((a, b) => orbitAngle(a.x, a.y) - orbitAngle(b.x, b.y));
 }
 
 export interface SceneOrb {
@@ -72,14 +129,11 @@ export interface SceneOrb {
   href: string;
 }
 
-function crystalCentre(kind: SpaceKind): { x: number; y: number } {
-  const slot = SCENE_SLOTS[kind];
-  return { x: slot.x + 70, y: slot.y + 70 };
-}
-
 interface UniverseSceneProps {
   spaces: readonly SceneSpace[];
   orb: SceneOrb;
+  /** A crystal was picked (before the browser follows its link): e.g. to play the warp into the Space. */
+  onOpen?: (space: SceneSpace, event: MouseEvent<HTMLElement>) => void;
   className?: string;
 }
 
@@ -87,15 +141,14 @@ interface UniverseSceneProps {
  * The orbits, the orb and the Space crystals. Lays itself out in the 1440×900 board space from the top-left of its
  * positioned parent; the crystals and the orb are links, in orbit order for the keyboard.
  */
-export function UniverseScene({ spaces, orb, className }: UniverseSceneProps): ReactNode {
-  const tints: OrbitTint[] = spaces.map((space) => {
-    const centre = crystalCentre(space.kind);
-    return { cx: centre.x, cy: centre.y, space: space.kind };
+export function UniverseScene({ spaces, orb, onOpen, className }: UniverseSceneProps): ReactNode {
+  const placed = placeSpaces(spaces);
+  const tints: OrbitTint[] = placed.map(({ space, x, y }) => {
+    const kind = space.kind ?? 'networking';
+    const color = space.kind && TOKEN_TINTS.has(space.kind) ? undefined : space.glow;
+    return { cx: x + 70, cy: y + 70, space: kind, color };
   });
-  const spokes = spaces.map((space) => {
-    const centre = crystalCentre(space.kind);
-    return `M${SCENE_CENTRE.x} ${SCENE_CENTRE.y} L${centre.x} ${centre.y}`;
-  });
+  const spokes = placed.map(({ x, y }) => `M${SCENE_CENTRE.x} ${SCENE_CENTRE.y} L${x + 70} ${y + 70}`);
   return (
     <div className={className ? `kf-scene ${className}` : 'kf-scene'}>
       <OrbitField
@@ -106,7 +159,7 @@ export function UniverseScene({ spaces, orb, className }: UniverseSceneProps): R
         gradientY={[90, 600]}
         tints={tints}
         dots={SCENE_DOTS}
-        guides={GUIDES}
+        guides={SCENE_GUIDES}
         spokes={spokes}
         className="kf-scene-orbits"
       />
@@ -123,21 +176,23 @@ export function UniverseScene({ spaces, orb, className }: UniverseSceneProps): R
           </span>
         </span>
       </a>
-      {spaces.map((space) => {
-        const slot = SCENE_SLOTS[space.kind];
-        return (
-          <Crystal
-            key={space.kind}
-            space={space.kind}
-            name={space.name}
-            count={space.count}
-            href={space.href}
-            floatDelay={FLOAT_ORDER.indexOf(space.kind) * 0.7}
-            className="kf-scene-crystal"
-            style={{ left: slot.x, top: slot.y }}
-          />
-        );
-      })}
+      {placed.map(({ space, x, y, floatDelay }) => (
+        <Crystal
+          key={space.key}
+          space={space.kind ?? 'networking'}
+          icon={space.kind ? undefined : 'orbit'}
+          art={space.art}
+          tint={space.tint}
+          glow={space.glow}
+          name={space.name}
+          count={space.count}
+          href={space.href}
+          onClick={onOpen ? (event) => onOpen(space, event) : undefined}
+          floatDelay={floatDelay}
+          className="kf-scene-crystal"
+          style={{ left: x, top: y }}
+        />
+      ))}
     </div>
   );
 }

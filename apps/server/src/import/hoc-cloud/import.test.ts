@@ -83,6 +83,9 @@ describe('Học Cloud import', () => {
     const spaces = await listSpaces(database.db, GUEST);
     const networking = spaces.find((s) => s.slug === 'networking');
     expect(networking?.documentCount).toBe(11);
+    // Every curated Space gets its one-line description in both languages (C10).
+    expect(networking).toMatchObject({ descriptionVi: 'Máy tính nói chuyện với nhau thế nào, từ cắm dây tới mở web.', descriptionEn: expect.stringMatching(/^How computers talk/) as string });
+    expect(spaces.every((s) => Boolean(s.descriptionVi) && Boolean(s.descriptionEn))).toBe(true);
     const collections = await listCollections(database.db, GUEST, networking?.id ?? '');
     expect(collections?.map((c) => [c.nameVi, c.documentCount])).toEqual([
       ['Hành trình gói tin', 1],

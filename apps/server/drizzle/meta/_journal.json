@@ -43,6 +43,13 @@
       "when": 1793774279556,
       "tag": "0005_reading-progress-and-seed-captions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793776982508,
+      "tag": "0006_space-descriptions",
+      "breakpoints": true
     }
   ]
 }

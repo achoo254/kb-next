@@ -89,6 +89,9 @@ export const spaces = pgTable(
     ownerId: uuid('owner_id').references(() => users.id, { onDelete: 'cascade' }),
     unitVi: text('unit_vi').notNull(),
     unitEn: text('unit_en').notNull(),
+    /** One line on what the Space is about (C10, under its name); null until someone writes it. */
+    descriptionVi: text('description_vi'),
+    descriptionEn: text('description_en'),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: createdAt(),
   },

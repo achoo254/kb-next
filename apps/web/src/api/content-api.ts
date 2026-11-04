@@ -123,7 +123,8 @@ const SpaceCollectionSchema = z.extend(CollectionBriefSchema, {
 export type SpaceCollection = z.infer<typeof SpaceCollectionSchema>;
 
 const SpaceDetailSchema = z.object({
-  space: SpaceCardSchema,
+  /** The Space with its one-line description (under its name), in both languages; null when not written yet. */
+  space: z.extend(SpaceCardSchema, { descriptionVi: z.nullable(z.string()), descriptionEn: z.nullable(z.string()) }),
   /** Owner and admins first, then reviewers, then members by how much they wrote. */
   members: z.array(SpaceMemberSchema),
   permissions: SpacePermissionsSchema,

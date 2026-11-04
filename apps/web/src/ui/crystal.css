@@ -15,7 +15,8 @@
 .kf-crystal {
   --tint: var(--tint-net);
   --glow: var(--glow-net);
-  --art-filter: none;
+  /* a no-op function, not `none`: `none` inside the art's filter list would void the whole list (glow included) */
+  --art-filter: saturate(1);
   position: relative;
   box-sizing: border-box;
   display: block;

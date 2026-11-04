@@ -69,9 +69,9 @@ describe('web client ↔ reading API', () => {
     expect(reader.related[0]?.relevance).toBeGreaterThan(0);
     expect(reader.document.readProgress).toBe(72);
 
-    expect(await saveReadingProgress(seedId('document:dhcp'), 90, 'thoi-han-thue')).toEqual({ progress: 90, anchor: 'thoi-han-thue' });
+    expect(await saveReadingProgress(seedId('document:dhcp'), 90, 'lease-va-gia-han')).toEqual({ progress: 90, anchor: 'lease-va-gia-han' });
     expect((await fetchComments(seedId('document:dhcp'))).comments).toHaveLength(2);
-    expect(await postComment(seedId('document:dhcp'), 'Rõ rồi', 'dora')).toMatchObject({ body: 'Rõ rồi', mine: true });
+    expect(await postComment(seedId('document:dhcp'), 'Rõ rồi', 'broadcast-la-gi')).toMatchObject({ body: 'Rõ rồi', mine: true });
   });
 
   it('maps a missing document to its screen', async () => {

@@ -34,6 +34,8 @@ export interface SeedSpace {
   kind: 'public' | 'personal';
   unitVi: string;
   unitEn: string;
+  /** One line on what the Space holds (C10, under its name); Networking's is the board's. */
+  description: { vi: string; en: string };
   /** The crystal caption board C09 shows (stored with KB_SEED=mock, see src/captions/seed-captions.ts). */
   caption: { vi: string; en: string };
   collections: SeedCollection[];
@@ -52,6 +54,7 @@ export const SEED_SPACES: SeedSpace[] = [
     unitVi: 'lab',
     unitEn: 'labs',
     caption: { vi: '8 lab', en: '8 labs' },
+    description: { vi: 'Máy tính nói chuyện với nhau thế nào, từ cắm dây tới mở web.', en: 'How computers talk to each other, from plugging in a cable to opening a web page.' },
     collections: [
       { vi: 'Giao thức nền tảng', en: 'Core protocols', tint: '#C4B5FD', glow: '#8B5CF6', art: '/art/crystal-networking.webp' },
       { vi: 'Web', en: 'Web', tint: '#A5F3FC', glow: '#22D3EE', art: '/art/crystal-linux.webp' },
@@ -71,6 +74,7 @@ export const SEED_SPACES: SeedSpace[] = [
     unitVi: 'bài',
     unitEn: 'articles',
     caption: { vi: '2 bài', en: '2 docs' },
+    description: { vi: 'Kubernetes từ khái niệm và kiến trúc cụm tới tự dựng cụm bằng kubeadm và làm việc với Pod.', en: 'Kubernetes from its concepts and cluster architecture to building a cluster with kubeadm and working with Pods.' },
     collections: [
       { vi: 'Kiến trúc cụm', en: 'Cluster architecture' },
       { vi: 'Dựng từng bước', en: 'Step by step' },
@@ -88,6 +92,7 @@ export const SEED_SPACES: SeedSpace[] = [
     unitVi: 'bài tập',
     unitEn: 'exercises',
     caption: { vi: '3 bài tập', en: '3 exercises' },
+    description: { vi: 'Bài tập Linux: quá trình khởi động, swap, log tập trung với rsyslog và ghi lại lệnh đã gõ.', en: 'Linux exercises: the boot process, swap, central logging with rsyslog and recording the commands typed.' },
     collections: [
       { vi: 'syslog', en: 'syslog' },
       { vi: 'boot', en: 'boot' },
@@ -106,6 +111,7 @@ export const SEED_SPACES: SeedSpace[] = [
     unitVi: 'lab',
     unitEn: 'labs',
     caption: { vi: '1 lab', en: '1 lab' },
+    description: { vi: 'Thu thập và truy vấn log tập trung với VictoriaLogs.', en: 'Collecting and querying logs in one place with VictoriaLogs.' },
     collections: [
       { vi: 'VictoriaLogs', en: 'VictoriaLogs' },
       { vi: 'LogsQL', en: 'LogsQL' },
@@ -123,6 +129,7 @@ export const SEED_SPACES: SeedSpace[] = [
     unitVi: 'phần',
     unitEn: 'parts',
     caption: { vi: '3 phần', en: '3 parts' },
+    description: { vi: 'Docker qua ba phần: nền tảng và vòng đời container, image cùng lưu trữ và log, rồi Compose.', en: 'Docker in three parts: basics and the container lifecycle, images with storage and logs, then Compose.' },
     collections: [
       { vi: 'Cơ bản', en: 'Basics' },
       { vi: 'Storage & Build', en: 'Storage & Build' },
@@ -141,6 +148,7 @@ export const SEED_SPACES: SeedSpace[] = [
     unitVi: 'tuần',
     unitEn: 'weeks',
     caption: { vi: '5 tuần', en: '5 weeks' },
+    description: { vi: 'Nhật ký từng buổi học: thực hành Docker, Compose và dựng cụm Kubernetes.', en: 'A journal of each study session: hands-on Docker, Compose and building a Kubernetes cluster.' },
     collections: ['11-07', '18-07', '01-08', '08-08', '17-09'].map((week) => ({ vi: week, en: week })),
   },
   {
@@ -155,6 +163,7 @@ export const SEED_SPACES: SeedSpace[] = [
     unitVi: 'tệp',
     unitEn: 'files',
     caption: { vi: '3 tệp · riêng tư', en: '3 files · private' },
+    description: { vi: 'Tệp và ghi chú riêng của bạn, chỉ bạn thấy.', en: 'Your own files and notes, visible only to you.' },
     collections: [],
   },
 ];
@@ -169,8 +178,8 @@ export interface SeedDocument {
   origin: 'official' | 'community' | 'own';
   status: 'draft' | 'private' | 'pending' | 'changes_requested' | 'rejected' | 'approved';
   author: SeedAuthor;
-  /** [anchor, heading, text] */
-  chunks: Array<[string, string, string]>;
+  /** [anchor, heading, text]; a null heading is the overview before the first heading (anchor `tong-quan`). */
+  chunks: Array<[string, string | null, string]>;
 }
 
 const official = { origin: 'official', status: 'approved', author: 'dat' } as const;
@@ -187,10 +196,22 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
   },
   {
     key: 'dhcp', space: 'net', collection: 0, title: 'Giao thức DHCP', type: 'lab', ...official,
+    // As C11 shows it: the overview with the four DORA steps, then three sections.
     chunks: [
-      ['dhcp-la-gi', 'DHCP là gì', 'DHCP cấp địa chỉ IP, mặt nạ mạng, gateway và DNS cho máy vừa vào mạng, không cần cấu hình tay.'],
-      ['dora', 'DORA 4 bước', 'Discover, Offer, Request, Acknowledge: máy mới phát Discover, máy chủ DHCP gửi Offer, máy chọn một Offer bằng Request và nhận ACK.'],
-      ['thoi-han-thue', 'Thời hạn thuê', 'Địa chỉ được cho thuê có thời hạn; quá nửa thời hạn máy gửi Request để gia hạn.'],
+      [
+        'tong-quan',
+        null,
+        [
+          'Máy mới vào mạng chưa có IP. Nó xin IP qua 4 bước gọi là DORA.',
+          '1. **Discover** Hét lên cả mạng xin IP',
+          '2. **Offer** Server mời một IP',
+          '3. **Request** Máy xin đúng IP đó',
+          '4. **Acknowledge** Chốt, cho mượn có hạn',
+        ].join('\n\n'),
+      ],
+      ['broadcast-la-gi', 'Broadcast là gì', 'Vì chưa có IP, máy mới không biết server DHCP ở đâu, nên gửi gói tới 255.255.255.255 cho mọi máy trong mạng cùng nghe. Chỉ server DHCP trả lời.'],
+      ['lease-va-gia-han', 'Lease và gia hạn', 'IP chỉ được cho mượn có hạn. Tới nửa thời hạn, máy tự xin gia hạn với đúng server đã cấp.'],
+      ['rui-ro-dhcp-gia-mao', 'Rủi ro: DHCP giả mạo', 'Một máy lạ trả lời nhanh hơn có thể đưa gateway sai. Switch nên bật DHCP snooping.'],
     ],
   },
   {
@@ -329,16 +350,20 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
 
 /** [source, target, kind, label] by document key. */
 export const SEED_LINKS: Array<[string, string, 'wikilink' | 'relation', string | null]> = [
+  // C11's backlinks of DHCP: the journey, ARP and the reader's own lab notes.
   ['dhcp', 'arp', 'wikilink', null],
+  ['arp', 'dhcp', 'wikilink', null],
+  ['lab-notes', 'dhcp', 'wikilink', null],
+  ['dhcp', 'dhcp-spoof', 'wikilink', null],
   ['new-host', 'dhcp', 'relation', 'bước 1'],
   ['new-host', 'arp', 'relation', 'bước 2'],
   ['new-host', 'dns', 'relation', 'bước 3'],
   ['new-host', 'tcp-udp', 'relation', 'bước 4'],
   ['new-host', 'http', 'relation', 'bước 5'],
   ['arp-ndp', 'arp', 'wikilink', null],
-  ['dhcp-spoof', 'dhcp', 'wikilink', null],
   // Across Spaces: what makes Linux and Observability the related Spaces of Networking (C10).
-  ['syslog', 'dhcp', 'wikilink', null],
+  ['syslog', 'dns', 'wikilink', null],
+  ['syslog', 'tcp-udp', 'wikilink', null],
   ['victorialogs', 'tcp-udp', 'wikilink', null],
 ];
 
@@ -348,12 +373,25 @@ export const SEED_LINKS: Array<[string, string, 'wikilink' | 'relation', string 
  * cụm K8s", so those come first; every other document follows, 10 minutes apart, in seed order.
  */
 export const SEED_LATEST_UPDATE = new Date('2026-11-03T14:05:00Z');
+/**
+ * When the seed's documents were written: one hour apart in seed order from this time, so who contributed to a Space
+ * first (C10 "Thành viên & quyền": Minh's note before An's) follows the order of the list above.
+ */
+export const SEED_FIRST_CREATED = new Date('2026-10-01T02:00:00Z');
+
+/**
+ * Edit history beyond the first version: [document key, editor, hours before SEED_LATEST_UPDATE] per later version,
+ * oldest first, and who approved the latest one. C11's DHCP is at v4, approved by Linh ("Đã duyệt bởi Linh").
+ */
+export const SEED_HISTORY: Array<{ key: string; versions: Array<[SeedAuthor, number]>; approvedBy: SeedAuthor }> = [
+  { key: 'dhcp', versions: [['linh', 240], ['dat', 120], ['dat', 0]], approvedBy: 'linh' },
+];
 export const SEED_RECENT_FIRST = ['dhcp', 'k8s-arch'];
 
 /** The owner's reading progress of C10 (document key, percent, last anchor read). */
 export const SEED_PROGRESS: Array<[string, number, string | null]> = [
   ['arp', 100, 'arp-request-reply'],
-  ['dhcp', 72, 'dora'],
+  ['dhcp', 72, 'broadcast-la-gi'],
   ['icmp', 30, 'ping'],
   ['dhcp-home', 45, 'router-nha'],
   ['http', 40, 'request-response'],

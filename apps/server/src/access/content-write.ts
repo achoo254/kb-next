@@ -20,6 +20,8 @@ export interface ImportedSpace {
   art: string;
   unitVi: string;
   unitEn: string;
+  descriptionVi: string | null;
+  descriptionEn: string | null;
   sortOrder: number;
 }
 

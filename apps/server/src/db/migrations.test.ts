@@ -16,6 +16,7 @@ let firstOnly: string | null = null;
 afterAll(async () => {
   if (firstOnly) await rm(firstOnly, { recursive: true, force: true });
   if (upToTwo) await rm(upToTwo, { recursive: true, force: true });
+  if (upToFive) await rm(upToFive, { recursive: true, force: true });
 });
 
 /** A copy of the migrations folder with only the first `count` journal entries, as production had it then. */
@@ -28,6 +29,7 @@ async function migrationsUpTo(count: number): Promise<string> {
   return dir;
 }
 let upToTwo: string | null = null;
+let upToFive: string | null = null;
 
 describe('migrations', () => {
   it('keep the users and sessions of the first schema, with defaults for the new settings', async () => {
@@ -73,6 +75,24 @@ describe('migrations', () => {
         { title: 'B', origin: 'official' },
         { title: 'C', origin: 'community' },
       ]);
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('keep existing Spaces when they gain a description, with none written yet', async () => {
+    // Up to 0005, before Spaces had descriptions.
+    upToFive = await migrationsUpTo(6);
+    const client = new PGlite();
+    const db = drizzle(client, { schema });
+    try {
+      await migrate(db, { migrationsFolder: upToFive });
+      await db.execute(sql`insert into spaces (slug, name_vi, name_en, tint, glow, art, unit_vi, unit_en)
+        values ('net', 'Mạng', 'Networking', '#c4b5fd', '#8b5cf6', '/art/crystal-networking.webp', 'bài', 'docs')`);
+
+      await migrate(db, { migrationsFolder: MIGRATIONS });
+      const rows = await db.select({ slug: schema.spaces.slug, nameEn: schema.spaces.nameEn, descriptionVi: schema.spaces.descriptionVi, descriptionEn: schema.spaces.descriptionEn }).from(schema.spaces);
+      expect(rows).toEqual([{ slug: 'net', nameEn: 'Networking', descriptionVi: null, descriptionEn: null }]);
     } finally {
       await client.close();
     }

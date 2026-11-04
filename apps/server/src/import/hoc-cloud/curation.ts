@@ -23,6 +23,8 @@ const CurationCollection = z.object({ key: Slug, name: Bilingual, tint: Colour.o
 const CurationSpace = z.object({
   slug: Slug,
   name: Bilingual,
+  /** One line on what the Space holds (C10, under its name), accurate to its documents. */
+  description: Bilingual,
   tint: Colour,
   glow: Colour,
   art: z.string().startsWith('/art/'),

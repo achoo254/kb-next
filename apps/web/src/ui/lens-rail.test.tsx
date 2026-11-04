@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { LensRail, type LensRailItem } from './lens-rail';
 
@@ -22,5 +22,21 @@ describe('LensRail', () => {
   it('draws the mini sample without the avatar', () => {
     render(<LensRail label="Mẫu" items={ITEMS} size="mini" account={{ label: 'Tài khoản', initial: 'Đ', href: '/settings' }} />);
     expect(screen.queryByRole('link', { name: 'Tài khoản' })).toBeNull();
+  });
+
+  it('shows the account picture in the avatar and falls back to the initial when it fails to load', () => {
+    render(<LensRail label="Nav" items={ITEMS} account={{ label: 'Tài khoản của Đạt', initial: 'Đ', picture: 'https://id.example/p.png', href: '/settings' }} />);
+    const avatar = screen.getByRole('link', { name: 'Tài khoản của Đạt' });
+    const img = avatar.querySelector('img');
+    expect(img?.getAttribute('src')).toBe('https://id.example/p.png');
+    expect(avatar.textContent).toBe('');
+    if (img) fireEvent.error(img);
+    expect(avatar.querySelector('img')).toBeNull();
+    expect(avatar.textContent).toBe('Đ');
+  });
+
+  it('shows the initial when the account has no picture', () => {
+    render(<LensRail label="Nav" items={ITEMS} account={{ label: 'Tài khoản', initial: 'Đ', picture: null, href: '/settings' }} />);
+    expect(screen.getByRole('link', { name: 'Tài khoản' }).textContent).toBe('Đ');
   });
 });
