@@ -9,6 +9,7 @@ import type { ServerConfig } from './config';
 import type { Db } from './db/client';
 import { HttpError } from './http-error';
 import { safeErrorText } from './log-error';
+import type { SearchService } from './search/search-service';
 
 export interface AppDeps {
   config: ServerConfig;
@@ -16,6 +17,8 @@ export interface AppDeps {
   now?: () => Date;
   /** The IdP's discovery and keys (default: read from config.auth.issuer; null when sign-in is off). */
   idp?: IdpMetadata | null;
+  /** Search index and its sync queue; null when MEILI_URL is unset. Writers enqueue changed documents on it. */
+  search?: SearchService | null;
 }
 
 /**

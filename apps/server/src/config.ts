@@ -20,6 +20,11 @@ const Env = z.object({
   AUTH_CLIENT_ID: z.preprocess(emptyIsUnset, z.string().min(1).default(DEFAULT_CLIENT_ID)),
   /** Secret of that confidential client. Unset: sign-in is off (only the public pages work). */
   AUTH_CLIENT_SECRET: z.preprocess(emptyIsUnset, z.string().min(32).optional()),
+  /** IdP subs of the admins, comma-separated. There is no other way to become one. */
+  ADMIN_SUBS: z.preprocess(emptyIsUnset, z.string().optional()),
+  /** Meilisearch of kb (loopback). Unset outside production: search sync is off and the server still runs. */
+  MEILI_URL: z.preprocess(emptyIsUnset, z.url().optional()),
+  MEILI_MASTER_KEY: z.preprocess(emptyIsUnset, z.string().min(16).optional()),
 });
 
 export interface AuthConfig {
@@ -27,6 +32,13 @@ export interface AuthConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
+}
+
+export interface MeiliConfig {
+  url: string;
+  apiKey: string;
+  /** Prepended to the index names (`kb_public`, `kb_private`); empty in production, unique per test file. */
+  indexPrefix: string;
 }
 
 export interface ServerConfig {
@@ -39,6 +51,10 @@ export interface ServerConfig {
   pgliteDir: string | null | undefined;
   /** Sign-in through the hoandat.com account; null when AUTH_CLIENT_SECRET is not set. */
   auth: AuthConfig | null;
+  /** IdP subs of the admins (ADMIN_SUBS). */
+  adminSubs: ReadonlySet<string>;
+  /** Search index; null when MEILI_URL is unset (dev/test only). */
+  meili: MeiliConfig | null;
   /**
    * Sign-in starts per 15 minutes per IP. Generous: mobile carriers put many people behind one address, and the
    * real client IP is the one nginx forwards (Cloudflare's real-IP restore is global on the host).
@@ -59,7 +75,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   const publicUrl = new URL(e.PUBLIC_URL);
   const issuerUrl = new URL(e.AUTH_ISSUER);
   if (production) {
-    const missing = [!e.DATABASE_URL && 'DATABASE_URL', !e.AUTH_CLIENT_SECRET && 'AUTH_CLIENT_SECRET'].filter(Boolean);
+    const missing = [
+      !e.DATABASE_URL && 'DATABASE_URL',
+      !e.AUTH_CLIENT_SECRET && 'AUTH_CLIENT_SECRET',
+      !e.MEILI_URL && 'MEILI_URL',
+      !e.MEILI_MASTER_KEY && 'MEILI_MASTER_KEY',
+    ].filter(Boolean);
     if (missing.length > 0) throw new Error(`Invalid server env: ${missing.join(', ')} required in production`);
     if (publicUrl.protocol !== 'https:') throw new Error('Invalid server env: PUBLIC_URL must be https in production');
     if (e.PGLITE_DIR) throw new Error('Invalid server env: PGLITE_DIR is dev/test only');
@@ -67,6 +88,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   // https only; plain http only for a local fake IdP outside production (E2E).
   if (issuerUrl.protocol !== 'https:' && (production || issuerUrl.protocol !== 'http:' || !LOOPBACK_HOSTS.includes(issuerUrl.hostname))) {
     throw new Error('Invalid server env: AUTH_ISSUER must be https (http only on loopback outside production)');
+  }
+  if (Boolean(e.MEILI_URL) !== Boolean(e.MEILI_MASTER_KEY)) {
+    throw new Error('Invalid server env: MEILI_URL and MEILI_MASTER_KEY go together');
   }
   // The code exchange is only as trustworthy as the TLS it travels over.
   if (e.AUTH_CLIENT_SECRET && env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
@@ -86,6 +110,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
           redirectUri: `${publicUrl.origin}/auth/callback`,
         }
       : null,
+    adminSubs: new Set((e.ADMIN_SUBS ?? '').split(',').map((sub) => sub.trim()).filter((sub) => sub.length > 0)),
+    meili: e.MEILI_URL && e.MEILI_MASTER_KEY ? { url: e.MEILI_URL.replace(/\/$/, ''), apiKey: e.MEILI_MASTER_KEY, indexPrefix: '' } : null,
     signInLimitPer15Min: 100,
     backchannelLimitPer15Min: 300,
   };

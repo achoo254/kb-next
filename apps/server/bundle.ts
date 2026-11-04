@@ -3,13 +3,15 @@
 import { build } from 'esbuild';
 
 await build({
-  entryPoints: ['src/server.ts'],
+  // index.mjs: the API; reindex.mjs: `pnpm reindex` on the server (same env file).
+  entryPoints: { index: 'src/server.ts', reindex: 'src/cli/reindex.ts' },
   bundle: true,
   platform: 'node',
   format: 'esm',
   target: 'node22',
   // Two levels below apps/server like src/db, so the migrations folder resolves the same from the bundle.
-  outfile: 'dist/server/index.mjs',
+  outdir: 'dist/server',
+  outExtension: { '.js': '.mjs' },
   // PGlite is dev/test only and loaded on demand; pg-native is an optional driver pg never needs here.
   external: ['@electric-sql/pglite', 'drizzle-orm/pglite', 'drizzle-orm/pglite/migrator', 'pg-native'],
   // Inlined CommonJS packages (express, pg) still call require().

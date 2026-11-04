@@ -7,7 +7,8 @@ Wants=network-online.target postgresql.service
 [Service]
 User=kb
 Group=kb
-# NODE_ENV=production, PORT=5320, PUBLIC_URL, DATABASE_URL, AUTH_ISSUER, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET:
+# NODE_ENV=production, PORT=5320, PUBLIC_URL, DATABASE_URL, AUTH_ISSUER, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET,
+# ADMIN_SUBS, MEILI_URL, MEILI_MASTER_KEY:
 # written on the server from the env folder outside git (docs/deployment-guide.md), never in the repo.
 EnvironmentFile=/etc/kb/production.env
 WorkingDirectory=/var/www/kb/current

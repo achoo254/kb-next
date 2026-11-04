@@ -5,6 +5,7 @@ import { drizzle as drizzleNodePg } from 'drizzle-orm/node-postgres';
 import { migrate as migrateNodePg } from 'drizzle-orm/node-postgres/migrator';
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import pg from 'pg';
+import type { ServerConfig } from '../config';
 import * as schema from './schema';
 
 export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
@@ -43,4 +44,14 @@ export async function openPglite(dir?: string): Promise<DbHandle> {
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder: MIGRATIONS });
   return { db, close: () => client.close() };
+}
+
+/**
+ * The database the config names: Postgres with DATABASE_URL, else PGlite (PGLITE_DIR, `memory`, or the dev
+ * directory). `description` says which, for the start-up log.
+ */
+export async function openConfiguredDatabase(config: Pick<ServerConfig, 'databaseUrl' | 'pgliteDir'>): Promise<DbHandle & { description: string }> {
+  if (config.databaseUrl) return { ...(await openPostgres(config.databaseUrl)), description: 'Postgres (DATABASE_URL)' };
+  const dir = config.pgliteDir === null ? undefined : (config.pgliteDir ?? DEV_PGLITE_DIR);
+  return { ...(await openPglite(dir)), description: dir ? `PGlite at ${dir}` : 'PGlite in memory' };
 }

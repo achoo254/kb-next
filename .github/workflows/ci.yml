@@ -18,6 +18,23 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Search tests run against a real Meilisearch: the version pinned in scripts/meili-binary.ts (dev and tests
+    # on the dev machine) and in docs/deployment-guide.md (production). The key only guards this throwaway
+    # container.
+    services:
+      meilisearch:
+        image: getmeili/meilisearch:v1.56.1@sha256:b7ba431bf6f9b26cc86132798f3640964147a699cf23f026b74c6c05dbb1d60d
+        ports:
+          - 7700:7700
+        env:
+          MEILI_ENV: development
+          MEILI_NO_ANALYTICS: 'true'
+          MEILI_MASTER_KEY: ci-only-meili-master-key
+        options: >-
+          --health-cmd "wget -q -O /dev/null http://127.0.0.1:7700/health"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
@@ -31,4 +48,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+        env:
+          MEILI_URL: http://127.0.0.1:7700
+          MEILI_MASTER_KEY: ci-only-meili-master-key
       - run: pnpm build

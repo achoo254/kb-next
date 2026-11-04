@@ -11,6 +11,7 @@ hay user máy chủ vào đây; dùng alias SSH (`SSH_TARGET`) và placeholder n
 |---|---|
 | Web (React + Vite, tĩnh) | `/var/www/kb/current/apps/web/dist`, nginx phục vụ trực tiếp |
 | API (Node, Express 5, một file bundle) | systemd `kb-server`, loopback `127.0.0.1:5320`, Node 22 ở `/opt/node22`, `MemoryHigh=300M`, `MemoryMax=400M` |
+| Tìm kiếm | Meilisearch riêng của kb, container Docker `kb-meili` (bản ghim `v1.56.1`), loopback `127.0.0.1:5322`, `--memory=512m`, dữ liệu `/var/lib/kb/meili` (mục Meilisearch) |
 | Database | Postgres dùng chung trên `.65`, database `kb`, role `kb` (dòng `host kb kb 127.0.0.1/32 scram-sha-256` trong `pg_hba.conf`); migration chạy khi server khởi động |
 | Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/healthz` sang API |
 | Đăng nhập | client `kb-web` trên `auth.hoandat.com` (mục Đăng nhập) |
@@ -31,6 +32,7 @@ Các file: [`infra/nginx/kb.hoandat.com.conf`](../infra/nginx/kb.hoandat.com.con
 |---|---|---|
 | API `@kb/server` | `127.0.0.1:5320` | `127.0.0.1:5320` |
 | Web `@kb/web` (Vite) | `http://localhost:5321` | nginx phục vụ tĩnh, không cổng riêng |
+| Meilisearch | `127.0.0.1:5322` (`pnpm meili`; test: cổng ngẫu nhiên) | `127.0.0.1:5322` → cổng 7700 trong container `kb-meili` |
 | IdP giả của E2E | `127.0.0.1:5325` | — |
 
 Cổng `5320` đã kiểm còn trống trên `.65` ngày 04/11/2026 (`5300` của `truyen-server`, `5310` của `lockin-server`). Đổi
@@ -58,15 +60,63 @@ chép thành file env của `apps/server`.
 
 | Biến | Production |
 |---|---|
-| `NODE_ENV` | `production` (bắt buộc có `DATABASE_URL`, `AUTH_CLIENT_SECRET`, `PUBLIC_URL` https) |
+| `NODE_ENV` | `production` (bắt buộc có `DATABASE_URL`, `AUTH_CLIENT_SECRET`, `MEILI_URL`, `MEILI_MASTER_KEY`, `PUBLIC_URL` https) |
 | `PORT` | `5320` |
 | `PUBLIC_URL` | `https://kb.hoandat.com` |
 | `DATABASE_URL` | `postgres://kb:<mật khẩu>@127.0.0.1:5432/kb` |
 | `AUTH_ISSUER` | `https://auth.hoandat.com` |
 | `AUTH_CLIENT_ID` | `kb-web` |
 | `AUTH_CLIENT_SECRET` | secret của client `kb-web`, cùng giá trị với `KB_WEB_CLIENT_SECRET` trên IdP (≥ 32 ký tự) |
+| `ADMIN_SUBS` | `sub` IdP của các quản trị, cách nhau bằng dấu phẩy (không có đường tự nâng quyền) |
+| `MEILI_URL` | `http://127.0.0.1:5322` |
+| `MEILI_MASTER_KEY` | khoá ngẫu nhiên sinh trên server (≥ 16 ký tự, nên `openssl rand -hex 32`); container `kb-meili` đọc cùng dòng này |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
+
+## Meilisearch
+
+Chỉ mục tìm kiếm của kb: `kb_public` (đoạn của bài đã duyệt, không ẩn) và `kb_private` (đoạn của các bài còn lại,
+luôn lọc theo tác giả). Postgres là nguồn chuẩn: server ghi Postgres trước rồi đẩy sang Meilisearch qua hàng đợi
+trong tiến trình (lỗi thì log mã lỗi và thử lại); mỗi ngày server so số đoạn giữa hai bên và log khi lệch. Không
+cần sao lưu dữ liệu Meilisearch: mất hay lệch thì dựng lại bằng `reindex` (sao lưu Postgres là đủ).
+
+**Lần đầu** (trước khi push bản cần `MEILI_*`, vì server production từ chối khởi động khi thiếu):
+
+```sh
+# trên server, quyền root
+ss -ltn | grep -q ':5322 ' && echo "5322 đang bận: chọn cổng khác và đổi ở mọi chỗ trong mục Cổng"
+key=$(openssl rand -hex 32)
+printf 'ADMIN_SUBS=<sub quản trị>\nMEILI_URL=http://127.0.0.1:5322\nMEILI_MASTER_KEY=%s\n' "$key" >>/etc/kb/production.env
+mkdir -p /var/lib/kb/meili
+docker run -d --name kb-meili --restart unless-stopped \
+  --memory=512m \
+  -p 127.0.0.1:5322:7700 \
+  -v /var/lib/kb/meili:/meili_data \
+  -e MEILI_ENV=production -e MEILI_NO_ANALYTICS=true \
+  -e MEILI_MAX_INDEXING_MEMORY=256MiB -e MEILI_MAX_INDEXING_THREADS=2 \
+  --env-file <(grep '^MEILI_MASTER_KEY=' /etc/kb/production.env) \
+  --health-cmd 'wget -q -O /dev/null http://127.0.0.1:7700/health' \
+  getmeili/meilisearch:v1.56.1@sha256:b7ba431bf6f9b26cc86132798f3640964147a699cf23f026b74c6c05dbb1d60d
+curl -fsS http://127.0.0.1:5322/health
+```
+
+Kiểm tra sức khoẻ gọi `127.0.0.1`, không gọi `localhost` (Meilisearch của Học Cloud từng báo "unhealthy" vì
+`localhost` đi qua IPv6). Cổng chỉ mở trên loopback; không có đường từ ngoài vào.
+
+**Dựng lại chỉ mục** (sau lần đầu deploy, sau khi xoá chỉ mục, hay khi log báo lệch):
+
+```sh
+ssh <alias> 'systemd-run --uid=kb --gid=kb -p EnvironmentFile=/etc/kb/production.env --pipe --wait \
+  /opt/node22/bin/node /var/www/kb/current/apps/server/dist/server/reindex.mjs'
+```
+
+Lệnh dựng vào chỉ mục `*_rebuild` rồi đổi chỗ một bước, nên tìm kiếm vẫn chạy trong lúc dựng.
+
+**Nâng phiên bản:** đổi cùng lúc tag và digest ở mục này, `.github/workflows/ci.yml` và `scripts/meili-binary.ts`
+(phiên bản và sha256 từng binary). Trên server: `docker rm -f kb-meili`, xoá `/var/lib/kb/meili` (dữ liệu của bản cũ
+có thể không đọc được ở bản mới), chạy lại lệnh `docker run` ở trên, rồi dựng lại chỉ mục.
+
+**RAM:** `docker stats --no-stream kb-meili` (trần 512 MB).
 
 ## Lần đầu (đã làm 04/11/2026)
 

@@ -17,6 +17,9 @@
     "check:tokens": "tsx scripts/check-tokens.ts",
     "brand:gen": "tsx scripts/brand-gen.ts",
     "e2e": "pnpm --filter @kb/web e2e",
+    "meili": "tsx scripts/meili-dev.ts",
+    "reindex": "pnpm --filter @kb/server reindex",
+    "seed": "pnpm --filter @kb/server seed",
     "check:public": "tsx scripts/check-public-info.ts"
   },
   "devDependencies": {

@@ -1,14 +1,17 @@
 import { createApp } from './app';
 import { loadConfig } from './config';
 import { purgeExpiredSessions } from './auth/session-store';
-import { DEV_PGLITE_DIR, openPglite, openPostgres } from './db/client';
+import { openConfiguredDatabase } from './db/client';
 import { safeErrorText } from './log-error';
+import { startSearch } from './search/search-service';
 
 const config = loadConfig();
-const pgliteDir = config.pgliteDir === null ? undefined : (config.pgliteDir ?? DEV_PGLITE_DIR);
-const database = config.databaseUrl ? await openPostgres(config.databaseUrl) : await openPglite(pgliteDir);
-console.log(`database: ${config.databaseUrl ? 'Postgres (DATABASE_URL)' : pgliteDir ? `PGlite at ${pgliteDir}` : 'PGlite in memory'}`);
+const database = await openConfiguredDatabase(config);
+console.log(`database: ${database.description}`);
 console.log(`sign-in: ${config.auth ? `on (${config.auth.clientId} at ${config.auth.issuer})` : 'off (AUTH_CLIENT_SECRET unset)'}`);
+console.log(`admins: ${config.adminSubs.size}`);
+const search = config.meili ? startSearch(database.db, config.meili) : null;
+console.log(`search: ${search ? 'Meilisearch (MEILI_URL)' : 'off (MEILI_URL unset)'}`);
 
 /** Expired sessions are deleted at start and every hour (a session is otherwise only deleted when used again). */
 const HOUSEKEEPING_INTERVAL_MS = 60 * 60 * 1000;
@@ -26,7 +29,7 @@ const housekeepingTimer = setInterval(() => void housekeeping(), HOUSEKEEPING_IN
 housekeepingTimer.unref();
 
 // Loopback only: nginx (production) and the web dev server proxy to it.
-const server = createApp({ config, db: database.db }).listen(config.port, '127.0.0.1', () => {
+const server = createApp({ config, db: database.db, search }).listen(config.port, '127.0.0.1', () => {
   console.log(`kb server listening on 127.0.0.1:${config.port} (${config.nodeEnv})`);
 });
 // A taken port must stop the process (systemd restarts it), not leave it running without a listener.
@@ -41,6 +44,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   stopping = true;
   console.log(`${signal}: closing`);
   clearInterval(housekeepingTimer);
+  search?.close();
   server.close();
   try {
     await database.close();

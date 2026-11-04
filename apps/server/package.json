@@ -9,7 +9,9 @@
     "bundle": "tsx bundle.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "db:generate": "drizzle-kit generate",
-    "db:check": "drizzle-kit check"
+    "db:check": "drizzle-kit check",
+    "reindex": "tsx --env-file-if-exists=.env src/cli/reindex.ts",
+    "seed": "tsx --env-file-if-exists=.env src/db/seed.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",

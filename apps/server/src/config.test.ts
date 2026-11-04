@@ -26,9 +26,15 @@ describe('server config', () => {
     });
   });
 
-  it('requires Postgres, sign-in and https in production', () => {
-    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL, AUTH_CLIENT_SECRET/);
-    const prod = { NODE_ENV: 'production', DATABASE_URL: 'postgres://kb@127.0.0.1/kb', AUTH_CLIENT_SECRET: SECRET };
+  it('requires Postgres, sign-in, search and https in production', () => {
+    expect(() => loadConfig({ NODE_ENV: 'production' })).toThrow(/DATABASE_URL, AUTH_CLIENT_SECRET, MEILI_URL, MEILI_MASTER_KEY/);
+    const prod = {
+      NODE_ENV: 'production',
+      DATABASE_URL: 'postgres://kb@127.0.0.1/kb',
+      AUTH_CLIENT_SECRET: SECRET,
+      MEILI_URL: 'http://127.0.0.1:7700',
+      MEILI_MASTER_KEY: SECRET,
+    };
     expect(() => loadConfig({ ...prod, PUBLIC_URL: 'http://kb.hoandat.com' })).toThrow(/https/);
     expect(() => loadConfig({ ...prod, PUBLIC_URL: 'https://kb.hoandat.com', PGLITE_DIR: 'memory' })).toThrow(/PGLITE_DIR/);
     expect(loadConfig({ ...prod, PUBLIC_URL: 'https://kb.hoandat.com' }).auth?.redirectUri).toBe('https://kb.hoandat.com/auth/callback');
@@ -43,6 +49,24 @@ describe('server config', () => {
     expect(() => loadConfig({ AUTH_CLIENT_SECRET: 'short-secret-value' })).toThrow(/AUTH_CLIENT_SECRET/);
     expect(() => loadConfig({ AUTH_CLIENT_SECRET: 'short-secret-value' })).not.toThrow(/short-secret-value/);
     expect(() => loadConfig({ AUTH_CLIENT_SECRET: SECRET, NODE_TLS_REJECT_UNAUTHORIZED: '0' })).toThrow(/TLS/);
+  });
+
+  it('reads the admins from ADMIN_SUBS, none by default', () => {
+    expect(loadConfig({}).adminSubs.size).toBe(0);
+    expect([...loadConfig({ ADMIN_SUBS: ' sub-a , ,sub-b' }).adminSubs]).toEqual(['sub-a', 'sub-b']);
+  });
+
+  it('turns search on only with both MEILI_URL and MEILI_MASTER_KEY, without echoing the key', () => {
+    expect(loadConfig({}).meili).toBeNull();
+    expect(loadConfig({ MEILI_URL: 'http://127.0.0.1:5322/', MEILI_MASTER_KEY: SECRET }).meili).toEqual({
+      url: 'http://127.0.0.1:5322',
+      apiKey: SECRET,
+      indexPrefix: '',
+    });
+    expect(() => loadConfig({ MEILI_URL: 'http://127.0.0.1:5322' })).toThrow(/go together/);
+    expect(() => loadConfig({ MEILI_MASTER_KEY: SECRET })).toThrow(/go together/);
+    expect(() => loadConfig({ MEILI_URL: 'http://127.0.0.1:5322', MEILI_MASTER_KEY: 'short-key' })).toThrow(/MEILI_MASTER_KEY/);
+    expect(() => loadConfig({ MEILI_URL: 'http://127.0.0.1:5322', MEILI_MASTER_KEY: 'short-key' })).not.toThrow(/short-key/);
   });
 
   it('keeps PGlite in memory for `memory`, else in the given directory', () => {
