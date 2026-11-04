@@ -21,6 +21,10 @@
 
 .screen-board {
   position: relative;
+  /* the board's 1440px area, centred in wider windows (see app-shell.css) */
+  width: var(--board-width);
+  max-width: 100%;
+  margin-inline: auto;
   min-height: 100vh;
 }
 

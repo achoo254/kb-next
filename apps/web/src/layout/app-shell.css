@@ -1,9 +1,15 @@
 /* The frame of the signed-in screens (boards C09–C20). The kit components bring their looks; this file only places
    them where the boards put them: logo 44,24 · view nav 480,16 · bell and ⌘K 28px from the right, 16 from the top ·
-   lens rail 0,0 · breadcrumb 112,80. The chrome sits above the screen's content. */
+   lens rail 0,0 · breadcrumb 112,80. The chrome sits above the screen's content.
+
+   Wider windows than the 1440px board: the board's content area (main, the view nav and the breadcrumb) stays
+   centred, while the logo, the lens rail and the top actions keep to the window's edges. --board-offset is half of
+   the extra width; it is a percentage of the backdrop (the containing block of these absolutely placed pieces), so
+   it is 0 at 1440px and below and the boards' coordinates hold unchanged there. */
 
 .app-shell {
   min-height: 100vh;
+  --board-offset: max(0px, 50% - var(--board-width) / 2);
 }
 
 .app-shell-chrome {
@@ -20,7 +26,7 @@
 
 .app-shell-nav {
   position: absolute;
-  left: 480px;
+  left: calc(var(--board-offset) + 480px);
   top: 16px;
 }
 
@@ -38,7 +44,7 @@
 
 .app-shell-crumbs {
   position: absolute;
-  left: 112px;
+  left: calc(var(--board-offset) + 112px);
   top: 80px;
   height: 32px;
   display: flex;
@@ -83,5 +89,8 @@
 
 .app-shell-main {
   position: relative;
+  width: var(--board-width);
+  max-width: 100%;
+  margin-inline: auto;
   min-height: 100vh;
 }
