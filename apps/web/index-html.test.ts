@@ -20,3 +20,23 @@ describe('index.html', () => {
     expect(readFileSync(file('./index.html'), 'utf8')).toContain('<meta name="referrer" content="no-referrer" />');
   });
 });
+
+describe('nginx site', () => {
+  const conf = (): string => readFileSync(file('../../infra/nginx/kb.hoandat.com.conf'), 'utf8');
+
+  it('sends one CSP everywhere it serves the page, with scripts from the site and Cloudflare Web Analytics only', () => {
+    const policies = conf().match(/add_header Content-Security-Policy "[^"]*"/g) ?? [];
+    expect(policies.length).toBe(2);
+    expect(new Set(policies).size).toBe(1);
+    expect(policies[0]).toContain("script-src 'self' https://static.cloudflareinsights.com;");
+  });
+
+  it('keeps share links out of the access log and logs no Referer or query string', () => {
+    const block = /location \^~ \/l\/ \{([^}]*)\}/.exec(conf())?.[1] ?? '';
+    expect(block).toContain('access_log off;');
+    expect(block).toMatch(/error_log \S+ crit;/);
+    const format = /log_format kb_notoken ([^;]*);/.exec(conf())?.[1] ?? '';
+    for (const leak of ['$http_referer', '$request ', '$request_uri', '$args', '$query_string']) expect(format).not.toContain(leak);
+    for (const line of conf().match(/access_log [^;]*;/g) ?? []) expect(line).toMatch(/^access_log (off|\S+ kb_notoken);$/);
+  });
+});

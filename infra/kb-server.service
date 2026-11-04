@@ -1,0 +1,26 @@
+# .65: /etc/systemd/system/kb-server.service (installed by infra/deploy.sh setup).
+[Unit]
+Description=KnowFlow API (kb.hoandat.com)
+After=network-online.target postgresql.service
+Wants=network-online.target postgresql.service
+
+[Service]
+User=kb
+Group=kb
+# NODE_ENV=production, PORT=5320, PUBLIC_URL, DATABASE_URL, AUTH_ISSUER, AUTH_CLIENT_ID, AUTH_CLIENT_SECRET:
+# written on the server from the env folder outside git (docs/deployment-guide.md), never in the repo.
+EnvironmentFile=/etc/kb/production.env
+WorkingDirectory=/var/www/kb/current
+ExecStart=/opt/node22/bin/node --enable-source-maps /var/www/kb/current/apps/server/dist/server/index.mjs
+Restart=on-failure
+RestartSec=3
+# .65 has 8 GB shared by every app; the API and its text-extraction worker share one process, so cap it.
+MemoryHigh=300M
+MemoryMax=400M
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
