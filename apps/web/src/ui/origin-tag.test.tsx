@@ -6,7 +6,6 @@ import { OriginTag } from './origin-tag';
 describe('OriginTag', () => {
   it.each([
     ['official', 'Official'],
-    ['official-ai', 'Official · AI-made'],
     ['community', 'Community'],
     ['private', 'Yours · private'],
     ['pending', 'Awaiting review'],

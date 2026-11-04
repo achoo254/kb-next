@@ -15,16 +15,24 @@ let firstOnly: string | null = null;
 
 afterAll(async () => {
   if (firstOnly) await rm(firstOnly, { recursive: true, force: true });
+  if (upToTwo) await rm(upToTwo, { recursive: true, force: true });
 });
+
+/** A copy of the migrations folder with only the first `count` journal entries, as production had it then. */
+async function migrationsUpTo(count: number): Promise<string> {
+  const dir = await mkdtemp(path.join(tmpdir(), 'kb-migrations-'));
+  await cp(MIGRATIONS, dir, { recursive: true });
+  const journalFile = path.join(dir, 'meta', '_journal.json');
+  const journal = JSON.parse(await readFile(journalFile, 'utf8')) as { entries: unknown[] };
+  await writeFile(journalFile, JSON.stringify({ ...journal, entries: journal.entries.slice(0, count) }));
+  return dir;
+}
+let upToTwo: string | null = null;
 
 describe('migrations', () => {
   it('keep the users and sessions of the first schema, with defaults for the new settings', async () => {
     // The migrations folder as production first had it: only the first entry of the journal.
-    firstOnly = await mkdtemp(path.join(tmpdir(), 'kb-migrations-'));
-    await cp(MIGRATIONS, firstOnly, { recursive: true });
-    const journalFile = path.join(firstOnly, 'meta', '_journal.json');
-    const journal = JSON.parse(await readFile(journalFile, 'utf8')) as { entries: unknown[] };
-    await writeFile(journalFile, JSON.stringify({ ...journal, entries: journal.entries.slice(0, 1) }));
+    firstOnly = await migrationsUpTo(1);
 
     const client = new PGlite();
     const db = drizzle(client, { schema });
@@ -38,6 +46,32 @@ describe('migrations', () => {
       const [user] = await db.select().from(schema.users);
       expect(user).toMatchObject({ sub: 'existing-sub', name: 'Đạt', lang: 'vi', theme: 'system', role: 'member' });
       expect(await db.select({ id: schema.sessions.id }).from(schema.sessions)).toEqual([{ id: 'hash' }]);
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('turn official documents made by AI into plain official ones when that origin goes away', async () => {
+    // Up to 0002, which still had both official origins.
+    upToTwo = await migrationsUpTo(3);
+    const client = new PGlite();
+    const db = drizzle(client, { schema });
+    try {
+      await migrate(db, { migrationsFolder: upToTwo });
+      await db.execute(sql`insert into users (sub, created_at) values ('author-sub', now())`);
+      await db.execute(sql`insert into spaces (slug, name_vi, name_en, tint, glow, art, unit_vi, unit_en)
+        values ('net', 'Mạng', 'Networking', '#c4b5fd', '#8b5cf6', '/art/crystal-networking.webp', 'bài', 'docs')`);
+      await db.execute(sql`insert into documents (space_id, title, type, lang, origin, author_id)
+        select s.id, t.title, 'lab', 'vi', t.origin::document_origin, u.id
+        from spaces s, users u, (values ('A', 'official_ai'), ('B', 'official'), ('C', 'community')) as t(title, origin)`);
+
+      await migrate(db, { migrationsFolder: MIGRATIONS });
+      const rows = await db.select({ title: schema.documents.title, origin: schema.documents.origin }).from(schema.documents);
+      expect(rows.sort((a, b) => a.title.localeCompare(b.title))).toEqual([
+        { title: 'A', origin: 'official' },
+        { title: 'B', origin: 'official' },
+        { title: 'C', origin: 'community' },
+      ]);
     } finally {
       await client.close();
     }

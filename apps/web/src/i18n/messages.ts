@@ -32,7 +32,6 @@ export const vi = {
   'notFound.lead': 'Trang này không có trong Universe.',
   'notFound.back': 'Về trang chủ',
   'origin.official': 'Chính thức',
-  'origin.officialAi': 'Chính thức · AI tạo',
   'origin.community': 'Cộng đồng',
   'origin.private': 'Của bạn · riêng tư',
   'origin.pending': 'Chờ duyệt',
@@ -83,7 +82,6 @@ export const en: Messages = {
   'notFound.back': 'Back to home',
 
   'origin.official': 'Official',
-  'origin.officialAi': 'Official · AI-made',
   'origin.community': 'Community',
   'origin.private': 'Yours · private',
   'origin.pending': 'Awaiting review',

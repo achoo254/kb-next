@@ -157,7 +157,7 @@ export interface SeedDocument {
   collection: number | null;
   title: string;
   type: 'lab' | 'note' | 'process' | 'office' | 'web' | 'journey';
-  origin: 'official' | 'official_ai' | 'community' | 'own';
+  origin: 'official' | 'community' | 'own';
   status: 'draft' | 'private' | 'pending' | 'changes_requested' | 'rejected' | 'approved';
   author: SeedAuthor;
   /** [anchor, heading, text] */
@@ -165,8 +165,6 @@ export interface SeedDocument {
 }
 
 const official = { origin: 'official', status: 'approved', author: 'dat' } as const;
-/** Official but made by AI: the documents board C10 tags "Chính thức · AI tạo". */
-const officialAi = { ...official, origin: 'official_ai' } as const;
 const mine = { origin: 'own', status: 'private', author: 'owner' } as const;
 
 export const SEED_DOCUMENTS: SeedDocument[] = [
@@ -179,7 +177,7 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
     ],
   },
   {
-    key: 'dhcp', space: 'net', collection: 0, title: 'Giao thức DHCP', type: 'lab', ...officialAi,
+    key: 'dhcp', space: 'net', collection: 0, title: 'Giao thức DHCP', type: 'lab', ...official,
     chunks: [
       ['dhcp-la-gi', 'DHCP là gì', 'DHCP cấp địa chỉ IP, mặt nạ mạng, gateway và DNS cho máy vừa vào mạng, không cần cấu hình tay.'],
       ['dora', 'DORA 4 bước', 'Discover, Offer, Request, Acknowledge: máy mới phát Discover, máy chủ DHCP gửi Offer, máy chọn một Offer bằng Request và nhận ACK.'],
@@ -221,7 +219,7 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
     ],
   },
   {
-    key: 'tcp-udp', space: 'net', collection: 1, title: 'TCP vs UDP', type: 'lab', ...officialAi,
+    key: 'tcp-udp', space: 'net', collection: 1, title: 'TCP vs UDP', type: 'lab', ...official,
     chunks: [
       ['tcp', 'TCP', 'TCP bắt tay ba bước, đánh số gói và gửi lại gói mất, nên dữ liệu đến đủ và đúng thứ tự.'],
       ['udp', 'UDP', 'UDP gửi không cần kết nối và không gửi lại, nhanh hơn, hợp với gọi thoại, game và DNS.'],

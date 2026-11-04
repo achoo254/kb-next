@@ -258,7 +258,7 @@ function CardsAndDialogs(): ReactNode {
     <RimPanel variant="glass" radius="section" className="ds-section ds-span-7">
       <h2 className="ds-h2">Thẻ</h2>
       <div className="ds-grid-3">
-        <DocCard href="/d/dhcp" origin="official-ai" title="Giao thức DHCP" meta="Lab · 4 bước DORA · VI · EN" note="Thẻ tài liệu">
+        <DocCard href="/d/dhcp" origin="official" title="Giao thức DHCP" meta="Lab · 4 bước DORA · VI · EN" note="Thẻ tài liệu">
           <span className="ds-preview" aria-hidden="true">
             {DOC_PREVIEW.map((token, index) => (
               <span key={index} style={swatch(token)} />
@@ -459,7 +459,7 @@ export function DesignSystemPage(): ReactNode {
         <RimPanel variant="glass" radius="section" className="ds-section ds-span-6 ds-gap-14">
           <h2 className="ds-h2">Nguồn gốc nội dung</h2>
           <div className="ds-wrap">
-            <OriginTag origin="official-ai" />
+            <OriginTag origin="official" />
             <OriginTag origin="community" />
             <OriginTag origin="private" />
             <OriginTag origin="pending" />

@@ -114,9 +114,9 @@ export const collections = pgTable(
 );
 
 export const documentType = pgEnum('document_type', ['lab', 'note', 'process', 'office', 'web', 'journey']);
-/** `official`: written by the KnowFlow team ("Chính thức"); `official_ai`: official but made or translated by AI
- * ("Chính thức · AI tạo"); `community`: by a member, reviewed; `own`: the author's own. */
-export const documentOrigin = pgEnum('document_origin', ['official', 'official_ai', 'community', 'own']);
+/** `official`: published by the KnowFlow team, AI-made or not ("Chính thức"); `community`: by a member, reviewed;
+ * `own`: the author's own. Whether a text is an AI translation is `aiTranslated`, not an origin. */
+export const documentOrigin = pgEnum('document_origin', ['official', 'community', 'own']);
 export const documentStatus = pgEnum('document_status', ['draft', 'private', 'pending', 'changes_requested', 'rejected', 'approved']);
 export const DOCUMENT_STATUSES = documentStatus.enumValues;
 

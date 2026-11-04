@@ -19,8 +19,7 @@
   font-size: 11px;
 }
 
-.kf-origin[data-origin="official"],
-.kf-origin[data-origin="official-ai"] {
+.kf-origin[data-origin="official"] {
   color: var(--c-link);
 }
 .kf-origin[data-origin="community"] {
@@ -33,8 +32,7 @@
   color: var(--c-warn-text);
 }
 
-.kf-origin[data-variant="pill"][data-origin="official"],
-.kf-origin[data-variant="pill"][data-origin="official-ai"] {
+.kf-origin[data-variant="pill"][data-origin="official"] {
   background: color-mix(in srgb, var(--violet-600) 18%, transparent);
   border: 1px solid var(--c-primary);
 }
