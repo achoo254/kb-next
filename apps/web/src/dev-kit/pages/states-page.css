@@ -1,0 +1,507 @@
+/* Layout of the X03-StatesCoverage board (design/mock/X03-StatesCoverage.dc.html). Looks come from the kit
+   components; this file places them and draws the board's own thumbnail specimens. */
+
+.x03-page {
+  width: 1440px;
+  height: 1500px;
+  /* the board renders with the browser's default smoothing, not the app's grayscale antialiasing */
+  -webkit-font-smoothing: auto;
+}
+
+.x03-main {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.x03-kicker {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.x03-heading.kf-gradient-title {
+  margin: 4px 0 0;
+  padding-bottom: 0;
+  line-height: normal;
+  letter-spacing: -1px;
+}
+
+.x03-lead {
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+.x03-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* the card: thumbnail, title, board codes */
+.x03-card {
+  height: 300px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.x03-card.x03-card-full.kf-panel {
+  border: 2px solid var(--c-accent);
+}
+
+.x03-vis {
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.x03-vis-stretch {
+  align-items: stretch;
+}
+
+.x03-vis-top {
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.x03-vis-roomy {
+  gap: 10px;
+}
+
+.x03-title {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 18px;
+  color: var(--c-text);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--violet-400) 50%, transparent);
+}
+
+.x03-where {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* The board's chips and buttons are content-box (30 + 1.5px rims = 33, 36 + rims = 39); the kit's are border-box. */
+.x03-where .kf-chip {
+  height: 33px;
+}
+
+.x03-vis .kf-btn[data-size="sm"] {
+  height: 39px;
+}
+
+/* shared pieces of the thumbnails */
+.x03-mut {
+  font-size: 12px;
+  color: var(--c-text-muted);
+  text-align: center;
+}
+
+.x03-left {
+  text-align: left;
+}
+
+.x03-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.x03-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.x03-wrap {
+  flex-wrap: wrap;
+}
+
+.x03-start {
+  align-self: flex-start;
+}
+
+.x03-spacer {
+  flex: 1;
+}
+
+.x03-empty.kf-empty .kf-empty-text {
+  line-height: normal;
+}
+
+.x03-caret {
+  color: var(--c-accent);
+  animation: x03-caret 1s step-end infinite;
+}
+
+.x03-pulse {
+  animation: x03-pulse 2s ease-in-out infinite;
+}
+
+/* the small ring inside a field or a pill */
+.x03-spinner.kf-loader[data-variant="spinner"] {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--c-border);
+  border-top-color: var(--c-accent);
+  animation-duration: 1s;
+}
+
+.x03-spinner-warn.kf-loader[data-variant="spinner"] {
+  width: 16px;
+  height: 16px;
+  border-color: color-mix(in srgb, var(--amber-500) 40%, transparent);
+  border-top-color: var(--c-warn);
+}
+
+.x03-spinner-busy.kf-loader[data-variant="spinner"] {
+  width: 14px;
+  height: 14px;
+  border-color: var(--c-border);
+  border-top-color: var(--c-text-muted);
+}
+
+/* pills the kit tones do not cover */
+.x03-pill-busy.kf-badge {
+  background: color-mix(in srgb, var(--violet-600) 22%, transparent);
+  color: var(--c-text-muted);
+}
+
+.x03-pill-accent.kf-badge {
+  color: var(--c-accent);
+}
+
+.x03-pill-local.kf-badge {
+  background: color-mix(in srgb, var(--cyan-400) 16%, transparent);
+}
+
+.x03-pill-small.kf-badge {
+  height: 22px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.x03-btn-warn.kf-btn {
+  background: var(--c-warn);
+  color: var(--c-on-warn);
+}
+
+.x03-bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--c-border);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--violet-500) 35%, transparent);
+}
+
+.x03-bar-fill {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+}
+.x03-bar-fill[data-tone="accent"] {
+  background: var(--c-accent);
+}
+.x03-bar-fill[data-tone="primary"] {
+  background: var(--c-primary);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--violet-500) 70%, transparent);
+}
+.x03-bar-fill[data-tone="warn"] {
+  background: var(--c-warn);
+}
+.x03-bar-fill[data-tone="success"] {
+  background: var(--c-success);
+}
+
+/* 1 · onboarding: step dots and the VI/EN picker */
+.x03-steps {
+  display: flex;
+  gap: 6px;
+}
+.x03-steps span {
+  width: 10px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c-border);
+}
+.x03-steps span[data-active] {
+  width: 22px;
+  background: var(--c-primary);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--violet-500) 70%, transparent);
+}
+
+.x03-langs {
+  display: flex;
+  gap: 10px;
+}
+
+/* the board's tiles, ring and field are content-box: their borders add to the size */
+.x03-lang {
+  width: 70px;
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 18px var(--font-display);
+}
+.x03-lang[data-active] {
+  border: 2px solid var(--c-primary);
+}
+
+/* 2 · empty universe: the dashed "+" circle */
+.x03-add {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px dashed var(--c-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: var(--c-accent);
+  animation: x03-pulse 2s ease-in-out infinite;
+}
+
+.x03-row-planets {
+  gap: 12px;
+}
+
+/* 4 · search field */
+.x03-search {
+  height: 36px;
+  border-radius: 18px;
+  border: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+/* 6 · AI writing */
+.x03-ai-core {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--violet-600) 70%, transparent));
+}
+
+.x03-answer {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.x03-answer-tight {
+  line-height: 1.45;
+}
+
+.x03-dots {
+  display: flex;
+  gap: 4px;
+}
+.x03-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-text-muted);
+  animation: x03-dots 1s infinite;
+}
+.x03-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.x03-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* 8 · parsing failed: the file row */
+.x03-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--c-warn);
+}
+
+.x03-file-type {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--orange-700);
+  color: var(--white);
+  font: 700 11px var(--font-display);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.x03-file-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 9 · offline */
+.x03-planet-offline {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--amber-500) 45%, transparent));
+}
+
+/* 11 · delete confirmation */
+.x03-confirm-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* 12 · conflict: the two versions */
+.x03-versions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.x03-version {
+  flex: 1;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--c-accent);
+  font-size: 11px;
+}
+.x03-version[data-side="server"] {
+  border-color: var(--c-primary);
+}
+
+/* 13 · import progress */
+.x03-step {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 15 · permission changed: the notice */
+.x03-notice {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-accent);
+}
+
+.x03-notice-icon {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cyan-400) 18%, transparent);
+  color: var(--c-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.x03-notice-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.x03-notice-text {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.x03-note {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+.x03-note-body {
+  font-size: 12px;
+}
+
+/* 16 · autosave pills */
+.x03-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.x03-saved-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-success);
+}
+
+/* 17 · citation missing */
+.x03-flag {
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px dashed var(--c-warn);
+  font-size: 12px;
+  color: var(--c-warn-text);
+}
+
+/* 18 · retry */
+.x03-retry-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* the rules under the grid (below the board's fold) */
+.x03-rules {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.x03-rules-title {
+  font-weight: 700;
+}
+
+.x03-rules-text {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+@keyframes x03-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes x03-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.5;
+  }
+}
+
+@keyframes x03-dots {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}

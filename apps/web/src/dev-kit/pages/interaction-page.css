@@ -1,0 +1,674 @@
+/* Layout of the Interaction board (design/mock/Interaction.dc.html). Looks come from the kit components; this file
+   places them and styles the board's own pieces (layer tiles, peer views, Copilot bar, demo stages, gesture tiles,
+   the amber note). */
+
+.ix-backdrop {
+  width: 1440px;
+  min-height: 1360px;
+}
+
+.ix-page {
+  box-sizing: border-box;
+  min-height: 1360px;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ix-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -1.5px;
+}
+
+.ix-section {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ix-h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ix-note {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.ix-note-small {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.ix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+/* --- navigation layers --- */
+
+.ix-nav {
+  gap: 14px;
+}
+
+.ix-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.ix-head-note {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.ix-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+  align-items: center;
+}
+
+.ix-layers {
+  grid-column: span 8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ix-layer-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ix-layer {
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--c-text);
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+
+.ix-layer:hover {
+  transform: scale(1.08);
+}
+
+.ix-layer:focus-visible,
+.ix-peer:focus-visible,
+.ix-copilot:focus-visible,
+.ix-global:focus-visible,
+.ix-demo-morph:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* The board's layer orbs: lit at 35% 30%, base colour to 60%, a deep navy edge. */
+.ix-layer-orb.kf-planet {
+  background: radial-gradient(circle at 35% 30%, var(--planet-hi), var(--planet-base) 60%, var(--ix-orb-deep));
+  animation: ix-pulse 2.4s ease-in-out infinite;
+}
+
+.ix-orb-collection.kf-planet {
+  --planet-hi: var(--purple-200);
+  --planet-base: var(--purple-500);
+}
+
+.ix-orb-document.kf-planet {
+  --planet-hi: var(--ix-document-hi);
+  --planet-base: var(--ix-document);
+}
+
+@keyframes ix-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 14px color-mix(in srgb, var(--violet-600) 60%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--violet-600);
+  }
+}
+
+.ix-layer-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ix-layer-sub {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.ix-layer-link {
+  width: 34px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--violet-400) 0 6px, transparent 6px 12px);
+  animation: ix-flow 1.2s linear infinite;
+}
+
+@keyframes ix-flow {
+  to {
+    background-position: 24px 0;
+  }
+}
+
+.ix-peers {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ix-peers-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.ix-peers-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ix-peer {
+  flex: 1;
+  height: 50px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--c-text);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ix-peer[data-peer="canvas"] {
+  background: color-mix(in srgb, var(--cyan-500) 18%, transparent);
+  border: 1px solid var(--cyan-500);
+}
+
+.ix-peer[data-peer="graph"] {
+  background: color-mix(in srgb, var(--emerald-500) 16%, transparent);
+  border: 1px solid var(--emerald-500);
+}
+
+.ix-peer-sub {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--c-text-muted);
+}
+
+.ix-peers-swap {
+  font: 700 16px var(--font-display);
+  color: var(--c-text-muted);
+}
+
+.ix-copilot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--ix-copilot-bg);
+  border: 1.5px solid var(--ix-copilot-border);
+  box-shadow: var(--ix-copilot-shadow);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.ix-copilot-orb.kf-planet {
+  background: radial-gradient(circle at 35% 30%, var(--violet-300), var(--violet-600) 60%, var(--ix-copilot-orb-deep));
+  color: var(--white);
+}
+
+.ix-copilot-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ix-copilot-text {
+  font-size: 12px;
+  color: var(--violet-200);
+}
+
+.ix-copilot-scopes {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.ix-globals {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ix-global {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--night-inset) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-300) 22%, transparent);
+  color: var(--c-text);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-decoration: none;
+}
+
+.ix-global-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ix-global-text {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--c-text-muted);
+}
+
+/* --- demo stages (zoom levels, hybrid views) --- */
+
+.ix-view-tabs .kf-tab {
+  font-size: 13px;
+}
+
+.ix-stage {
+  position: relative;
+  /* the board's stages are content-box: 180px inside a 1px border */
+  height: 182px;
+  border-radius: 20px;
+  background: var(--ix-stage-bg);
+  border: 1px solid color-mix(in srgb, var(--violet-300) 22%, transparent);
+  overflow: hidden;
+}
+
+.ix-zoom-scene {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 600px;
+  height: 180px;
+  transform-origin: 300px 90px;
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.2, 1);
+}
+
+.ix-zoom-scene > * {
+  position: absolute;
+}
+
+.ix-zoom-dot {
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: 0 0 14px var(--dot);
+}
+
+.ix-zoom-dot[data-tone="emerald"] {
+  --dot: var(--emerald-500);
+  left: 60px;
+  top: 36px;
+  width: 30px;
+  height: 30px;
+}
+
+.ix-zoom-dot[data-tone="cyan"] {
+  --dot: var(--cyan-500);
+  left: 470px;
+  top: 54px;
+  width: 34px;
+  height: 34px;
+}
+
+.ix-zoom-dot[data-tone="amber"] {
+  --dot: var(--amber-500);
+  left: 120px;
+  top: 118px;
+  width: 26px;
+  height: 26px;
+}
+
+.ix-zoom-planet.kf-planet,
+.ix-view-planet.kf-planet {
+  background: radial-gradient(circle at 35% 30%, var(--violet-300), var(--violet-600) 55%, var(--violet-deep));
+}
+
+.ix-zoom-planet.kf-planet {
+  left: 260px;
+  top: 50px;
+  box-shadow: 0 0 26px var(--violet-600);
+}
+
+.ix-zoom-doc {
+  left: 286px;
+  top: 82px;
+  width: 28px;
+  height: 14px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--violet-50) 90%, transparent);
+}
+
+.ix-zoom-line {
+  left: 292px;
+  height: 2px;
+  background: var(--violet-600);
+}
+
+.ix-zoom-line[data-line="1"] {
+  top: 86px;
+  width: 16px;
+}
+
+.ix-zoom-line[data-line="2"] {
+  top: 90px;
+  width: 12px;
+}
+
+.ix-stage-tag {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--night-chat-avatar) 85%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+  animation: ix-fade 0.45s ease-out both;
+}
+
+@keyframes ix-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ix-view {
+  animation: ix-fade 0.45s ease-out both;
+}
+
+.ix-view-orbit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ix-view-ring {
+  position: absolute;
+  box-sizing: border-box;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--violet-300) 50%, transparent);
+  animation: kf-spin 8s linear infinite;
+}
+
+.ix-view-moon {
+  position: absolute;
+  left: 72px;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cyan-400);
+  box-shadow: 0 0 12px var(--cyan-400);
+}
+
+.ix-view-planet.kf-planet {
+  box-shadow: 0 0 30px var(--violet-600);
+}
+
+.ix-view-canvas {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--violet-300) 25%, transparent) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.ix-canvas-card {
+  position: absolute;
+  border-radius: 14px;
+}
+
+.ix-canvas-card[data-card="1"] {
+  left: 40px;
+  top: 34px;
+  width: 120px;
+  height: 56px;
+  background: var(--amber-500);
+}
+
+.ix-canvas-card[data-card="2"] {
+  left: 220px;
+  top: 80px;
+  width: 150px;
+  height: 70px;
+  background: color-mix(in srgb, var(--violet-600) 70%, transparent);
+  border: 1px solid var(--violet-300);
+}
+
+.ix-canvas-card[data-card="3"] {
+  left: 430px;
+  top: 34px;
+  width: 110px;
+  height: 56px;
+  background: var(--cyan-500);
+}
+
+.ix-view-docs {
+  position: absolute;
+  inset: 18px 50px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--light-bg);
+  color: var(--light-text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ix-docs-title {
+  font: 700 20px var(--font-display);
+}
+
+.ix-docs-line {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--light-bg2);
+}
+
+.ix-docs-line[data-line="1"] {
+  width: 90%;
+}
+.ix-docs-line[data-line="2"] {
+  width: 70%;
+}
+.ix-docs-line[data-line="3"] {
+  width: 80%;
+}
+
+.ix-view-list {
+  list-style: none;
+  margin: 0;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ix-list-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--night-chat-avatar) 70%, transparent);
+  font-size: 13px;
+}
+
+.ix-list-meta {
+  color: var(--c-text-muted);
+}
+
+/* --- gestures --- */
+
+.ix-gestures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ix-gesture {
+  box-sizing: border-box;
+  min-height: 86px;
+  padding: 10px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--night-inset) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-300) 18%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ix-gesture-key.kf-chip {
+  align-self: flex-start;
+  /* the board's key is content-box: a 36px minimum plus 6px padding each side */
+  min-width: 48px;
+}
+
+.ix-gesture-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ix-gesture-text {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--c-text-muted);
+}
+
+/* --- animation demos --- */
+
+.ix-demos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ix-demo {
+  position: relative;
+  /* content-box on the board: 110px inside a 1px border; the morph button keeps 110px overall */
+  height: 112px;
+  border-radius: 16px;
+  background: var(--ix-stage-bg);
+  border: 1px solid color-mix(in srgb, var(--violet-300) 22%, transparent);
+  overflow: hidden;
+}
+
+.ix-demo-orbit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ix-demo-field {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.ix-demo-orb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+
+.ix-demo-nebula.kf-nebula {
+  inset: -30px;
+}
+
+.ix-demo-label {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.ix-demo-morph {
+  height: 110px;
+  padding: 0;
+  color: var(--c-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ix-morph-shape {
+  position: absolute;
+  left: 150px;
+  top: 22px;
+  width: 54px;
+  height: 54px;
+  border-radius: 27px;
+  background: radial-gradient(circle at 35% 30%, var(--violet-300), var(--violet-600) 55%, var(--violet-deep));
+  box-shadow: 0 0 22px var(--violet-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font: 700 12px var(--font-display);
+  transition: all 0.7s cubic-bezier(0.65, 0, 0.2, 1);
+}
+
+.ix-demo-morph[data-morphed="true"] .ix-morph-shape {
+  left: 30px;
+  top: 14px;
+  width: 300px;
+  height: 70px;
+  border-radius: 14px;
+  background: var(--light-bg);
+  color: var(--light-text);
+}
+
+/* --- motion rules note --- */
+
+.ix-rules {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--amber-500) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-500) 45%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ix-rules-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber-300);
+}
+
+.ix-rule {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--amber-200);
+}

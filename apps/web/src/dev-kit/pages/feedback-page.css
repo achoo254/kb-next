@@ -1,0 +1,248 @@
+/* Layout of the X01-Feedback board (design/mock/X01-Feedback.dc.html). Looks come from the kit components; this
+   file only places them and styles the board's own bits (section titles, the reconnect bar). */
+
+/* The board is a 1440×1500 frame: the landscape and its veil cover that frame, the page below it is plain night. */
+.fb-page {
+  width: 1440px;
+  min-height: 1500px;
+}
+
+.fb-page .universe-bg img,
+.fb-page .universe-veil {
+  bottom: auto;
+  height: 1500px;
+}
+
+.fb-board {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 40px 48px;
+}
+
+.fb-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.fb-hint {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.fb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+}
+
+.fb-h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: light-dark(var(--light-primary), var(--purple-200));
+  text-shadow: 0 0 12px light-dark(transparent, color-mix(in srgb, var(--violet-400) 55%, transparent));
+}
+
+.fb-note {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.fb-caption {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.fb-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fb-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.fb-gap-8 {
+  gap: 8px;
+}
+.fb-gap-10 {
+  gap: 10px;
+}
+.fb-gap-20 {
+  gap: 20px;
+}
+
+.fb-grid-2,
+.fb-grid-3,
+.fb-grid-4 {
+  display: grid;
+  gap: 14px;
+}
+.fb-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.fb-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.fb-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.fb-grid-2.fb-gap-20 {
+  gap: 20px;
+}
+
+/* Toast */
+.fb-trigger.kf-btn {
+  padding: 0 16px;
+}
+
+/* Confirm and field errors */
+.fb-start {
+  align-self: flex-start;
+}
+
+/* Empty states */
+.fb-empty {
+  padding: 20px;
+}
+
+/* the board's CTA links are content-box: 44px plus their ring */
+.fb-empty .kf-empty-action.kf-btn {
+  box-sizing: content-box;
+}
+
+/* Skeleton and loading tiles: wells with the board's 18px corners */
+.fb-page .kf-panel.fb-tile {
+  border-radius: 18px;
+}
+
+.fb-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+}
+
+.fb-center {
+  align-items: center;
+}
+
+.fb-skel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fb-skel-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fb-load-tall,
+.fb-load-short {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fb-load-tall {
+  height: 150px;
+}
+.fb-load-short {
+  height: 110px;
+}
+.fb-load-bar {
+  align-items: stretch;
+  padding: 16px;
+}
+.fb-load-bar .kf-loader {
+  flex: 1;
+}
+
+/* Tooltip, focus, disabled, hover */
+.fb-controls {
+  align-items: center;
+  gap: 16px;
+  padding-top: 30px;
+}
+
+.fb-tip-btn.kf-icon-btn {
+  color: var(--c-text-muted);
+}
+
+.fb-bold.kf-btn {
+  font-weight: 700;
+}
+
+/* the focus ring shown at rest, as a specimen */
+.fb-focus-demo.kf-btn {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+/* System patterns */
+.fb-system {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.fb-system-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fb-system-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fb-warn,
+.fb-system-title[data-tone="warn"] {
+  color: var(--c-warn-text);
+}
+.fb-system-title[data-tone="danger"] {
+  color: var(--c-danger-text);
+}
+.fb-system-title[data-tone="success"] {
+  color: var(--c-success-text);
+}
+
+.fb-system-text {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.fb-progress {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--c-track);
+  overflow: hidden;
+}
+
+.fb-progress-fill {
+  display: block;
+  height: 6px;
+  background: var(--cyan-400);
+  transition: width 0.4s;
+}
+
+/* the floating toast, top right of the screen */
+.fb-floating-toast.kf-toast {
+  position: fixed;
+  top: 40px;
+  right: 48px;
+  z-index: 10;
+}

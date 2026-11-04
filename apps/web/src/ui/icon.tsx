@@ -83,6 +83,11 @@ const ICONS = {
   'space-docker': { body: <path d="M3 13h18v5H3zM6 13V9h4v4M10 9V6h4v7M14 13V9h4v4" />, stroke: 2.1, cap: 'round', join: 'round' },
   'space-weekly': { body: <path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4" />, stroke: 2.1, cap: 'round', join: 'round' },
   'space-personal': { body: <path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z" />, stroke: 2.1, cap: 'round', join: 'round' },
+  /* Interaction board: the navigation layers */
+  'layer-universe': { body: <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6" />, cap: 'round', join: 'round' },
+  'layer-space': { body: <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18" />, cap: 'round', join: 'round' },
+  'layer-collection': { body: <path d="M4 7h16M4 12h16M4 17h10" />, cap: 'round', join: 'round' },
+  'layer-document': { body: <path d="M6 3h8l4 4v14H6zM14 3v4h4" />, cap: 'round', join: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;
@@ -105,6 +110,16 @@ export function Icon({ name, size = 18, strokeWidth, className }: IconProps): Re
   return (
     <svg className={className} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...paint}>
       {shape.body}
+    </svg>
+  );
+}
+
+/* X03-StatesCoverage board */
+/** The shield of the "permission changed" notice (board X03, stroke 2.2, round caps), decorative like `Icon`. */
+export function ShieldIcon({ size = 16, className }: { size?: number; className?: string }): ReactNode {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
+      <path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" />
     </svg>
   );
 }
