@@ -2,8 +2,8 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { brandAssets } from './vite-brand.ts';
 
-/** The API in dev (apps/server, `pnpm dev`); production puts nginx in front of both. */
-const API = 'http://127.0.0.1:5320';
+/** The API in dev (apps/server, `pnpm dev`; KB_API_PORT for an E2E run on shifted ports); production puts nginx in front of both. */
+const API = `http://127.0.0.1:${process.env.KB_API_PORT ?? '5320'}`;
 const PROXY = { '/api': API, '/auth': API, '/healthz': API };
 
 export default defineConfig({

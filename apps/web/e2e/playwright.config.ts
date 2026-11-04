@@ -54,6 +54,7 @@ export default defineConfig({
       cwd: WEB_DIR,
       url: `http://localhost:${WEB_PORT}`,
       reuseExistingServer: false,
+      env: { KB_API_PORT: String(API_PORT) },
     },
   ],
 });
