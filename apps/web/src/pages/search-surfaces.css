@@ -1,0 +1,25 @@
+/* The surfaces of a search result, shared by C12 (search-screen.css) and the ⌘K palette (src/palette). */
+
+.search-screen,
+.kf-palette {
+  /* the board's inner surfaces, both themes */
+  --search-inner: light-dark(color-mix(in srgb, var(--violet-100) 70%, transparent), color-mix(in srgb, var(--night-answer) 55%, transparent));
+  --search-inner-2: light-dark(color-mix(in srgb, var(--violet-50) 90%, transparent), color-mix(in srgb, var(--night-row) 70%, transparent));
+  --search-inner-border: light-dark(color-mix(in srgb, var(--violet-700) 18%, transparent), color-mix(in srgb, var(--violet-400) 22%, transparent));
+  --search-input-bg: light-dark(var(--white), color-mix(in srgb, var(--night-inset) 80%, transparent));
+  --search-input-border: light-dark(color-mix(in srgb, var(--violet-700) 40%, transparent), color-mix(in srgb, var(--violet-300) 50%, transparent));
+  --search-info-bg: light-dark(color-mix(in srgb, var(--cyan-700) 8%, transparent), color-mix(in srgb, var(--cyan-400) 10%, transparent));
+  --search-info-border: light-dark(color-mix(in srgb, var(--cyan-700) 30%, transparent), color-mix(in srgb, var(--cyan-300) 40%, transparent));
+  --search-hit-bg: light-dark(color-mix(in srgb, var(--cyan-700) 16%, transparent), color-mix(in srgb, var(--cyan-400) 28%, transparent));
+  --search-hit-text: light-dark(var(--cyan-700), var(--cyan-100));
+  --search-track: light-dark(color-mix(in srgb, var(--violet-700) 14%, transparent), color-mix(in srgb, var(--white) 18%, transparent));
+}
+
+.search-hit {
+  background: var(--search-hit-bg);
+  color: var(--search-hit-text);
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 0 3px;
+}
+

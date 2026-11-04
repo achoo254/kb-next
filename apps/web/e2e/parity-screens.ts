@@ -18,14 +18,20 @@ export interface ParityScreen {
   waitFor?: string;
   /** The browser's fixed time (ISO 8601) for a screen that shows relative times. */
   clock?: string;
+  /** Keys pressed once the screen shows (e.g. `Control+k` opens the ⌘K palette), then `type` typed. */
+  keys?: readonly string[];
+  type?: string;
 }
 
 /**
  * `onboarded`: /api/me says the first-visit dialog is done (the Universe without S03 over it); `spaces-pending`:
- * /api/spaces never answers (the Universe loading, S04); `spaces-without-own`: /api/spaces without the reader's own
- * Space (their universe still empty, S05).
+ * /api/spaces never answers (the Universe loading, S04); `spaces-without-texts`: /api/spaces without the reader's own
+ * Space and with nothing readable in the others (the empty Universe, S05; captions and the recent texts the AI panel
+ * asks about stay as seeded, as the board draws them); `search-c12` / `search-f01`: /api/search answers the board's
+ * results (search-boards.ts: E2E has neither Meilisearch nor a Jev key), and on C12 /api/spaces the board's five
+ * Spaces of the filter.
  */
-export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-own';
+export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -41,15 +47,32 @@ const SEED_CLOCK = '2026-11-03T14:05:00.000Z';
 
 export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'C09-Universe', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded'], clock: UNIVERSE_CLOCK },
-  // The Universe loading past 1.5 s (the "Thử lại" chip shows), and the reader's universe still empty.
+  // The Universe loading past 1.5 s (the "Thử lại" chip shows), and a Universe with nothing to read yet (S05 shows
+  // only then: a reader without a Space of their own gets C09, docs/mock-deviations.md).
   { board: 'S04-OrbitSkeleton', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded', 'spaces-pending'], waitFor: '[data-id="universe-slow"]' },
-  { board: 'S05-OrbitEmpty', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded', 'spaces-without-own'], clock: UNIVERSE_CLOCK },
+  // maxDiff: the waiting crystals are brighter than the board's (user feedback 04/11/2026); docs/mock-deviations.md.
+  { board: 'S05-OrbitEmpty', path: '/u', signedIn: true, status: 'built', maxDiff: 0.045, mocks: ['onboarded', 'spaces-without-texts'], clock: UNIVERSE_CLOCK },
   { board: 'S01-Landing', path: '/', signedIn: false, status: 'built' },
   // The seeded Space and document of the boards (KB_SEED=mock): Networking on "Giao thức nền tảng", and DHCP read
   // by the seed's owner (its progress, backlinks, comments "2 giờ trước"), at the seed's last update.
   { board: 'C10-Space', path: '/s/networking', signedIn: true, status: 'built', clock: SEED_CLOCK },
   // maxDiff: the board's default shows an AI answer on a selected passage (own key, phase 7); docs/mock-deviations.md.
   { board: 'C11-Reader', path: '/d/989fedf1-beab-4f13-894d-111654ebdc45', signedIn: true, status: 'built', maxDiff: 0.09, clock: SEED_CLOCK },
+  // Search (C12) on the board's query and results, and the ⌘K palette (F01) opened over the Universe and given "dhcp".
+  { board: 'C12-Search', path: '/search?q=c%E1%BA%A5p%20ph%C3%A1t%20ip', signedIn: true, status: 'built', mocks: ['search-c12'], waitFor: '[data-id="search-screen"][data-state="results"]' },
+  // maxDiff: the palette opens over the real Universe (hero, AI panel, stage) the board leaves out; docs/mock-deviations.md.
+  {
+    board: 'F01-Search',
+    path: '/u',
+    signedIn: true,
+    status: 'built',
+    maxDiff: 0.05,
+    mocks: ['onboarded', 'search-f01'],
+    clock: UNIVERSE_CLOCK,
+    keys: ['Control+k'],
+    type: 'dhcp',
+    waitFor: '[data-id="palette"][data-state="results"]',
+  },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The UI kit (dev server only, apps/web/src/dev-kit).

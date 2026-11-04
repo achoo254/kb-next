@@ -131,7 +131,7 @@ export class SpaceCaptions {
   constructor(
     private readonly db: Db,
     /** null: no TYPESAFE_API_KEY, every caption is the fallback. */
-    private readonly jev: JevJudge | null,
+    private readonly jev: Pick<JevJudge, 'choose'> | null,
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -184,7 +184,7 @@ export class SpaceCaptions {
   }
 
   /** One Jev request for all the given Spaces (one Choice question each), stored; never rejects. */
-  private async choose(jev: JevJudge, pending: readonly Pending[]): Promise<Map<string, Caption>> {
+  private async choose(jev: Pick<JevJudge, 'choose'>, pending: readonly Pending[]): Promise<Map<string, Caption>> {
     const ids = pending.map((_, i) => `s${i}`);
     const state = {
       spaces: Object.fromEntries(

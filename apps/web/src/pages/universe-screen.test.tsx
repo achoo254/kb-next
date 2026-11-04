@@ -88,8 +88,18 @@ describe('UniverseScreen', () => {
     await waitFor(() => expect(state()).toBe('ready'));
   });
 
-  it('shows the empty universe (S05) when the reader has nothing of their own yet', async () => {
+  it('shows the shared Universe (C09) to a reader without a Space of their own, or with an empty one', async () => {
     serve(BOARD_SPACES.filter((s) => s.kind !== 'personal'));
+    const { unmount } = renderWithI18n(<UniverseScreen />);
+    await waitFor(() => expect(state()).toBe('ready'));
+    unmount();
+    serve(BOARD_SPACES.map((s) => (s.kind === 'personal' ? { ...s, documentCount: 0 } : s)));
+    renderWithI18n(<UniverseScreen />);
+    await waitFor(() => expect(state()).toBe('ready'));
+  });
+
+  it('shows the empty universe (S05) only when no Space has anything to read', async () => {
+    serve(BOARD_SPACES.filter((s) => s.kind !== 'personal').map((s) => ({ ...s, documentCount: 0 })));
     renderWithI18n(<UniverseScreen />);
     await waitFor(() => expect(state()).toBe('empty'));
     expect(screen.getByRole('link', { name: 'Create your first planet' }).getAttribute('href')).toBe('/me');
@@ -100,7 +110,7 @@ describe('UniverseScreen', () => {
 
   it('shows the whole Universe from "khám phá Universe chung"', async () => {
     window.history.replaceState(null, '', '/u?shared=1');
-    serve([space('networking', { documentCount: 4 })]);
+    serve([space('networking', { documentCount: 0 })]);
     renderWithI18n(<UniverseScreen />);
     await waitFor(() => expect(state()).toBe('ready'));
   });
@@ -159,9 +169,12 @@ describe('UniverseScreen', () => {
 });
 
 describe('isEmptyUniverse', () => {
-  it('is empty without a personal Space or with an empty one', () => {
+  it('is empty only when no Space has a readable text', () => {
     expect(isEmptyUniverse([])).toBe(true);
-    expect(isEmptyUniverse([space('personal-u1', { kind: 'personal', documentCount: 0 })])).toBe(true);
+    expect(isEmptyUniverse([space('networking', { documentCount: 0 }), space('personal-u1', { kind: 'personal', documentCount: 0 })])).toBe(true);
+    // No Space of one's own, or an empty one: the shared Universe still has texts.
+    expect(isEmptyUniverse(BOARD_SPACES.filter((s) => s.kind !== 'personal'))).toBe(false);
+    expect(isEmptyUniverse([space('networking'), space('personal-u1', { kind: 'personal', documentCount: 0 })])).toBe(false);
     expect(isEmptyUniverse(BOARD_SPACES)).toBe(false);
   });
 });

@@ -15,7 +15,7 @@ import { sceneSpaces } from './universe-spaces';
 import { OfflineBanner, UniverseEmpty, UniverseSkeleton } from './universe-states';
 import './universe-screen.css';
 
-/** `?shared=1`: the whole Universe even when the reader's own is still empty (S05's "khám phá Universe chung"). */
+/** `?shared=1`: the Universe (C09) even when nothing in it has a text yet (S05's "khám phá Universe chung"). */
 export const SHARED_PARAM = 'shared';
 /** How long the warp into a Space plays before the Space opens (Esc opens it at once). */
 export const WARP_MS = 650;
@@ -28,7 +28,7 @@ type Layer = ComponentType<Universe3dLayerProps>;
 function orbOf(t: Translate, count: number): SceneOrb {
   return {
     title: t('landing.orbTitle'),
-    chips: ['Universe', t('landing.orbSpaces', { count }), 'VI · EN'],
+    chips: [t('landing.orbSpaces', { count }), 'VI · EN'],
     label: t('universe.orbLabel'),
     href: SHELL_PATHS.universe,
   };
@@ -260,8 +260,8 @@ function UniverseMain({ spaces, recent }: UniverseMainProps): ReactNode {
 }
 
 /**
- * /u (board C09) and its states: loading (S04), the reader's own universe still empty (S05), offline (S05 with the
- * offline planet), a failed load (S04 with "Thử lại"). Lost connection after loading keeps the Universe and shows the
+ * /u (board C09) and its states: loading (S04), nothing to read in any Space yet (S05; a reader without a Space of
+ * their own gets C09), offline (S05 with the offline planet), a failed load (S04 with "Thử lại"). Lost connection after loading keeps the Universe and shows the
  * offline banner.
  */
 export function UniverseScreen(): ReactNode {

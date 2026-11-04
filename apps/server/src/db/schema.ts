@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   check,
+  date,
   index,
   integer,
   jsonb,
@@ -495,4 +496,22 @@ export const auditLog = pgTable(
     createdAt: createdAt(),
   },
   (table) => [index('audit_log_created_at_idx').on(table.createdAt), index('audit_log_actor_id_idx').on(table.actorId)],
+);
+
+/**
+ * Jev usage per day (Asia/Saigon) and feature (`purpose` of the call: `space-caption`, `search-documents`,
+ * `search-passages`): calls, failed calls and tokens, for the daily AI cost report to Tiểu Đệ. Search has no cap on
+ * Jev requests; this is how a rise in cost is seen.
+ */
+export const jevUsageDaily = pgTable(
+  'jev_usage_daily',
+  {
+    day: date('day', { mode: 'string' }).notNull(),
+    purpose: text('purpose').notNull(),
+    calls: integer('calls').notNull().default(0),
+    failedCalls: integer('failed_calls').notNull().default(0),
+    inputTokens: bigint('input_tokens', { mode: 'number' }).notNull().default(0),
+    outputTokens: bigint('output_tokens', { mode: 'number' }).notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.day, table.purpose] })],
 );

@@ -10,6 +10,7 @@ import { type Page, expect, test } from '@playwright/test';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 import { MAX_DIFF_RATIO, PARITY_SCREENS, type ParityMock } from './parity-screens';
+import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
 import { signInAt } from './sign-in';
 
 const MOCK_PNG_DIR = new URL('../../../design/mock-png/', import.meta.url);
@@ -38,14 +39,23 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
     // never answered: the screen stays in its loading state for the shot
     await page.route('**/api/spaces', () => undefined);
   }
-  if (mocks.includes('spaces-without-own')) {
+  if (mocks.includes('spaces-without-texts')) {
     await page.route('**/api/spaces', async (route) => {
       const response = await route.fetch();
       if (!response.ok()) return route.fulfill({ response });
-      const body = (await response.json()) as { spaces: Array<{ kind: string }> };
-      return route.fulfill({ response, json: { spaces: body.spaces.filter((space) => space.kind !== 'personal') } });
+      const body = (await response.json()) as { spaces: Array<{ kind: string; documentCount: number }> };
+      const shared = body.spaces.filter((space) => space.kind !== 'personal').map((space) => ({ ...space, documentCount: 0 }));
+      return route.fulfill({ response, json: { spaces: shared } });
     });
   }
+  for (const [mock, json] of [
+    ['search-c12', C12_SEARCH],
+    ['search-f01', F01_SEARCH],
+  ] as const) {
+    if (mocks.includes(mock)) await page.route('**/api/search?*', (route) => route.fulfill({ json }));
+  }
+  // C12's Space filter lists the board's five Spaces, matching its results.
+  if (mocks.includes('search-c12')) await page.route('**/api/spaces', (route) => route.fulfill({ json: C12_SPACES }));
 }
 
 for (const screen of PARITY_SCREENS) {
@@ -57,6 +67,12 @@ for (const screen of PARITY_SCREENS) {
     if (screen.signedIn) await signInAt(page, screen.path);
     else await page.goto(screen.path);
     await page.evaluate(() => document.fonts.ready);
+    if (screen.keys || screen.type) {
+      // A screen opened from the keyboard (the palette): once the page is ready to listen.
+      await page.waitForLoadState('networkidle');
+      for (const key of screen.keys ?? []) await page.keyboard.press(key);
+      if (screen.type) await page.keyboard.type(screen.type);
+    }
     if (screen.waitFor) await page.locator(screen.waitFor).waitFor();
     else await page.waitForLoadState('networkidle');
     const actual = PNG.sync.read(await page.screenshot({ fullPage: false }));

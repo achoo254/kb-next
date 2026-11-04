@@ -32,6 +32,8 @@ function fakeJev(pick: (options: string[]) => string = (options) => options[0] ?
       const answers = Object.fromEntries(Object.entries(questions).map(([id, q]) => [id, { choice: pick(Object.keys(q.criteria)), confidence: 0.9 }]));
       return Promise.resolve({ answers, usage: { inputTokens: 120 * Object.keys(questions).length, outputTokens: 0 } });
     }),
+    // Captions only ask Choice questions through `choose`.
+    ask: vi.fn(() => Promise.reject(new Error('captions never call ask'))),
   };
 }
 
@@ -127,7 +129,7 @@ describe('captions chosen by Jev', () => {
     expect((await new SpaceCaptions(database.db, null).captionsFor([weekly])).get(weekly.space.id)).toEqual({ vi: '5 bài', en: '5 docs' });
 
     let clock = new Date('2026-11-04T08:00:00Z');
-    const failing: JevJudge = { choose: vi.fn(() => Promise.reject(new Error('Jev space-caption failed: TimeoutError'))) };
+    const failing: Pick<JevJudge, 'choose'> = { choose: vi.fn(() => Promise.reject(new Error('Jev space-caption failed: TimeoutError'))) };
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     try {
       const captions = new SpaceCaptions(database.db, failing, () => clock);

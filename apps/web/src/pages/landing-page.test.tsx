@@ -40,20 +40,21 @@ describe('LandingPage', () => {
     await waitFor(() => expect(preview.querySelectorAll('.kf-crystal')).toHaveLength(7));
     expect(screen.getByRole('link', { name: 'Networking · 8 labs' }).getAttribute('href')).toBe('/s/networking');
     expect(screen.getByRole('link', { name: 'Your universe · private' }).getAttribute('href')).toBe('/u');
-    expect(screen.getByRole('link', { name: 'Enter the Học Cloud Universe' }).textContent).toContain('7 Spaces');
+    expect(screen.getByRole('link', { name: 'Enter the Universe' }).textContent).toContain('7 Spaces');
   });
 
   it('keeps the orb and the visitor’s own Space when the Spaces cannot be loaded', async () => {
     serveSpaces(false);
     renderWithI18n(<LandingPage session={OUT} />);
-    await waitFor(() => expect(screen.getByRole('link', { name: 'Enter the Học Cloud Universe' }).textContent).toContain('1 Spaces'));
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Enter the Universe' }).textContent).toContain('1 Spaces'));
     expect(document.querySelectorAll('.kf-crystal')).toHaveLength(1);
   });
 
   it('lets a signed-in visitor go straight in', () => {
     renderWithI18n(<LandingPage session={IN} />);
     const enter = screen.getAllByRole('link', { name: 'Enter the Universe' });
-    expect(enter.map((link) => link.getAttribute('href'))).toEqual(['/u', '/u']);
+    // The top bar, the call to action and the orb.
+    expect(enter.map((link) => link.getAttribute('href'))).toEqual(['/u', '/u', '/u']);
     expect(screen.queryByRole('link', { name: 'Sign in' })).toBeNull();
   });
 

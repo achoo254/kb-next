@@ -6,9 +6,10 @@ import { type DocumentSummary, type SpaceListItem, fetchRecent, fetchSpaces } fr
 export const SLOW_LOAD_MS = 1500;
 
 /**
- * What /u shows: the skeleton while the Universe loads (S04); the Universe (C09); the empty Universe when the reader
- * has nothing of their own yet (S05); offline when the API cannot be reached (S05 with `ill-planet-offline`); a load
- * that failed for another reason (the skeleton with "Thử lại").
+ * What /u shows: the skeleton while the Universe loads (S04); the Universe (C09) as soon as any Space has something
+ * to read, whether or not the reader has a Space of their own; the empty Universe (S05) only when no Space has a
+ * readable text (none visible at all, or all empty); offline when the API cannot be reached (S05 with
+ * `ill-planet-offline`); a load that failed for another reason (the skeleton with "Thử lại").
  */
 export type UniverseData =
   | { status: 'loading'; slow: boolean }
@@ -20,18 +21,14 @@ export function isNetworkError(error: unknown): boolean {
   return error instanceof ApiError && error.code === NETWORK_ERROR;
 }
 
-/** The reader's own Space, when they have one. */
-export function personalSpace(spaces: readonly SpaceListItem[]): SpaceListItem | undefined {
-  return spaces.find((space) => space.kind === 'personal');
-}
-
 /**
- * Board S05: the reader's own universe is empty — no personal Space, or one without a single text yet. The shared
- * Spaces still show (dimmed) with the ways to start.
+ * Board S05: nothing to read in the Universe — no Space visible, or none with a readable text yet. A reader without a
+ * Space of their own (or with an empty one) still gets the shared Universe (C09): the user chose it on 04/11/2026, so
+ * a new account lands on what there is to read. Their own empty corner is "Của tôi" (C08). The Spaces that exist still
+ * show (dimmed) with the ways to start.
  */
 export function isEmptyUniverse(spaces: readonly SpaceListItem[]): boolean {
-  const own = personalSpace(spaces);
-  return !own || own.documentCount === 0;
+  return spaces.every((space) => space.documentCount === 0);
 }
 
 function browserOffline(): boolean {

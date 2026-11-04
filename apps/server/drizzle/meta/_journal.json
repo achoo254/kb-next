@@ -50,6 +50,13 @@
       "when": 1793776982508,
       "tag": "0006_space-descriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793778182735,
+      "tag": "0007_jev-usage-daily",
+      "breakpoints": true
     }
   ]
 }

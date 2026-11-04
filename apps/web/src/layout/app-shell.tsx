@@ -1,11 +1,13 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import type { SessionUser } from '../api/session-api';
 import { type Translate, useI18n } from '../i18n/i18n';
 import { LensRail, type LensRailItem } from '../ui/lens-rail';
 import { TopActions } from '../ui/top-actions';
 import { type BackdropVeil, UniverseBackdrop } from '../ui/universe-backdrop';
 import { ViewNav, type ViewNavItem } from '../ui/view-nav';
+import { CommandPalette } from '../palette/command-palette';
 import { BrandLogo } from './brand-logo';
+import { SHELL_PATHS } from './shell-paths';
 import { signedInUser, useSessionState } from './session-context';
 import './app-shell.css';
 
@@ -21,17 +23,7 @@ export interface BreadcrumbItem {
   href?: string;
 }
 
-/** Where the routes of the shell lead (app routes, routes.ts). */
-export const SHELL_PATHS = {
-  universe: '/u',
-  graph: '/graph',
-  canvas: '/canvas',
-  search: '/search',
-  copilot: '/copilot',
-  mine: '/me',
-  settings: '/settings',
-  inbox: '/inbox',
-} as const;
+export { SHELL_PATHS };
 
 interface AppShellProps {
   /** The mock board of the screen (data-screen, read by the parity check and the e2e tests). */
@@ -115,10 +107,31 @@ function Breadcrumb({ items, label }: { items: readonly BreadcrumbItem[]; label:
   );
 }
 
+/** Whether a key press asks for the ⌘K palette: ⌘K on a Mac, Ctrl+K elsewhere. */
+export function isPaletteShortcut(event: Pick<KeyboardEvent, 'key' | 'metaKey' | 'ctrlKey' | 'altKey' | 'shiftKey'>): boolean {
+  return (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'k';
+}
+
+/** The ⌘K palette's open state: the shortcut (anywhere on the page) and the top-right button open and close it. */
+function usePalette(): { open: boolean; toggle(): void; close(): void } {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (!isPaletteShortcut(event)) return;
+      event.preventDefault();
+      setOpen((current) => !current);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+  return { open, toggle: () => setOpen((current) => !current), close: () => setOpen(false) };
+}
+
 /**
  * The frame of every signed-in screen (boards C09–C20): the Universe backdrop, the logo, the view nav, the bell and
- * ⌘K, the lens rail with the account avatar, the breadcrumb, and the screen's own content in `<main>`. The screen
- * places its content at the board's coordinates inside `<main>` (the full window, under the chrome).
+ * ⌘K (the quick-search palette, F01, also on ⌘K / Ctrl+K), the lens rail with the account avatar, the breadcrumb, and
+ * the screen's own content in `<main>`. The screen places its content at the board's coordinates inside `<main>`
+ * (the full window, under the chrome).
  */
 export function AppShell({
   screen,
@@ -135,6 +148,7 @@ export function AppShell({
 }: AppShellProps): ReactNode {
   const { t } = useI18n();
   const user = signedInUser(useSessionState());
+  const palette = usePalette();
   const account = user
     ? {
         label: user.name ? t('shell.account', { name: user.name }) : t('shell.accountUnnamed'),
@@ -144,17 +158,18 @@ export function AppShell({
       }
     : undefined;
   return (
-    <UniverseBackdrop veil={veil} stars={stars} className={className ? `app-shell ${className}` : 'app-shell'}>
+    <UniverseBackdrop veil={veil} stars={stars} className={[`app-shell`, palette.open ? 'app-shell-palette' : '', className ?? ''].filter(Boolean).join(' ')}>
       <div className="app-shell-chrome">
         <BrandLogo />
         <ViewNav label={t('shell.views')} items={viewItems(t, docHref)} activeId={view ?? ''} className="app-shell-nav" />
-        <TopActions inboxHref={SHELL_PATHS.inbox} unread={unread} searchHref={SHELL_PATHS.search} className="app-shell-top" />
+        <TopActions inboxHref={SHELL_PATHS.inbox} unread={unread} searchHref={SHELL_PATHS.search} onCommand={palette.toggle} commandOpen={palette.open} className="app-shell-top" />
         <LensRail label={t('shell.rail')} items={railItems(t, spaceHref)} activeId={rail} account={account} className="app-shell-rail" />
         {breadcrumb && breadcrumb.length > 0 && <Breadcrumb items={breadcrumb} label={t('shell.breadcrumb')} />}
       </div>
       <main id="content" className="app-shell-main" data-screen={screen} data-id={`screen-${screen}`}>
         {children}
       </main>
+      {palette.open && <CommandPalette onClose={palette.close} />}
     </UniverseBackdrop>
   );
 }

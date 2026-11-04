@@ -10,6 +10,7 @@ import { ErrorScreen } from './pages/error-screen';
 import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
 import { ReaderScreen } from './pages/reader-screen';
+import { SearchScreen } from './pages/search-screen';
 import { SpaceScreen } from './pages/space-screen';
 import { UniverseEntry } from './pages/universe-entry';
 import { UniverseScreen } from './pages/universe-screen';
@@ -78,6 +79,8 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <SpaceScreen slug={routeParam(route, path)} />;
     case 'C11':
       return <ReaderScreen id={routeParam(route, path)} />;
+    case 'C12':
+      return <SearchScreen />;
     default: {
       const chrome = SCREEN_CHROME[route.code] ?? {};
       return (

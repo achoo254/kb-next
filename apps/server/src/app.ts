@@ -12,8 +12,11 @@ import type { ServerConfig } from './config';
 import type { Db } from './db/client';
 import { SpaceCaptions } from './captions/space-captions';
 import { HttpError } from './http-error';
-import { JevClient, type JevJudge } from './jev/jev-client';
+import { JevClient, type JevJudge, type JevUsageLog } from './jev/jev-client';
+import { JevUsageStore } from './jev/jev-usage';
 import { safeErrorText } from './log-error';
+import { searchRoutes } from './api/search-routes';
+import { type BilingualSummary, loadImportedSummaries } from './search/document-summaries';
 import type { SearchService } from './search/search-service';
 
 export interface AppDeps {
@@ -24,20 +27,36 @@ export interface AppDeps {
   idp?: IdpMetadata | null;
   /** Search index and its sync queue; null when MEILI_URL is unset. Writers enqueue changed documents on it. */
   search?: SearchService | null;
-  /** Jev, for server-side judgments (default: from TYPESAFE_API_KEY; null without a key). */
+  /**
+   * Jev, for server-side judgments (default: from TYPESAFE_API_KEY, its calls counted per day in Postgres; null
+   * without a key).
+   */
   jev?: JevJudge | null;
+  /** Bilingual summaries of the imported texts (default: content/summaries.json, bundled). */
+  summaries?: ReadonlyMap<string, BilingualSummary>;
+}
+
+/** The real Jev client, each call logged and added to the day's totals. */
+export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient {
+  const usage = new JevUsageStore(db, now);
+  return new JevClient(apiKey, undefined, (line: JevUsageLog) => {
+    console.log(JSON.stringify(line));
+    void usage.record(line);
+  });
 }
 
 /**
  * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
- * (/api/me) and the reading API (Spaces, documents, recent). The web app is static (nginx in production, Vite in dev).
+ * (/api/me), the reading API (Spaces, documents, recent) and search. The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
   db,
   now = () => new Date(),
   idp = config.auth ? idpMetadata(config.auth.issuer) : null,
-  jev = config.typesafeApiKey ? new JevClient(config.typesafeApiKey) : null,
+  search = null,
+  jev = config.typesafeApiKey ? jevWithUsage(config.typesafeApiKey, db, now) : null,
+  summaries = loadImportedSummaries(),
 }: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
@@ -59,6 +78,7 @@ export function createApp({
   app.use(meRoutes({ config, db, now }));
   app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
   app.use(activityRoutes({ config, db, now }));
+  app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'not-found')));
 

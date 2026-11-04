@@ -96,6 +96,11 @@ const ICONS = {
   /* the ways to start of the empty Universe (S05): upload an Office file, make a journey */
   upload: { body: <path d="M12 16V4M7 9l5-5 5 5M4 20h16" />, cap: 'round', join: 'round' },
   journey: { body: <path d="M5 18a2.5 2.5 0 1 0 0 .1M19 6a2.5 2.5 0 1 0 0 .1M7 16c4-1 3-7 10-9" />, cap: 'round', join: 'round' },
+  /* search (C12, F01): the mode chips "Tất cả" and "Từ khoá", the notice, a row's way forward */
+  menu: { body: <path d="M4 6h16M4 12h16M4 18h16" />, cap: 'round' },
+  type: { body: <path d="M4 7V5h16v2M9 19h6M12 5v14" />, cap: 'round' },
+  'info-circle': { body: <><circle cx="12" cy="12" r="9" /><path d="M12 8v.5M12 11v5" /></>, cap: 'round' },
+  'chevron-right': { body: <path d="M9 6l6 6-6 6" />, stroke: 2.4, cap: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

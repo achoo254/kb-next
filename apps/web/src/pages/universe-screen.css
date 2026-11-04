@@ -371,9 +371,9 @@
 
 /* ---------- S05: empty and offline ---------- */
 
-/* the shared Spaces wait, dimmed */
+/* the shared Spaces wait, a little dimmed (the board's 0.38 read as too faint: user feedback 04/11/2026) */
 .universe-empty-scene .kf-crystal {
-  opacity: 0.38;
+  opacity: 0.85;
 }
 
 .universe-first {

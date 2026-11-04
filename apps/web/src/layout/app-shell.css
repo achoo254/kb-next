@@ -36,6 +36,11 @@
   top: 16px;
 }
 
+/* F01: the bell and ⌘K stay above the dimmed screen while the palette is open. */
+.app-shell-palette .app-shell-top {
+  z-index: 6;
+}
+
 .app-shell-rail {
   position: absolute;
   left: 0;

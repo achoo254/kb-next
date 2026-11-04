@@ -94,7 +94,7 @@ export function LandingPage({ session }: { session: SessionState }): ReactNode {
           spaces={spaces}
           orb={{
             title: t('landing.orbTitle'),
-            chips: ['Universe', t('landing.orbSpaces', { count: spaces.length }), 'VI · EN'],
+            chips: [t('landing.orbSpaces', { count: spaces.length }), 'VI · EN'],
             label: t('landing.orbLabel'),
             href: AFTER_SIGN_IN,
           }}

@@ -68,6 +68,11 @@ export interface ServerConfig {
   signInLimitPer15Min: number;
   /** Back-channel logout calls per 15 minutes per IP (the IdP calls from one address). */
   backchannelLimitPer15Min: number;
+  /**
+   * Searches per minute per account (per IP for guests): no cap on Jev requests, only this limit against abuse of
+   * the shared API. A search as you type in ⌘K and C12 sends two requests per pause in typing.
+   */
+  searchLimitPerMinute: number;
   /** TypeSafe API key for Jev; null when unset (Jev-made choices use their plain fallback). */
   typesafeApiKey: string | null;
   /** Load the dev seed at startup as this owner (KB_SEED=mock); null otherwise. Never set in production. */
@@ -128,6 +133,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     meili: e.MEILI_URL && e.MEILI_MASTER_KEY ? { url: e.MEILI_URL.replace(/\/$/, ''), apiKey: e.MEILI_MASTER_KEY, indexPrefix: '' } : null,
     signInLimitPer15Min: 100,
     backchannelLimitPer15Min: 300,
+    searchLimitPerMinute: 120,
     typesafeApiKey: e.TYPESAFE_API_KEY ?? null,
     startupSeed: e.KB_SEED === 'mock' ? { ownerSub: e.SEED_OWNER_SUB ?? DEFAULT_SEED_OWNER_SUB } : null,
   };

@@ -75,4 +75,52 @@ describe('Jev client', () => {
     await expect(client(logs, 50).choose('space-caption', {}, QUESTIONS)).rejects.toThrow(/TimeoutError/);
     expect(logs[0]).toMatchObject({ ok: false, status: null });
   });
+
+  it('asks Choice, Score and Noul questions together and returns their full answers', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve(
+          Response.json({
+            model: 'jev-1.14.0',
+            answers: {
+              document: { type: 'choice', choice: 'D001', confidence: 0.6, probabilities: { D001: 0.8, D002: 0.2 } },
+              P01: { type: 'score', score: 2.7, confidence: 0.7, legend: { '0': 'a' }, probabilities: { '0': 0, '3': 0.9 } },
+              exists: { type: 'noul', noul: 0.97 },
+              where: { type: 'box', boxes: [] },
+            },
+            usage: { input_tokens: 512, output_tokens: 40 },
+          }),
+        ),
+      ),
+    );
+    const logs: JevUsageLog[] = [];
+    const result = await client(logs).ask('search-documents', { documents: {} }, {
+      document: { type: 'choice', instructions: 'Which?', criteria: { D001: null, D002: null } },
+      P01: { type: 'score', instructions: 'How well?', criteria: ['no', 'yes'] },
+      exists: { type: 'noul', instructions: 'Any?' },
+    });
+    expect(result).toEqual({
+      answers: {
+        document: { type: 'choice', choice: 'D001', confidence: 0.6, probabilities: { D001: 0.8, D002: 0.2 } },
+        P01: { type: 'score', score: 2.7, confidence: 0.7, probabilities: { '0': 0, '3': 0.9 } },
+        exists: { type: 'noul', noul: 0.97 },
+      },
+      usage: { inputTokens: 512, outputTokens: 40 },
+    });
+    expect(logs[0]).toMatchObject({ purpose: 'search-documents', ok: true, questions: 3, inputTokens: 512 });
+  });
+
+  it('takes a deadline per call', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_url: string, init: RequestInit) =>
+          new Promise((_resolve, reject) => init.signal?.addEventListener('abort', () => reject(init.signal?.reason as Error))),
+      ),
+    );
+    const started = Date.now();
+    await expect(client([], 60_000).ask('search-passages', {}, {}, { timeoutMs: 40 })).rejects.toThrow(/TimeoutError/);
+    expect(Date.now() - started).toBeLessThan(5_000);
+  });
 });
