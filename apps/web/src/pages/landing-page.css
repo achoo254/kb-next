@@ -25,6 +25,12 @@
   inset: 0;
 }
 
+/* The board's places run down to 900px (the stage ends at 903): in a shorter window the board keeps that height and
+   the page scrolls, instead of cutting the feature cards off under a footer pinned to the window's bottom. */
+.landing .screen-board {
+  min-height: max(100vh, 900px);
+}
+
 .landing-hero {
   position: absolute;
   left: 96px;
