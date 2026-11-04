@@ -25,6 +25,7 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C09', titleKey: 'screen.C09', access: 'signed-in', pattern: /^\/u$/ },
   { code: 'C10', titleKey: 'screen.C10', access: 'signed-in', pattern: new RegExp(`^/s/${segment}$`) },
   { code: 'C11', titleKey: 'screen.C11', access: 'signed-in', pattern: new RegExp(`^/d/${segment}$`) },
+  { code: 'F04', titleKey: 'screen.F04', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/translate$`) },
   { code: 'C12', titleKey: 'screen.C12', access: 'signed-in', pattern: /^\/search$/ },
   { code: 'C14', titleKey: 'screen.C14', access: 'signed-in', pattern: /^\/copilot$/ },
   { code: 'C13', titleKey: 'screen.C13', access: 'signed-in', pattern: /^\/graph$/ },
@@ -32,6 +33,7 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C08', titleKey: 'screen.C08', access: 'signed-in', pattern: /^\/me$/ },
   { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },
+  { code: 'F03', titleKey: 'screen.F03', access: 'signed-in', pattern: /^\/settings\/keys$/ },
   { code: 'A01', titleKey: 'screen.A01', access: 'signed-in', pattern: /^\/admin(\/[A-Za-z0-9_/-]*)?$/ },
 ];
 

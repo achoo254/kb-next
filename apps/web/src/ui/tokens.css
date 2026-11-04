@@ -499,3 +499,13 @@
   --avatar-amber: linear-gradient(140deg, var(--amber-300), var(--amber-700));
   --avatar-emerald: linear-gradient(140deg, var(--emerald-300), var(--emerald-700));
 }
+
+/* ── Own keys (F03) and AI translation (F04) ──────────────────────────────────────────────────────────────────── */
+:root {
+  /* the deep ends of the provider orbs: OpenAI emerald, Gemini cyan, Claude amber */
+  --emerald-900: #064e3b;
+  --cyan-900: #164e63;
+  --amber-900: #78350f;
+  /* the sky end of the "Key riêng" title gradient */
+  --sky-200: #8fd8ff;
+}

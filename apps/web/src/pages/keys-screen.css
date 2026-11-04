@@ -1,0 +1,510 @@
+/* "Key riêng" (design/mock/F03-Keys.dc.html). The board draws its content in a layer moved by (78, 10) and scaled to
+   0.944 (the chrome is not); .keys-board is that layer, so every length below is the board's own: title 120,90 ·
+   cards 120,190 (820 wide) · form 120,470 · "Dùng key nào" 980,190 (340 wide) · key art 1090,70. */
+
+.keys-screen {
+  position: relative;
+  min-height: 900px;
+}
+
+.keys-board {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform-origin: 0 0;
+  transform: translate(78px, 10px) scale(0.944);
+}
+
+.keys-art {
+  position: absolute;
+  left: 1090px;
+  top: 70px;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px color-mix(in srgb, var(--violet-600) 55%, transparent));
+  animation: keys-float 5s ease-in-out infinite;
+}
+
+@keyframes keys-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* ── title ── */
+
+.keys-head {
+  position: absolute;
+  left: 120px;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.keys-title {
+  margin: 0;
+  font: 700 40px var(--font-display);
+  letter-spacing: -1px;
+  background: linear-gradient(90deg, light-dark(var(--light-hero-from), var(--sky-200)), light-dark(var(--light-hero-to), var(--violet-300)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.keys-lead {
+  margin: 0;
+  font-size: 14px;
+  color: light-dark(var(--light-text), var(--violet-200));
+}
+
+/* ── provider cards ── */
+
+.keys-cards {
+  position: absolute;
+  left: 120px;
+  top: 190px;
+  width: 820px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.keys-card {
+  --provider: var(--emerald-500);
+  --provider-hi: var(--emerald-200);
+  --provider-deep: var(--emerald-900);
+  box-sizing: border-box;
+  border-radius: var(--radius-section);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: var(--rim-soft-bg);
+  border: 1.5px solid var(--c-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition: transform 0.25s var(--ease-out-back);
+}
+
+.keys-card:hover {
+  transform: translateY(-4px);
+}
+
+.keys-card[data-provider="gemini"] {
+  --provider: var(--cyan-500);
+  --provider-hi: var(--cyan-200);
+  --provider-deep: var(--cyan-900);
+}
+
+.keys-card[data-provider="anthropic"] {
+  --provider: var(--amber-500);
+  --provider-hi: var(--amber-200);
+  --provider-deep: var(--amber-900);
+}
+
+/* the provider the Copilot uses now */
+.keys-card[data-active] {
+  border-color: var(--provider);
+  box-shadow: 0 0 26px var(--provider);
+}
+
+.keys-orb {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: radial-gradient(circle at 32% 28%, var(--provider-hi), var(--provider) 45%, var(--provider-deep));
+  box-shadow: 0 0 26px var(--provider);
+  color: var(--white);
+  font: 700 15px var(--font-display);
+  animation: keys-float 5s ease-in-out infinite;
+}
+
+.keys-card[data-provider="gemini"] .keys-orb {
+  animation-delay: 0.5s;
+}
+
+.keys-card[data-provider="anthropic"] .keys-orb {
+  animation-delay: 1s;
+}
+
+.keys-orb:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 4px;
+}
+
+.keys-card-name {
+  font: 700 18px var(--font-display);
+}
+
+.keys-chip.kf-badge {
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.keys-chip.kf-badge[data-tone="neutral"] {
+  background: light-dark(var(--c-bg2), color-mix(in srgb, var(--white) 8%, transparent));
+  color: var(--c-text-muted);
+}
+
+.keys-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.keys-card-sub {
+  min-height: 16px;
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.keys-delete.kf-btn {
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--amber-500) 50%, transparent);
+  color: var(--c-warn-text);
+  font-size: 12px;
+}
+
+.keys-loading .keys-card {
+  min-height: 200px;
+}
+
+.keys-error {
+  position: absolute;
+  left: 120px;
+  top: 190px;
+  width: 820px;
+}
+
+/* ── add-key form ── */
+
+.keys-form {
+  position: absolute;
+  left: 120px;
+  top: 470px;
+  width: 820px;
+  padding: 22px;
+  animation: kf-pop var(--motion-pop) var(--ease-out-back) both;
+}
+
+.keys-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.keys-form-head {
+  /* the board's row also holds its 36px preview switch (mock only), which sets the row's height */
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.keys-form-orb {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, var(--emerald-200), var(--emerald-500) 45%, var(--emerald-900));
+}
+
+.keys-form-orb[data-provider="gemini"] {
+  background: radial-gradient(circle at 32% 28%, var(--cyan-200), var(--cyan-500) 45%, var(--cyan-900));
+}
+
+.keys-form-orb[data-provider="anthropic"] {
+  background: radial-gradient(circle at 32% 28%, var(--amber-200), var(--amber-500) 45%, var(--amber-900));
+}
+
+.keys-form-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.keys-form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.keys-field {
+  flex: 1;
+}
+
+.keys-field .kf-field-label {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.keys-field .kf-field-input {
+  height: 50px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 1.5px solid color-mix(in srgb, var(--violet-400) 40%, transparent);
+  background: light-dark(var(--white), color-mix(in srgb, var(--night-cell) 70%, transparent));
+  box-shadow: none;
+  font-size: 15px;
+}
+
+.keys-form-body[data-phase="checking"] .kf-field-input {
+  border-color: var(--cyan-400);
+}
+
+.keys-form-body[data-phase="saved"] .kf-field-input {
+  border-color: var(--emerald-500);
+}
+
+.keys-form-body[data-phase="failed"] .kf-field-input {
+  border-color: var(--amber-500);
+}
+
+.keys-form-body[data-phase="failed"] .keys-form-row {
+  animation: keys-shake 0.35s ease-in-out 2;
+}
+
+@keyframes keys-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+.keys-save.kf-btn {
+  min-width: 170px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.keys-form-body[data-phase="checking"] .keys-save.kf-btn {
+  background: color-mix(in srgb, var(--violet-600) 50%, transparent);
+  color: var(--white);
+}
+
+.keys-form-body[data-phase="saved"] .keys-save.kf-btn {
+  background: var(--emerald-500);
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.keys-form-body[data-phase="failed"] .keys-save.kf-btn {
+  background: var(--amber-500);
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.keys-save .kf-loader[data-variant="spinner"] {
+  width: 16px;
+  height: 16px;
+}
+
+.keys-form-message {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.keys-form-body[data-phase="checking"] .keys-form-message {
+  color: light-dark(var(--light-accent), var(--cyan-300));
+}
+
+.keys-form-body[data-phase="saved"] .keys-form-message {
+  color: var(--c-success-text);
+}
+
+.keys-form-body[data-phase="failed"] .keys-form-message {
+  color: var(--c-warn-text);
+}
+
+.keys-where {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-link);
+}
+
+.keys-off-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--c-warn-text);
+}
+
+.keys-off-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--c-text);
+}
+
+/* ── "Dùng key nào" ── */
+
+.keys-use {
+  position: absolute;
+  left: 980px;
+  top: 190px;
+  width: 340px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keys-use-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.keys-use-lead {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.keys-radios {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.keys-radio {
+  /* the board's 48px row plus its 1px border */
+  min-height: 50px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--violet-400) 20%, transparent);
+  background: light-dark(var(--c-bg2), color-mix(in srgb, var(--night-cell) 50%, transparent));
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.keys-radio[data-usable] {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.keys-radio[data-on] {
+  border-color: var(--violet-400);
+  background: color-mix(in srgb, var(--violet-600) 35%, transparent);
+}
+
+.keys-radio input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--violet-600);
+}
+
+.keys-radio:focus-within {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.keys-radio-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.keys-radio-note {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.keys-model {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.keys-model select {
+  height: 48px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--violet-400) 40%, transparent);
+  background: light-dark(var(--white), var(--night-row));
+  color: var(--c-text);
+  font: 500 14px var(--font-sans);
+}
+
+.keys-model select:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.keys-use-failed,
+.keys-delete-failed {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-warn-text);
+}
+
+.keys-legend {
+  padding: 12px;
+  border-radius: 14px;
+  background: light-dark(var(--c-bg2), color-mix(in srgb, var(--night-cell) 60%, transparent));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.keys-legend-title {
+  font-weight: 700;
+}
+
+.keys-legend-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.keys-legend-chip {
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--amber-500) 18%, transparent);
+  color: var(--c-warn-text);
+}
+
+.keys-legend-chip[data-status="none"] {
+  background: light-dark(var(--white), color-mix(in srgb, var(--white) 8%, transparent));
+  color: var(--c-text-muted);
+}
+
+.keys-legend-chip[data-status="ok"] {
+  background: color-mix(in srgb, var(--emerald-500) 18%, transparent);
+  color: var(--c-success-text);
+}

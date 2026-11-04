@@ -1,0 +1,315 @@
+/* "Dịch bằng AI" (design/mock/F04-Translate.dc.html): the bar 112,82 (1300×62), the original 112,160 and the
+   translation 782,160 (630×600 each), the link art 722,420 between them, over the strong veil. */
+
+.translate-screen {
+  position: relative;
+  min-height: 900px;
+}
+
+.translate-bar,
+.translate-col {
+  box-sizing: border-box;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* ── the bar ── */
+
+.translate-bar {
+  position: absolute;
+  left: 112px;
+  top: 82px;
+  width: 1300px;
+  height: 62px;
+  padding: 0 10px 0 20px;
+  border-radius: 31px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.translate-title {
+  margin: 0;
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.translate-langs {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  font: 700 12px var(--font-display);
+}
+
+.translate-badge.kf-badge {
+  flex: none;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 15px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.translate-progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.translate-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--c-track);
+}
+
+.translate-fill {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--violet-400), var(--sky-300));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--sky-300) 60%, transparent);
+  transition: width 0.6s ease;
+}
+
+.translate-percent {
+  min-width: 44px;
+  font: 600 12px var(--font-display);
+  color: var(--c-text-muted);
+}
+
+.translate-stop.kf-btn,
+.translate-action.kf-btn {
+  flex: none;
+  padding: 0 16px;
+  font-size: 13px;
+}
+
+.translate-stop.kf-btn {
+  border-color: color-mix(in srgb, var(--white) 14%, transparent);
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  box-shadow: none;
+  color: light-dark(var(--light-text), var(--violet-100));
+}
+
+.translate-loading {
+  gap: 20px;
+}
+
+.translate-error {
+  position: absolute;
+  left: 112px;
+  top: 160px;
+  width: 630px;
+}
+
+/* ── the two columns ── */
+
+.translate-col {
+  position: absolute;
+  top: 160px;
+  width: 630px;
+  height: 600px;
+  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.translate-col-source {
+  left: 112px;
+}
+
+.translate-col-target {
+  left: 782px;
+  border-color: color-mix(in srgb, var(--cyan-200) 55%, transparent);
+  box-shadow:
+    inset 0 0 26px color-mix(in srgb, var(--cyan-400) 26%, transparent),
+    inset 0 0 3px color-mix(in srgb, var(--cyan-100) 50%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 25%, transparent),
+    0 0 32px color-mix(in srgb, var(--cyan-400) 22%, transparent);
+}
+
+.translate-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.translate-col-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.translate-col-target .translate-col-label {
+  color: light-dark(var(--light-accent), var(--cyan-300));
+}
+
+.translate-by {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.translate-rows {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.translate-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+.translate-row[data-current] {
+  background: color-mix(in srgb, var(--cyan-400) 10%, transparent);
+}
+
+.translate-num {
+  min-width: 16px;
+  font: 700 12px var(--font-display);
+  color: light-dark(var(--light-primary), var(--violet-400));
+}
+
+.translate-text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: light-dark(var(--light-text), var(--violet-100));
+}
+
+.translate-col-target .translate-text {
+  color: var(--c-text);
+}
+
+/* A paragraph is one Markdown block: a heading, a list item or a code block reads at the text's size here. */
+.translate-text :is(p, h1, h2, h3, h4, ol, ul, pre, blockquote) {
+  margin: 0;
+  font-size: inherit;
+}
+
+.translate-text :is(h1, h2, h3, h4) {
+  font-weight: 700;
+}
+
+.translate-text :is(ol, ul) {
+  padding-left: 20px;
+}
+
+.translate-text pre {
+  white-space: pre-wrap;
+  font-size: 13px;
+}
+
+/* the paragraph being written ends in a caret on the same line */
+.translate-row[data-state="writing"] .translate-text > :nth-last-child(2),
+.translate-row[data-state="writing"] .translate-text > :nth-last-child(2) > li:last-child {
+  display: inline;
+}
+
+.translate-caret {
+  margin-left: 1px;
+  color: var(--c-accent);
+  font-weight: 700;
+  animation: translate-caret 1s step-end infinite;
+}
+
+@keyframes translate-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.translate-wait {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.translate-note {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.translate-note[data-tone="success"] {
+  color: var(--c-success-text);
+}
+
+.translate-note[data-tone="warn"] {
+  color: var(--c-warn-text);
+}
+
+.translate-link {
+  position: absolute;
+  left: 722px;
+  top: 420px;
+  z-index: 2;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--cyan-400) 55%, transparent));
+  animation: translate-float 6s ease-in-out infinite;
+}
+
+@keyframes translate-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ── no key, off, same language ── */
+
+.translate-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 30px;
+  text-align: center;
+}
+
+.translate-empty img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
+.translate-empty-title {
+  margin: 0;
+  font: 700 24px var(--font-display);
+}
+
+.translate-empty-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: light-dark(var(--light-text), var(--violet-200));
+}

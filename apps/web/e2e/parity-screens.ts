@@ -1,3 +1,5 @@
+import { F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
+
 /**
  * The screens the parity check compares with their mock board (design/mock-png/<board>.png), with the route that
  * shows them and whether they are built. A `pending` screen is compared and its difference printed, but only a
@@ -29,9 +31,10 @@ export interface ParityScreen {
  * Space and with nothing readable in the others (the empty Universe, S05; captions and the recent texts the AI panel
  * asks about stay as seeded, as the board draws them); `search-c12` / `search-f01`: /api/search answers the board's
  * results (search-boards.ts: E2E has neither Meilisearch nor a Jev key), and on C12 /api/spaces the board's five
- * Spaces of the filter.
+ * Spaces of the filter; `keys-f03` / `translate-f04`: /api/me/keys answers the board's three keys, and on F04 the
+ * document and the translation stream are the board's, held mid-stream (ai-boards.ts: E2E has no AI provider).
  */
-export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01';
+export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -73,6 +76,9 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
     type: 'dhcp',
     waitFor: '[data-id="palette"][data-state="results"]',
   },
+  // Own keys (F03) with the board's keys, and AI translation (F04) of the board's DHCP text, 70% through.
+  { board: 'F03-Keys', path: '/settings/keys', signedIn: true, status: 'built', mocks: ['keys-f03'], clock: F03_CLOCK },
+  { board: 'F04-Translate', path: `/d/${F04_DOCUMENT_ID}/translate`, signedIn: true, status: 'built', mocks: ['translate-f04'] },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The UI kit (dev server only, apps/web/src/dev-kit).

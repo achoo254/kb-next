@@ -7,11 +7,13 @@ import { ScreenPage } from './layout/screen-page';
 import { SessionProvider } from './layout/session-context';
 import type { BackdropVeil } from './ui/universe-backdrop';
 import { ErrorScreen } from './pages/error-screen';
+import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
 import { ReaderScreen } from './pages/reader-screen';
 import { SearchScreen } from './pages/search-screen';
 import { SpaceScreen } from './pages/space-screen';
+import { TranslateScreen } from './pages/translate-screen';
 import { UniverseEntry } from './pages/universe-entry';
 import { UniverseScreen } from './pages/universe-screen';
 import { type ScreenRoute, matchRoute, routePath } from './routes';
@@ -38,6 +40,8 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   C08: { rail: 'mine', veil: 'strong' },
   C20: { veil: 'strong' },
   H03: { rail: 'settings', veil: 'strong' },
+  F03: { rail: 'settings', veil: 'radial' },
+  F04: { rail: 'spaces', veil: 'strong' },
   A01: { veil: 'strong' },
 };
 
@@ -81,6 +85,10 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <ReaderScreen id={routeParam(route, path)} />;
     case 'C12':
       return <SearchScreen />;
+    case 'F03':
+      return <KeysScreen />;
+    case 'F04':
+      return <TranslateScreen id={routeParam(route, path)} />;
     default: {
       const chrome = SCREEN_CHROME[route.code] ?? {};
       return (

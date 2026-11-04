@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import type { ParityMock, ParityScreen } from './parity-screens';
+import { F03_KEYS, F04_DOCUMENT, F04_DOCUMENT_ID, F04_STREAM } from './ai-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
 import { signInAt } from './sign-in';
 
@@ -39,6 +40,26 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
   }
   // C12's Space filter lists the board's five Spaces, matching its results.
   if (mocks.includes('search-c12')) await page.route('**/api/spaces', (route) => route.fulfill({ json: C12_SPACES }));
+  if (mocks.includes('keys-f03')) await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
+  if (mocks.includes('translate-f04')) {
+    await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
+    await page.route(`**/api/documents/${F04_DOCUMENT_ID}`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: F04_DOCUMENT }) : route.fallback()));
+    // A route can only answer a whole body, and the screen must stay mid-stream: the page's own fetch answers the
+    // translation with the board's events on a stream that is never closed.
+    await page.addInitScript((body: string) => {
+      const original = window.fetch.bind(window);
+      window.fetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        if (!url.endsWith('/translate')) return original(input, init);
+        const stream = new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode(body));
+          },
+        });
+        return Promise.resolve(new Response(stream, { status: 200, headers: { 'Content-Type': 'text/event-stream' } }));
+      };
+    }, F04_STREAM);
+  }
 }
 
 /** Opens `screen` and waits until it is ready to be looked at. */

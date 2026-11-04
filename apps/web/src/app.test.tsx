@@ -20,6 +20,8 @@ describe('routes', () => {
     ['/me', 'C08'],
     ['/inbox', 'C20'],
     ['/settings', 'H03'],
+    ['/settings/keys', 'F03'],
+    ['/d/dhcp-dora/translate', 'F04'],
     ['/admin', 'A01'],
     ['/admin/review', 'A01'],
     ['/l/abc_DEF-123', 'H02'],

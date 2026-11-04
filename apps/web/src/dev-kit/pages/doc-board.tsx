@@ -17,6 +17,7 @@ export const BOARD_ROUTES: Readonly<Record<string, string>> = {
   C15: '/canvas',
   C20: '/inbox',
   H03: '/settings',
+  F03: '/settings/keys',
   A01: '/admin',
 };
 
