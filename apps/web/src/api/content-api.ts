@@ -116,7 +116,8 @@ export type SpacePermissions = z.infer<typeof SpacePermissionsSchema>;
 const SpaceCollectionSchema = z.extend(CollectionBriefSchema, {
   tint: z.string(),
   glow: z.string(),
-  art: z.nullable(z.string()),
+  /** The collection's crystal, or the Space's when it has none of its own. */
+  art: z.string(),
   documentCount: z.number(),
   documents: z.array(DocumentSummarySchema),
 });

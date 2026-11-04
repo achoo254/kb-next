@@ -25,28 +25,40 @@
           "name": {
             "vi": "Hành trình gói tin",
             "en": "Packet journey"
-          }
+          },
+          "tint": "#93C5FD",
+          "glow": "#3B82F6",
+          "art": "/art/crystal-kubernetes.webp"
         },
         {
           "key": "addressing",
           "name": {
             "vi": "Địa chỉ",
             "en": "Addressing"
-          }
+          },
+          "tint": "#F0ABFC",
+          "glow": "#C026D3",
+          "art": "/art/crystal-weekly.webp"
         },
         {
           "key": "core-protocols",
           "name": {
             "vi": "Giao thức nền tảng",
             "en": "Core protocols"
-          }
+          },
+          "tint": "#C4B5FD",
+          "glow": "#8B5CF6",
+          "art": "/art/crystal-networking.webp"
         },
         {
           "key": "transport-web",
           "name": {
             "vi": "Truyền tải & Web",
             "en": "Transport & Web"
-          }
+          },
+          "tint": "#A5F3FC",
+          "glow": "#22D3EE",
+          "art": "/art/crystal-linux.webp"
         }
       ]
     },
@@ -74,21 +86,30 @@
           "name": {
             "vi": "Kiến trúc cụm",
             "en": "Cluster architecture"
-          }
+          },
+          "tint": "#93C5FD",
+          "glow": "#3B82F6",
+          "art": "/art/crystal-kubernetes.webp"
         },
         {
           "key": "build-cluster",
           "name": {
             "vi": "Dựng cụm từng bước",
             "en": "Building the cluster"
-          }
+          },
+          "tint": "#A5F3FC",
+          "glow": "#22D3EE",
+          "art": "/art/crystal-linux.webp"
         },
         {
           "key": "pods",
           "name": {
             "vi": "Làm việc với Pod",
             "en": "Working with Pods"
-          }
+          },
+          "tint": "#C4B5FD",
+          "glow": "#8B5CF6",
+          "art": "/art/crystal-networking.webp"
         }
       ]
     },
@@ -116,14 +137,20 @@
           "name": {
             "vi": "Khởi động & bộ nhớ",
             "en": "Boot & memory"
-          }
+          },
+          "tint": "#A5F3FC",
+          "glow": "#22D3EE",
+          "art": "/art/crystal-linux.webp"
         },
         {
           "key": "logging",
           "name": {
             "vi": "Log hệ thống",
             "en": "System logging"
-          }
+          },
+          "tint": "#86EFAC",
+          "glow": "#10B981",
+          "art": "/art/crystal-observability.webp"
         }
       ]
     },
@@ -151,7 +178,10 @@
           "name": {
             "vi": "VictoriaLogs",
             "en": "VictoriaLogs"
-          }
+          },
+          "tint": "#86EFAC",
+          "glow": "#10B981",
+          "art": "/art/crystal-observability.webp"
         }
       ]
     },
@@ -179,21 +209,30 @@
           "name": {
             "vi": "Phần 1 · Nền tảng & vòng đời",
             "en": "Part 1 · Basics & lifecycle"
-          }
+          },
+          "tint": "#FDE68A",
+          "glow": "#F59E0B",
+          "art": "/art/crystal-docker.webp"
         },
         {
           "key": "part-2-images-storage",
           "name": {
             "vi": "Phần 2 · Image, lưu trữ & log",
             "en": "Part 2 · Images, storage & logs"
-          }
+          },
+          "tint": "#93C5FD",
+          "glow": "#3B82F6",
+          "art": "/art/crystal-kubernetes.webp"
         },
         {
           "key": "part-3-compose",
           "name": {
             "vi": "Phần 3 · Compose",
             "en": "Part 3 · Compose"
-          }
+          },
+          "tint": "#A5F3FC",
+          "glow": "#22D3EE",
+          "art": "/art/crystal-linux.webp"
         }
       ]
     },
@@ -221,7 +260,10 @@
           "name": {
             "vi": "Nền tảng Cloud",
             "en": "Cloud fundamentals"
-          }
+          },
+          "tint": "#FDE68A",
+          "glow": "#F59E0B",
+          "art": "/art/crystal-docker.webp"
         }
       ]
     },
@@ -249,14 +291,20 @@
           "name": {
             "vi": "08-08",
             "en": "08-08"
-          }
+          },
+          "tint": "#F0ABFC",
+          "glow": "#C026D3",
+          "art": "/art/crystal-weekly.webp"
         },
         {
           "key": "2026-09-17",
           "name": {
             "vi": "17-09",
             "en": "17-09"
-          }
+          },
+          "tint": "#F9A8D4",
+          "glow": "#EC4899",
+          "art": "/art/crystal-personal.webp"
         }
       ]
     }

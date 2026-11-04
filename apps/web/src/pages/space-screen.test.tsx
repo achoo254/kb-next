@@ -79,7 +79,7 @@ function detail(overrides: Partial<SpaceDetail> = {}): SpaceDetail {
           doc('ndp', 'So sánh ARP và NDP', { type: 'note', origin: 'community', status: 'pending', authorName: 'Bạn' }),
         ],
       },
-      { id: 'c2', nameVi: 'Địa chỉ', nameEn: 'Addressing', tint: '#F0ABFC', glow: '#C026D3', art: null, documentCount: 0, documents: [] },
+      { id: 'c2', nameVi: 'Địa chỉ', nameEn: 'Addressing', tint: '#F0ABFC', glow: '#C026D3', art: '/art/crystal-weekly.webp', documentCount: 0, documents: [] },
     ],
     uncollected: [],
     related: [

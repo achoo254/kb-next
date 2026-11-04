@@ -43,7 +43,7 @@ export function CollectionGrid({ collections, selectedId, onSelect }: { collecti
               data-id={`space-collection-${collection.id}`}
             >
               <span className="space-collection-art" aria-hidden="true">
-                {collection.art && <img src={collection.art} alt="" />}
+                <img src={collection.art} alt="" />
               </span>
               <span className="space-collection-text">
                 <span className="space-collection-name">{spaceName(locale, collection)}</span>

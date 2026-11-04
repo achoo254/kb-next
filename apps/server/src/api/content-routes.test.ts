@@ -164,6 +164,15 @@ describe('GET /api/spaces/:slug', () => {
     expect(titles).not.toContain('subnet.xlsx');
   });
 
+  it('gives each collection its own crystal, or the Space’s when it has none, so no card is left without art', async () => {
+    const net = await get<SpaceDetailResponse>('/api/spaces/networking', owner);
+    expect(net.body.collections.map((c) => c.art)).toEqual(['/art/crystal-networking.webp', '/art/crystal-linux.webp', '/art/crystal-weekly.webp', '/art/crystal-kubernetes.webp']);
+    // The seed's Docker collections have no image of their own.
+    const docker = await get<SpaceDetailResponse>('/api/spaces/docker', owner);
+    expect(docker.body.collections.length).toBeGreaterThan(0);
+    for (const c of docker.body.collections) expect(c).toMatchObject({ art: '/art/crystal-docker.webp', tint: '#FDE68A', glow: '#F59E0B' });
+  });
+
   it('lists the personal Space’s files outside collections for its owner, and refuses it to anyone else', async () => {
     const slug = `personal-${ownerId}`;
     const mine = await get<SpaceDetailResponse>(`/api/spaces/${slug}`, owner);

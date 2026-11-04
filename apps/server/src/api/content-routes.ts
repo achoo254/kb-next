@@ -66,7 +66,8 @@ export interface SpaceDetailResponse {
   members: SpaceMember[];
   /** What the viewer may do in this Space. */
   permissions: SpacePermissions;
-  collections: Array<CollectionBrief & { tint: string; glow: string; art: string | null; documentCount: number; documents: DocumentSummary[] }>;
+  /** A collection without its own image shows the Space's crystal, matching its tint (which falls back to the Space's too). */
+  collections: Array<CollectionBrief & { tint: string; glow: string; art: string; documentCount: number; documents: DocumentSummary[] }>;
   /** Documents of the Space outside any collection (the personal Space's files). */
   uncollected: DocumentSummary[];
   related: Array<WithRelevance<SpaceCard>>;
@@ -212,7 +213,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
       });
     const collections = (await listCollectionsOf(db, [space.id])).map((c: CollectionRow) => {
       const documents = inCollection(c.id);
-      return { ...collectionBrief(c), tint: c.tint, glow: c.glow, art: c.art, documentCount: documents.length, documents };
+      return { ...collectionBrief(c), tint: c.tint, glow: c.glow, art: c.art ?? space.art, documentCount: documents.length, documents };
     });
 
     // Related: Spaces linked to this one, most linked first; else the next public Spaces of the Universe.
