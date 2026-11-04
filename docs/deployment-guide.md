@@ -27,6 +27,9 @@ Kiểm lại ngay trước khi deploy. Đổi cổng thì đổi cùng lúc ở 
 | `kb-web` (confidential, BFF) | production | `https://kb.hoandat.com/auth/callback` | `https://kb.hoandat.com/auth/backchannel-logout` |
 | `kb-web-dev` (confidential, loopback) | máy dev | `http://localhost:5321/auth/callback` | không (IdP không gọi được máy dev) |
 
+Trên IdP (04/11/2026): `kb-web-dev` đã bật; `kb-web` bật lúc deploy KnowFlow. Secret của cả hai nằm trong thư mục iCloud
+`ENV production/kb-next/` (bản development và bản production); bản development chép thành file env của `apps/server`.
+
 Scope `openid profile email`. Khi người dùng đăng xuất ở IdP, IdP gửi logout token (ký ES256) tới
 `/auth/backchannel-logout`; server kiểm chữ ký bằng JWKS của IdP rồi xoá các phiên đăng nhập từ đúng phiên IdP đó
 (`sessions.idp_sid`), hoặc mọi phiên của tài khoản khi token không có `sid`.
