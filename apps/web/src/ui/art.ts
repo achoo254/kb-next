@@ -33,6 +33,21 @@ export const SPACE_ICON: Record<SpaceKind, IconName> = {
 
 /** The central orb and the neon stage of C09. */
 export const ORB_ART = '/art/orb-universe.webp';
+
+/**
+ * The crystal art (480px; the orb standing in for Cloud is 768px) shows at 168px, so each also has a 336px copy
+ * (`-336.webp`, 2× the crystal) the browser picks on 1× and 2× screens. Art from the API without a copy keeps one src.
+ */
+const CRYSTAL_ART_WIDTH: Readonly<Record<string, number>> = {
+  ...Object.fromEntries(Object.values(CRYSTAL_ART).map((src) => [src, 480])),
+  [ORB_ART]: 768,
+};
+
+/** The srcset of a crystal's art, or undefined when the art has no smaller copy. */
+export function crystalSrcSet(src: string): string | undefined {
+  const width = CRYSTAL_ART_WIDTH[src];
+  return width ? `${src.replace(/\.webp$/, '-336.webp')} 336w, ${src} ${width}w` : undefined;
+}
 export const STAGE_ART = '/art/stage-platform.webp';
 
 /** The AI-drawn state illustrations (phase 2 table): never redrawn in CSS. */

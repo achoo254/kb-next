@@ -1,6 +1,6 @@
 import type { CSSProperties, MouseEventHandler, ReactNode } from 'react';
 import { Icon, type IconName } from './icon';
-import { CRYSTAL_ART, SPACE_ICON, type SpaceKind } from './art';
+import { CRYSTAL_ART, SPACE_ICON, type SpaceKind, crystalSrcSet } from './art';
 import './crystal.css';
 
 interface CrystalProps {
@@ -52,9 +52,11 @@ export function Crystal({
 }: CrystalProps): ReactNode {
   const mini = size === 'mini';
   const label = count ? `${name} · ${count}` : name;
+  const src = art ?? CRYSTAL_ART[space];
   const body = (
     <>
-      <img className="kf-crystal-art" src={art ?? CRYSTAL_ART[space]} alt="" />
+      {/* 168px full, 96px mini (crystal.css) */}
+      <img className="kf-crystal-art" src={src} srcSet={crystalSrcSet(src)} sizes={mini ? '96px' : '168px'} alt="" />
       <span className="kf-crystal-core" aria-hidden="true" />
       <span className="kf-crystal-label">
         <Icon name={icon ?? SPACE_ICON[space]} size={mini ? 16 : 28} className="kf-crystal-icon" />
