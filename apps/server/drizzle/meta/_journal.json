@@ -15,6 +15,13 @@
       "when": 1793765131614,
       "tag": "0001_content-access-and-search",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793766686685,
+      "tag": "0002_official-origin",
+      "breakpoints": true
     }
   ]
 }

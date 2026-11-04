@@ -1,0 +1,1 @@
+ALTER TYPE "public"."document_origin" ADD VALUE 'official' BEFORE 'official_ai';

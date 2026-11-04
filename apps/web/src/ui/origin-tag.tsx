@@ -5,10 +5,11 @@ import { Icon, type IconName } from './icon';
 import './origin-tag.css';
 
 /** Where a piece of content comes from (plan rule 6): every card, planet, search result and citation carries one. */
-export type ContentOrigin = 'official' | 'community' | 'private' | 'pending';
+export type ContentOrigin = 'official' | 'official-ai' | 'community' | 'private' | 'pending';
 
 const ORIGINS: Record<ContentOrigin, { label: MessageKey; icon: IconName }> = {
   official: { label: 'origin.official', icon: 'star' },
+  'official-ai': { label: 'origin.officialAi', icon: 'star' },
   community: { label: 'origin.community', icon: 'community' },
   private: { label: 'origin.private', icon: 'lock' },
   pending: { label: 'origin.pending', icon: 'clock' },
