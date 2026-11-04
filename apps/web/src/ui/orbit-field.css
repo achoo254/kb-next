@@ -53,6 +53,9 @@
   border-radius: 50%;
   offset-rotate: 0deg;
   offset-anchor: center;
+  /* Chrome runs offset-distance on the main thread; without its own layer every frame of a running dot repaints the
+     layer it sits on (the bloom SVG and the filtered crystals), which drops the scene to ~35 fps. */
+  will-change: transform;
   animation-name: kf-orbit-run;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
