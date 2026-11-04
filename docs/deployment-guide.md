@@ -159,6 +159,14 @@ journalctl -u kb-server -n 30 --no-pager | grep 'own AI keys'
 
 **Kiểm sau deploy:** đăng nhập rồi mở `/api/me/keys`: `available` là `true`.
 
+**Jev và quy tắc "kho chưa có":** Copilot chỉ trả "kho chưa có" (không gọi nhà cung cấp của người dùng) khi Jev xác
+nhận kho không đủ. Thiếu `TYPESAFE_API_KEY` thì Copilot chạy chế độ chỉ theo từ khoá: tìm được đoạn nào là gọi nhà
+cung cấp. Production luôn đặt `TYPESAFE_API_KEY`.
+
+**Chỉ mục có thêm `collectionId`** (lọc phạm vi Collection của Copilot ngay trong Meilisearch): sau lần deploy đầu
+tiên có trường này, chạy lệnh dựng lại chỉ mục ở mục Meilisearch một lần. Chưa dựng lại thì hỏi trong phạm vi
+Collection chỉ còn tìm theo nghĩa (đoạn cũ trong chỉ mục chưa có `collectionId`).
+
 ## Nhập nội dung Học Cloud
 
 Lệnh nhập đọc API công khai của Học Cloud (lab, bài tập) và `content/` đi kèm bản release (trang học hàng tuần đã chỉnh,

@@ -255,7 +255,7 @@ export function searchRoutes({ config, db, now, meili, jev, summaries }: SearchR
       listTranslationsOf(
         db,
         viewer,
-        docList.flatMap((d) => (d.translationGroupId ? [d.translationGroupId] : [])),
+        docList.map(textKey),
       ),
       viewer.kind === 'user'
         ? progressOf(
@@ -271,7 +271,7 @@ export function searchRoutes({ config, db, now, meili, jev, summaries }: SearchR
     for (const f of found) {
       const space = spaceRows.get(f.doc.spaceId);
       if (!space) continue;
-      const group = f.doc.translationGroupId ? translations.filter((d) => d.translationGroupId === f.doc.translationGroupId) : [f.doc];
+      const group = translations.filter((d) => textKey(d) === textKey(f.doc));
       const langs: Lang[] = langsOf(group.length > 0 ? group : [f.doc]);
       const read = progress ? (progress.get(f.doc.id)?.progress ?? 0) : null;
       const collection = f.doc.collectionId ? collectionById.get(f.doc.collectionId) : undefined;

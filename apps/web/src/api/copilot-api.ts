@@ -5,14 +5,17 @@
  * mismatch throws ApiError(BAD_RESPONSE)).
  *
  * Errors before the stream (ApiError.code): `sign-in-required` (401), `USER_KEYS_DISABLED` (503), `rate-limited`
- * (429: 20 a minute, asks and translations together), `invalid-body` (400), `NO_USER_KEY` (403: show "Mở Key riêng"),
- * `not-found` (404: a scope or document the reader cannot see), for translation also `hidden` / `no-access` (403),
- * `same-language` and `not-translatable` (400); `network` when the request got no answer (F02 "mất mạng", also when
+ * (429: 20 provider calls a minute per account; a question is 1, a translation as many calls as it needs),
+ * `invalid-body` (400), `NO_USER_KEY` (403: show "Mở Key riêng"), `USER_KEY_UNREADABLE` (403: the active key no
+ * longer decrypts on the server; ask to save it again in Key riêng), `not-found` (404: a scope or document the
+ * reader cannot see), for translation also `hidden` / `no-access` (403), `same-language`, `not-translatable` and
+ * `too-long` (400: more than 15 calls, the longest imported text needs 11); `network` when the request got no answer (F02 "mất mạng", also when
  * the stream breaks: the reader throws ApiError(0, 'network')).
  *
  * In the stream, `error.code` maps to F02: `NO_ANSWER` "kho chưa có" (the provider was never called),
- * `USER_KEY_REJECTED` "key bị từ chối", `USER_KEY_NO_CREDIT` "hết credit", `PROVIDER_FAILED` and `INTERNAL`
- * "lỗi / thử lại" (keep the text already streamed). `status.jev === 'off'` is "chỉ theo từ khoá" (no `check` comes);
+ * `USER_KEY_REJECTED` "key bị từ chối", `USER_KEY_NO_CREDIT` "hết credit", `PROVIDER_FAILED` (also an answer the
+ * provider cut: output cap, safety stop; nothing saved) and `INTERNAL` "lỗi / thử lại" (keep the text already
+ * streamed). A failed translation saves nothing and leaves an earlier draft as it was. `status.jev === 'off'` is "chỉ theo từ khoá" (no `check` comes);
  * a `check` citation with `supported: false` is "trích dẫn không khả dụng".
  */
 import * as z from 'zod/mini';

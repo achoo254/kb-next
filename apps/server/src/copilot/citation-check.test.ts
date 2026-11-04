@@ -38,6 +38,20 @@ describe('citation check', () => {
     expect(calls.map((c) => c.purpose)).toEqual(['ask-check']);
   });
 
+  it('checks every cited number even past the question cap', async () => {
+    const { jev, calls } = fakeAskJev();
+    const sources = [
+      { n: 1, title: 'A', section: null, text: 'DORA.' },
+      { n: 2, title: 'B', section: null, text: 'DORA.' },
+    ];
+    const answer = `${Array.from({ length: 40 }, (_, i) => `DORA fact ${i} [1].`).join(' ')} DORA last [2].`;
+    expect(await checkCitations(jev, answer, sources)).toEqual([
+      { n: 1, supported: true },
+      { n: 2, supported: true },
+    ]);
+    expect(Object.keys((calls[0]?.state as { claims: object }).claims)).toHaveLength(30);
+  });
+
   it('asks Jev nothing when the answer cites nothing', async () => {
     const { jev, calls } = fakeAskJev();
     expect(await checkCitations(jev, 'No citations here.', [])).toEqual([]);

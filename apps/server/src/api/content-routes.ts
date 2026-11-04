@@ -243,7 +243,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
   router.get('/api/documents/:id', async (req, res) => {
     const { viewer, lang } = await reader(req);
     const opened = await openDocument(db, viewer, req.params.id);
-    const group = opened.translationGroupId ? await listTranslationsOf(db, viewer, [opened.translationGroupId]) : [opened];
+    const group = await listTranslationsOf(db, viewer, [opened.translationGroupId ?? opened.id]);
     const members = group.some((d) => d.id === opened.id) ? group : [opened, ...group];
     const doc = pickIn(members, lang);
     const langs = langsOf(members);

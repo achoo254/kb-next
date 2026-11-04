@@ -111,10 +111,13 @@ export async function searchChunks(db: Db, meili: MeiliClient, viewer: Viewer, q
   const inSpace = spaceIds.length > 0 ? `spaceId IN [${spaceIds.map(filterValue).join(', ')}]` : undefined;
   const inLang = options.lang ? `lang = ${filterValue(options.lang)}` : undefined;
   const inDocuments = options.documentIds ? `documentId IN [${options.documentIds.map(filterValue).join(', ')}]` : undefined;
-  const queries: FederatedQuery[] = [{ ...base, indexUid: meili.uid(PUBLIC_INDEX), filter: allOf(inSpace, inLang, inDocuments) }];
+  // Entries indexed before `collectionId` existed lack it: `pnpm reindex` once after the deploy that added it.
+  const inCollections = options.collectionIds ? `collectionId IN [${options.collectionIds.map(filterValue).join(', ')}]` : undefined;
+  const inScope = allOf(inSpace, inLang, inDocuments, inCollections);
+  const queries: FederatedQuery[] = [{ ...base, indexUid: meili.uid(PUBLIC_INDEX), filter: inScope }];
   if (viewer.kind === 'user') {
     const own = viewer.isAdmin ? undefined : `authorId = ${filterValue(viewer.userId)}`;
-    queries.push({ ...base, indexUid: meili.uid(PRIVATE_INDEX), filter: allOf(own, inSpace, inLang, inDocuments) });
+    queries.push({ ...base, indexUid: meili.uid(PRIVATE_INDEX), filter: allOf(own, inScope) });
   }
 
   const raw = await meili.federatedSearch(queries, limit);

@@ -1,11 +1,13 @@
 /**
  * Saves an AI translation (F04) made with a reader's own key: a document in the source's Space and Collection, in
- * the source's translation group (the source joins a group of its own when it had none), `aiTranslated`, status
- * `draft`, origin `own`, written by the reader, so the read rule (src/access/visibility.ts) shows it to that reader
- * (and admins) only. Translating the same text into the same language again replaces the reader's earlier draft with
- * a new version instead of adding a document. One transaction; the caller enqueues the id for search sync after it.
+ * the source's text (`translationGroupId = source.translationGroupId ?? source.id`; the source itself is never
+ * written: a reader may only read it), `aiTranslated`, status `draft`, origin `own`, written by the reader, so the read
+ * rule (src/access/visibility.ts) shows it to that reader (and admins) only. Translating the same text into the same
+ * language again replaces the reader's earlier draft with a new version instead of adding a document; a transaction
+ * lock on (text, language, translator) keeps two translations at once from making two drafts. The caller enqueues the
+ * id for search sync after it.
  */
-import { and, eq, isNull, max } from 'drizzle-orm';
+import { and, eq, isNull, max, sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { chunks, documentVersions, documents } from '../db/schema';
 import type { DocumentRow } from './content';
@@ -30,12 +32,8 @@ export interface AiTranslation {
 export async function saveAiTranslation(db: Db, input: AiTranslation): Promise<string> {
   return db.transaction(async (tx) => {
     const groupId = input.source.translationGroupId ?? input.source.id;
-    if (input.source.translationGroupId === null) {
-      await tx
-        .update(documents)
-        .set({ translationGroupId: groupId })
-        .where(and(eq(documents.id, input.source.id), isNull(documents.translationGroupId)));
-    }
+    // Held until the transaction ends: a second translation of the same text waits, then finds this draft.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`ai-translation:${groupId}:${input.lang}:${input.authorId}`}))`);
     const [existing] = await tx
       .select({ id: documents.id })
       .from(documents)

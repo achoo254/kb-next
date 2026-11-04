@@ -5,8 +5,9 @@
  *   lowered to `MINIMAL` on Gemini 3+ with room for it in `maxOutputTokens`;
  * - Anthropic: Messages with `stream: true` (`content_block_delta` / `text_delta`), thinking disabled on Haiku 5.x and
  *   at its lowest on Sonnet 5.5.
- * A refused call throws ProviderError with what it means for the key (src/llm/providers.ts, `classifyFailure`); a
- * stream that breaks or reports an error midway throws ProviderError('failed') after the text already yielded.
+ * A refused call throws ProviderError with what it means for the key (src/llm/providers.ts, `classifyFailure`). A
+ * stream that breaks, reports an error, or ends without its provider's whole-answer signal (`endedWhole`: the output
+ * cap, a safety stop, a connection closed cleanly midway) throws ProviderError('failed') after the text yielded.
  * Each call logs one line (provider, model, outcome, status, time): never the key, the prompt or the answer.
  */
 import { type AiProvider, type Failure, type ProviderBases, authHeaders, classifyFailure } from './providers';
@@ -160,27 +161,66 @@ function field(value: unknown, ...path: Array<string | number>): unknown {
   return current;
 }
 
-/** The text of one streamed message, null at the end of the stream; throws when the message reports an error. */
-function textOf(provider: AiProvider, message: SseMessage): string | null {
-  if (provider === 'openai' && message.data.trim() === '[DONE]') return null;
+/** How far a stream got: the stop reason the provider gave, and whether its end-of-stream message came. */
+interface StreamEnd {
+  finish: string | null;
+  done: boolean;
+}
+
+/**
+ * The text of one streamed message; records the stop reason and the end of the stream in `end`. Throws when the
+ * message reports an error.
+ */
+function readMessage(provider: AiProvider, message: SseMessage, end: StreamEnd): string {
+  if (provider === 'openai' && message.data.trim() === '[DONE]') {
+    end.done = true;
+    return '';
+  }
   const json = parseJson(message.data);
   if (json === null || field(json, 'error') !== undefined || field(json, 'type') === 'error') throw new ProviderError('failed', null);
   switch (provider) {
     case 'openai': {
+      const finish = field(json, 'choices', 0, 'finish_reason');
+      if (typeof finish === 'string') end.finish = finish;
       const content = field(json, 'choices', 0, 'delta', 'content');
       return typeof content === 'string' ? content : '';
     }
     case 'gemini': {
+      const finish = field(json, 'candidates', 0, 'finishReason');
+      if (typeof finish === 'string') end.finish = finish;
+      // A prompt Gemini refuses comes back without candidates, with a block reason.
+      if (typeof field(json, 'promptFeedback', 'blockReason') === 'string') end.finish = 'BLOCKED';
       const parts = field(json, 'candidates', 0, 'content', 'parts');
       if (!Array.isArray(parts)) return '';
       return parts.map((part: unknown) => (field(part, 'thought') === true || typeof field(part, 'text') !== 'string' ? '' : String(field(part, 'text')))).join('');
     }
     case 'anthropic': {
-      if (field(json, 'type') === 'message_stop') return null;
-      if (field(json, 'type') !== 'content_block_delta' || field(json, 'delta', 'type') !== 'text_delta') return '';
+      const type = field(json, 'type');
+      if (type === 'message_stop') end.done = true;
+      if (type === 'message_delta') {
+        const finish = field(json, 'delta', 'stop_reason');
+        if (typeof finish === 'string') end.finish = finish;
+      }
+      if (type !== 'content_block_delta' || field(json, 'delta', 'type') !== 'text_delta') return '';
       const text = field(json, 'delta', 'text');
       return typeof text === 'string' ? text : '';
     }
+  }
+}
+
+/**
+ * Whether the stream ended the way a whole answer ends: OpenAI `finish_reason: "stop"` then `[DONE]`, Gemini a last
+ * candidate with `finishReason: "STOP"`, Anthropic `stop_reason` `end_turn` / `stop_sequence` then `message_stop`.
+ * Anything else (the output cap, a safety stop, a connection closed cleanly midway) is a cut answer.
+ */
+export function endedWhole(provider: AiProvider, end: StreamEnd): boolean {
+  switch (provider) {
+    case 'openai':
+      return end.done && end.finish === 'stop';
+    case 'gemini':
+      return end.finish === 'STOP';
+    case 'anthropic':
+      return end.done && (end.finish === 'end_turn' || end.finish === 'stop_sequence');
   }
 }
 
@@ -199,7 +239,8 @@ async function errorBody(res: Response): Promise<string> {
 export async function* streamText(bases: ProviderBases, call: LlmCall, prompt: LlmPrompt, purpose: string, signal?: AbortSignal): AsyncGenerator<string> {
   const started = Date.now();
   let status: number | null = null;
-  let outcome: Failure | 'ok' | 'aborted' = 'failed';
+  let outcome: Failure | 'ok' | 'aborted' | 'cut' = 'failed';
+  const end: StreamEnd = { finish: null, done: false };
   try {
     const { url, body } = streamRequest(bases, call, prompt);
     const timeout = AbortSignal.timeout(CALL_TIMEOUT_MS);
@@ -222,17 +263,23 @@ export async function* streamText(bases: ProviderBases, call: LlmCall, prompt: L
     }
     try {
       for await (const message of readSse(res.body)) {
-        const text = textOf(call.provider, message);
-        if (text === null) break;
+        const text = readMessage(call.provider, message, end);
         if (text) yield text;
+        if (end.done) break;
       }
     } catch (error) {
       if (error instanceof ProviderError) throw error;
       throw new ProviderError('failed', status);
     }
+    if (!endedWhole(call.provider, end)) {
+      outcome = 'cut';
+      throw new ProviderError('failed', status);
+    }
     outcome = 'ok';
   } finally {
     if (signal?.aborted && outcome !== 'ok') outcome = 'aborted';
-    console.log(JSON.stringify({ event: 'llm-call', purpose, provider: call.provider, model: call.model, outcome, status, ms: Date.now() - started }));
+    console.log(
+      JSON.stringify({ event: 'llm-call', purpose, provider: call.provider, model: call.model, outcome, finish: end.finish, status, ms: Date.now() - started }),
+    );
   }
 }

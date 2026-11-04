@@ -19,7 +19,7 @@ export const TEXT_FIELDS = ['title', 'heading', 'text'];
 
 export const INDEX_SETTINGS: IndexSettings = {
   searchableAttributes: [...TEXT_FIELDS, TELEX_FIELD],
-  filterableAttributes: ['id', 'documentId', 'authorId', 'spaceId', 'lang'],
+  filterableAttributes: ['id', 'documentId', 'authorId', 'spaceId', 'collectionId', 'lang'],
   typoTolerance: { disableOnAttributes: [TELEX_FIELD] },
 };
 
@@ -28,6 +28,8 @@ export interface IndexEntry {
   id: string;
   documentId: string;
   spaceId: string;
+  /** Null for a document outside any Collection (the Copilot's Collection scope filters on it). */
+  collectionId: string | null;
   authorId: string;
   lang: 'vi' | 'en';
   title: string;

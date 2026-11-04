@@ -39,10 +39,12 @@ const aboutDhcp = (question: string): boolean => /DHCP|\bIP\b/i.test(question);
  */
 export function fakeAskJev() {
   const calls: Array<{ purpose: string; state: unknown }> = [];
-  const control = { fail: false };
+  /** `fail`: every call rejects; `delayMs`: each call waits this long first. */
+  const control = { fail: false, delayMs: 0 };
   const usage = { inputTokens: 400, outputTokens: 20 };
-  const ask = vi.fn((purpose: string, state: unknown, questions: Record<string, JevQuestion>): Promise<JevResult> => {
+  const ask = vi.fn(async (purpose: string, state: unknown, questions: Record<string, JevQuestion>): Promise<JevResult> => {
     calls.push({ purpose, state });
+    if (control.delayMs > 0) await new Promise((resolve) => setTimeout(resolve, control.delayMs));
     if (control.fail) return Promise.reject(new Error(`Jev ${purpose} failed: TimeoutError`));
     const answers: JevResult['answers'] = {};
     if (purpose === 'search-documents') {

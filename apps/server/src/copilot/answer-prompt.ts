@@ -18,7 +18,8 @@ export interface PromptSource {
 
 /** Characters of a source the model reads. */
 const SOURCE_CHARS = 1_800;
-const MAX_OUTPUT_TOKENS = 1_500;
+/** An answer reaching it comes back cut and fails the turn (PROVIDER_FAILED); the rules ask for a concise one. */
+const MAX_OUTPUT_TOKENS = 2_048;
 
 const RULES = [
   'Use only the numbered sources below (and the selected passage, when there is one); never add facts they do not contain.',

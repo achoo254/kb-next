@@ -82,7 +82,7 @@ export interface ServerConfig {
   typesafeApiKey: string | null;
   /** Secret file of the users' own AI keys (USER_KEYS_SECRET_PATH); null when unset (own keys off). */
   userKeysSecretPath: string | null;
-  /** Copilot questions and translations per minute per account (each is a call billed to the user's own key). */
+  /** Provider calls per minute per account on its own key: a Copilot question costs 1, a translation its calls. */
   askLimitPerMinute: number;
   /** Own-key saves per minute per account: each save calls the provider to check the key. */
   keySaveLimitPerMinute: number;

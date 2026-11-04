@@ -39,6 +39,8 @@ export interface OpenedKey extends ActiveChoice {
   nonce: string;
 }
 
+export type KeyOpening = { kind: 'ok'; key: OpenedKey } | { kind: 'none' } | { kind: 'unreadable'; provider: AiProvider; last4: string };
+
 const order = (provider: AiProvider): number => AI_PROVIDERS.indexOf(provider);
 
 /** The last 4 characters, the only part of a key ever shown. */
@@ -104,27 +106,24 @@ export class UserKeyStore {
   }
 
   /**
-   * The key a call uses, opened; null when the account has no usable key (or own keys are off). A key that no longer
-   * opens (the secret changed) is marked `unreadable` and the next usable one is tried.
+   * The key a call uses (`pickActive`), opened. `none`: no usable key (or own keys are off). `unreadable`: that key no
+   * longer opens (the secret changed); it is marked `unreadable` and this turn stops: a turn never moves to another
+   * key or provider (the next turn picks the new active key).
    */
-  async open(userId: string): Promise<OpenedKey | null> {
-    if (!this.secret) return null;
-    const prefs = await this.prefs(userId);
-    // Each failed round marks one key unreadable, so there are at most as many rounds as providers.
-    for (let round = 0; round < AI_PROVIDERS.length; round++) {
-      const choice = pickActive(await this.list(userId), prefs);
-      if (!choice) return null;
-      const [row] = await this.db
-        .select({ ciphertext: userKeys.ciphertext, nonce: userKeys.nonce })
-        .from(userKeys)
-        .where(and(eq(userKeys.userId, userId), eq(userKeys.provider, choice.provider)));
-      if (!row) return null;
-      const apiKey = openKey(this.secret, userId, choice.provider, row);
-      if (apiKey !== null) return { ...choice, apiKey, nonce: row.nonce };
-      console.error(JSON.stringify({ event: 'user-key-unreadable', provider: choice.provider }));
-      await this.mark(userId, choice.provider, row.nonce, 'unreadable');
-    }
-    return null;
+  async open(userId: string): Promise<KeyOpening> {
+    if (!this.secret) return { kind: 'none' };
+    const choice = pickActive(await this.list(userId), await this.prefs(userId));
+    if (!choice) return { kind: 'none' };
+    const [row] = await this.db
+      .select({ ciphertext: userKeys.ciphertext, nonce: userKeys.nonce })
+      .from(userKeys)
+      .where(and(eq(userKeys.userId, userId), eq(userKeys.provider, choice.provider)));
+    if (!row) return { kind: 'none' };
+    const apiKey = openKey(this.secret, userId, choice.provider, row);
+    if (apiKey !== null) return { kind: 'ok', key: { ...choice, apiKey, nonce: row.nonce } };
+    console.error(JSON.stringify({ event: 'user-key-unreadable', provider: choice.provider }));
+    await this.mark(userId, choice.provider, row.nonce, 'unreadable');
+    return { kind: 'unreadable', provider: choice.provider, last4: choice.last4 };
   }
 
   /** Marks the saved version `nonce` of a key after a call it failed (a key saved again since then is left alone). */

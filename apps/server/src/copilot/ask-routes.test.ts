@@ -2,9 +2,10 @@
  * POST /api/ask and the history on the seeded Universe, with a real Meilisearch, Jev replaced at its boundary
  * (test/copilot-fixtures.ts) and the user's provider faked on loopback (test/fake-providers.ts): the answer cites the
  * DHCP lab, NO_ANSWER never reaches the provider, each provider failure maps to its F02 state, Jev off falls back
- * to keyword passages, and the key never shows up in the logs.
+ * to keyword passages, and the key never shows up in the logs. Then the review's cases: a cut answer, an unreadable
+ * key, the Collection scope, another account's history, the browser leaving, and the per-account budget.
  */
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type StreamEvent, dataOf, fakeAskJev, readEvents, seedReply, writeSecretFile } from '../../test/copilot-fixtures';
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { type FakeProviders, startFakeProviders } from '../../test/fake-providers';
@@ -30,9 +31,17 @@ let fake: FakeProviders;
 let secretFile: Awaited<ReturnType<typeof writeSecretFile>>;
 let server: TestServer;
 let owner: string;
+let other: string;
 let ownerId: string;
 let keys: UserKeyStore;
 const judge = fakeAskJev();
+/** The app's clock moves a minute ahead before each test: every test starts with a fresh AI budget. */
+let clockOffset = 0;
+const clock = (): Date => new Date(Date.now() + clockOffset);
+
+beforeEach(() => {
+  clockOffset += 61_000;
+});
 
 beforeAll(async () => {
   idp = await startFakeIdp({ clientId: 'kb-web', clientSecret: SECRET, sub: 'asker' });
@@ -40,7 +49,7 @@ beforeAll(async () => {
   fake = await startFakeProviders();
   fake.reply = seedReply;
   secretFile = await writeSecretFile();
-  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET }, {}, undefined, judge.jev, (db) => ({
+  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET }, {}, clock, judge.jev, (db) => ({
     search: { meili: meili.client, sync: new IndexSync(db, meili.client), close: () => undefined },
     userKeysSecret: secretFile.secret,
     aiBases: fake.bases,
@@ -48,6 +57,10 @@ beforeAll(async () => {
   ownerId = (await seedDatabase(server.database.db, 'asker')).ownerId;
   await rebuildIndexes(server.database.db, meili.client);
   owner = await signIn(server);
+  // Before the clock moves: the fake IdP's tokens carry the real time.
+  idp.setSub('someone-else');
+  other = await signIn(server);
+  idp.setSub('asker');
   keys = new UserKeyStore(server.database.db, secretFile.secret, () => new Date());
 }, MEILI_SETUP_TIMEOUT_MS);
 
@@ -224,5 +237,132 @@ describe('Copilot history', () => {
 
     expect((await api(server, `/api/copilot/history/${seedId('nope')}`, { cookie: owner })).status).toBe(404);
     expect((await api(server, '/api/copilot/history')).status).toBe(401);
+  });
+});
+
+async function historyIds(cookie: string = owner): Promise<string[]> {
+  const res = await api(server, '/api/copilot/history', { cookie });
+  return ((await res.json()) as { items: Array<{ id: string }> }).items.map((i) => i.id);
+}
+
+const pause = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+describe('after review', () => {
+  it('fails an answer cut by the output cap: PROVIDER_FAILED, the text kept, nothing saved', async () => {
+    await useKey('openai', 'sk-Hq4Lr8Ty2Wp6-capped-0004');
+    const before = await historyIds();
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const { events } = await ask({ question: QUESTION, scope: { kind: 'universe' } });
+      expect(text(events)).toContain('DORA');
+      expect(events.at(-1)).toEqual({ event: 'error', data: { code: 'PROVIDER_FAILED', provider: 'openai', last4: '0004' } });
+      expect(events.some((e) => e.event === 'done' || e.event === 'check')).toBe(false);
+    } finally {
+      error.mockRestore();
+    }
+    expect(await historyIds()).toEqual(before);
+    expect((await keys.list(ownerId))[0]?.status).toBe('ok');
+  });
+
+  it('stops the turn when the active key no longer decrypts, without moving to another provider', async () => {
+    // Sealed with another secret: as if the secret file had been replaced.
+    await new UserKeyStore(server.database.db, Buffer.alloc(32, 7), () => new Date()).save(ownerId, 'openai', 'sk-Hq4Lr8Ty2Wp6-other-0005');
+    await useKey('gemini', 'AIza-Hq4Lr8Ty2Wp6Zx0-GEMI');
+    const before = fake.generations().length;
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      expect(await ask({ question: QUESTION, scope: { kind: 'universe' } })).toMatchObject({ status: 403, error: { error: 'USER_KEY_UNREADABLE' } });
+    } finally {
+      error.mockRestore();
+    }
+    expect(fake.generations().length).toBe(before);
+    expect((await keys.list(ownerId)).map((k) => [k.provider, k.status])).toEqual([
+      ['openai', 'unreadable'],
+      ['gemini', 'ok'],
+    ]);
+    // The next turn runs on the key that is now active.
+    const { events } = await ask({ question: QUESTION, scope: { kind: 'universe' } });
+    expect(dataOf(events, 'done')).toMatchObject({ provider: 'gemini', model: 'gemini-3.8-flash', last4: 'GEMI' });
+  });
+
+  it('keeps a Collection scope to its Collection, keyword search included', async () => {
+    judge.control.fail = true;
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const searched = vi.spyOn(meili.client, 'federatedSearch');
+    try {
+      const { events } = await ask({ question: KEYWORD_QUESTION, scope: { kind: 'collection', id: seedId('collection:net:0') } });
+      // Filtered in Meilisearch itself, so other Collections cannot crowd the Collection's passages out of the hits.
+      const filters = searched.mock.calls.flatMap(([queries]) => queries.map((q) => q.filter ?? ''));
+      expect(filters.length).toBeGreaterThan(0);
+      expect(filters.every((f) => f.includes(`collectionId IN ["${seedId('collection:net:0')}"]`))).toBe(true);
+      const { sources } = dataOf<{ sources: CopilotSourceRecord[] }>(events, 'sources') ?? { sources: [] };
+      expect(sources.some((s) => s.documentId === seedId('document:dhcp'))).toBe(true);
+      expect(new Set(sources.map((s) => s.collectionName))).toEqual(new Set(['Giao thức nền tảng']));
+      expect(events.at(-1)?.event).toBe('done');
+    } finally {
+      judge.control.fail = false;
+      error.mockRestore();
+      searched.mockRestore();
+    }
+    expect((await ask({ question: QUESTION, scope: { kind: 'collection', id: seedId('collection:nope:0') } })).status).toBe(404);
+  });
+
+  it('never shows one account the history of another', async () => {
+    const [mine] = await historyIds();
+    expect(mine).toBeDefined();
+    expect(await historyIds(other)).toEqual([]);
+    const res = await api(server, `/api/copilot/history/${mine}`, { cookie: other });
+    expect(res.status).toBe(404);
+  });
+
+  it('stops the provider call and saves nothing when the browser leaves mid-answer', async () => {
+    const before = await historyIds();
+    fake.pieceDelayMs = 300;
+    const leave = new AbortController();
+    try {
+      const res = await api(server, '/api/ask', { method: 'POST', body: JSON.stringify({ question: QUESTION, scope: { kind: 'universe' } }), cookie: owner, signal: leave.signal });
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error('no body');
+      const decoder = new TextDecoder();
+      let seen = '';
+      while (!seen.includes('event: delta')) {
+        const { value, done } = await reader.read();
+        if (done) throw new Error('stream ended before a delta');
+        seen += decoder.decode(value, { stream: true });
+      }
+      leave.abort();
+      await vi.waitFor(() => expect(fake.requests.at(-1)?.aborted).toBe(true), { timeout: 3_000 });
+    } finally {
+      fake.pieceDelayMs = 0;
+    }
+    await pause(500);
+    expect(await historyIds()).toEqual(before);
+  });
+
+  it('never calls the provider when the browser leaves while the passages are being chosen', async () => {
+    const before = await historyIds();
+    const calls = fake.generations().length;
+    judge.control.delayMs = 300;
+    try {
+      const leave = new AbortController();
+      const pending = api(server, '/api/ask', { method: 'POST', body: JSON.stringify({ question: QUESTION, scope: { kind: 'universe' } }), cookie: owner, signal: leave.signal }).catch(
+        () => null,
+      );
+      await pause(100);
+      leave.abort();
+      await pending;
+      // Long enough for the three Jev calls the server would have waited on.
+      await pause(1_200);
+    } finally {
+      judge.control.delayMs = 0;
+    }
+    expect(fake.generations().length).toBe(calls);
+    expect(await historyIds()).toEqual(before);
+  });
+
+  it('allows 20 questions a minute per account, then 429', async () => {
+    const unknownScope = { question: QUESTION, scope: { kind: 'document', id: seedId('document:nope') } };
+    for (let i = 0; i < 20; i++) expect((await ask(unknownScope)).status).toBe(404);
+    expect(await ask(unknownScope)).toMatchObject({ status: 429, error: { error: 'rate-limited' } });
   });
 });

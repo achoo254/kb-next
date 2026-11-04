@@ -17,7 +17,7 @@ import type { Db } from '../db/client';
 import { HttpError } from '../http-error';
 import { AI_PROVIDERS, type AiProvider, MODELS, type ModelInfo, type ProviderBases, isListedModel } from '../llm/providers';
 import { checkKey, keyFormatOk } from './key-check';
-import { type ActiveChoice, type KeyEntry, type KeyPrefs, type UserKeyStore, pickActive } from './key-store';
+import { type ActiveChoice, type KeyEntry, type KeyPrefs, type OpenedKey, type UserKeyStore, pickActive } from './key-store';
 
 export interface KeysResponse {
   /** Own keys work on this server (its secret file is readable). */
@@ -44,6 +44,17 @@ export interface KeyRoutesOptions {
 /** 503 `USER_KEYS_DISABLED` while own keys are off (no readable secret file). */
 export function ownKeysOn(keys: UserKeyStore): express.RequestHandler {
   return (_req, _res, next) => next(keys.available ? undefined : new HttpError(503, 'USER_KEYS_DISABLED'));
+}
+
+/**
+ * The key this turn runs on; 403 `NO_USER_KEY` without one, 403 `USER_KEY_UNREADABLE` when the active key no longer
+ * decrypts (the user saves it again; the turn does not move to another key).
+ */
+export async function keyForTurn(keys: UserKeyStore, userId: string): Promise<OpenedKey> {
+  const opening = await keys.open(userId);
+  if (opening.kind === 'unreadable') throw new HttpError(403, 'USER_KEY_UNREADABLE');
+  if (opening.kind === 'none') throw new HttpError(403, 'NO_USER_KEY');
+  return opening.key;
 }
 
 function providerOf(value: unknown): AiProvider {

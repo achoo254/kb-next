@@ -3,7 +3,7 @@
  * opened, per-type counts of texts, translations, versions, recent documents and links between Spaces. Every
  * document read is filtered by the viewer (src/access/visibility.ts), like the rest of src/access/.
  */
-import { and, asc, count, desc, eq, inArray, isNotNull, ne, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, ne, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { Db } from '../db/client';
 import { collections, documentVersions, documents, links, reviewEvents, spaces, users } from '../db/schema';
@@ -101,14 +101,23 @@ export async function findDocumentsByIds(db: Db, viewer: Viewer, ids: readonly s
     .where(and(visibleTo(viewer), inArray(documents.id, valid)));
 }
 
-/** Readable documents of the given translation groups (each text in every language the viewer may read). */
-export async function listTranslationsOf(db: Db, viewer: Viewer, groupIds: readonly string[]): Promise<DocumentRow[]> {
-  const valid = [...new Set(groupIds.filter(isUuid))];
+/**
+ * Readable documents of the given texts (each in every language the viewer may read). A text's key is its
+ * `translationGroupId ?? id`: an original without a group of its own is the text of its id, and a translation made
+ * of it carries that id as its group (src/access/translation-write.ts), so the original is never written to.
+ */
+export async function listTranslationsOf(db: Db, viewer: Viewer, textKeys: readonly string[]): Promise<DocumentRow[]> {
+  const valid = [...new Set(textKeys.filter(isUuid))];
   if (valid.length === 0) return [];
   return db
     .select(documentColumns)
     .from(documents)
-    .where(and(visibleTo(viewer), inArray(documents.translationGroupId, valid)))
+    .where(
+      and(
+        visibleTo(viewer),
+        or(inArray(documents.translationGroupId, valid), and(isNull(documents.translationGroupId), inArray(documents.id, valid))),
+      ),
+    )
     .orderBy(asc(documents.lang), asc(documents.createdAt));
 }
 

@@ -1,7 +1,7 @@
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import helmet from 'helmet';
 import { sql } from 'drizzle-orm';
-import { perAccountLimit } from './api/account-limit';
+import { AccountBudget } from './api/account-limit';
 import { activityRoutes } from './api/activity-routes';
 import { contentRoutes } from './api/content-routes';
 import { meRoutes } from './api/me-routes';
@@ -95,10 +95,10 @@ export function createApp({
   app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));
   // Own AI keys and what runs on them; nothing here has a server AI key (Jev aside).
   const keys = new UserKeyStore(db, userKeysSecret, now);
-  const aiLimit = perAccountLimit(config.askLimitPerMinute);
+  const aiBudget = new AccountBudget(config.askLimitPerMinute, () => now().getTime());
   app.use(keyRoutes({ config, db, now, keys, bases: aiBases }));
-  app.use(askRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries, keys, bases: aiBases, aiLimit }));
-  app.use(translateRoutes({ config, db, now, keys, bases: aiBases, sync: search?.sync ?? null, aiLimit }));
+  app.use(askRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries, keys, bases: aiBases, aiBudget }));
+  app.use(translateRoutes({ config, db, now, keys, bases: aiBases, sync: search?.sync ?? null, aiBudget }));
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'not-found')));
 

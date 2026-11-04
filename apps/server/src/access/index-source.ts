@@ -26,6 +26,7 @@ export async function loadIndexEntries(db: Db, documentIds: readonly string[]): 
       heading: chunks.heading,
       text: chunks.text,
       spaceId: documents.spaceId,
+      collectionId: documents.collectionId,
       authorId: documents.authorId,
       lang: documents.lang,
       title: documents.title,

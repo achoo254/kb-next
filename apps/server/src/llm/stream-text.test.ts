@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { type FakeProviders, startFakeProviders } from '../../test/fake-providers';
 import { checkKey, keyFormatOk } from '../user-keys/key-check';
 import { type AiProvider, ANTHROPIC_VERSION, classifyFailure, defaultModel } from './providers';
-import { GEMINI_THINKING_HEADROOM, ProviderError, streamRequest, streamText } from './stream-text';
+import { GEMINI_THINKING_HEADROOM, ProviderError, endedWhole, streamRequest, streamText } from './stream-text';
 
 const KEYS: Record<AiProvider, string> = { openai: 'sk-test-openai-key-0001', gemini: 'AIza-test-gemini-key-0001', anthropic: 'sk-ant-test-key-00000001' };
 const PROMPT = { system: 'Be brief.', user: 'Say hello.', maxOutputTokens: 100 };
@@ -72,6 +72,36 @@ describe('streamText', () => {
     expect(error).toBeInstanceOf(ProviderError);
     expect((error as ProviderError).kind).toBe(kind);
     expect((error as ProviderError).message).not.toContain(key);
+  });
+
+  it.each([
+    ['openai', 'sk-test-capped-key-00001'],
+    ['gemini', 'AIza-test-capped-key-0001'],
+    ['anthropic', 'sk-ant-test-capped-00001'],
+    ['openai', 'sk-test-cutoff-key-00001'],
+    ['gemini', 'AIza-test-cutoff-key-0001'],
+    ['anthropic', 'sk-ant-test-cutoff-00001'],
+  ] as const)('fails a %s answer cut by the output cap or a clean close without the end signal (%s)', async (provider, key) => {
+    const out: string[] = [];
+    const error = await (async () => {
+      for await (const delta of streamText(fake.bases, { provider, model: defaultModel(provider), apiKey: key }, PROMPT, 'test')) out.push(delta);
+    })().catch((e: unknown) => e);
+    // The text came, but the answer is not whole.
+    expect(out.join('')).toBe(`Hello from ${provider}: Say hello.`);
+    expect(error).toBeInstanceOf(ProviderError);
+    expect((error as ProviderError).kind).toBe('failed');
+  });
+
+  it('reads only the whole-answer signals as an end', () => {
+    expect(endedWhole('openai', { finish: 'stop', done: true })).toBe(true);
+    expect(endedWhole('openai', { finish: 'stop', done: false })).toBe(false);
+    expect(endedWhole('openai', { finish: 'content_filter', done: true })).toBe(false);
+    expect(endedWhole('gemini', { finish: 'STOP', done: false })).toBe(true);
+    for (const finish of ['MAX_TOKENS', 'SAFETY', 'RECITATION', 'BLOCKED', null]) expect(endedWhole('gemini', { finish, done: false })).toBe(false);
+    expect(endedWhole('anthropic', { finish: 'end_turn', done: true })).toBe(true);
+    expect(endedWhole('anthropic', { finish: 'stop_sequence', done: true })).toBe(true);
+    expect(endedWhole('anthropic', { finish: 'max_tokens', done: true })).toBe(false);
+    expect(endedWhole('anthropic', { finish: 'refusal', done: true })).toBe(false);
   });
 
   it('keeps the text streamed before the connection drops, then fails', async () => {

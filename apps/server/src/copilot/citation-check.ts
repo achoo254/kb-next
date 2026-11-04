@@ -24,7 +24,7 @@ export interface Claim {
   numbers: number[];
 }
 
-/** Claims checked at most (each cited source of a claim is one question). */
+/** (claim, cited source) pairs checked at most, one question each; sources are at most 5, so every number fits. */
 const MAX_QUESTIONS = 30;
 /** At least this probability that the source supports the claim. */
 export const MIN_SUPPORT = 0.5;
@@ -57,7 +57,10 @@ export function citedSentences(answer: string): Claim[] {
 export async function checkCitations(jev: JevJudge, answer: string, sources: readonly CheckSource[]): Promise<CitationCheck[]> {
   const claims = citedSentences(answer);
   const byNumber = new Map(sources.map((s) => [s.n, s]));
-  const pairs = claims.flatMap((claim, c) => claim.numbers.filter((n) => byNumber.has(n)).map((n) => ({ key: `C${c + 1}_S${n}`, claim: c, n }))).slice(0, MAX_QUESTIONS);
+  const all = claims.flatMap((claim, c) => claim.numbers.filter((n) => byNumber.has(n)).map((n) => ({ key: `C${c + 1}_S${n}`, claim: c, n })));
+  // Past the cap, every cited number still gets its first claim checked, so none is left without a verdict.
+  const firsts = all.filter((p, i) => all.findIndex((q) => q.n === p.n) === i);
+  const pairs = [...firsts, ...all.filter((p) => !firsts.includes(p))].slice(0, MAX_QUESTIONS);
   const verdicts = new Map<number, boolean>();
   for (const claim of claims) for (const n of claim.numbers) if (!byNumber.has(n)) verdicts.set(n, false);
 

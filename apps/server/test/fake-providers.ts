@@ -5,7 +5,10 @@
  * - `revoked`: accepted by the check, refused (401, the body quoting the whole key) when generating;
  * - `drained`: accepted by the check, out of credit when generating;
  * - `midfail`: streams the first part of the reply, then the connection drops;
- * - anything else: works. `reply` writes the model's text for each prompt. Every request is recorded.
+ * - `capped`: streams the reply, then stops on the output cap (`length`, `MAX_TOKENS`, `max_tokens`);
+ * - `cutoff`: streams the reply, then closes the connection cleanly without the end-of-answer signal;
+ * - anything else: works. `reply` writes the model's text for each prompt; `pieceDelayMs` spaces the streamed pieces.
+ * Every request is recorded, with `aborted` when the caller hung up before the answer ended.
  */
 import { type IncomingMessage, type Server, type ServerResponse, createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -17,6 +20,7 @@ export interface RecordedRequest {
   provider: AiProvider | null;
   headers: Record<string, string>;
   body: unknown;
+  aborted: boolean;
 }
 
 export interface FakePrompt {
@@ -32,6 +36,8 @@ export interface FakeProviders {
   generations(): RecordedRequest[];
   /** The model's text for a prompt (default: a fixed sentence). */
   reply: (prompt: FakePrompt) => string;
+  /** Pause between streamed pieces (0: none). */
+  pieceDelayMs: number;
   close(): Promise<void>;
 }
 
@@ -75,28 +81,47 @@ function promptOf(provider: AiProvider, body: unknown): FakePrompt {
   return { provider, system: text(field(body, 'system')), user: text(field(body, 'messages', 0, 'content')) };
 }
 
-/** The reply in three pieces, each as its provider streams text. */
-function events(provider: AiProvider, text: string): string[] {
+type Ending = 'whole' | 'capped' | 'cutoff';
+
+/** The reply in three pieces, each as its provider streams text, then the provider's ending. */
+function events(provider: AiProvider, text: string, ending: Ending): string[] {
   const third = Math.ceil(text.length / 3);
   const pieces = [text.slice(0, third), text.slice(third, 2 * third), text.slice(2 * third)].filter(Boolean);
-  if (provider === 'openai') return [...pieces.map((p) => `data: ${JSON.stringify({ choices: [{ delta: { content: p } }] })}\n\n`), 'data: [DONE]\n\n'];
-  if (provider === 'gemini')
+  const data = (value: unknown): string => `data: ${JSON.stringify(value)}\n\n`;
+  if (provider === 'openai') {
+    const tail = ending === 'cutoff' ? [] : [data({ choices: [{ delta: {}, finish_reason: ending === 'capped' ? 'length' : 'stop' }] }), 'data: [DONE]\n\n'];
+    return [...pieces.map((p) => data({ choices: [{ delta: { content: p } }] })), ...tail];
+  }
+  if (provider === 'gemini') {
+    const last = pieces.length - 1;
+    const finish = ending === 'cutoff' ? {} : { finishReason: ending === 'capped' ? 'MAX_TOKENS' : 'STOP' };
     return [
-      `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: 'thinking…', thought: true }] } }] })}\n\n`,
-      ...pieces.map((p) => `data: ${JSON.stringify({ candidates: [{ content: { parts: [{ text: p }] } }] })}\n\n`),
+      data({ candidates: [{ content: { parts: [{ text: 'thinking…', thought: true }] } }] }),
+      ...pieces.map((p, i) => data({ candidates: [{ content: { parts: [{ text: p }] }, ...(i === last ? finish : {}) }] })),
     ];
+  }
+  const tail =
+    ending === 'cutoff'
+      ? []
+      : [
+          `event: message_delta\n${data({ type: 'message_delta', delta: { stop_reason: ending === 'capped' ? 'max_tokens' : 'end_turn' } })}`,
+          `event: message_stop\n${data({ type: 'message_stop' })}`,
+        ];
   return [
-    `event: message_start\ndata: ${JSON.stringify({ type: 'message_start', message: {} })}\n\n`,
-    ...pieces.map((p) => `event: content_block_delta\ndata: ${JSON.stringify({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: p } })}\n\n`),
-    `event: message_stop\ndata: ${JSON.stringify({ type: 'message_stop' })}\n\n`,
+    `event: message_start\n${data({ type: 'message_start', message: {} })}`,
+    ...pieces.map((p) => `event: content_block_delta\n${data({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: p } })}`),
+    ...tail,
   ];
 }
+
+const pause = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function startFakeProviders(): Promise<FakeProviders> {
   const fake: Omit<FakeProviders, 'bases' | 'close'> = {
     requests: [],
     generations: () => fake.requests.filter((r) => r.method === 'POST'),
     reply: () => 'A fixed answer.',
+    pieceDelayMs: 0,
   };
 
   const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
@@ -106,12 +131,17 @@ export async function startFakeProviders(): Promise<FakeProviders> {
     const body: unknown = raw ? JSON.parse(raw) : null;
     const path = req.url ?? '/';
     const auth = keyOf(req);
-    fake.requests.push({
+    const record: RecordedRequest = {
       method: req.method ?? '',
       path,
       provider: auth?.provider ?? null,
       headers: Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, String(v)])),
       body,
+      aborted: false,
+    };
+    fake.requests.push(record);
+    res.on('close', () => {
+      if (!res.writableFinished) record.aborted = true;
     });
     res.setHeader('Content-Type', 'application/json');
     if (!auth || auth.key.includes('bad')) {
@@ -132,7 +162,8 @@ export async function startFakeProviders(): Promise<FakeProviders> {
       return;
     }
     if (auth.key.includes('drained')) return noCredit(res, auth.provider);
-    const out = events(auth.provider, fake.reply(promptOf(auth.provider, body)));
+    const ending: Ending = auth.key.includes('capped') ? 'capped' : auth.key.includes('cutoff') ? 'cutoff' : 'whole';
+    const out = events(auth.provider, fake.reply(promptOf(auth.provider, body)), ending);
     res.writeHead(200, { 'Content-Type': 'text/event-stream' });
     if (auth.key.includes('midfail')) {
       res.write(out[auth.provider === 'openai' ? 0 : 1] ?? '');
@@ -140,7 +171,11 @@ export async function startFakeProviders(): Promise<FakeProviders> {
       setTimeout(() => res.socket?.destroy(), 50);
       return;
     }
-    for (const event of out) res.write(event);
+    for (const event of out) {
+      if (res.destroyed) return;
+      res.write(event);
+      if (fake.pieceDelayMs > 0) await pause(fake.pieceDelayMs);
+    }
     res.end();
   };
 

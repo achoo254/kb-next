@@ -1,17 +1,23 @@
 /**
  * POST /api/documents/:id/translate on the seed, the provider faked on loopback: paragraphs stream in, the result is
- * saved as an AI-translated draft only its translator can open, translating again replaces it, and a refused call
- * saves nothing.
+ * saved as an AI-translated draft only its translator can open, grouped with an original the translator only reads
+ * (which is never written), translating again replaces it, a refused or cut call saves nothing, long documents are
+ * refused before any call, and a translation spends the AI budget by its number of calls.
  */
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type StreamEvent, readEvents, seedReply, writeSecretFile } from '../../test/copilot-fixtures';
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { type FakeProviders, startFakeProviders } from '../../test/fake-providers';
+import { createDocument } from '../../test/content-fixtures';
 import { api, signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
 import { findDocument, findLatestVersion, listChunks } from '../access/content';
+import { countTextsByType, listTranslationsOf } from '../access/reading';
+import { saveAiTranslation } from '../access/translation-write';
 import { GUEST } from '../access/viewer';
 import { seedDatabase, seedId } from '../db/seed-database';
+import { documentVersions } from '../db/schema';
+import { GROUP_CHARS, MAX_TRANSLATION_CALLS } from './translate-routes';
 import { UserKeyStore } from '../user-keys/key-store';
 
 const SECRET = 'test-secret-'.padEnd(40, 'x');
@@ -24,13 +30,19 @@ let server: TestServer;
 let translator: string;
 let translatorId: string;
 let other: string;
+/** The app's clock moves a minute ahead before each test: every test starts with a fresh AI budget. */
+let clockOffset = 0;
+
+beforeEach(() => {
+  clockOffset += 61_000;
+});
 
 beforeAll(async () => {
   idp = await startFakeIdp({ clientId: 'kb-web', clientSecret: SECRET, sub: 'translator' });
   fake = await startFakeProviders();
   fake.reply = seedReply;
   secretFile = await writeSecretFile();
-  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET }, {}, undefined, null, () => ({
+  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET }, {}, () => new Date(Date.now() + clockOffset), null, () => ({
     userKeysSecret: secretFile.secret,
     aiBases: fake.bases,
   }));
@@ -66,6 +78,14 @@ function paragraphs(events: readonly StreamEvent[]): string[] {
 
 describe('AI translation', () => {
   it('streams the translation paragraph by paragraph and saves a draft only the translator can open', async () => {
+    const db = server.database.db;
+    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false };
+    const original = await findDocument(db, author, DHCP);
+    // An approved text by another account, which the translator may only read.
+    expect(original).toMatchObject({ status: 'approved', translationGroupId: null });
+    expect(original?.authorId).not.toBe(translatorId);
+    const textsBefore = await countTextsByType(db, author);
+
     const { status, events } = await translate(DHCP, 'en');
     expect(status).toBe(200);
     const done = events.at(-1);
@@ -80,12 +100,11 @@ describe('AI translation', () => {
     expect(events.filter((e) => e.event === 'paragraph').length).toBeGreaterThan(text.length);
     expect(fake.generations()[0]?.path).toBe('/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse');
 
-    const db = server.database.db;
-    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false };
     const saved = await findDocument(db, author, documentId);
     expect(saved).toMatchObject({ lang: 'en', title: 'EN Giao thức DHCP', aiTranslated: true, status: 'draft', origin: 'own', authorId: translatorId });
-    const source = await findDocument(db, author, DHCP);
-    expect(saved?.translationGroupId).toBe(source?.translationGroupId ?? 'missing');
+    // Grouped by the original's id; the original row is untouched.
+    expect(saved?.translationGroupId).toBe(DHCP);
+    expect(await findDocument(db, author, DHCP)).toEqual(original);
     expect((await findLatestVersion(db, author, documentId))?.markdown).toContain('# EN Giao thức DHCP');
     expect((await listChunks(db, author, documentId))?.map((c) => [c.anchor, c.heading])).toEqual([
       ['overview', null],
@@ -98,6 +117,16 @@ describe('AI translation', () => {
     expect((await api(server, `/api/documents/${documentId}`, { cookie: other })).status).toBe(403);
     expect((await api(server, `/api/documents/${documentId}`)).status).toBe(403);
     expect((await api(server, `/api/documents/${documentId}`, { cookie: translator })).status).toBe(200);
+
+    // Still one text: the reader switches between the two, search groups them, counts count it once.
+    const read = async (cookie: string, lang: string) =>
+      ((await (await api(server, `/api/documents/${DHCP}?lang=${lang}`, { cookie })).json()) as { document: { id: string; translations: string[] } }).document;
+    expect(await read(translator, 'en')).toMatchObject({ id: documentId, translations: ['vi', 'en'] });
+    expect(await read(translator, 'vi')).toMatchObject({ id: DHCP, translations: ['vi', 'en'] });
+    expect(await read(other, 'en')).toMatchObject({ id: DHCP, translations: ['vi'] });
+    expect((await listTranslationsOf(db, author, [DHCP])).map((d) => d.id).sort()).toEqual([DHCP, documentId].sort());
+    expect((await listTranslationsOf(db, GUEST, [DHCP])).map((d) => d.id)).toEqual([DHCP]);
+    expect(await countTextsByType(db, author)).toEqual(textsBefore);
 
     // Again: the same draft gets a new version.
     const again = await translate(DHCP, 'en');
@@ -122,5 +151,66 @@ describe('AI translation', () => {
     } finally {
       error.mockRestore();
     }
+  });
+});
+
+/** A document of the translator's own Space whose Markdown has `count` paragraphs of `chars` characters. */
+async function longDocument(count: number, chars: number): Promise<string> {
+  const db = server.database.db;
+  const id = await createDocument(db, { spaceId: seedId('space:net'), authorId: translatorId, title: `Long ${count}×${chars}`, status: 'approved' });
+  const markdown = [`# Long ${count}×${chars}`, ...Array.from({ length: count }, (_, i) => `${i} ${'chữ '.repeat(chars / 4)}`.slice(0, chars))].join('\n\n');
+  await db.insert(documentVersions).values({ documentId: id, version: 1, markdown, editorId: translatorId });
+  return id;
+}
+
+describe('AI translation after review', () => {
+  const useKey = (key: string) => new UserKeyStore(server.database.db, secretFile.secret, () => new Date()).save(translatorId, 'gemini', key);
+
+  it('fails a translation cut by the output cap and keeps the earlier draft as it was', async () => {
+    await useKey('AIza-Rt5Yu7Io9Pa2Sd4Fg6Hj-GOOD');
+    const first = await translate(seedId('document:dns'), 'en');
+    const documentId = (first.events.at(-1)?.data as { documentId: string }).documentId;
+    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false };
+    const before = await findLatestVersion(server.database.db, author, documentId);
+
+    await useKey('AIza-Rt5Yu7Io9-capped-0010');
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const { events } = await translate(seedId('document:dns'), 'en');
+      expect(events.at(-1)).toEqual({ event: 'error', data: { code: 'PROVIDER_FAILED', provider: 'gemini', last4: '0010' } });
+    } finally {
+      error.mockRestore();
+    }
+    expect(await findLatestVersion(server.database.db, author, documentId)).toEqual(before);
+  });
+
+  it('refuses a document past the call cap, or with a paragraph longer than a call, before any call', async () => {
+    await useKey('AIza-Rt5Yu7Io9Pa2Sd4Fg6Hj-GOOD');
+    const calls = fake.generations().length;
+    expect(await translate(await longDocument(MAX_TRANSLATION_CALLS + 1, 7_000), 'en')).toMatchObject({ status: 400, error: { error: 'too-long' } });
+    expect(await translate(await longDocument(1, GROUP_CHARS + 1), 'en')).toMatchObject({ status: 400, error: { error: 'too-long' } });
+    expect(fake.generations().length).toBe(calls);
+  });
+
+  it('spends the AI budget by the number of calls a translation makes', async () => {
+    const twelve = await longDocument(12, 7_000);
+    const nine = await longDocument(9, 7_000);
+    const calls = fake.generations().length;
+    expect((await translate(twelve, 'en')).events.at(-1)?.event).toBe('done');
+    expect(fake.generations().length).toBe(calls + 12);
+    // 12 + 9 calls do not fit 20 a minute; 8 more do.
+    expect(await translate(nine, 'en')).toMatchObject({ status: 429, error: { error: 'rate-limited' } });
+    expect((await translate(await longDocument(8, 7_000), 'en')).events.at(-1)?.event).toBe('done');
+  });
+
+  it('makes one draft when the same text is translated twice at once', async () => {
+    const db = server.database.db;
+    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false };
+    const source = await findDocument(db, author, seedId('document:icmp'));
+    if (!source) throw new Error('no ICMP lab');
+    const write = (title: string) => saveAiTranslation(db, { source, authorId: translatorId, lang: 'en', title, markdown: `# ${title}`, chunks: [] });
+    const [a, b] = await Promise.all([write('First'), write('Second')]);
+    expect(a).toBe(b);
+    expect((await listTranslationsOf(db, author, [source.id])).filter((d) => d.aiTranslated)).toHaveLength(1);
   });
 });
