@@ -1,0 +1,13 @@
+/* Layout of board X02-Errors: a 2×2 grid from 80px in, under the top bar (y 96) to 30px from the bottom. */
+
+.x02-board {
+  position: absolute;
+  left: 80px;
+  top: 96px;
+  right: 80px;
+  bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}

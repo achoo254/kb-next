@@ -1,0 +1,9 @@
+/* The toast of a first-visit dialog that could not save: bottom centre, above the Universe. */
+
+.universe-entry-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  z-index: 11;
+  transform: translateX(-50%);
+}

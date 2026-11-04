@@ -1,0 +1,61 @@
+/* The frame of the documentation boards Z01 and Z02 (1440×1200): landscape at 16% 40% under a fading veil. */
+
+.doc-board {
+  width: 1440px;
+  min-height: 1200px;
+}
+
+.doc-board .universe-veil {
+  background: var(--c-veil-doc);
+}
+
+.doc-board-main {
+  box-sizing: border-box;
+  height: 1200px;
+  padding: 36px 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-board-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.doc-board-kicker {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.doc-board-title {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-size: 42px;
+  letter-spacing: -1.5px;
+}
+
+.doc-board-theme {
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 23px;
+  border: 1px solid var(--rim-border);
+  background: none;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.doc-board-theme:focus-visible,
+.doc-board a:focus-visible,
+.doc-board button:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* the board's tags and step cards: the rim surface without its glow */
+.doc-surface {
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+}

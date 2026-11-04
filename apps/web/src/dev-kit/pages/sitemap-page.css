@@ -1,0 +1,215 @@
+/* Layout of board Z01-Sitemap (design/mock/Z01-Sitemap.dc.html). Panels are RimPanels; nodes and steps take the
+   rim surface (doc-surface) and the big nodes the active-pill rim of the kit tokens. */
+
+.z01 {
+  gap: 20px;
+}
+
+.z01-body {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.z01-side {
+  width: 270px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.z01-band {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kf-panel.z01-band-warn[data-variant] {
+  border-color: var(--amber-500);
+}
+
+.z01-band h3 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.z01-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+  color: var(--c-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.z01-mini span {
+  margin-left: auto;
+  font: 700 11px var(--font-display);
+  color: var(--c-link);
+}
+
+.z01-tree {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.z01-row {
+  display: flex;
+  align-items: center;
+}
+
+.z01-leaves {
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.z01-tools {
+  gap: 10px;
+}
+
+.z01-tools .z01-node {
+  min-width: 130px;
+}
+
+.z01-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.z01-node {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 150px;
+  height: 62px;
+  padding: 0 14px;
+  border-radius: 18px;
+  color: var(--c-text);
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+a.z01-node:hover {
+  transform: translateY(-3px);
+}
+
+.z01-node b {
+  font-family: var(--font-display);
+  font-size: 15px;
+}
+
+.z01-node i {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-link);
+}
+
+.z01-node-big {
+  background: var(--rim-active-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+.z01-vline {
+  width: 2px;
+  height: 28px;
+  margin: 0 auto;
+  background: repeating-linear-gradient(180deg, var(--c-text-muted) 0 6px, transparent 6px 10px);
+}
+
+.z01-hlink {
+  width: 56px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--c-accent) 0 6px, transparent 6px 10px);
+}
+
+.z01-bar {
+  width: 560px;
+  height: 2px;
+  background: var(--c-text-muted);
+  opacity: 0.6;
+}
+
+.z01-flows {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.kf-panel.z01-flows[data-radius] {
+  border-radius: 24px;
+}
+
+.z01-flows h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+
+.z01-flow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.z01-flow-name {
+  width: 150px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.z01-flow-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.z01-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--c-accent);
+}
+
+.z01-arrow span {
+  width: 26px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 10px);
+}
+
+.z01-step {
+  /* content-box like the board's link: the 1.5px rim adds to the 58px */
+  box-sizing: content-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 58px;
+  padding: 0 14px;
+  border-radius: 16px;
+  color: var(--c-text);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.z01-step i {
+  font: normal 700 11px var(--font-display);
+  color: var(--c-link);
+}

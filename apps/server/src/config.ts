@@ -25,6 +25,12 @@ const Env = z.object({
   /** Meilisearch of kb (loopback). Unset outside production: search sync is off and the server still runs. */
   MEILI_URL: z.preprocess(emptyIsUnset, z.url().optional()),
   MEILI_MASTER_KEY: z.preprocess(emptyIsUnset, z.string().min(16).optional()),
+  /** TypeSafe key for Jev (server-side judgments such as the crystal captions). Unset: those fall back to plain text. */
+  TYPESAFE_API_KEY: z.preprocess(emptyIsUnset, z.string().min(8).optional()),
+  /** `mock`: load the dev seed (the mock's Spaces and documents) at startup, for E2E. Refused in production. */
+  KB_SEED: z.preprocess(emptyIsUnset, z.enum(['mock']).optional()),
+  /** IdP sub that owns the seed's personal Space and private documents (KB_SEED and `pnpm seed`). */
+  SEED_OWNER_SUB: z.preprocess(emptyIsUnset, z.string().trim().min(1).optional()),
 });
 
 export interface AuthConfig {
@@ -62,7 +68,14 @@ export interface ServerConfig {
   signInLimitPer15Min: number;
   /** Back-channel logout calls per 15 minutes per IP (the IdP calls from one address). */
   backchannelLimitPer15Min: number;
+  /** TypeSafe API key for Jev; null when unset (Jev-made choices use their plain fallback). */
+  typesafeApiKey: string | null;
+  /** Load the dev seed at startup as this owner (KB_SEED=mock); null otherwise. Never set in production. */
+  startupSeed: { ownerSub: string } | null;
 }
+
+/** The seed's owner when SEED_OWNER_SUB is unset: the seed admin. */
+export const DEFAULT_SEED_OWNER_SUB = 'seed:dat';
 
 /** Validates env once at startup; throws naming the offending keys (never their values) so the process fails fast. */
 export function loadConfig(env: Record<string, string | undefined> = process.env): ServerConfig {
@@ -84,6 +97,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     if (missing.length > 0) throw new Error(`Invalid server env: ${missing.join(', ')} required in production`);
     if (publicUrl.protocol !== 'https:') throw new Error('Invalid server env: PUBLIC_URL must be https in production');
     if (e.PGLITE_DIR) throw new Error('Invalid server env: PGLITE_DIR is dev/test only');
+    if (e.KB_SEED) throw new Error('Invalid server env: KB_SEED is dev/test only');
   }
   // https only; plain http only for a local fake IdP outside production (E2E).
   if (issuerUrl.protocol !== 'https:' && (production || issuerUrl.protocol !== 'http:' || !LOOPBACK_HOSTS.includes(issuerUrl.hostname))) {
@@ -114,5 +128,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     meili: e.MEILI_URL && e.MEILI_MASTER_KEY ? { url: e.MEILI_URL.replace(/\/$/, ''), apiKey: e.MEILI_MASTER_KEY, indexPrefix: '' } : null,
     signInLimitPer15Min: 100,
     backchannelLimitPer15Min: 300,
+    typesafeApiKey: e.TYPESAFE_API_KEY ?? null,
+    startupSeed: e.KB_SEED === 'mock' ? { ownerSub: e.SEED_OWNER_SUB ?? DEFAULT_SEED_OWNER_SUB } : null,
   };
 }

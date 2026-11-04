@@ -1,13 +1,18 @@
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import helmet from 'helmet';
 import { sql } from 'drizzle-orm';
+import { activityRoutes } from './api/activity-routes';
+import { contentRoutes } from './api/content-routes';
+import { meRoutes } from './api/me-routes';
 import { authRoutes } from './auth/auth-routes';
 import { backchannelLogoutRoute } from './auth/backchannel-logout';
 import { type IdpMetadata, idpMetadata } from './auth/idp-metadata';
 import { requireSameOrigin } from './auth/origin-check';
 import type { ServerConfig } from './config';
 import type { Db } from './db/client';
+import { SpaceCaptions } from './captions/space-captions';
 import { HttpError } from './http-error';
+import { JevClient, type JevJudge } from './jev/jev-client';
 import { safeErrorText } from './log-error';
 import type { SearchService } from './search/search-service';
 
@@ -19,13 +24,21 @@ export interface AppDeps {
   idp?: IdpMetadata | null;
   /** Search index and its sync queue; null when MEILI_URL is unset. Writers enqueue changed documents on it. */
   search?: SearchService | null;
+  /** Jev, for server-side judgments (default: from TYPESAFE_API_KEY; null without a key). */
+  jev?: JevJudge | null;
 }
 
 /**
- * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout. The web app is
- * static (nginx in production, Vite in dev).
+ * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
+ * (/api/me) and the reading API (Spaces, documents, recent). The web app is static (nginx in production, Vite in dev).
  */
-export function createApp({ config, db, now = () => new Date(), idp = config.auth ? idpMetadata(config.auth.issuer) : null }: AppDeps): Express {
+export function createApp({
+  config,
+  db,
+  now = () => new Date(),
+  idp = config.auth ? idpMetadata(config.auth.issuer) : null,
+  jev = config.typesafeApiKey ? new JevClient(config.typesafeApiKey) : null,
+}: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
   // nginx on the same host sets X-Forwarded-For; trust it from loopback only (rate limits use the client IP).
@@ -43,6 +56,9 @@ export function createApp({ config, db, now = () => new Date(), idp = config.aut
   app.use(requireSameOrigin(config.publicOrigin));
   app.use(express.json({ limit: '32kb' }));
   app.use(authRoutes({ config, db, idp, now }));
+  app.use(meRoutes({ config, db, now }));
+  app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
+  app.use(activityRoutes({ config, db, now }));
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'not-found')));
 

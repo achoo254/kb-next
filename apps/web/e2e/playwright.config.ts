@@ -47,6 +47,8 @@ export default defineConfig({
         AUTH_ISSUER: `http://127.0.0.1:${FAKE_IDP_PORT}`,
         AUTH_CLIENT_ID: E2E_CLIENT_ID,
         AUTH_CLIENT_SECRET: E2E_CLIENT_SECRET,
+        // The mock's data, "Của bạn" content owned by the fake IdP's account (fake-idp-server.ts); Đạt is the admin.
+        KB_SEED: 'mock', SEED_OWNER_SUB: 'e2e-account', ADMIN_SUBS: 'seed:dat',
       },
     },
     {

@@ -1,0 +1,244 @@
+/* The sign-in cards of board S02 (design/mock/S02-Login.dc.html). The rim look comes from RimPanel. */
+
+.auth-card {
+  box-sizing: border-box;
+  width: 400px;
+  height: 560px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.auth-card-kicker {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.auth-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.auth-card-text {
+  font-size: 13px;
+  color: var(--c-text-sub);
+  text-align: center;
+}
+
+/* A · gate */
+.auth-gate-art {
+  position: relative;
+  flex: none;
+  width: 220px;
+  height: 220px;
+  margin-top: 20px;
+}
+
+.auth-gate-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--violet-300) 60%, transparent);
+  animation: auth-spin 6s linear infinite;
+}
+
+.auth-gate-art img {
+  position: absolute;
+  inset: 14px;
+  width: 192px;
+  height: 192px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--violet-600) 70%, transparent));
+}
+
+.auth-gate-streak {
+  position: absolute;
+  left: 190px;
+  width: 40px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--sky-100));
+  animation: auth-warp 1.4s ease-in infinite;
+}
+
+.auth-card-cta {
+  margin-top: auto;
+}
+
+/* B · opening */
+.auth-card-opening {
+  align-items: stretch;
+  gap: 18px;
+}
+
+.auth-opening-art {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.auth-opening-art img {
+  width: 170px;
+  height: 170px;
+  animation: auth-spin 120s linear infinite;
+}
+
+.auth-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-step {
+  --step: var(--step-wait);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--night-row) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
+}
+
+.auth-step[data-state="done"] {
+  --step: var(--orbit-tint-obs);
+}
+
+.auth-step[data-state="running"] {
+  --step: var(--violet-400);
+}
+
+.auth-step-mark {
+  /* content-box like the board: the border adds to the size */
+  box-sizing: content-box;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--step);
+  color: var(--step);
+  font: 700 12px var(--font-sans);
+}
+
+.auth-step[data-state="running"] .auth-step-mark {
+  animation: auth-pulse 1.8s ease-in-out infinite;
+}
+
+.auth-step-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.auth-step-status {
+  font-size: 12px;
+  color: var(--step);
+}
+
+.auth-progress {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--white) 10%, transparent);
+  overflow: hidden;
+}
+
+.auth-progress-fill {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--sky-300), var(--violet-400));
+  transition: width var(--motion-morph) var(--ease-fly);
+}
+
+/* C · failed */
+.kf-panel.auth-card-failed[data-variant] {
+  border-color: color-mix(in srgb, var(--amber-400) 60%, transparent);
+}
+
+.auth-card-failed .auth-card-kicker {
+  color: var(--amber-300);
+}
+
+.auth-failed-art {
+  width: 150px;
+  height: 150px;
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: auth-shake 0.5s ease-in-out infinite;
+}
+
+.auth-failed-art img {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--amber-500) 50%, transparent));
+}
+
+.auth-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+@keyframes auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes auth-warp {
+  0% {
+    transform: translateX(0) scaleX(1);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-160px) scaleX(3);
+    opacity: 0;
+  }
+}
+
+@keyframes auth-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes auth-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 1px);
+  }
+  40% {
+    transform: translate(3px, -1px);
+  }
+  60% {
+    transform: translate(-2px, -1px);
+  }
+  80% {
+    transform: translate(2px, 1px);
+  }
+}

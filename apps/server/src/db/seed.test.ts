@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { listDocuments, listSpaces } from '../access/content';
+import { listRecentDocuments } from '../access/reading';
 import { GUEST, viewerFor } from '../access/viewer';
 import { type DbHandle, openPglite } from './client';
 import { assertSeedAllowed, seedDatabase } from './seed';
@@ -62,5 +63,13 @@ describe('dev seed', () => {
     expect(titles).toContain('Ghi chú: DHCP giả mạo');
     expect(titles).not.toContain('DHCP trên router nhà');
     expect(titles).not.toContain('So sánh ARP và NDP');
+  });
+
+  it('dates documents one apart, in the order of C09’s "Gần đây" stage', async () => {
+    const { ownerId } = await seedDatabase(database.db, 'dev:me');
+    const recent = await listRecentDocuments(database.db, await viewerFor(database.db, new Set(), ownerId), 40);
+    expect(recent.slice(0, 2).map((d) => d.title)).toEqual(['Giao thức DHCP', 'Kiến trúc cụm K8s']);
+    expect(recent[0]?.updatedAt.toISOString()).toBe('2026-11-03T14:05:00.000Z');
+    expect(new Set(recent.map((d) => d.updatedAt.getTime())).size).toBe(recent.length);
   });
 });

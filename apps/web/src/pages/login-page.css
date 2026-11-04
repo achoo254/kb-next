@@ -1,0 +1,19 @@
+/* /login and the Universe opening: one S02 card where the board's middle column is (x 520 at 1440, y 110). */
+
+.login-stage {
+  position: absolute;
+  left: 50%;
+  top: 110px;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 440px) {
+  .login-stage {
+    top: 96px;
+    width: calc(100% - 32px);
+  }
+
+  .login-stage .auth-card {
+    width: 100%;
+  }
+}

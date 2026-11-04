@@ -1,0 +1,154 @@
+/* The error panels of board X02 (design/mock/X02-Errors.dc.html). The rim look comes from RimPanel. */
+
+.error-panel {
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.kf-panel.error-panel-server[data-variant] {
+  border-color: color-mix(in srgb, var(--amber-400) 55%, transparent);
+}
+
+.error-panel-art {
+  flex: none;
+  width: 200px;
+  height: 200px;
+  animation: error-float 6s ease-in-out infinite;
+}
+
+.error-panel-art[data-kind="not-found"] {
+  width: 220px;
+  height: 220px;
+}
+
+.error-panel-art[data-kind="server"] {
+  width: 190px;
+  height: 190px;
+  animation: error-shake 0.5s ease-in-out infinite;
+}
+
+.error-panel-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--violet-500) 55%, transparent));
+}
+
+.error-panel-art[data-kind="server"] img {
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--amber-500) 55%, transparent));
+}
+
+.error-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.error-panel-code {
+  font: 700 46px var(--font-sans);
+  background: linear-gradient(90deg, var(--sky-300), var(--violet-400));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.error-panel-body[data-kind="server"] .error-panel-code {
+  background-image: linear-gradient(90deg, var(--amber-200), var(--amber-500));
+}
+
+.error-panel-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.error-panel-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-text-sub);
+}
+
+.error-panel-action {
+  align-self: flex-start;
+}
+
+.error-panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.error-panel-spinner {
+  /* content-box like the board: the border adds to the size */
+  box-sizing: content-box;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--white) 35%, transparent);
+  border-top-color: var(--white);
+  animation: error-spin 0.9s linear infinite;
+}
+
+/* the whole-screen error: one panel the size of a board cell (630×374), centred under the top bar */
+.error-screen-stage {
+  position: absolute;
+  left: 50%;
+  top: 96px;
+  width: min(630px, calc(100% - 32px));
+  transform: translateX(-50%);
+}
+
+.error-screen-stage .error-panel {
+  min-height: 374px;
+}
+
+@media (max-width: 640px) {
+  .error-screen-stage .error-panel {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .error-screen-stage .error-panel-action,
+  .error-screen-stage .error-panel-actions {
+    align-self: center;
+  }
+}
+
+@keyframes error-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes error-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 1px);
+  }
+  40% {
+    transform: translate(3px, -1px);
+  }
+  60% {
+    transform: translate(-2px, -1px);
+  }
+  80% {
+    transform: translate(2px, 1px);
+  }
+}
+
+@keyframes error-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

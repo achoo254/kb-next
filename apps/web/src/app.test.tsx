@@ -18,6 +18,7 @@ describe('routes', () => {
     ['/graph', 'C13'],
     ['/canvas', 'C15'],
     ['/me', 'C08'],
+    ['/inbox', 'C20'],
     ['/settings', 'H03'],
     ['/admin', 'A01'],
     ['/admin/review', 'A01'],

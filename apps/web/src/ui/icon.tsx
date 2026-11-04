@@ -88,6 +88,9 @@ const ICONS = {
   'layer-space': { body: <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18" />, cap: 'round', join: 'round' },
   'layer-collection': { body: <path d="M4 7h16M4 12h16M4 17h10" />, cap: 'round', join: 'round' },
   'layer-document': { body: <path d="M6 3h8l4 4v14H6zM14 3v4h4" />, cap: 'round', join: 'round' },
+  /* Start and error screens (S01, S02, X02): the sign-in arrow of S01's button and the stacked layers of the orb */
+  'sign-in': { body: <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />, stroke: 2.2, cap: 'round', join: 'round' },
+  layers: { body: <><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 13l9 5 9-5" /><path d="M3 9l9 5 9-5" /></>, stroke: 1.8, join: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

@@ -12,11 +12,16 @@ async function liveSession(req: Request, config: ServerConfig, db: Db, now: Date
   return token ? findSession(db, token, now) : null;
 }
 
+/** The signed-in account's id, or null for a request without a live session (a guest). */
+export async function findUserId(req: Request, config: ServerConfig, db: Db, now: Date): Promise<string | null> {
+  return (await liveSession(req, config, db, now))?.userId ?? null;
+}
+
 /** The signed-in account's id, or a 401 `sign-in-required` for a request without a live session. */
 export async function requireUserId(req: Request, config: ServerConfig, db: Db, now: Date): Promise<string> {
-  const session = await liveSession(req, config, db, now);
-  if (!session) throw new HttpError(401, 'sign-in-required');
-  return session.userId;
+  const userId = await findUserId(req, config, db, now);
+  if (!userId) throw new HttpError(401, 'sign-in-required');
+  return userId;
 }
 
 /** The IdP subject of the signed-in account, or null without a live session. */

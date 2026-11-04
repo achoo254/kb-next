@@ -42,6 +42,10 @@ export const users = pgTable('users', {
   theme: uiTheme('theme').notNull().default('system'),
   role: userRole('role').notNull().default('member'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  /** When the account finished or skipped the first-visit steps (S03); null until then. */
+  onboardedAt: timestamp('onboarded_at', { withTimezone: true }),
+  /** Slugs of the Spaces the account picked as its interests during onboarding (S03), in the order picked. */
+  interests: text('interests').array().notNull().default(sql`'{}'::text[]`),
 });
 
 /**
@@ -92,6 +96,32 @@ export const spaces = pgTable(
     check('spaces_personal_has_owner', sql`(${table.kind} = 'personal') = (${table.ownerId} is not null)`),
     index('spaces_owner_id_idx').on(table.ownerId),
   ],
+);
+
+export const captionSource = pgEnum('caption_source', ['jev', 'fallback', 'seed']);
+
+/**
+ * The caption under a Space's crystal (C09), as Jev chose it among code-built candidates, cached per Space and
+ * `signature` (a hash of the per-type counts and labels the candidates came from): it is chosen again only when
+ * those change. `fallback` rows record that Jev failed for that signature, so it is retried only after `retryAfter`;
+ * `seed` rows are the mock's captions written by the dev/E2E seed (KB_SEED=mock).
+ * `inputTokens` is what the Jev call that chose it billed (0 for a fallback).
+ */
+export const spaceCaptions = pgTable(
+  'space_captions',
+  {
+    spaceId: uuid('space_id')
+      .notNull()
+      .references(() => spaces.id, { onDelete: 'cascade' }),
+    signature: text('signature').notNull(),
+    captionVi: text('caption_vi').notNull(),
+    captionEn: text('caption_en').notNull(),
+    source: captionSource('source').notNull(),
+    inputTokens: integer('input_tokens').notNull().default(0),
+    retryAfter: timestamp('retry_after', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (table) => [primaryKey({ columns: [table.spaceId, table.signature] })],
 );
 
 /** A collection inside a Space (C10's left rail), in `sortOrder`. */
@@ -322,6 +352,30 @@ export const notifications = pgTable(
     createdAt: createdAt(),
   },
   (table) => [index('notifications_user_id_created_at_idx').on(table.userId, table.createdAt)],
+);
+
+/**
+ * How far an account has read a document (C10 "72%", C11): the furthest `progress` (0–100) reached and the anchor
+ * of the passage read last, to resume there.
+ */
+export const readingProgress = pgTable(
+  'reading_progress',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    documentId: uuid('document_id')
+      .notNull()
+      .references(() => documents.id, { onDelete: 'cascade' }),
+    progress: integer('progress').notNull(),
+    anchor: text('anchor'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.documentId] }),
+    check('reading_progress_range', sql`${table.progress} between 0 and 100`),
+    index('reading_progress_document_id_idx').on(table.documentId),
+  ],
 );
 
 /** Comments on a document (C11), optionally on one passage (`anchor`). */

@@ -1,0 +1,45 @@
+/* Screens without the signed-in chrome (S01, S02, X02): the gate veil, the top-right actions and the two shared
+   button looks of these boards (the rim button and the light glass link, 48px tall). */
+
+.screen-page {
+  min-height: 100vh;
+}
+
+.screen-page-gate .universe-veil {
+  background: var(--c-veil-gate);
+}
+
+.screen-page-actions {
+  position: absolute;
+  right: 28px;
+  top: 16px;
+  z-index: 2;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.screen-board {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* The rim button of the start boards: 48px, 600 weight (the kit's rim button is the 44px, 700 nav pill). */
+.kf-btn.start-btn[data-variant] {
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 24px;
+  font-weight: 600;
+}
+
+/* The secondary link of the start boards ("Về trang chủ", "Bỏ qua"): faint white glass, grey text. */
+.kf-btn.start-ghost[data-variant] {
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 24px;
+  border-color: color-mix(in srgb, var(--white) 16%, transparent);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: var(--start-ghost-text);
+}

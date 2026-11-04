@@ -34,6 +34,8 @@ export interface SeedSpace {
   kind: 'public' | 'personal';
   unitVi: string;
   unitEn: string;
+  /** The crystal caption board C09 shows (stored with KB_SEED=mock, see src/captions/seed-captions.ts). */
+  caption: { vi: string; en: string };
   collections: SeedCollection[];
 }
 
@@ -49,6 +51,7 @@ export const SEED_SPACES: SeedSpace[] = [
     kind: 'public',
     unitVi: 'lab',
     unitEn: 'labs',
+    caption: { vi: '8 lab', en: '8 labs' },
     collections: [
       { vi: 'Giao thức nền tảng', en: 'Core protocols', tint: '#C4B5FD', glow: '#8B5CF6', art: '/art/crystal-networking.webp' },
       { vi: 'Web', en: 'Web', tint: '#A5F3FC', glow: '#22D3EE', art: '/art/crystal-linux.webp' },
@@ -67,6 +70,7 @@ export const SEED_SPACES: SeedSpace[] = [
     kind: 'public',
     unitVi: 'bài',
     unitEn: 'articles',
+    caption: { vi: '2 bài', en: '2 docs' },
     collections: [
       { vi: 'Kiến trúc cụm', en: 'Cluster architecture' },
       { vi: 'Dựng từng bước', en: 'Step by step' },
@@ -83,6 +87,7 @@ export const SEED_SPACES: SeedSpace[] = [
     kind: 'public',
     unitVi: 'bài tập',
     unitEn: 'exercises',
+    caption: { vi: '3 bài tập', en: '3 exercises' },
     collections: [
       { vi: 'syslog', en: 'syslog' },
       { vi: 'boot', en: 'boot' },
@@ -100,6 +105,7 @@ export const SEED_SPACES: SeedSpace[] = [
     kind: 'public',
     unitVi: 'lab',
     unitEn: 'labs',
+    caption: { vi: '1 lab', en: '1 lab' },
     collections: [
       { vi: 'VictoriaLogs', en: 'VictoriaLogs' },
       { vi: 'LogsQL', en: 'LogsQL' },
@@ -116,6 +122,7 @@ export const SEED_SPACES: SeedSpace[] = [
     kind: 'public',
     unitVi: 'phần',
     unitEn: 'parts',
+    caption: { vi: '3 phần', en: '3 parts' },
     collections: [
       { vi: 'Cơ bản', en: 'Basics' },
       { vi: 'Storage & Build', en: 'Storage & Build' },
@@ -133,6 +140,7 @@ export const SEED_SPACES: SeedSpace[] = [
     kind: 'public',
     unitVi: 'tuần',
     unitEn: 'weeks',
+    caption: { vi: '5 tuần', en: '5 weeks' },
     collections: ['11-07', '18-07', '01-08', '08-08', '17-09'].map((week) => ({ vi: week, en: week })),
   },
   {
@@ -146,6 +154,7 @@ export const SEED_SPACES: SeedSpace[] = [
     kind: 'personal',
     unitVi: 'tệp',
     unitEn: 'files',
+    caption: { vi: '3 tệp · riêng tư', en: '3 files · private' },
     collections: [],
   },
 ];
@@ -328,4 +337,32 @@ export const SEED_LINKS: Array<[string, string, 'wikilink' | 'relation', string 
   ['new-host', 'http', 'relation', 'bước 5'],
   ['arp-ndp', 'arp', 'wikilink', null],
   ['dhcp-spoof', 'dhcp', 'wikilink', null],
+  // Across Spaces: what makes Linux and Observability the related Spaces of Networking (C10).
+  ['syslog', 'dhcp', 'wikilink', null],
+  ['victorialogs', 'tcp-udp', 'wikilink', null],
+];
+
+/**
+ * When the seed's documents were last updated: the latest is 03/11/2026 21:05 (Asia/Saigon), as C11 shows
+ * ("cập nhật 03/11"). C09's "Gần đây" stage opens on "Tiếp tục đọc: Giao thức DHCP" then "Cần cập nhật: Kiến trúc
+ * cụm K8s", so those come first; every other document follows, 10 minutes apart, in seed order.
+ */
+export const SEED_LATEST_UPDATE = new Date('2026-11-03T14:05:00Z');
+export const SEED_RECENT_FIRST = ['dhcp', 'k8s-arch'];
+
+/** The owner's reading progress of C10 (document key, percent, last anchor read). */
+export const SEED_PROGRESS: Array<[string, number, string | null]> = [
+  ['arp', 100, 'arp-request-reply'],
+  ['dhcp', 72, 'dora'],
+  ['icmp', 30, 'ping'],
+  ['dhcp-home', 45, 'router-nha'],
+  ['http', 40, 'request-response'],
+  ['subnet', 100, 'chia-subnet'],
+  ['osi', 10, 'dong-goi'],
+];
+
+/** The discussion of C11 (DHCP): [key, document key, author, hours before SEED_LATEST_UPDATE, text]. */
+export const SEED_COMMENTS: Array<[string, string, SeedAuthor, number, string]> = [
+  ['relay-question', 'dhcp', 'minh', 2, '@Linh mạng khác subnet thì DHCP relay chạy thế nào?'],
+  ['relay-answer', 'dhcp', 'linh', 1, 'Router chuyển tiếp gói Discover tới server. Mình sẽ thêm một đoạn về relay.'],
 ];

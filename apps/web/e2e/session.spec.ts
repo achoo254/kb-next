@@ -11,6 +11,14 @@ test('the landing, a share link and an unknown page open without an account', as
   await expect(page.locator('[data-screen="X02"]')).toBeVisible();
 });
 
+test('the landing leads to sign-in, and a failed sign-in offers a retry', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('[data-id="landing-cta"]')).toHaveAttribute('href', '/login?return=%2Fu&go=1');
+  await page.goto('/login?login=fail&return=%2Fu');
+  await expect(page.locator('[data-screen="S02"] [data-id="sign-in-failed"]')).toBeVisible();
+  await expect(page.locator('[data-id="sign-in-retry"]')).toHaveAttribute('href', /^\/auth\/login\?return=%2Fu&lang=/);
+});
+
 test('a signed-in screen sends a visitor through sign-in and back, on the Universe backdrop', async ({ page }) => {
   await signInAt(page, '/u');
   await expect(page.locator('[data-screen="C09"]')).toBeVisible();

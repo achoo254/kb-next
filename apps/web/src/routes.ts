@@ -30,6 +30,7 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C13', titleKey: 'screen.C13', access: 'signed-in', pattern: /^\/graph$/ },
   { code: 'C15', titleKey: 'screen.C15', access: 'signed-in', pattern: /^\/canvas$/ },
   { code: 'C08', titleKey: 'screen.C08', access: 'signed-in', pattern: /^\/me$/ },
+  { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },
   { code: 'A01', titleKey: 'screen.A01', access: 'signed-in', pattern: /^\/admin(\/[A-Za-z0-9_/-]*)?$/ },
 ];

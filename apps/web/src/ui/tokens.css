@@ -419,3 +419,66 @@
     0 0 18px rgb(139 92 246 / 0.45);
   --ix-copilot-orb-deep: #3b0f8c;
 }
+
+/* Start, sign-in, onboarding and error screens (S01, S02, S03, X02) and the documentation boards (Z01, Z02) */
+:root {
+  /* the veil of the sign-in and error boards (S02, X02) and of the documentation boards (Z01, Z02) */
+  --dark-veil-gate: linear-gradient(180deg, rgb(6 4 26 / 0.62), rgb(6 4 26 / 0.8));
+  --light-veil-gate: linear-gradient(180deg, rgb(247 245 255 / 0.62), rgb(236 232 255 / 0.8));
+  --dark-veil-doc: linear-gradient(180deg, rgb(6 4 26 / 0.45), rgb(6 4 26 / 0.8));
+  --light-veil-doc: linear-gradient(180deg, rgb(247 245 255 / 0.55), rgb(236 232 255 / 0.85));
+  --c-veil-gate: var(--dark-veil-gate);
+  --c-veil-doc: var(--dark-veil-doc);
+  /* the dimmed Universe behind the onboarding dialog, and the spotlight of a tour tip (S03) */
+  --onboarding-dim: rgb(6 4 26 / 0.7);
+  --spotlight-shadow:
+    0 0 0 9999px rgb(6 4 26 / 0.66),
+    0 0 0 2px var(--violet-200),
+    0 0 26px 6px rgb(167 139 250 / 0.9);
+  /* a choice tile (S03 language and topic), the look of the stage cards: frosted when off, glowing violet when on */
+  --choice-bg:
+    radial-gradient(120% 60% at 50% 0%, rgb(196 181 253 / 0.16) 0%, rgb(196 181 253 / 0) 60%),
+    linear-gradient(180deg, rgb(64 48 130 / 0.55) 0%, rgb(28 18 70 / 0.62) 100%);
+  --choice-border: rgb(196 181 253 / 0.4);
+  --choice-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 0 18px rgb(139 92 246 / 0.12);
+  --choice-on-bg:
+    radial-gradient(120% 70% at 50% 0%, rgb(221 214 254 / 0.42) 0%, rgb(221 214 254 / 0) 60%),
+    linear-gradient(180deg, rgb(167 139 250 / 0.55) 0%, rgb(124 58 237 / 0.55) 50%, rgb(76 29 149 / 0.72) 100%);
+  --choice-on-border: rgb(243 232 255 / 0.95);
+  --choice-on-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    inset 0 0 22px rgb(233 213 255 / 0.35),
+    inset 0 -14px 26px rgb(216 180 254 / 0.55),
+    0 0 26px rgb(167 139 250 / 0.9),
+    0 0 70px rgb(124 58 237 / 0.55);
+  /* the orb of the Universe scene: the dark core behind its label and the label's shadow */
+  --orb-core: radial-gradient(
+    ellipse 44% 34% at 50% 54%,
+    rgb(8 4 30 / 0.74) 0%,
+    rgb(8 4 30 / 0.55) 45%,
+    rgb(8 4 30 / 0.18) 78%,
+    rgb(8 4 30 / 0) 100%
+  );
+  --orb-text-shadow: 0 1px 3px rgb(0 0 0 / 0.9), 0 2px 14px rgb(20 8 60 / 0.95);
+  /* the secondary link button of the start boards (Về trang chủ, Bỏ qua…) and its text */
+  --start-ghost-text: #e5e7eb;
+  /* the "waiting" step mark of the sign-in board (S02) */
+  --step-wait: #6b6890;
+  /* the warp streaks of the sign-in gate (S02) */
+  --sky-100: #e0f2fe;
+  /* the small print of the landing (S01): the note under the sign-in button and the footer */
+  --landing-note: #a9a3c9;
+  --landing-footer: #9c96bd;
+}
+
+:root[data-theme="light"] {
+  --c-veil-gate: var(--light-veil-gate);
+  --c-veil-doc: var(--light-veil-doc);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --c-veil-gate: var(--light-veil-gate);
+    --c-veil-doc: var(--light-veil-doc);
+  }
+}

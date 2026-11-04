@@ -1,0 +1,260 @@
+/* The first-visit dialog over the Universe (design/mock/S03-Onboarding.dc.html). Cards are RimPanels; this file
+   places them like the board (language card 600 wide at y 190, topics 840 wide at y 150, controls 30 from the
+   bottom) and draws the choice tiles with the stage-card look of the tokens. */
+
+.onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+/* the dialog takes the focus when it opens; its controls show the ring */
+.onboarding:focus {
+  outline: none;
+}
+
+.onboarding-dim {
+  position: absolute;
+  inset: 0;
+  background: var(--onboarding-dim);
+}
+
+.onboarding-card {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+}
+
+.kf-panel.onboarding-card[data-radius] {
+  border-radius: 30px;
+}
+
+.onboarding-lang {
+  top: 190px;
+  width: 600px;
+  padding: 30px;
+  gap: 18px;
+}
+
+.onboarding-topics {
+  top: 150px;
+  width: 840px;
+  padding: 28px;
+  gap: 16px;
+}
+
+.onboarding-kicker {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.onboarding-title.kf-gradient-title {
+  padding-bottom: 0;
+  line-height: normal;
+  letter-spacing: normal;
+}
+
+.onboarding-langs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.onboarding-spaces {
+  display: grid;
+  /* five across like the board; a sixth Space still fits the row */
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.onboarding-choice {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 22px;
+  background: var(--choice-bg);
+  border: 1px solid var(--choice-border);
+  box-shadow: var(--choice-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--violet-50);
+  font: inherit;
+  cursor: pointer;
+  transition: transform var(--motion-feedback);
+}
+
+.onboarding-choice[aria-pressed="true"] {
+  background: var(--choice-on-bg);
+  border: 1.5px solid var(--choice-on-border);
+  box-shadow: var(--choice-on-shadow);
+}
+
+.onboarding-choice:hover {
+  transform: translateY(-3px);
+}
+
+.onboarding-choice:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+.onboarding-lang-choice {
+  height: 130px;
+}
+
+.onboarding-lang-code {
+  font: 700 34px var(--font-display);
+}
+
+.onboarding-lang-name {
+  font-size: 14px;
+}
+
+.onboarding-space {
+  height: 190px;
+}
+
+.onboarding-space img {
+  width: 110px;
+  height: 110px;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 14px var(--space-glow, var(--glow-net)));
+}
+
+.onboarding-space[aria-pressed="true"] img {
+  opacity: 1;
+}
+
+/* the Kubernetes art takes the same hue shift as in the kit's Crystal */
+.onboarding-space[data-space="kubernetes"] img {
+  filter: hue-rotate(28deg) saturate(1.2) drop-shadow(0 0 14px var(--space-glow, var(--glow-k8s)));
+}
+
+.onboarding-space-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.onboarding-check {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  /* content-box like the board: the border adds to the size */
+  box-sizing: content-box;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--violet-600);
+  border: 1.5px solid var(--violet-200);
+  font-size: 12px;
+}
+
+/* step 3: the lit element and its tip */
+.onboarding-spot {
+  position: absolute;
+  box-shadow: var(--spotlight-shadow);
+  pointer-events: none;
+  animation: onboarding-pulse 1.8s ease-in-out infinite;
+}
+
+.onboarding-tip-at {
+  position: absolute;
+}
+
+.onboarding-tip {
+  box-sizing: border-box;
+  width: 330px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.kf-panel.onboarding-tip[data-radius] {
+  border-radius: 24px;
+}
+
+.onboarding-tip-kicker {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.onboarding-tip-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.onboarding-tip-title:focus {
+  outline: none;
+}
+
+.onboarding-tip-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--c-text-sub);
+}
+
+/* Bỏ qua · Quay lại · ●●● · Tiếp */
+.onboarding-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.onboarding-dots > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--violet-300) 35%, transparent);
+}
+
+.onboarding-dots > span[data-on] {
+  width: 28px;
+  background: var(--violet-300);
+  box-shadow: 0 0 10px var(--violet-400);
+}
+
+@keyframes onboarding-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 880px) {
+  .onboarding-lang,
+  .onboarding-topics {
+    width: calc(100% - 32px);
+    top: 96px;
+  }
+
+  .onboarding-spaces {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  }
+}

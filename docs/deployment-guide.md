@@ -71,6 +71,8 @@ chép thành file env của `apps/server`.
 | `MEILI_URL` | `http://127.0.0.1:5322` |
 | `MEILI_MASTER_KEY` | khoá ngẫu nhiên sinh trên server (≥ 16 ký tự, nên `openssl rand -hex 32`); container `kb-meili` đọc cùng dòng này |
 | `HOC_CLOUD_URL` | không cần đặt: lệnh nhập Học Cloud mặc định đọc `https://hoc-cloud.inetdev.io.vn` (API công khai) |
+| `TYPESAFE_API_KEY` | không bắt buộc: key TypeSafe cho Jev (chọn chú thích dưới pha lê ở Universe). Không đặt thì chú thích là "<số> bài" |
+| `KB_SEED` | không đặt: chỉ dùng khi dev/E2E (`mock` nạp dữ liệu mẫu lúc khởi động); production từ chối khởi động nếu có |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
 

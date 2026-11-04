@@ -1,0 +1,87 @@
+/* The frame of the signed-in screens (boards C09–C20). The kit components bring their looks; this file only places
+   them where the boards put them: logo 44,24 · view nav 480,16 · bell and ⌘K 28px from the right, 16 from the top ·
+   lens rail 0,0 · breadcrumb 112,80. The chrome sits above the screen's content. */
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-shell-chrome {
+  display: contents;
+}
+
+.app-shell-chrome > * {
+  z-index: 2;
+}
+
+.app-shell .brand-logo {
+  z-index: 2;
+}
+
+.app-shell-nav {
+  position: absolute;
+  left: 480px;
+  top: 16px;
+}
+
+.app-shell-top {
+  position: absolute;
+  right: 28px;
+  top: 16px;
+}
+
+.app-shell-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.app-shell-crumbs {
+  position: absolute;
+  left: 112px;
+  top: 80px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.app-shell-crumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app-shell-crumbs li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-shell-crumbs a {
+  color: var(--c-link);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app-shell-crumbs a:hover {
+  text-decoration: underline;
+}
+
+.app-shell-crumb-sep,
+.app-shell-crumb-plain {
+  color: var(--c-text-muted);
+}
+
+.app-shell-crumb-current {
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.app-shell-main {
+  position: relative;
+  min-height: 100vh;
+}

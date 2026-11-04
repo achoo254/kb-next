@@ -1,0 +1,110 @@
+/* The Universe scene (C09, S01, S03): positions in the 1440×900 board space; the looks of the orbits and crystals
+   come from the kit. Only the orb is drawn here (the kit has its art, not its label). */
+
+.kf-scene {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  pointer-events: none;
+}
+
+.kf-scene-orbits {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.kf-scene-crystal {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.kf-scene-orb {
+  position: absolute;
+  left: 575px;
+  top: 210px;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  text-decoration: none;
+  pointer-events: auto;
+  /* the glow breathes; with reduced motion the orb stays unlit, as on the boards' still export */
+  animation: kf-scene-breathe 5s ease-in-out infinite;
+}
+
+.kf-scene-orb:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+.kf-scene-orb-art {
+  position: absolute;
+  inset: -18%;
+  width: 136%;
+  height: 136%;
+  filter: saturate(1.1);
+  animation: kf-scene-spin 120s linear infinite;
+}
+
+.kf-scene-orb-core {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: var(--orb-core);
+}
+
+.kf-scene-orb-label {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-shadow: var(--orb-text-shadow);
+}
+
+.kf-scene-orb-icon {
+  color: var(--violet-200);
+  filter: drop-shadow(0 0 8px var(--violet-400));
+}
+
+.kf-scene-orb-title {
+  font: 700 26px var(--font-display);
+  white-space: nowrap;
+}
+
+.kf-scene-orb-chips {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.kf-scene-orb-chips > span {
+  padding: 4px 9px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--night-cell) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-300) 35%, transparent);
+}
+
+@keyframes kf-scene-breathe {
+  0%,
+  100% {
+    filter: var(--glow-orb);
+  }
+  50% {
+    filter: drop-shadow(0 0 50px color-mix(in srgb, var(--violet-600) 95%, transparent))
+      drop-shadow(0 0 110px color-mix(in srgb, var(--cyan-400) 40%, transparent));
+  }
+}
+
+@keyframes kf-scene-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -40,7 +40,7 @@ export interface LinkRow {
   label: string | null;
 }
 
-const documentColumns = {
+export const documentColumns = {
   id: documents.id,
   spaceId: documents.spaceId,
   collectionId: documents.collectionId,
@@ -61,7 +61,7 @@ const documentColumns = {
 };
 
 /** Spaces a viewer sees on the Universe: every public Space, plus the viewer's own personal one. */
-function spacesOf(viewer: Viewer) {
+export function spacesOf(viewer: Viewer) {
   return viewer.kind === 'guest' ? eq(spaces.kind, 'public') : or(eq(spaces.kind, 'public'), eq(spaces.ownerId, viewer.userId));
 }
 

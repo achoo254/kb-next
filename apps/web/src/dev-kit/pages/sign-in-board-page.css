@@ -1,0 +1,15 @@
+/* Layout of board S02-Login: three 400px columns from x 96, y 110, 24px apart. */
+
+.s02-board {
+  position: absolute;
+  left: 96px;
+  top: 110px;
+  right: 96px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.s02-board .auth-card {
+  width: auto;
+}

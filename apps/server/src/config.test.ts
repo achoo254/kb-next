@@ -69,6 +69,29 @@ describe('server config', () => {
     expect(() => loadConfig({ MEILI_URL: 'http://127.0.0.1:5322', MEILI_MASTER_KEY: 'short-key' })).not.toThrow(/short-key/);
   });
 
+  it('turns Jev on only with TYPESAFE_API_KEY, in any environment', () => {
+    expect(loadConfig({}).typesafeApiKey).toBeNull();
+    expect(loadConfig({ TYPESAFE_API_KEY: '' }).typesafeApiKey).toBeNull();
+    expect(loadConfig({ TYPESAFE_API_KEY: 'ts-key-123456' }).typesafeApiKey).toBe('ts-key-123456');
+  });
+
+  it('loads the mock seed at startup only with KB_SEED=mock, never in production', () => {
+    expect(loadConfig({}).startupSeed).toBeNull();
+    expect(loadConfig({ KB_SEED: 'mock' }).startupSeed).toEqual({ ownerSub: 'seed:dat' });
+    expect(loadConfig({ KB_SEED: 'mock', SEED_OWNER_SUB: 'e2e-account' }).startupSeed).toEqual({ ownerSub: 'e2e-account' });
+    expect(() => loadConfig({ KB_SEED: 'real' })).toThrow(/KB_SEED/);
+    const production = {
+      NODE_ENV: 'production',
+      PUBLIC_URL: 'https://kb.example',
+      DATABASE_URL: 'postgres://kb@127.0.0.1/kb',
+      AUTH_CLIENT_SECRET: SECRET,
+      MEILI_URL: 'http://127.0.0.1:5322',
+      MEILI_MASTER_KEY: SECRET,
+    };
+    expect(() => loadConfig(production)).not.toThrow();
+    expect(() => loadConfig({ ...production, KB_SEED: 'mock' })).toThrow(/KB_SEED is dev\/test only/);
+  });
+
   it('keeps PGlite in memory for `memory`, else in the given directory', () => {
     expect(loadConfig({ PGLITE_DIR: 'memory' }).pgliteDir).toBeNull();
     expect(loadConfig({ PGLITE_DIR: '/tmp/x' }).pgliteDir).toBe('/tmp/x');

@@ -1,0 +1,139 @@
+/* The landing (design/mock/S01-Landing.dc.html), placed in the 1440×900 board space. The scene, the stage and the
+   buttons come from the kit and layout/; this file places them and sets the board's three feature cards. */
+
+.landing-lang {
+  box-sizing: border-box;
+  height: 48px;
+  min-width: 58px;
+  border-radius: var(--radius-md);
+  background: var(--c-glass);
+  border: 1px solid var(--c-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--violet-50);
+  font: 700 14px var(--font-display);
+  cursor: pointer;
+}
+
+.landing-lang:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.landing-scene {
+  position: absolute;
+  inset: 0;
+}
+
+.landing-hero {
+  position: absolute;
+  left: 96px;
+  top: 120px;
+  z-index: 1;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.landing-kicker {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 14%, transparent);
+  color: var(--start-ghost-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.landing-title.kf-gradient-title {
+  line-height: 1.1;
+  letter-spacing: -0.9px;
+  white-space: pre-line;
+}
+
+.landing-sub {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--c-text-sub);
+}
+
+.kf-btn.landing-cta[data-variant] {
+  align-self: flex-start;
+  height: 54px;
+  padding: 0 26px;
+  font-size: 15px;
+}
+
+.landing-note {
+  font-size: 12px;
+  color: var(--landing-note);
+}
+
+.landing-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--landing-footer);
+}
+
+/* The stage of S01: the kit's neon stage with three wide feature cards, fanned like the board. */
+.landing-stage.kf-stage {
+  position: absolute;
+  left: 198px;
+  top: 596px;
+}
+
+.landing-stage .kf-stage-cards {
+  left: 132px;
+  width: 700px;
+  gap: 16px;
+}
+
+.landing-stage .kf-stage-card,
+.landing-stage .kf-stage-card[data-highlight] {
+  width: 200px;
+  height: 150px;
+  padding: 16px;
+  gap: 8px;
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: left;
+  transform: perspective(900px) rotateX(-6deg) rotateY(12deg) !important;
+  transform-origin: right center !important;
+  margin-top: 18px !important;
+}
+
+.landing-stage .kf-stage-card[data-highlight] {
+  height: 168px;
+  transform: perspective(900px) rotateX(-6deg) !important;
+  transform-origin: center !important;
+  margin-top: 0 !important;
+}
+
+.landing-stage .kf-stage-card:last-child {
+  transform: perspective(900px) rotateX(-6deg) rotateY(-12deg) !important;
+  transform-origin: left center !important;
+}
+
+.landing-stage .kf-stage-icon,
+.landing-stage .kf-stage-card[data-highlight] .kf-stage-icon {
+  width: 24px;
+  height: 24px;
+  filter: none;
+}
+
+.landing-stage .kf-stage-title,
+.landing-stage .kf-stage-card[data-highlight] .kf-stage-title {
+  font-size: 15px;
+  text-shadow: none;
+}
+
+.landing-stage .kf-stage-sub {
+  line-height: 1.55;
+}

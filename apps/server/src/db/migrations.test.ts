@@ -44,7 +44,8 @@ describe('migrations', () => {
 
       await migrate(db, { migrationsFolder: MIGRATIONS });
       const [user] = await db.select().from(schema.users);
-      expect(user).toMatchObject({ sub: 'existing-sub', name: 'Đạt', lang: 'vi', theme: 'system', role: 'member' });
+      // Accounts from before onboarding existed see it once, with nothing picked yet.
+      expect(user).toMatchObject({ sub: 'existing-sub', name: 'Đạt', lang: 'vi', theme: 'system', role: 'member', onboardedAt: null, interests: [] });
       expect(await db.select({ id: schema.sessions.id }).from(schema.sessions)).toEqual([{ id: 'hash' }]);
     } finally {
       await client.close();

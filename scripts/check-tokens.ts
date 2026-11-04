@@ -1,7 +1,7 @@
 /**
  * `pnpm check:tokens`: design-token guard of the web app.
  *
- * 1. No colour literal in apps/web/src (ts, tsx, css) or apps/web/index.html outside src/ui/tokens.css.
+ * 1. No colour literal in apps/web/src (ts, tsx, css; tests excluded) or apps/web/index.html outside src/ui/tokens.css.
  * 2. Every text/background pair the UI uses meets WCAG 2 AA (text 4.5:1) in both themes (Tối and Sáng): on every
  *    opaque surface and on every fill that carries text; the focus ring, state borders and icons at 3:1 (non-text).
  *
@@ -49,7 +49,9 @@ async function sourceFiles(dir: string): Promise<string[]> {
 }
 
 async function literalViolations(): Promise<LiteralViolation[]> {
-  const files = [...(await sourceFiles(path.join(WEB, 'src'))).filter((f) => f !== TOKENS_FILE), path.join(WEB, 'index.html')];
+  // Tests hold colours as data (a Space's tint in an API answer), not as styling: only the UI sources are checked.
+  const isTest = (file: string): boolean => /\.test\.tsx?$/.test(file);
+  const files = [...(await sourceFiles(path.join(WEB, 'src'))).filter((f) => f !== TOKENS_FILE && !isTest(f)), path.join(WEB, 'index.html')];
   const results = await Promise.all(files.map(async (file) => findColourLiterals(await readFile(file, 'utf8'), path.relative(ROOT, file))));
   return results.flat();
 }

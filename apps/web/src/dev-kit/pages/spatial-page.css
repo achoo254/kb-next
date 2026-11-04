@@ -1,0 +1,436 @@
+/* Layout of board Z02-Spatial3D (design/mock/Z02-Spatial3D.dc.html). Cards are RimPanels; the small specimens
+   (orbits, graph, page, canvas) are drawn here. */
+
+.z02 {
+  gap: 18px;
+}
+
+.z02-card {
+  box-sizing: border-box;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.z02-card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+
+.z02-mut {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--c-text-muted);
+}
+
+.z02-tags {
+  display: flex;
+  gap: 6px;
+}
+
+.z02-tag {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  display: inline-flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+  color: var(--c-link);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.z02-li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.z02-li b {
+  flex: none;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+  color: var(--c-link);
+  font: 700 11px var(--font-display);
+}
+
+/* row 1: the four kinds of space */
+.z02-kinds {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.z02-vis {
+  position: relative;
+  height: 110px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+}
+
+.z02-vis-3d {
+  perspective: 500px;
+}
+
+.z02-vis-plane {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  transform: rotateX(62deg);
+  transform-style: preserve-3d;
+}
+
+.z02-vis-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--c-primary);
+  animation: z02-spin 14s linear infinite;
+}
+
+.z02-vis-plane img {
+  position: absolute;
+  inset: 28px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  transform: rotateX(-62deg);
+}
+
+.z02-node {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.z02-node-a {
+  left: 30%;
+  top: 30%;
+  width: 28px;
+  height: 28px;
+  background: var(--violet-600);
+  box-shadow: 0 0 14px var(--violet-600);
+}
+
+.z02-node-b {
+  left: 60%;
+  top: 22%;
+  width: 22px;
+  height: 22px;
+  background: var(--cyan-500);
+}
+
+.z02-node-c {
+  left: 52%;
+  top: 60%;
+  width: 20px;
+  height: 20px;
+  background: var(--amber-500);
+}
+
+.z02-edge {
+  position: absolute;
+  height: 2px;
+  background: var(--c-text-muted);
+  transform-origin: 0 0;
+}
+
+.z02-edge-a {
+  left: 34%;
+  top: 42%;
+  width: 70px;
+  transform: rotate(-12deg);
+}
+
+.z02-edge-b {
+  left: 34%;
+  top: 44%;
+  width: 56px;
+  transform: rotate(30deg);
+}
+
+/* the page specimen keeps the board's content-box padding (its thumbnail is 142px tall) */
+.z02-vis-doc {
+  box-sizing: content-box;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+}
+
+.z02-vis-doc > span:not(.z02-vis-doc-title) {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--rim-border);
+}
+
+.z02-vis-doc-title {
+  font: 700 16px var(--font-display);
+}
+
+.z02-vis-canvas {
+  background-image: radial-gradient(var(--rim-border) 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+}
+
+.z02-block {
+  position: absolute;
+  border-radius: 10px;
+}
+
+.z02-block-a {
+  left: 18%;
+  top: 26%;
+  width: 70px;
+  height: 36px;
+  background: var(--amber-500);
+}
+
+.z02-block-b {
+  left: 55%;
+  top: 46%;
+  width: 80px;
+  height: 40px;
+  background: var(--violet-600);
+}
+
+.z02-block-link {
+  position: absolute;
+  left: 36%;
+  top: 46%;
+  width: 48px;
+  height: 2px;
+  background: var(--amber-500);
+  transform: rotate(20deg);
+  transform-origin: 0 0;
+}
+
+/* row 2: the demo and the rules */
+.z02-middle {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.z02-demo {
+  flex: 1.25;
+}
+
+.z02-rules {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.z02-demo-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.z02-demo-head h3 {
+  flex: 1;
+}
+
+.z02-modes {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+}
+
+.z02-modes button {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  font: 700 13px var(--font-display);
+  cursor: pointer;
+}
+
+.z02-modes button[aria-pressed="true"] {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.z02-motion {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 22px;
+  border: 1px solid var(--rim-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.z02-motion[aria-checked="true"] {
+  background: color-mix(in srgb, var(--violet-600) 30%, transparent);
+}
+
+.z02-stage {
+  position: relative;
+  height: 330px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+}
+
+.z02-space {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 900px;
+}
+
+.z02-plane {
+  position: relative;
+  width: 420px;
+  height: 420px;
+  transform: rotateX(64deg) rotateZ(-12deg);
+  transform-style: preserve-3d;
+}
+
+.z02-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--rim-border);
+  animation: z02-spin 14s linear infinite;
+}
+
+.z02-ring-dot {
+  position: absolute;
+  left: 200px;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--cyan-400);
+  box-shadow: 0 0 14px var(--cyan-400);
+}
+
+.z02-ring-inner {
+  position: absolute;
+  inset: 70px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--c-text-muted);
+  animation: z02-spin-back 20s linear infinite;
+}
+
+.z02-ring-inner-dot {
+  position: absolute;
+  left: 130px;
+  top: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--amber-500);
+}
+
+.z02-orb {
+  position: absolute;
+  inset: 130px;
+  width: calc(100% - 260px);
+  height: calc(100% - 260px);
+  object-fit: contain;
+  transform: rotateX(-64deg) translateZ(30px);
+}
+
+.z02-stage[data-paused] .z02-ring,
+.z02-stage[data-paused] .z02-ring-inner {
+  animation-play-state: paused;
+}
+
+.z02-caption {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.z02-flat {
+  margin: 0;
+  padding: 18px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.z02-flat-item {
+  box-sizing: content-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 64px;
+  padding: 0 12px;
+  border-radius: 16px;
+  background: var(--rim-bg);
+  border: 1px solid var(--rim-border);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.z02-flat-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+.z02-flat-text {
+  flex: 1;
+}
+
+.z02-flat-text b {
+  display: block;
+  font-size: 14px;
+}
+
+.z02-flat-text span {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+/* row 3 */
+.z02-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@keyframes z02-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes z02-spin-back {
+  to {
+    transform: rotate(-360deg);
+  }
+}
