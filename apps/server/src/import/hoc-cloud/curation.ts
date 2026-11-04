@@ -2,7 +2,8 @@
  * The editorial layer between Học Cloud and kb, kept in the repository as data and reviewed like code
  * (content/hoc-cloud/curation.json): which Spaces and Collections exist, where each source item goes and in what
  * order, the sections to drop, exact-text fixes, and — where the source needs heavier edits — a whole
- * rewritten Markdown file (content/hoc-cloud/docs/). Translations live in content/translations/, summaries in
+ * rewritten Markdown file (content/hoc-cloud/docs/); misplaced lab step intros are rewritten in
+ * content/hoc-cloud/step-intros.json. Translations live in content/translations/, summaries in
  * content/summaries.json (which also holds every document's vi/en title). All files are validated together before the import writes anything.
  */
 import { readFile } from 'node:fs/promises';
@@ -49,13 +50,18 @@ const CurationDocument = z.object({
   markdown: ContentPath.optional(),
   /** Other documents (by key) listed under "Bài liên quan", written as wikilinks. */
   related: z.array(DocumentKey).default([]),
+  /**
+   * Editorial revision of this document, part of its stored content hash: bump it with an editorial change of this
+   * document only (its fixes, its step intros), so a re-import gives exactly this document a new version.
+   */
+  revision: z.number().int().min(1).default(1),
 });
 
 const CurationTranslation = z.object({ key: DocumentKey, lang: z.literal('en'), file: ContentPath });
 
 export const Curation = z
   .object({
-    /** Bumped on any editorial change of meaning; part of every stored content hash. */
+    /** Edition of the curation files, bumped on every change; documents carry their own `revision`. */
     version: z.number().int().min(1),
     spaces: z.array(CurationSpace).min(1),
     documents: z.array(CurationDocument).min(1),
@@ -88,6 +94,29 @@ export const Curation = z
   });
 
 export type Curation = z.infer<typeof Curation>;
+
+/**
+ * content/hoc-cloud/step-intros.json: rewritten opening paragraphs of lab walkthrough steps whose source `why`
+ * explains another step. Keyed by document key (`lab/http`), each entry names the displayed step number and the
+ * sha256 of the source text it replaces: once Học Cloud changes that text, the override is stale, the import warns
+ * and renders the source again.
+ */
+export const StepIntros = z.record(
+  z.string().regex(/^lab\/[a-z0-9-]+$/),
+  z.array(
+    z.object({
+      step: z.number().int().min(1),
+      sourceHash: z.string().regex(/^[0-9a-f]{64}$/),
+      why: z.string().min(20),
+      /** Keep the misplaced source text by appending it to the previous step's opening paragraph. */
+      appendSourceToPrevious: z.boolean().default(false),
+      /** What was wrong and what the new text says, for reviewers. */
+      note: z.string().min(1),
+    }),
+  ),
+);
+export type StepIntros = z.infer<typeof StepIntros>;
+export type StepIntro = StepIntros[string][number];
 export type CurationDocument = Curation['documents'][number];
 export type CurationSpace = Curation['spaces'][number];
 
@@ -126,6 +155,7 @@ export interface ContentDir {
   dir: string;
   curation: Curation;
   summaries: Summaries;
+  stepIntros: StepIntros;
   read(relative: string): Promise<string>;
 }
 
@@ -156,5 +186,12 @@ export async function loadContentDir(dir: string): Promise<ContentDir> {
   if (!curation.success) throw new ContentError(`hoc-cloud/curation.json is invalid: ${describeZod(curation.error)}`);
   const summaries = Summaries.safeParse(await parseJson('summaries.json'));
   if (!summaries.success) throw new ContentError(`summaries.json is invalid: ${describeZod(summaries.error)}`);
-  return { dir, curation: curation.data, summaries: summaries.data, read };
+  const stepIntros = StepIntros.safeParse(await parseJson('hoc-cloud/step-intros.json'));
+  if (!stepIntros.success) throw new ContentError(`hoc-cloud/step-intros.json is invalid: ${describeZod(stepIntros.error)}`);
+  for (const [key, intros] of Object.entries(stepIntros.data)) {
+    if (!curation.data.documents.some((d) => d.key === key)) throw new ContentError(`hoc-cloud/step-intros.json: ${key} is not curated`);
+    const steps = intros.map((i) => i.step);
+    if (new Set(steps).size !== steps.length) throw new ContentError(`hoc-cloud/step-intros.json: ${key} lists a step twice`);
+  }
+  return { dir, curation: curation.data, summaries: summaries.data, stepIntros: stepIntros.data, read };
 }

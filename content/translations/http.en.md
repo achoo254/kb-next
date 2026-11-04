@@ -92,7 +92,7 @@ curl -v output: '>' lines are the request headers sent, '<' lines are the respon
 
 ## Step 2 — Read and understand the status code in the response
 
-curl -v shows exactly the HTTP request sent and the response received, including all headers. When debugging 400 Bad Request, this is the only sure way to know whether the headers are correctly formatted — '>' lines are the request headers sent, '<' lines are the response headers returned by the server. Skipping curl -v and only reading the SDK/framework error message → you do not know which headers were actually sent.
+The status code on the first line of the response (`< HTTP/1.1 XXX`) is the first signal of whether the request succeeded or failed, and why. 2xx means success, but each code means something different (200, 201, 204); 3xx is a redirect, 4xx is a client-side error, 5xx is a server-side error. Use `curl -o /dev/null -s -w '%{http_code}'` to get just the status code, `curl -L` to follow a redirect chain, and `curl -I` to view only the response headers.
 
 **When it breaks:** Code checks response.ok (true for 200-299) but not the specific status code → misses the difference between 200 vs 204 vs 201. Common: fetch() does not throw on 4xx — you must check response.ok or response.status manually.
 
@@ -117,6 +117,8 @@ curl -o /dev/null -s -w '%{http_code}\n%{time_total}\n' URL — prints the statu
 
 HTTP/2 is not used automatically — the server must support it and negotiate it via ALPN in the TLS handshake. You need to know this to configure nginx correctly and to debug when H2 fails to negotiate.
 
+[RFC 7301](https://datatracker.ietf.org/doc/html/rfc7301) defines ALPN (Application-Layer Protocol Negotiation): a TLS extension that lets client and server negotiate the application protocol during the TLS handshake. HTTP/2 requires ALPN with the value 'h2'; if the server does not advertise 'h2' in ALPN → the client falls back to HTTP/1.1. HTTP/2 is not enabled automatically when upgrading nginx — you must add http2 to the listen directive and the server must have TLS.
+
 **When it breaks:** nginx does not enable http2 in the listen directive → client and server negotiate HTTP/1.1 via ALPN → the multiplexing benefit is lost → pages load slowly under many concurrent requests. Easy to check: curl -I --http2 domain.com | head -1 must show 'HTTP/2 200'.
 
 ```bash
@@ -137,7 +139,9 @@ curl -I --http2 https://yourdomain.com | head -2 — the first line must be 'HTT
 
 ## Step 4 — TLS handshake — use openssl to inspect the cert and handshake
 
-[RFC 7301](https://datatracker.ietf.org/doc/html/rfc7301) defines ALPN (Application-Layer Protocol Negotiation): a TLS extension that lets client and server negotiate the application protocol during the TLS handshake. HTTP/2 requires ALPN with the value 'h2'; if the server does not advertise 'h2' in ALPN → the client falls back to HTTP/1.1. HTTP/2 is not enabled automatically when upgrading nginx — you must add http2 to the listen directive and the server must have TLS.
+The TLS handshake happens before any HTTP byte is sent: client and server agree on the version and cipher, and the server sends its certificate to prove its identity. `openssl s_client -connect example.com:443 -servername example.com` shows the whole handshake and the certificate chain without a browser; pipe it on to `openssl x509 -noout -text` to see the Subject, the expiry date (Not After) and the SAN list (`DNS:`). The line 'Verify return code: 0 (ok)' means the cert is valid.
+
+When you see 'certificate verify failed', you need to determine: which CA issued the cert, when it expires, and whether the SAN matches the domain. openssl s\_client -connect domain:443 -servername domain returns the full certificate chain and the verify result — no browser needed. [RFC 9110 §4.3.4](https://datatracker.ietf.org/doc/html/rfc9110#section-4.3.4) specifies that certificate validation includes checking that the SAN (Subject Alternative Names) matches the request target.
 
 **When it breaks:** The cert's SANs (Subject Alternative Names) do not include the subdomain in use → TLS verification fails → curl: SSL certificate problem: does not match. Common when a wildcard cert *.example.com does not cover sub.sub.example.com (a wildcard only matches 1 level).
 
@@ -183,7 +187,7 @@ echo | openssl s_client -connect domain.com:443 2>/dev/null | openssl x509 -noou
 
 ## Step 5 — Debug 4xx: tell 400 vs 401 vs 403 vs 404 apart
 
-When you see 'certificate verify failed', you need to determine: which CA issued the cert, when it expires, and whether the SAN matches the domain. openssl s\_client -connect domain:443 -servername domain returns the full certificate chain and the verify result — no browser needed. [RFC 9110 §4.3.4](https://datatracker.ietf.org/doc/html/rfc9110#section-4.3.4) specifies that certificate validation includes checking that the SAN (Subject Alternative Names) matches the request target.
+Each 4xx code points to a different cause, so read the exact code before fixing anything: 400 means the request is malformed (for example a broken JSON body), 401 means not authenticated or credentials missing/wrong, 403 means authenticated but without sufficient permission, 404 means the resource does not exist. httpbin lets you reproduce each error and observe it with `curl -v`. The response body usually carries a clearer error message than the status code alone.
 
 **When it breaks:** Getting 403 but debugging it like 401 (checking the token) → wasted time. 403 means the token is valid but the role/permission is insufficient → check the IAM policy, database permissions, or RBAC config. 401 vs 403 call for two completely different actions.
 

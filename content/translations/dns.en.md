@@ -72,6 +72,8 @@ Estimated time: 45 minutes. This lesson has an interactive playground: [Open the
 
 dig is the number one DNS debugging tool. Understanding dig's output = understanding the real DNS response, knowing how much TTL is left and who the authoritative server is. Without dig, debugging DNS is just guesswork.
 
+dig is a DNS client that lets you query a DNS server directly and see the raw response. The output includes the QUESTION SECTION (the domain queried), the ANSWER SECTION (record + TTL), and SERVER (the resolver in use). The TTL in the ANSWER SECTION is the number of seconds remaining in the resolver's cache. The Query time in the output is the RTT to the resolver — low latency (<5ms) is usually a cache hit, higher is a fresh lookup from the authoritative server, but the exact threshold depends on geographic location and the resolver.
+
 **When it breaks:** If you skip dig and only use ping/curl to debug DNS → you cannot see the TTL, you do not know which resolver is in use, and you cannot tell a cache hit from an authoritative response → debugging blind.
 
 ```bash
@@ -110,7 +112,9 @@ dig example.com — look at the TTL column in the ANSWER SECTION and the SERVER 
 
 ## Step 2 — dig +trace — view the full recursive path
 
-dig is a DNS client that lets you query a DNS server directly and see the raw response. The output includes the QUESTION SECTION (the domain queried), the ANSWER SECTION (record + TTL), and SERVER (the resolver in use). The TTL in the ANSWER SECTION is the number of seconds remaining in the resolver's cache. The Query time in the output is the RTT to the resolver — low latency (<5ms) is usually a cache hit, higher is a fresh lookup from the authoritative server, but the exact threshold depends on geographic location and the resolver.
+`dig +trace` does not ask the resolver; it walks the delegation chain step by step itself: from the root servers, down to the TLD servers (for example `com.`), then to the domain's authoritative nameserver. Each block of output is one layer of NS delegation, and the last block is the record returned by the authoritative server. This is how you tell 'the authoritative server has been updated' apart from 'the resolver still holds an old cache' when debugging propagation.
+
+[RFC 1034 §4.3.2](https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2) describes the recursive resolution chain: Root → TLD → Authoritative. +trace forces dig to bypass the resolver's cache and perform the whole chain itself with iterative queries starting from the root. If +trace returns the new record but a normal dig still returns the old one → it is confirmed to be a cache issue at the resolver, not an authoritative server that has not been updated.
 
 **When it breaks:** Not using +trace when debugging propagation → you cannot tell 'has the authoritative server been updated yet' apart from 'the resolver still has the old cache' → hours of pointless waiting or a mistaken rollback.
 
@@ -133,7 +137,7 @@ dig example.com +trace — read each NS delegation line from the root down. If y
 
 ## Step 3 — View other record types
 
-[RFC 1034 §4.3.2](https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2) describes the recursive resolution chain: Root → TLD → Authoritative. +trace forces dig to bypass the resolver's cache and perform the whole chain itself with iterative queries starting from the root. If +trace returns the new record but a normal dig still returns the old one → it is confirmed to be a cache issue at the resolver, not an authoritative server that has not been updated.
+Besides the A record, DNS holds many other record types, each for its own purpose: MX points to the mail servers that receive the domain's email (with a priority), TXT holds arbitrary strings such as SPF/DKIM, NS lists the delegated nameservers, and AAAA is an IPv6 address. Just add the type to the command, for example `dig example.com MX`, to ask for exactly the record type you need to check. When email lands in spam, TXT is the first record to look at.
 
 **When it breaks:** Only knowing how to query A records → blind to email (MX/TXT), blind to nameserver delegation (NS), blind to IPv6 (AAAA). When email lands in spam and you do not check the TXT SPF/DKIM records → you debug in the wrong direction.
 
@@ -222,7 +226,7 @@ done < "$INPUT_FILE"
 
 ## Step 5 — Ask the authoritative server directly — bypass the cache
 
-[RFC 1034 §3.5](https://datatracker.ietf.org/doc/html/rfc1034#section-3.5) specifies that the resolver decrements the TTL every second while the record is in cache — the TTL in the response is not the original value but the number of seconds remaining. First query TTL=3600, second query 60s later TTL=3540. When the TTL reaches 0, the resolver asks the authoritative server again and resets the TTL to its original value. Understand this mechanism to calculate the right waiting time during a migration.
+The authoritative nameserver holds the original copy of the record, while an ordinary resolver such as 8.8.8.8 only returns its cached copy until the TTL expires. Find the authoritative server with `dig example.com NS +short`, then ask it directly with `dig example.com @ns1.example.com A` to see the value that is actually configured. Comparing that with the result through the resolver tells you whether a difference comes from a cache that has not expired yet or from configuration that has not been updated yet.
 
 **When it breaks:** Only querying through the usual resolver → you do not know whether the authoritative server has been updated → you may wait for nothing or think the DNS provider has a problem when in fact the cache simply has not expired.
 

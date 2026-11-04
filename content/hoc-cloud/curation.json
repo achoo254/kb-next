@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "spaces": [
     {
       "slug": "networking",
@@ -255,13 +255,15 @@
       "key": "lab/arp",
       "space": "networking",
       "collection": "core-protocols",
-      "order": 1
+      "order": 1,
+      "revision": 2
     },
     {
       "key": "lab/icmp-ping",
       "space": "networking",
       "collection": "core-protocols",
-      "order": 2
+      "order": 2,
+      "revision": 2
     },
     {
       "key": "lab/dhcp",
@@ -292,19 +294,22 @@
           "replace": "## Thực hành 5 — Case B: Manual đặt sau",
           "why": "shouting caps in heading"
         }
-      ]
+      ],
+      "revision": 2
     },
     {
       "key": "lab/dns",
       "space": "networking",
       "collection": "core-protocols",
-      "order": 4
+      "order": 4,
+      "revision": 2
     },
     {
       "key": "lab/tcp-udp",
       "space": "networking",
       "collection": "transport-web",
-      "order": 1
+      "order": 1,
+      "revision": 2
     },
     {
       "key": "lab/http",
@@ -314,7 +319,8 @@
       "related": [
         "lab/tcp-udp",
         "lab/dns"
-      ]
+      ],
+      "revision": 2
     },
     {
       "key": "lab/k8s-fundamentals",

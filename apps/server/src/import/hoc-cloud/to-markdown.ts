@@ -99,7 +99,17 @@ function tldrRow(row: Record<string, string>): string {
   return [`- **${name || 'Ý chính'}**`, ...lines].join('\n');
 }
 
-export function labToMarkdown(lab: Lab, baseUrl: string): string {
+/** A step's replacement opening paragraph, and whether its source text moves to the step before. */
+export interface IntroOverride {
+  why: string;
+  appendSourceToPrevious: boolean;
+}
+
+/**
+ * `intros` maps a displayed step number to its curated opening paragraph (step-intros.json, already checked
+ * against the source by the caller).
+ */
+export function labToMarkdown(lab: Lab, baseUrl: string, intros: ReadonlyMap<number, IntroOverride> = new Map()): string {
   const pageUrl = labPageUrl(baseUrl, lab.slug);
   const parts: string[] = [
     `# ${lab.title}`,
@@ -112,10 +122,13 @@ export function labToMarkdown(lab: Lab, baseUrl: string): string {
   ];
   if (lab.tldr.length > 0) parts.push(section('Tóm tắt nhanh', ...lab.tldr.map(tldrRow)));
   for (const [i, step] of lab.walkthrough.entries()) {
+    const next = lab.walkthrough[i + 1];
+    const moved = next && intros.get(i + 2)?.appendSourceToPrevious ? proseToMarkdown(next.why) : '';
     parts.push(
       section(
         `Bước ${i + 1} — ${stepTitle(step.what)}`,
-        proseToMarkdown(step.why),
+        intros.get(i + 1)?.why.trim() ?? proseToMarkdown(step.why),
+        moved,
         labelled('Khi hỏng', step.whyBreaks),
         block(step.code, step.lang ?? 'bash'),
         step.observeWith.trim() ? `**Quan sát bằng:**\n\n${block(step.observeWith)}` : '',

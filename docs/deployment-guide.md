@@ -122,7 +122,8 @@ có thể không đọc được ở bản mới), chạy lại lệnh `docker r
 ## Nhập nội dung Học Cloud
 
 Lệnh nhập đọc API công khai của Học Cloud (lab, bài tập) và `content/` đi kèm bản release (trang học hàng tuần đã chỉnh,
-bản dịch EN, `content/summaries.json`, cách xếp Space và Collection trong `content/hoc-cloud/curation.json`), ghi qua
+bản dịch EN, `content/summaries.json`, cách xếp Space và Collection trong `content/hoc-cloud/curation.json`, đoạn mở đầu bước lab viết lại trong
+`content/hoc-cloud/step-intros.json`), ghi qua
 tầng dữ liệu trong một transaction, rồi đẩy các bài đổi sang Meilisearch. Bài nhập vào là "Chính thức", đã duyệt, tác
 giả là tài khoản hệ thống `system:hoc-cloud` (không đăng nhập được). Địa chỉ máy chủ trong bài gốc được thay bằng
 `<ADDR-n>` trước khi ghi. Chạy lại an toàn: bài không đổi thì không ghi, bài đổi (nguồn hay curation) thêm đúng một phiên
@@ -135,7 +136,8 @@ ssh <alias> 'systemd-run --uid=kb --gid=kb -p EnvironmentFile=/etc/kb/production
 ```
 
 Kết quả in số lab, bài tập, trang tuần, bản dịch đã đọc, số bài tạo, cập nhật, giữ nguyên, và cảnh báo (bài mới trên Học
-Cloud chưa có trong curation, bản dịch cũ hơn bản gốc). Máy dev: `pnpm import:hoc-cloud` (PGlite dev hoặc
+Cloud chưa có trong curation, bản dịch cũ hơn bản gốc, đoạn viết lại mà Học Cloud đã sửa nguồn: khi đó hiện lại
+bản gốc cho tới khi xem lại). Máy dev: `pnpm import:hoc-cloud` (PGlite dev hoặc
 `DATABASE_URL`, cùng `MEILI_*` nếu có).
 
 ## Lần đầu (đã làm 04/11/2026)

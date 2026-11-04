@@ -42,6 +42,8 @@ Estimated time: 40 minutes. This lesson has an interactive playground: [Open the
 
 Understand port binding in practice — nc creates a process listening on port 9000. With no process listening, a TCP SYN immediately gets an RST (connection refused). This is the foundation for debugging 'connection refused'.
 
+[RFC 9293 §3.5.2](https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2) specifies that when a TCP SYN arrives at a closed port (no process listening), the kernel immediately sends an RST — this is 'Connection refused'. nc -l creates a listening socket on the specified port; without a listening socket, the SYN gets an RST instead of a SYN-ACK. Check which process is listening with ss -tlnp | grep PORT.
+
 **When it breaks:** If you forget to start the server before connecting → Connection refused immediately. If the port is used by another process → Address already in use. These two errors account for >50% of junior developers' debugging questions.
 
 ```bash
@@ -63,7 +65,9 @@ sudo tcpdump -i lo -n 'port 9000' -v  # Capture packets on loopback while connec
 
 ## Step 2 — Capture the 3-way handshake with tcpdump
 
-[RFC 9293 §3.5.2](https://datatracker.ietf.org/doc/html/rfc9293#section-3.5.2) specifies that when a TCP SYN arrives at a closed port (no process listening), the kernel immediately sends an RST — this is 'Connection refused'. nc -l creates a listening socket on the specified port; without a listening socket, the SYN gets an RST instead of a SYN-ACK. Check which process is listening with ss -tlnp | grep PORT.
+TCP only transfers data after the 3-way handshake completes: the client sends SYN, the server answers with SYN-ACK, and the client confirms with ACK. Capturing packets on loopback with `sudo tcpdump -i lo -n 'port 9000' -v` shows exactly these three packets every time `nc` connects to the server. Reading the Flags column helps you tell a successful connection apart from one that got an RST or had its packets dropped.
+
+[RFC 9293 §3.1](https://datatracker.ietf.org/doc/html/rfc9293#section-3.1) defines the TCP control bits in the header: SYN (bit 1), ACK (bit 4), FIN (bit 0), RST (bit 2). tcpdump uses the notation: \[S\]=SYN, \[S.\]=SYN-ACK (SYN+ACK), \[.\]=ACK, \[F.\]=FIN-ACK, \[R\]=RST. The 3-way handshake you observe is \[S\] → \[S.\] → \[.\] — only after that does data transfer start.
 
 **When it breaks:** If you only see SYN and no SYN-ACK → a firewall, or the server is not listening. If you see SYN + RST → the port is closed. If you see nothing → the packet is being dropped (firewall DROP). Telling these 3 patterns apart is a core network debugging skill.
 
@@ -88,7 +92,7 @@ sudo tcpdump -i lo -n 'port 9000' -v  # Flag: [S]=SYN, [S.]=SYN-ACK, [.]=ACK, [R
 
 ## Step 3 — Try UDP — no handshake
 
-[RFC 9293 §3.1](https://datatracker.ietf.org/doc/html/rfc9293#section-3.1) defines the TCP control bits in the header: SYN (bit 1), ACK (bit 4), FIN (bit 0), RST (bit 2). tcpdump uses the notation: \[S\]=SYN, \[S.\]=SYN-ACK (SYN+ACK), \[.\]=ACK, \[F.\]=FIN-ACK, \[R\]=RST. The 3-way handshake you observe is \[S\] → \[S.\] → \[.\] — only after that does data transfer start.
+UDP is a connectionless protocol: there is no handshake, and the very first datagram already carries data. With `nc -u`, text typed on the client appears on the server immediately, with no handshake first. Because there is no connection state, sending UDP to a port that is not open (for example 9001) does not report an error on the sending side either — completely unlike TCP, which is refused immediately.
 
 **When it breaks:** Sending UDP when no server is listening → no error on the sending side (unlike TCP, which is refused immediately). The destination kernel sends ICMP Port Unreachable — but if a firewall blocks ICMP, the sender learns nothing. Debugging UDP failures is harder than TCP because there is no connection state.
 
@@ -186,6 +190,8 @@ ss -tlunp  # t=TCP, u=UDP, l=listening, n=numeric, p=process
 
 DNS is the most classic example of UDP: the query and response fit into 1 packet &lt;512 bytes. Use dig with +tcp to compare latency — TCP clearly adds handshake overhead.
 
+[RFC 1035 §2.3.4](https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.4) defines the 512-byte limit for DNS messages over UDP — the reason DNS is the most classic example of UDP: the query and response usually fit in 1 small datagram, so the overhead of the TCP 3-way handshake outweighs the benefit. DNS falls back to TCP when the response exceeds 512 bytes (or EDNS0 extends the limit to 4096 bytes per RFC 6891).
+
 **When it breaks:** A firewall blocks outbound UDP 53 → every DNS query times out → every service that depends on domain resolution fails. Sign: ping by IP works but ping by hostname times out. Verify: if dig @8.8.8.8 google.com gets no answer → the firewall is blocking UDP 53.
 
 ```bash
@@ -212,7 +218,7 @@ dig +tcp google.com  # Force TCP — count the extra packets
 
 ## Step 7 — TCP FIN handshake — closing a connection properly
 
-[RFC 1035 §2.3.4](https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.4) defines the 512-byte limit for DNS messages over UDP — the reason DNS is the most classic example of UDP: the query and response usually fit in 1 small datagram, so the overhead of the TCP 3-way handshake outweighs the benefit. DNS falls back to TCP when the response exceeds 512 bytes (or EDNS0 extends the limit to 4096 bytes per RFC 6891).
+Closing a TCP connection is its own exchange too: each direction sends a FIN and gets it ACKed — the connection is not simply cut off. The side that actively closes keeps the socket in the TIME_WAIT state for a while longer, so `ss -tn` still shows the entry even though the connection has ended. Understanding TIME_WAIT explains the 'Address already in use' error when you restart a service right away, and why you should reuse connections with keepalive/connection pools.
 
 **When it breaks:** Restarting a service right after stopping it → 'Address already in use' because the port is still in TIME_WAIT. Fix: SO_REUSEADDR (most production servers already set it). If you see too many TIME_WAIT sockets → connections may not be reused (missing keepalive/connection pool).
 

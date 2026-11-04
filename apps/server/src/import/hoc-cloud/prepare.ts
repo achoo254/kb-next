@@ -5,12 +5,12 @@
  */
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
-import { ExerciseDetail, ExerciseIndex, LabDetail, LabIndex } from './api-schema';
-import { type ContentDir, ContentError, type CurationDocument, type CurationSpace, SUMMARY_PREFIX, parseContentFile } from './curation';
+import { ExerciseDetail, ExerciseIndex, type Lab, LabDetail, LabIndex } from './api-schema';
+import { type ContentDir, ContentError, type CurationDocument, type CurationSpace, SUMMARY_PREFIX, type StepIntro, parseContentFile } from './curation';
 import { createRedactor, redactJson } from './redact';
 import { type Section, dropSections, splitSections } from './sections';
 import type { HocCloudSource } from './source';
-import { exercisePageUrl, exerciseToMarkdown, labPageUrl, labToMarkdown } from './to-markdown';
+import { type IntroOverride, exercisePageUrl, exerciseToMarkdown, labPageUrl, labToMarkdown } from './to-markdown';
 
 /** A stable uuid-shaped id for an imported record, so a re-run finds the same rows. */
 export function importId(name: string): string {
@@ -144,7 +144,7 @@ export async function prepareImport(source: HocCloudSource, content: ContentDir)
       }
       if (kind === 'lab') {
         const { lab } = parseOrThrow(LabDetail, await fetchRedacted(`/api/labs/${slug}`), `lab ${slug}`);
-        generated = labToMarkdown(lab, source.baseUrl);
+        generated = labToMarkdown(lab, source.baseUrl, checkedIntros(doc.key, lab, content.stepIntros[doc.key] ?? [], warnings));
         sourceHash = lab.content_hash;
         sourceUrl = labPageUrl(source.baseUrl, slug);
         counts.labs += 1;
@@ -240,12 +240,33 @@ export async function prepareImport(source: HocCloudSource, content: ContentDir)
       chunks: splitSections(markdown, OVERVIEW_ANCHOR[draft.lang]),
       wikilinks: wikilinks.filter((target) => target !== id),
     };
-    const contentHash = sha256({ curation: curation.version, source: draft.sourceHash, ...fields, chunks: undefined });
+    const contentHash = sha256({ curation: draft.doc.revision, source: draft.sourceHash, ...fields, chunks: undefined });
     return { ...fields, contentHash };
   });
 
   counts.redactedAddresses = redactedAddresses;
   return { spaces: curation.spaces, collections, documents, warnings, counts };
+}
+
+/** sha256 of a source text, as step-intros.json records it. */
+export function textHash(text: string): string {
+  return createHash('sha256').update(text).digest('hex');
+}
+
+/** The step intros whose source text is still the one they were written against; the others warn and fall back. */
+function checkedIntros(key: string, lab: Lab, intros: readonly StepIntro[], warnings: string[]): Map<number, IntroOverride> {
+  const valid = new Map<number, IntroOverride>();
+  for (const intro of intros) {
+    const step = lab.walkthrough[intro.step - 1];
+    if (!step) {
+      warnings.push(`step-intros.json: ${key} has no step ${intro.step} any more: the override is ignored`);
+    } else if (textHash(step.why) !== intro.sourceHash) {
+      warnings.push(`step-intros.json: ${key} step ${intro.step} changed on Học Cloud: showing the source text, review the override`);
+    } else {
+      valid.set(intro.step, { why: intro.why, appendSourceToPrevious: intro.appendSourceToPrevious });
+    }
+  }
+  return valid;
 }
 
 export function documentId(key: string, lang: 'vi' | 'en'): string {
