@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Sitemap và luồng P0</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.node{text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:150px;height:62px;padding:0 14px;box-sizing:border-box;border-radius:18px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);transition:transform .2s}
+.node:hover{transform:translateY(-3px)}
+.node b{font-family:'Space Grotesk',sans-serif;font-size:15px}
+.node i{font-style:normal;font-size:11px;font-weight:700;color:var(--link)}
+.big{background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%)!important;border:1.5px solid rgba(196,181,253,.9)!important;color:#FFFFFF;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35)}
+.vline{width:2px;height:28px;margin:0 auto;background:repeating-linear-gradient(180deg,var(--muted) 0 6px,transparent 6px 10px);animation:fv 1.2s linear infinite}
+.hlink{width:56px;height:2px;background:repeating-linear-gradient(90deg,var(--accent) 0 6px,transparent 6px 10px);animation:fh 1.2s linear infinite}
+.band{border-radius:22px;padding:14px;background:var(--surface);border:1.5px solid var(--border);box-shadow:var(--rimsh);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:8px}
+.band h3{margin:0;font-size:13px;color:var(--muted)}
+.mini{text-decoration:none;display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;border-radius:14px;background:var(--bg2);color:var(--text);font-size:13px;font-weight:600}
+.mini span{font:700 11px 'Space Grotesk';color:var(--link);margin-left:auto}
+.step{text-decoration:none;display:flex;flex-direction:column;justify-content:center;height:58px;padding:0 14px;border-radius:16px;background:var(--surface);border:1.5px solid var(--border);color:var(--text);font-size:13px;font-weight:600;white-space:nowrap}
+.step i{font-style:normal;font:700 11px 'Space Grotesk';color:var(--link)}
+.arrow{display:flex;align-items:center;color:var(--accent)}
+.arrow span{width:26px;height:2px;background:repeating-linear-gradient(90deg,currentColor 0 6px,transparent 6px 10px);animation:fh 1.2s linear infinite}
+@keyframes fv{to{background-position:0 20px}}
+@keyframes fh{to{background-position:20px 0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:1200px;box-sizing:border-box;padding:36px 48px;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;gap:20px;--bg2:{{T.bg2}};--surface:{{T.surface}};--rimsh:{{T.rimsh}};--border:{{T.border}};--text:{{T.text}};--muted:{{T.muted}};--primary:{{T.primary}};--link:{{T.link}};--accent:{{T.accent}}">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between">
+<div>
+<div style="font-size:13px;font-weight:600;color:{{T.muted}}">KnowFlow · kiến trúc điều hướng</div>
+<h1 style="margin:4px 0 0;font-family:'Space Grotesk',sans-serif;font-size:42px;letter-spacing:-1.5px">Sitemap và luồng P0</h1>
+</div>
+<button onClick="{{toggleTheme}}" style="height:46px;padding:0 16px;border-radius:23px;border:1px solid {{T.border}};background:none;color:{{T.text}};font:600 13px 'Inter',sans-serif;cursor:pointer">{{themeLabel}}</button>
+</div>
+
+<div style="display:flex;gap:20px;align-items:flex-start">
+
+<div style="width:270px;display:flex;flex-direction:column;gap:12px">
+<section class="band" aria-label="Lớp toàn cục">
+<h3>Lớp toàn cục · mở ở mọi màn</h3>
+<a class="mini" href="C14-Copilot.dc.html">AI Copilot · theo ngữ cảnh<span>C14</span></a>
+<a class="mini" href="F01-Search.dc.html">⌘K Command palette<span>F01</span></a>
+<a class="mini" href="C12-Search.dc.html">Trang kết quả tìm<span>C12</span></a>
+<a class="mini" href="C20-Inbox.dc.html">Thông báo · Inbox<span>C20</span></a>
+<a class="mini" href="C01-CreateMenu.dc.html">Quick Create (+)<span>C01</span></a>
+</section>
+<section class="band" aria-label="Bắt đầu">
+<h3>Trước khi vào</h3>
+<a class="mini" href="S01-Landing.dc.html">Landing<span>S01</span></a>
+<a class="mini" href="S02-Login.dc.html">Đăng nhập (auth.hoandat.com)<span>S02</span></a>
+<a class="mini" href="S03-Onboarding.dc.html">Onboarding<span>S03</span></a>
+</section>
+</div>
+
+<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+<a class="node big" href="C09-Universe.dc.html"><b>Universe</b><i>C09 · 3D</i></a>
+<div class="vline"></div>
+<div style="display:flex;align-items:center">
+<a class="node" href="C15-Canvas.dc.html"><b>Canvas</b><i>C15 · 2D canvas</i></a>
+<span class="hlink" aria-hidden="true"></span>
+<a class="node big" href="C10-Space.dc.html"><b>Space · hành tinh</b><i>C10 · hybrid</i></a>
+<span class="hlink" aria-hidden="true"></span>
+<a class="node" href="C13-Graph.dc.html"><b>Graph</b><i>C13 · hybrid</i></a>
+</div>
+<div class="vline"></div>
+<a class="node" href="C10-Space.dc.html"><b>Collection</b><i>trong C10</i></a>
+<div class="vline"></div>
+<div style="width:560px;height:2px;background:{{T.muted}};opacity:.6"></div>
+<div style="display:flex;gap:40px">
+<div style="display:flex;flex-direction:column;align-items:center"><div class="vline"></div><a class="node big" href="C11-Reader.dc.html"><b>Document · đọc</b><i>C11 · 2D</i></a></div>
+<div style="display:flex;flex-direction:column;align-items:center"><div class="vline"></div><a class="node" href="C02-Editor.dc.html"><b>Sửa / viết</b><i>C02 · 2D</i></a></div>
+<div style="display:flex;flex-direction:column;align-items:center"><div class="vline"></div><a class="node" href="C17-Timeline.dc.html"><b>Phiên bản</b><i>C17</i></a></div>
+</div>
+<div class="vline"></div>
+<div style="display:flex;gap:10px">
+<a class="node" href="C18-Share.dc.html" style="min-width:130px"><b>Chia sẻ</b><i>C18</i></a>
+<a class="node" href="F04-Translate.dc.html" style="min-width:130px"><b>Dịch AI</b><i>F04</i></a>
+<a class="node" href="C16-ImportCenter.dc.html" style="min-width:130px"><b>Nhập tệp</b><i>C16</i></a>
+<a class="node" href="Flow.dc.html" style="min-width:130px"><b>Lối đi</b><i>Flow · C07</i></a>
+</div>
+</div>
+
+<div style="width:270px;display:flex;flex-direction:column;gap:12px">
+<section class="band" aria-label="Cá nhân">
+<h3>Của bạn</h3>
+<a class="mini" href="C08-MyContent.dc.html">Của tôi · nháp, chờ duyệt<span>C08</span></a>
+<a class="mini" href="H03-Settings.dc.html">Cài đặt cá nhân<span>H03</span></a>
+<a class="mini" href="F03-Keys.dc.html">Key riêng (AI)<span>F03</span></a>
+<a class="mini" href="H04-Offline.dc.html">Offline, đồng bộ<span>H04</span></a>
+</section>
+<section class="band" aria-label="Quản trị" style="border-color:{{T.warn}}">
+<h3>Quản trị · chỉ admin</h3>
+<a class="mini" href="A01-AdminReview.dc.html">Hàng duyệt<span>A01</span></a>
+<a class="mini" href="A02-AdminContent.dc.html">Nội dung, ẩn/hiện<span>A02</span></a>
+<a class="mini" href="A03-AdminApi.dc.html">API đăng bài<span>A03</span></a>
+<a class="mini" href="C19-Settings.dc.html">Workspace, RBAC, nhật ký<span>C19</span></a>
+</section>
+</div>
+</div>
+
+<section style="border-radius:24px;padding:20px;background:{{T.surface}};border:1.5px solid {{T.border}};box-shadow:{{T.rimsh}};display:flex;flex-direction:column;gap:14px">
+<h2 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:22px">4 luồng P0</h2>
+<sc-for list="{{flows}}" as="f" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<span style="width:150px;font-weight:700;font-size:15px">{{f.n}}</span>
+<sc-for list="{{f.steps}}" as="s" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:8px">
+<sc-if value="{{s.arrow}}" hint-placeholder-val="{{true}}"><span class="arrow" aria-hidden="true"><span></span><svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M0 0l10 5-10 5z"/></svg></span></sc-if>
+<a class="step" href="{{s.href}}">{{s.t}}<i>{{s.id}}</i></a>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark' }; }
+  renderVals() {
+    var self = this, dark = this.state.theme === 'dark';
+    var D = { bg: 'linear-gradient(180deg,rgba(6,4,26,.45),rgba(6,4,26,.8)),url(/_blob/42f83192f57abb44ac4cfbe3bd649a21) 16% 40%/cover,#06041A', bg2: 'rgba(14,11,38,.78)', surface: 'linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%)', border: 'rgba(196,181,253,.55)', rimsh: 'inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', accent: '#22D3EE', link: '#C4B5FD', warn: '#F59E0B' };
+    var L = { rimsh: '0 6px 20px rgba(76,29,149,.08)', bg: '#F7F5FF', bg2: '#ECE8FF', surface: 'rgba(255,255,255,.78)', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', accent: '#0E7490', link: '#6D28D9', warn: '#B45309' };
+    var mk = function (arr) { return arr.map(function (s, i) { return { t: s[0], id: s[1], href: s[2], arrow: i > 0 }; }); };
+    return {
+      T: dark ? D : L,
+      themeLabel: dark ? 'Chuyển sang Sáng' : 'Chuyển sang Tối',
+      toggleTheme: function () { self.setState({ theme: dark ? 'light' : 'dark' }); },
+      flows: [
+        { n: '1 · Khám phá', steps: mk([['Bấm hành tinh Networking', 'C09', 'C09-Universe.dc.html'], ['Chọn bộ Giao thức nền tảng', 'C10', 'C10-Space.dc.html'], ['Đọc Giao thức DHCP', 'C11', 'C11-Reader.dc.html']]) },
+        { n: '2 · Tìm', steps: mk([['⌘K gõ “dhcp”', 'F01', 'F01-Search.dc.html'], ['Xem tất cả kết quả', 'C12', 'C12-Search.dc.html'], ['Mở đoạn khớp', 'C11', 'C11-Reader.dc.html']]) },
+        { n: '3 · Hỏi AI', steps: mk([['Đang đọc DHCP', 'C11', 'C11-Reader.dc.html'], ['Hỏi Copilot · phạm vi Tài liệu', 'C14', 'C14-Copilot.dc.html'], ['Bấm trích dẫn [1]', 'C14', 'C14-Copilot.dc.html'], ['Nhảy tới đúng đoạn', 'C11', 'C11-Reader.dc.html']]) },
+        { n: '4 · Đóng góp', steps: mk([['Bấm +', 'C01', 'C01-CreateMenu.dc.html'], ['Viết ghi chú', 'C02', 'C02-Editor.dc.html'], ['Gửi duyệt', 'C04', 'C04-Publish.dc.html'], ['Đã gửi', 'C06', 'C06-Submit.dc.html'], ['Người duyệt duyệt', 'A01', 'A01-AdminReview.dc.html'], ['Nhận thông báo', 'C20', 'C20-Inbox.dc.html']]) }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

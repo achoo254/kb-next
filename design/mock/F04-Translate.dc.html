@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Dịch bằng AI</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:rgba(24,16,64,.52);border:1px solid rgba(167,139,250,.32);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lt .glass{background:rgba(255,255,255,.62);border-color:rgba(109,40,217,.22)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinr{to{transform:rotate(-360deg)}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes breathe{0%,100%{filter:drop-shadow(0 0 30px rgba(124,58,237,.75)) drop-shadow(0 0 70px rgba(34,211,238,.25))}50%{filter:drop-shadow(0 0 50px rgba(124,58,237,.95)) drop-shadow(0 0 110px rgba(34,211,238,.4))}}
+@keyframes stage{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.cr{transition:transform .35s cubic-bezier(.2,.9,.3,1.4),opacity .5s,filter .35s}
+.cr:hover{transform:scale(1.08)}
+.fl{animation:float 6s ease-in-out infinite}
+.orb{animation:breathe 5s ease-in-out infinite}
+.orbspin{animation:spin 120s linear infinite}
+@keyframes oglow{0%,100%{filter:drop-shadow(0 0 2px rgba(196,181,253,.7)) drop-shadow(0 0 7px rgba(139,92,246,.55));opacity:.72}50%{filter:drop-shadow(0 0 3px rgba(224,242,254,.85)) drop-shadow(0 0 11px rgba(139,92,246,.75));opacity:.88}}
+.orbitglow{animation:oglow 4s ease-in-out infinite;-webkit-mask-image:linear-gradient(90deg,transparent 12%,#000 30%);mask-image:linear-gradient(90deg,transparent 12%,#000 30%)}
+@keyframes orun{from{offset-distance:0%}to{offset-distance:100%}}
+.odot{position:absolute;left:0;top:0;border-radius:50%;offset-rotate:0deg;offset-anchor:center;animation-name:orun;animation-timing-function:linear;animation-iteration-count:infinite;pointer-events:none}
+.trav{animation:spin 11s linear infinite}
+.trav2{animation:spinr 16s linear infinite}
+.tw{animation:twinkle 3.2s ease-in-out infinite}
+.stage{animation:stage 3.4s ease-in-out infinite}
+.msg{animation:rise .6s ease-out both}
+.pop{animation:pop .35s cubic-bezier(.2,.9,.3,1.3) both}
+.dcard{transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
+.dcard:hover{transform:perspective(900px) rotateX(-6deg) rotateY(0deg) translateY(-10px)!important}
+.nav a:hover{background:rgba(124,58,237,.25)}
+a:focus-visible,button:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt a:focus-visible,.lt button:focus-visible{outline-color:#0E7490}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes caret{50%{opacity:0}}
+@keyframes beam{0%{transform:translateX(-30px);opacity:0}50%{opacity:1}100%{transform:translateX(30px);opacity:0}}
+.sk{background:linear-gradient(90deg,rgba(124,58,237,.18) 0%,rgba(196,181,253,.35) 50%,rgba(124,58,237,.18) 100%);background-size:800px 100%;animation:shimmer 1.4s linear infinite}
+.caret{animation:caret 1s step-end infinite}
+.beam{animation:beam 1.2s ease-in-out infinite}
+.bar{transition:width .6s ease}
+.kf-light{background:#F7F5FF!important;color:#1A1033!important}
+.kf-light .glass{background:rgba(255,255,255,.78)!important;border-color:rgba(109,40,217,.18)!important}
+.kf-light [style*="color:#F5F3FF"],.kf-light [style*="color:#EDE9FE"],.kf-light [style*="color:#DDD6FE"],.kf-light [style*="color:#E4E0FF"]{color:#1A1033!important}
+.kf-light [style*="color:#C4B5FD"],.kf-light [style*="color:#A78BFA"]{color:#5B4B8A!important}
+.kf-light [style*="color:#6EE7B7"]{color:#047857!important}
+.kf-light [style*="color:#FCD34D"],.kf-light [style*="color:#FDE68A"]{color:#92400E!important}
+.kf-light [style*="color:#F59E0B"]{color:#B45309!important}
+.kf-light [style*="color:#67E8F9"],.kf-light [style*="color:#22D3EE"]{color:#0E7490!important}
+.kf-light [style*="color:#FCA5A5"]{color:#B91C1C!important}
+.kf-light [style*="background:#06041A"],.kf-light [style*="background:#07051C"],.kf-light [style*="background:#0B0726"],.kf-light [style*="background:#160C40"],.kf-light [style*="background:#1A1146"]{background:#FFFFFF!important}
+.kf-light [style*="background:rgba(12,6,40"],.kf-light [style*="background:rgba(22,14,58"],.kf-light [style*="background:rgba(18,12,52"],.kf-light [style*="background:rgba(30,20,72"],.kf-light [style*="background:rgba(20,10,60"],.kf-light [style*="background:rgba(15,23,42"]{background:rgba(255,255,255,.9)!important}
+.kf-light [style*="background:radial-gradient(ellipse"]{background:radial-gradient(ellipse 60% 55% at 45% 40%,#FFFFFF 0%,#ECE8FF 55%,#E2DBFF 100%)!important}
+.kf-light [style*="background:rgba(6,4,26"]{background:rgba(236,232,255,.62)!important}
+.kf-light [style*="background:rgba(255,255,255,.1"],.kf-light [style*="background:rgba(255,255,255,.08"],.kf-light [style*="background:rgba(255,255,255,.18"]{background:rgba(109,40,217,.14)!important}
+.kf-light [style*="background:#7C3AED"],.kf-light [style*="background:#EF4444"]{color:#FFFFFF!important}
+.kf-light mark{color:#1A1033!important;background:rgba(14,116,144,.2)!important}
+.kf-light .star,.kf-light [class*="star"]{background:#C4B5FD!important}
+.kf-light a{color:#6D28D9}
+.kf-dark :focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.kf-light :focus-visible{outline:2px solid #0E7490;outline-offset:2px}
+@keyframes riseblur{from{transform:translateY(10px);opacity:0;filter:blur(4px)}to{transform:translateY(0);opacity:1;filter:blur(0)}}
+.rise{animation:riseblur .5s ease-out both}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{th.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:#06041A;color:#F5F3FF;font-family:'Inter',system-ui,sans-serif">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover;filter:{{th.bgFilter}}">
+<div aria-hidden="true" style="position:absolute;inset:0;background:{{th.veil}}"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="50">
+<span class="tw" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:#FFFFFF;animation-delay:{{s.d}}s"></span>
+</sc-for>
+
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:{{th.text}}">KnowFlow</span>
+</div>
+
+<nav aria-label="Chế độ xem" class="nav" style="position:absolute;left:480px;top:16px;height:52px;padding:4px;box-sizing:border-box;border-radius:26px;display:flex;gap:4px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)">
+<a href="C09-Universe.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{th.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Orbit</a>
+<a href="C13-Graph.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{th.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg>Graph</a>
+<a href="C15-Canvas.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{th.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Canvas</a>
+<a href="C11-Reader.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{th.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>Docs</a>
+</nav>
+
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:{{th.railBg}};backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<div style="position:absolute;left:10px;top:190px;width:52px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<a href="C09-Universe.dc.html" aria-label="Universe" style="margin-bottom:6px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{th.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg></a>
+<a href="C13-Graph.dc.html" aria-label="Graph" style="margin-bottom:22px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{th.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg></a>
+<a href="C01-CreateMenu.dc.html" aria-label="Tạo mới" style="margin-bottom:8px;width:46px;height:46px;border-radius:14px;background:rgba(124,58,237,.4);border:1px solid rgba(196,181,253,.7);display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 18px rgba(124,58,237,.6)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+<a href="C12-Search.dc.html" aria-label="Tìm kiếm" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{th.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
+<a href="C14-Copilot.dc.html" aria-label="AI Copilot" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{th.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.8 5.5L17 9.3l-5.2 1.8L10 16.5l-1.8-5.4L3 9.3l5.2-1.8zM18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/></svg></a>
+<a href="C10-Space.dc.html" aria-label="Spaces" aria-current="page" style="width:46px;height:46px;border-radius:50%;background:{{th.primary}};display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+<a href="C08-MyContent.dc.html" aria-label="Của tôi" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{th.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></a>
+<a href="H03-Settings.dc.html" aria-label="Cài đặt" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{th.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+</div>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+
+<div style="position:absolute;right:28px;top:16px;display:flex;gap:10px;align-items:center">
+<a href="C20-Inbox.dc.html" aria-label="Thông báo, 3 chưa đọc" class="glass" style="position:relative;width:48px;height:48px;border-radius:16px;color:{{th.text}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span style="position:absolute;right:12px;top:11px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="glass" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;gap:8px;font:600 15px 'Space Grotesk',sans-serif;color:{{th.text}}">⌘ K</a>
+</div>
+
+<div style="position:absolute;left:112px;top:82px;width:1300px;height:62px;box-sizing:border-box;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:31px;display:flex;align-items:center;gap:14px;padding:0 10px 0 20px">
+<span style="font-family:'Inter',sans-serif;font-size:18px;font-weight:700">Giao thức DHCP</span>
+<span style="font:700 12px 'Space Grotesk';padding:4px 10px;border-radius:10px;background:rgba(124,58,237,.45)">VI → EN</span>
+<span style="display:flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:15px;background:rgba(245,158,11,.18);color:#FCD34D;font-size:12px;font-weight:600">{{t.badge}}</span>
+<div style="flex:1;display:flex;align-items:center;gap:10px">
+<span style="flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.12)"><span class="bar" style="display:block;height:8px;border-radius:4px;width:{{t.pct}}%;background:linear-gradient(90deg,#A78BFA,#7DD3FC);box-shadow:0 0 10px rgba(125,211,252,.6)"></span></span>
+<span style="font:600 12px 'Space Grotesk';color:#C4B5FD;min-width:44px">{{t.pct}}%</span>
+</div>
+<sc-if value="{{t.streaming}}" hint-placeholder-val="{{true}}"><button onClick="{{stop}}" style="height:44px;padding:0 16px;border-radius:22px;box-sizing:border-box;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#EDE9FE;font:600 13px 'Inter',sans-serif;cursor:pointer">Dừng</button></sc-if>
+<sc-if value="{{t.done}}" hint-placeholder-val="{{false}}">
+<button style="height:44px;padding:0 16px;border-radius:22px;box-sizing:border-box;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75);color:#FFFFFF;font:600 13px 'Inter',sans-serif;cursor:pointer">Lưu bản dịch</button>
+<button onClick="{{approve}}" style="height:44px;padding:0 16px;border-radius:22px;box-sizing:border-box;border:1.5px solid {{t.apBd}};background:{{t.apBg}};box-shadow:{{t.apSh}};color:{{t.apCol}};font:700 13px 'Inter',sans-serif;cursor:pointer">{{t.apLabel}}</button>
+</sc-if>
+</div>
+
+<section aria-label="Bản gốc tiếng Việt" style="position:absolute;left:112px;top:160px;width:630px;height:600px;box-sizing:border-box;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:28px;padding:24px 28px;display:flex;flex-direction:column;gap:14px">
+<span style="font-size:12px;font-weight:700;color:#C4B5FD">Bản gốc · Tiếng Việt</span>
+<sc-for list="{{paras}}" as="p" hint-placeholder-count="5">
+<div style="display:flex;gap:12px;padding:10px 12px;border-radius:14px;background:{{p.hl}}">
+<span style="font:700 12px 'Space Grotesk';color:#A78BFA;min-width:16px">{{p.n}}</span>
+<span style="font-size:15px;line-height:1.55;color:#E4E0FF">{{p.vi}}</span>
+</div>
+</sc-for>
+</section>
+
+<img class="fl" src="/_blob/4a19ca5c92fdc1b60d0709570b678aaf" alt="" aria-hidden="true" style="position:absolute;left:722px;top:420px;width:80px;height:80px;object-fit:contain;z-index:2;filter:drop-shadow(0 0 14px rgba(34,211,238,.55))">
+
+<section aria-label="Bản dịch tiếng Anh" style="position:absolute;left:782px;top:160px;width:630px;height:600px;box-sizing:border-box;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:28px;padding:24px 28px;display:flex;flex-direction:column;gap:14px;border-color:rgba(165,243,252,.55);box-shadow:inset 0 0 26px rgba(34,211,238,.26),inset 0 0 3px rgba(207,250,254,.5),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(34,211,238,.22)">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#67E8F9">Bản dịch · English</span><span style="font-size:11px;color:#C4B5FD">{{t.by}}</span></div>
+<sc-if value="{{t.hasKey}}" hint-placeholder-val="{{true}}">
+<sc-for list="{{paras}}" as="p" hint-placeholder-count="5">
+<div style="display:flex;gap:12px;padding:10px 12px;border-radius:14px;background:{{p.hl}}">
+<span style="font:700 12px 'Space Grotesk';color:#A78BFA;min-width:16px">{{p.n}}</span>
+<sc-if value="{{p.full}}" hint-placeholder-val="{{true}}"><span class="rise" style="font-size:15px;line-height:1.55">{{p.en}}</span></sc-if>
+<sc-if value="{{p.part}}" hint-placeholder-val="{{false}}"><span style="font-size:15px;line-height:1.55">{{p.enPart}}<span class="caret" style="color:#22D3EE;font-weight:700">|</span></span></sc-if>
+<sc-if value="{{p.wait}}" hint-placeholder-val="{{false}}"><span style="flex:1;display:flex;flex-direction:column;gap:8px;padding-top:6px"><span class="sk" style="height:10px;width:92%;border-radius:5px"></span><span class="sk" style="height:10px;width:70%;border-radius:5px"></span></span></sc-if>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{t.noKey}}" hint-placeholder-val="{{false}}">
+<div class="rise" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:0 30px">
+<img src="/_blob/5a168036f5b4859cdde4a9f7750d7dce" alt="" aria-hidden="true" style="width:120px;height:120px;object-fit:contain">
+<span style="font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700">Thêm key để dịch</span>
+<span style="font-size:14px;color:#DDD6FE;line-height:1.5">Dịch dùng model của bạn (OpenAI, Gemini hoặc Claude). Bài này khoảng 2.400 từ.</span>
+<a href="F03-Keys.dc.html" style="text-decoration:none;height:48px;padding:0 22px;border-radius:24px;box-sizing:border-box;background:linear-gradient(180deg,rgba(180,110,20,.55),rgba(110,60,10,.8));border:1.5px solid rgba(253,230,138,.85);box-shadow:inset 0 0 12px rgba(253,230,138,.35),0 0 16px rgba(245,158,11,.55);color:#FFFFFF;font-size:14px;font-weight:700;display:flex;align-items:center">Mở Key riêng</a>
+</div>
+</sc-if>
+</section>
+
+<div style="position:absolute;left:762px;top:780px;transform:translateX(-50%);height:56px;padding:0 6px 0 16px;box-sizing:border-box;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:28px;display:flex;align-items:center;gap:6px">
+<span style="font-size:12px;font-weight:700;color:#C4B5FD;margin-right:6px">Trạng thái</span>
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<button onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="height:44px;padding:0 14px;box-sizing:border-box;border-radius:22px;border:{{t.bw}} solid {{t.bd}};background:{{t.bg}};box-shadow:{{t.sh}};color:{{t.col}};font:600 13px 'Inter',sans-serif;cursor:pointer">{{t.n}}</button>
+</sc-for>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', mode: 0, idx: 1, approved: false }; }
+  componentDidMount() { this.timer = setInterval(() => { if (this.state.mode === 0) this.setState({ idx: this.state.idx >= 5 ? 1 : this.state.idx + 1 }); }, 1800); }
+  componentWillUnmount() { clearInterval(this.timer); }
+  renderVals() {
+    var kfDark = this.state.theme !== 'light';
+    var th = kfDark
+      ? { cls: 'kf-dark', bg: '#06041A', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', bgFilter: 'none', veil: 'linear-gradient(180deg,rgba(6,4,26,.72),rgba(6,4,26,.86))', railBg: 'linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%)' }
+      : { cls: 'kf-light', bg: '#F7F5FF', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', bgFilter: 'brightness(1.55) saturate(.75) hue-rotate(-8deg)', veil: 'linear-gradient(180deg,rgba(247,245,255,.55),rgba(236,232,255,.35))', railBg: 'linear-gradient(180deg,rgba(255,255,255,.72),rgba(237,233,254,.6))' };
+    var self = this, st = this.state, mode = st.mode;
+    var P = [
+      ['Máy mới cắm vào mạng chưa có địa chỉ IP, nên chưa nói chuyện được với ai.', 'A new device on the network has no IP address yet, so it cannot talk to anyone.'],
+      ['Discover: máy gửi broadcast tới 255.255.255.255, hỏi ai cấp được IP.', 'Discover: the device broadcasts to 255.255.255.255, asking who can give it an IP.'],
+      ['Offer: DHCP server trả lời, mời một địa chỉ còn trống.', 'Offer: a DHCP server replies with a free address.'],
+      ['Request: máy xin đúng địa chỉ được mời.', 'Request: the device asks for exactly that address.'],
+      ['Acknowledge: server chốt, cho mượn IP trong một thời hạn (lease).', 'Acknowledge: the server confirms and lends the IP for a period (the lease).']
+    ];
+    var idx = mode === 0 ? st.idx : 5;
+    var paras = P.map(function (p, i) {
+      var full = mode === 1 || i < idx - 1, part = mode === 0 && i === idx - 1, wait = mode === 0 && i > idx - 1;
+      return { n: i + 1, vi: p[0], en: p[1], enPart: p[1].slice(0, Math.round(p[1].length * 0.55)), full: full, part: part, wait: wait,
+        hl: part ? 'rgba(34,211,238,.1)' : 'transparent' };
+    });
+    var pct = mode === 0 ? Math.round((idx - 0.5) / 5 * 100) : (mode === 1 ? 100 : 0);
+    var N = ['Đang dịch', 'Xong', 'Chưa có key'];
+    var tabs = N.map(function (n, i) { var on = mode === i; return { n: n, pressed: on ? 'true' : 'false', bw: on ? '1.5px' : '1px', bd: on ? 'rgba(196,181,253,.9)' : 'transparent', bg: on ? 'linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%)' : 'transparent', sh: on ? 'inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75)' : 'none', col: on ? '#FFFFFF' : '#C4B5FD', pick: function () { self.setState({ mode: i, idx: 1, approved: false }); } }; });
+    var stars = []; for (var j = 0; j < 50; j++) { stars.push({ x: (j * 211) % 1440, y: (j * 97 + 31) % 900, r: j % 4 === 0 ? 2 : 1, d: (j % 9) * 0.35 }); }
+    return {
+      th: th,
+      paras: paras, tabs: tabs, stars: stars,
+      t: { pct: pct, streaming: mode === 0, done: mode === 1, hasKey: mode !== 2, noKey: mode === 2,
+        badge: st.approved ? 'Bản dịch AI · đã duyệt' : 'Bản dịch AI · chưa duyệt',
+        by: mode === 2 ? '' : 'gpt-4.1-mini · key ••••a1b2',
+        apLabel: st.approved ? 'Đã duyệt' : 'Đánh dấu đã duyệt', apBg: st.approved ? 'linear-gradient(180deg,rgba(16,120,90,.6),rgba(6,70,52,.85))' : 'linear-gradient(180deg,rgba(14,116,144,.6),rgba(8,60,80,.85))', apBd: st.approved ? 'rgba(110,231,183,.9)' : 'rgba(165,243,252,.9)', apSh: st.approved ? 'inset 0 0 12px rgba(110,231,183,.35),0 0 16px rgba(16,185,129,.6)' : 'inset 0 0 12px rgba(165,243,252,.35),0 0 16px rgba(34,211,238,.6)', apCol: '#FFFFFF' },
+      stop: function () { self.setState({ mode: 1 }); },
+      approve: function () { self.setState({ approved: true }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Chia sẻ và quyền truy cập</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:rgba(24,16,64,.52);border:1px solid rgba(167,139,250,.32);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lt .glass{background:rgba(255,255,255,.62);border-color:rgba(109,40,217,.22)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinr{to{transform:rotate(-360deg)}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes breathe{0%,100%{filter:drop-shadow(0 0 30px rgba(124,58,237,.75)) drop-shadow(0 0 70px rgba(34,211,238,.25))}50%{filter:drop-shadow(0 0 50px rgba(124,58,237,.95)) drop-shadow(0 0 110px rgba(34,211,238,.4))}}
+@keyframes stage{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.cr{transition:transform .35s cubic-bezier(.2,.9,.3,1.4),opacity .5s,filter .35s}
+.cr:hover{transform:scale(1.08)}
+.fl{animation:float 6s ease-in-out infinite}
+.orb{animation:breathe 5s ease-in-out infinite}
+.orbspin{animation:spin 120s linear infinite}
+@keyframes oglow{0%,100%{filter:drop-shadow(0 0 2px rgba(196,181,253,.7)) drop-shadow(0 0 7px rgba(139,92,246,.55));opacity:.72}50%{filter:drop-shadow(0 0 3px rgba(224,242,254,.85)) drop-shadow(0 0 11px rgba(139,92,246,.75));opacity:.88}}
+.orbitglow{animation:oglow 4s ease-in-out infinite;-webkit-mask-image:linear-gradient(90deg,transparent 12%,#000 30%);mask-image:linear-gradient(90deg,transparent 12%,#000 30%)}
+@keyframes orun{from{offset-distance:0%}to{offset-distance:100%}}
+.odot{position:absolute;left:0;top:0;border-radius:50%;offset-rotate:0deg;offset-anchor:center;animation-name:orun;animation-timing-function:linear;animation-iteration-count:infinite;pointer-events:none}
+.trav{animation:spin 11s linear infinite}
+.trav2{animation:spinr 16s linear infinite}
+.tw{animation:twinkle 3.2s ease-in-out infinite}
+.stage{animation:stage 3.4s ease-in-out infinite}
+.msg{animation:rise .6s ease-out both}
+.pop{animation:pop .35s cubic-bezier(.2,.9,.3,1.3) both}
+.dcard{transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
+.dcard:hover{transform:perspective(900px) rotateX(-6deg) rotateY(0deg) translateY(-10px)!important}
+.nav a:hover{background:rgba(124,58,237,.25)}
+a:focus-visible,button:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt a:focus-visible,.lt button:focus-visible{outline-color:#0E7490}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.rim{background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.bp{background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75)}
+.bs{background:rgba(14,11,38,.6);border:1px solid rgba(255,255,255,.16);color:#F5F3FF}
+@keyframes drop{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.banner{animation:drop .4s ease-out both}
+button:disabled{cursor:not-allowed}
+</style>
+</helmet>
+<div class="{{T.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover;filter:{{T.bgFilter}}">
+<div aria-hidden="true" style="position:absolute;inset:0;background:{{T.veil}}"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="40">
+<span class="tw" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:#FFFFFF;animation-delay:{{s.d}}s"></span>
+</sc-for>
+
+<nav aria-label="Đường dẫn" style="position:absolute;left:112px;top:84px;display:flex;align-items:center;gap:8px;font-size:13px">
+<a href="C09-Universe.dc.html" style="text-decoration:none;color:{{T.link}}">Universe</a><span style="color:{{T.muted}}">›</span>
+<a href="C10-Space.dc.html" style="text-decoration:none;color:{{T.link}}">Networking</a><span style="color:{{T.muted}}">›</span>
+<a href="C10-Space.dc.html" style="text-decoration:none;color:{{T.link}}">Giao thức nền tảng</a><span style="color:{{T.muted}}">›</span>
+<a href="C11-Reader.dc.html" style="text-decoration:none;color:{{T.link}}">{{doc.title}}</a><span style="color:{{T.muted}}">›</span>
+<span style="font-weight:600">Chia sẻ</span>
+</nav>
+
+<div style="position:absolute;left:112px;top:110px;right:40px;display:flex;align-items:center;gap:14px">
+<h1 style="margin:0;font-family:'Inter',sans-serif;font-weight:700;font-size:30px;letter-spacing:-.6px;background:{{T.heroGrad}};-webkit-background-clip:text;background-clip:text;color:transparent">Chia sẻ và quyền truy cập</h1>
+<span style="height:30px;padding:0 12px;border-radius:15px;background:{{doc.bbg}};color:{{doc.bcol}};border:1px {{doc.bstyle}} {{doc.bcol}};box-shadow:0 0 10px {{doc.bglow}};font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px">{{doc.badge}}</span>
+<span style="flex:1"></span>
+<span style="font-size:12px;font-weight:600;color:{{T.muted}}">Trạng thái (demo)</span>
+<div role="group" aria-label="Trạng thái demo" style="display:flex;gap:4px;padding:4px;border-radius:24px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)">
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="4">
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="height:38px;padding:0 14px;border-radius:19px;border:{{m.bd}};background:{{m.bg}};box-shadow:{{m.sh}};color:{{m.col}};font:600 12px 'Inter',sans-serif;cursor:pointer">{{m.n}}</button>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{is.changed}}" hint-placeholder-val="{{false}}">
+<div class="banner" role="status" style="position:absolute;left:112px;right:40px;top:162px;height:46px;box-sizing:border-box;padding:0 16px;border-radius:16px;background:linear-gradient(180deg,rgba(66,40,10,.8),rgba(36,22,8,.86));border:1.5px solid rgba(252,211,77,.75);box-shadow:inset 0 0 16px rgba(245,158,11,.3),0 0 18px rgba(245,158,11,.3);color:{{T.warnText}};display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s4-7 10-7c2 0 3.7.7 5.1 1.7M22 12s-4 7-10 7c-2 0-3.7-.7-5.1-1.7M3 3l18 18"/></svg>
+Quyền vừa thay đổi: bài đã bị quản trị ẩn, link tạm ngưng. Người mở link sẽ thấy trang "riêng tư".
+<span style="flex:1"></span><a href="C20-Inbox.dc.html" style="color:{{T.warnText}};font-weight:700">Xem thông báo</a>
+</div>
+</sc-if>
+
+<aside aria-label="Ảnh chia sẻ" style="position:absolute;left:112px;top:{{lay.top}}px;width:250px;display:flex;flex-direction:column;align-items:center;gap:12px">
+<div class="fl" style="width:220px;height:390px;border-radius:26px;overflow:hidden;position:relative;background:radial-gradient(ellipse 90% 70% at 50% 35%,#3A2A9E 0%,#120C38 75%);border:1.5px solid rgba(196,181,253,.7);box-shadow:inset 0 0 26px rgba(139,92,246,.4),inset 0 1px 0 rgba(255,255,255,.3),0 0 36px rgba(124,58,237,.5);padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;color:#F5F3FF;opacity:{{lay.storyOp}}">
+<span style="font:700 13px 'Space Grotesk'">KnowFlow</span>
+<img class="orb" src="/_blob/9943cad86b059211f4a12b52a95b77be" alt="" aria-hidden="true" style="width:120px;height:120px;align-self:center;object-fit:contain">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;line-height:1.1">{{doc.title}}</span>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;font:700 13px 'Space Grotesk';text-align:center"><span style="padding:6px 0;border-radius:8px;background:rgba(124,58,237,.3);border:1px solid rgba(196,181,253,.7);color:#DDD6FE">D</span><span style="padding:6px 0;border-radius:8px;background:rgba(6,182,212,.2);border:1px solid rgba(103,232,249,.7);color:#A5F3FC">O</span><span style="padding:6px 0;border-radius:8px;background:rgba(124,58,237,.3);border:1px solid rgba(196,181,253,.7);color:#DDD6FE">R</span><span style="padding:6px 0;border-radius:8px;background:rgba(6,182,212,.2);border:1px solid rgba(103,232,249,.7);color:#A5F3FC">A</span></div>
+<span style="flex:1"></span>
+<span style="font-size:11px;color:#C4B5FD">kb.hoandat.com/d/giao-thuc-dhcp</span>
+<sc-if value="{{is.locked}}" hint-placeholder-val="{{false}}"><span style="position:absolute;inset:0;background:rgba(6,4,26,.6);display:flex;align-items:center;justify-content:center"><img src="/_blob/62323fef5b19bcdb614db1abe4e0145e" alt="" aria-hidden="true" style="width:110px;height:110px;object-fit:contain"></span></sc-if>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<div role="img" aria-label="Mã QR mở link chia sẻ" style="width:76px;height:76px;border-radius:12px;background:#FFFFFF;padding:6px;box-sizing:border-box;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;box-shadow:0 0 16px rgba(196,181,253,.45);opacity:{{lay.storyOp}}">
+<sc-for list="{{qr}}" as="q" hint-placeholder-count="49"><span style="background:{{q}}"></span></sc-for>
+</div>
+<button disabled="{{is.noShare}}" class="bs" style="height:44px;padding:0 14px;border-radius:22px;font:600 13px 'Inter',sans-serif;cursor:pointer;opacity:{{lay.ctlOp}}">Tải ảnh story</button>
+</div>
+</aside>
+
+<section style="position:absolute;left:386px;top:{{lay.top}}px;width:490px;display:flex;flex-direction:column;gap:14px">
+<div class="rim" style="border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0 0 2px;font-size:15px">Ai thấy bài này?</h2>
+<sc-for list="{{prov}}" as="p" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1.5px {{p.bs}} {{p.bd}};background:{{p.bg}};box-shadow:{{p.sh}}">
+<span style="width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,{{p.c}} 60%);box-shadow:0 0 8px {{p.c}};flex:none"></span>
+<div style="flex:1"><div style="font-size:13px;font-weight:700">{{p.n}}</div><div style="font-size:12px;color:{{T.muted}}">{{p.s}}</div></div>
+<sc-if value="{{p.on}}" hint-placeholder-val="{{false}}"><span style="font-size:11px;font-weight:700;color:{{p.c}}">Bài này</span></sc-if>
+</div>
+</sc-for>
+</div>
+
+<sc-if value="{{is.locked}}" hint-placeholder-val="{{false}}">
+<div class="pop rim" style="border-radius:24px;padding:20px;border:1.5px dashed rgba(252,211,77,.8);display:flex;flex-direction:column;gap:10px">
+<span style="font-size:16px;font-weight:700">Bài chưa được duyệt nên chưa chia sẻ được</span>
+<span style="font-size:13px;color:{{T.sub}};line-height:1.5">Link chỉ tạo được sau khi quản trị hoặc người duyệt đồng ý. Trong lúc chờ, chỉ bạn thấy bài này.</span>
+<a href="C08-MyContent.dc.html" class="bp" style="align-self:flex-start;text-decoration:none;height:44px;padding:0 20px;box-sizing:border-box;border-radius:22px;font-size:14px;font-weight:700;display:flex;align-items:center">Xem trạng thái duyệt</a>
+</div>
+</sc-if>
+
+<sc-if value="{{is.shareable}}" hint-placeholder-val="{{true}}">
+<div class="rim" style="border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:14px;opacity:{{lay.ctlOp}}">
+<label style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:700">Link công khai
+<span style="display:flex;gap:8px">
+<input type="text" readOnly="{{true}}" value="{{link.v}}" style="flex:1;min-width:0;height:48px;padding:0 14px;border-radius:16px;border:1.5px solid rgba(196,181,253,.5);background:rgba(14,11,38,.8);box-shadow:inset 0 0 14px rgba(139,92,246,.3);color:{{link.col}};text-decoration:{{link.deco}};font:500 14px 'Inter',sans-serif">
+<sc-if value="{{is.revoked}}" hint-placeholder-val="{{false}}"><button onClick="{{newLink}}" class="bp" style="height:48px;padding:0 18px;border-radius:16px;font:700 13px 'Inter',sans-serif;cursor:pointer">Tạo link mới</button></sc-if>
+<sc-if value="{{is.live}}" hint-placeholder-val="{{true}}"><button onClick="{{copy}}" disabled="{{is.changed}}" style="height:48px;padding:0 18px;border-radius:16px;border:{{cp.bd}};background:{{cp.bg}};box-shadow:{{cp.sh}};color:#FFFFFF;font:700 13px 'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px"><sc-if value="{{cp.done}}" hint-placeholder-val="{{false}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>{{cp.t}}</button></sc-if>
+</span></label>
+<sc-if value="{{is.revoked}}" hint-placeholder-val="{{false}}"><span style="font-size:12px;color:{{T.warnText}}">Link đã thu hồi lúc 21:40. Ai mở link cũ sẽ thấy "link hết hiệu lực".</span></sc-if>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:{{T.muted}}">Hạn link</span>
+<div role="group" aria-label="Hạn link" style="display:flex;gap:4px">
+<sc-for list="{{exp}}" as="e" hint-placeholder-count="3"><button onClick="{{e.pick}}" disabled="{{is.frozen}}" aria-pressed="{{e.pressed}}" style="flex:1;height:44px;border-radius:12px;border:{{e.bd}};background:{{e.bg}};box-shadow:{{e.sh}};color:{{e.col}};font:600 12px 'Inter',sans-serif;cursor:pointer">{{e.n}}</button></sc-for>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:{{T.muted}}">Người có link được</span>
+<div role="group" aria-label="Quyền của link" style="display:flex;gap:4px">
+<sc-for list="{{perm}}" as="e" hint-placeholder-count="2"><button onClick="{{e.pick}}" disabled="{{is.frozen}}" aria-pressed="{{e.pressed}}" style="flex:1;height:44px;border-radius:12px;border:{{e.bd}};background:{{e.bg}};box-shadow:{{e.sh}};color:{{e.col}};font:600 12px 'Inter',sans-serif;cursor:pointer">{{e.n}}</button></sc-for>
+</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px">
+<span style="flex:1;font-size:12px;color:{{T.sub}}">{{summary}}</span>
+<sc-if value="{{is.live}}" hint-placeholder-val="{{true}}"><button onClick="{{revoke}}" disabled="{{is.changed}}" style="height:44px;padding:0 18px;border-radius:22px;border:1.5px solid rgba(252,211,77,.8);background:rgba(245,158,11,.1);box-shadow:inset 0 0 10px rgba(245,158,11,.2),0 0 12px rgba(245,158,11,.3);color:{{T.warnText}};font:700 13px 'Inter',sans-serif;cursor:pointer">Thu hồi link</button></sc-if>
+</div>
+</div>
+</sc-if>
+</section>
+
+<section style="position:absolute;left:900px;top:{{lay.top}}px;width:500px;display:flex;flex-direction:column;gap:14px">
+<div class="rim" style="border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:8px">
+<h2 style="margin:0;font-size:15px">Ai đang có quyền</h2>
+<sc-for list="{{access}}" as="a" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:10px;min-height:48px;padding:4px 8px;border-radius:14px;background:rgba(22,17,54,.6);border:1px solid rgba(167,139,250,.16)">
+<span style="width:34px;height:34px;border-radius:50%;background:{{a.c}};border:1.5px solid rgba(255,255,255,.55);box-shadow:0 0 10px {{a.c}};color:#FFFFFF;font:700 13px 'Space Grotesk';display:flex;align-items:center;justify-content:center;flex:none">{{a.i}}</span>
+<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">{{a.n}}</div><div style="font-size:11px;color:{{T.muted}}">{{a.r}}</div></div>
+<span style="font-size:12px;font-weight:600;padding:5px 10px;border-radius:10px;background:{{a.pbg}};border:1px solid {{a.pbd}};color:{{a.pcol}}">{{a.p}}</span>
+</div>
+</sc-for>
+</div>
+<div class="rim" style="border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:4px">
+<h2 style="margin:0 0 8px;font-size:15px">Lịch sử truy cập</h2>
+<ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+<sc-for list="{{hist}}" as="h" hint-placeholder-count="5">
+<li style="display:flex;gap:12px">
+<span style="position:relative;width:16px;flex:none"><span aria-hidden="true" style="position:absolute;left:7px;top:{{h.lt}}px;bottom:{{h.lb}}px;width:2px;background:linear-gradient(180deg,rgba(167,139,250,.85),rgba(103,232,249,.7));box-shadow:0 0 6px rgba(139,92,246,.85)"></span><span aria-hidden="true" style="position:absolute;left:1px;top:3px;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF 0%,{{h.c}} 55%);box-shadow:0 0 10px 2px {{h.c}}"></span></span>
+<span style="padding-bottom:14px"><span style="display:block;font-size:13px;font-weight:600">{{h.t}}</span><span style="display:block;font-size:11px;color:{{T.muted}}">{{h.s}}</span></span>
+</li>
+</sc-for>
+</ol>
+</div>
+</section>
+
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:{{T.text}}">KnowFlow</span>
+</div>
+<nav aria-label="Chế độ xem" class="nav" style="position:absolute;left:480px;top:16px;height:52px;padding:4px;box-sizing:border-box;border-radius:26px;display:flex;gap:4px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)">
+<a href="C09-Universe.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{T.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Orbit</a>
+<a href="C13-Graph.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{T.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg>Graph</a>
+<a href="C15-Canvas.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{T.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Canvas</a>
+<a href="C11-Reader.dc.html" aria-current="page" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 22px;border-radius:22px;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;font-size:14px;font-weight:600;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>Docs</a>
+</nav>
+<div style="position:absolute;right:28px;top:16px;display:flex;gap:10px;align-items:center">
+<a href="C20-Inbox.dc.html" aria-label="Thông báo, 3 chưa đọc" class="glass" style="position:relative;width:48px;height:48px;border-radius:16px;color:{{T.text}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span style="position:absolute;right:12px;top:11px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="glass" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;gap:8px;font:600 15px 'Space Grotesk',sans-serif;color:{{T.text}}">⌘ K</a>
+</div>
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:{{T.railBg}};backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<div style="position:absolute;left:10px;top:190px;width:52px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<a href="C09-Universe.dc.html" aria-label="Universe" style="margin-bottom:6px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg></a>
+<a href="C13-Graph.dc.html" aria-label="Graph" style="margin-bottom:22px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg></a>
+<a href="C01-CreateMenu.dc.html" aria-label="Tạo mới" style="margin-bottom:8px;width:46px;height:46px;border-radius:14px;background:rgba(124,58,237,.4);border:1px solid rgba(196,181,253,.7);display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 18px rgba(124,58,237,.6)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+<a href="C12-Search.dc.html" aria-label="Tìm kiếm" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
+<a href="C14-Copilot.dc.html" aria-label="AI Copilot" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.8 5.5L17 9.3l-5.2 1.8L10 16.5l-1.8-5.4L3 9.3l5.2-1.8zM18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/></svg></a>
+<a href="C10-Space.dc.html" aria-label="Spaces" aria-current="page" style="width:46px;height:46px;border-radius:50%;background:{{T.primary}};display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+<a href="C08-MyContent.dc.html" aria-label="Của tôi" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></a>
+<a href="H03-Settings.dc.html" aria-label="Cài đặt" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+</div>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', mode: 'approved', exp: 1, perm: 0, copied: false }; }
+  renderVals() {
+    var self = this, st = this.state, dark = st.theme === 'dark';
+    var D = { cls: 'dk', bg: '#06041A', text: '#F5F3FF', muted: '#C4B5FD', sub: '#C8C4DC', primary: '#7C3AED', accent: '#22D3EE', link: '#C4B5FD', success: '#10B981', successText: '#6EE7B7', warn: '#F59E0B', warnText: '#FCD34D', warnBg: 'rgba(245,158,11,.14)', chip: 'rgba(167,139,250,.16)',
+      veil: 'linear-gradient(180deg,rgba(6,4,26,.7) 0%,rgba(6,4,26,.85) 100%)', bgFilter: 'none',
+      heroGrad: 'linear-gradient(90deg,#7DD3FC 0%,#60A5FA 36%,#A78BFA 70%,#D8B4FE 100%)',
+      railBg: 'linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%)' };
+    var L = { cls: 'lt', bg: '#F7F5FF', text: '#1A1033', muted: '#5B4B8A', sub: '#3B2E66', primary: '#6D28D9', accent: '#0E7490', link: '#6D28D9', success: '#047857', successText: '#047857', warn: '#B45309', warnText: '#92400E', warnBg: 'rgba(180,83,9,.10)', chip: 'rgba(109,40,217,.10)',
+      veil: 'linear-gradient(180deg,rgba(247,245,255,.55),rgba(236,232,255,.35))', bgFilter: 'brightness(1.55) saturate(.75) hue-rotate(-8deg)',
+      heroGrad: 'linear-gradient(90deg,#0E7490 0%,#6D28D9 100%)',
+      railBg: 'linear-gradient(180deg,rgba(255,255,255,.72),rgba(237,233,254,.6))' };
+    var T = dark ? D : L;
+    var ON = { bd: '1.5px solid rgba(196,181,253,.9)', bg: 'linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%)', sh: 'inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75)' };
+    var OFF = { bd: '1px solid rgba(255,255,255,.16)', bg: 'rgba(14,11,38,.6)', sh: 'none' };
+    var IDLE = { bd: '1.5px solid transparent', bg: 'transparent', sh: 'none' };
+    var toggle = function (on, n, pick, idle) { var s = on ? ON : (idle ? IDLE : OFF); return { n: n, pressed: on ? 'true' : 'false', bd: s.bd, bg: s.bg, sh: s.sh, col: on ? '#FFFFFF' : T.text, pick: pick }; };
+    var m = st.mode;
+    var is = { locked: m === 'pending', shareable: m !== 'pending', revoked: m === 'revoked', live: m === 'approved' || m === 'changed', changed: m === 'changed', frozen: m === 'changed' || m === 'revoked', noShare: m !== 'approved' };
+    var M = [['approved', 'Đã duyệt'], ['pending', 'Chưa duyệt'], ['revoked', 'Đã thu hồi'], ['changed', 'Quyền thay đổi']];
+    var modes = M.map(function (x) { return toggle(m === x[0], x[1], function () { self.setState({ mode: x[0], copied: false }); }, true); });
+    var violet = dark ? '#A78BFA' : '#6D28D9', cyan = dark ? '#22D3EE' : '#0E7490', amber = dark ? '#FCD34D' : '#92400E';
+    var doc = is.locked
+      ? { title: 'Ghi chú: Máy mới xin IP thế nào', badge: 'Của bạn · Chờ duyệt', bbg: T.warnBg, bcol: amber, bstyle: 'dashed', bglow: 'rgba(245,158,11,.35)' }
+      : { title: 'Giao thức DHCP', badge: 'Chính thức · AI tạo', bbg: dark ? 'rgba(124,58,237,.25)' : 'rgba(109,40,217,.10)', bcol: violet, bstyle: 'solid', bglow: 'rgba(139,92,246,.45)' };
+    var P = [
+      ['Chính thức', 'Quản trị đăng qua API · công khai cho mọi người đã đăng nhập', violet, !is.locked],
+      ['Cộng đồng · đã duyệt', 'Bài người dùng đã được duyệt · công khai, chia sẻ được', cyan, false],
+      ['Của bạn · chưa duyệt', 'Chỉ bạn thấy · khoá chia sẻ cho tới khi được duyệt', amber, is.locked]
+    ];
+    var prov = P.map(function (p) { return { n: p[0], s: p[1], c: p[2], on: p[3], bd: p[3] ? p[2] : 'rgba(167,139,250,.2)', bs: p[0].indexOf('chưa') >= 0 ? 'dashed' : 'solid',
+      bg: p[3] ? 'rgba(124,58,237,.16)' : 'rgba(22,17,54,.6)', sh: p[3] ? 'inset 0 0 14px rgba(139,92,246,.3),0 0 12px rgba(124,58,237,.3)' : 'none' }; });
+    var E = ['Không hạn', '7 ngày', '30 ngày'];
+    var exp = E.map(function (n, i) { return toggle(st.exp === i, n, function () { self.setState({ exp: i }); }); });
+    var PR = ['Chỉ xem', 'Cho phép remix'];
+    var perm = PR.map(function (n, i) { return toggle(st.perm === i, n, function () { self.setState({ perm: i }); }); });
+    var access = [
+      { i: 'M', n: 'Mọi người đã đăng nhập', r: 'Tài khoản hoandat', p: is.changed ? 'Tạm ngưng' : 'Xem', c: '#06B6D4' },
+      { i: 'L', n: 'Người có link', r: 'Kể cả chưa đăng nhập vẫn thấy trang xem trước', p: is.revoked ? 'Đã thu hồi' : (is.changed ? 'Tạm ngưng' : PR[st.perm]), c: '#22D3EE' },
+      { i: 'L', n: 'Linh', r: 'Người duyệt', p: 'Duyệt · sửa thẻ', c: '#10B981' },
+      { i: 'Đ', n: 'Đạt', r: 'Quản trị', p: 'Toàn quyền', c: '#7C3AED' }
+    ].map(function (a) { var off = a.p === 'Tạm ngưng' || a.p === 'Đã thu hồi'; return Object.assign(a, { pbg: off ? T.warnBg : T.chip, pbd: off ? 'rgba(252,211,77,.5)' : 'rgba(196,181,253,.3)', pcol: off ? T.warnText : T.text }); });
+    var H = [
+      ['Mở link · 21:12 hôm nay', '[SỐ] lượt mở trong 7 ngày', T.accent],
+      ['Đổi hạn link sang 7 ngày', 'Đạt · 20:40', violet],
+      ['Tạo link công khai', 'Đạt · 20:31', violet],
+      ['Bài được duyệt', 'Linh · 19:58', T.success]
+    ];
+    if (is.revoked) H.unshift(['Thu hồi link', 'Đạt · 21:40', T.warn]);
+    if (is.changed) H.unshift(['Quản trị ẩn bài · link tạm ngưng', 'Đạt · 21:45', T.warn]);
+    var hist = H.map(function (h, i) { return { t: h[0], s: h[1], c: h[2], lt: i === 0 ? 10 : 0, lb: i === H.length - 1 ? 30 : 0 }; });
+    var qr = []; for (var q = 0; q < 49; q++) { var r = Math.floor(q / 7), c = q % 7; var fin = (r < 2 && c < 2) || (r < 2 && c > 4) || (r > 4 && c < 2); qr.push(fin || ((q * 7 + 3) % 5 < 2) ? '#120A3A' : '#FFFFFF'); }
+    var stars = []; for (var j = 0; j < 46; j++) { stars.push({ x: 380 + (j * 197) % 1000, y: 20 + (j * 83) % 520, r: j % 5 === 0 ? 2 : 1, d: (j % 8) * 0.4 }); }
+    return {
+      T: T, is: is, modes: modes, doc: doc, prov: prov, exp: exp, perm: perm, access: access, hist: hist, qr: qr, stars: stars,
+      lay: { top: is.changed ? 224 : 170, storyOp: is.locked || is.revoked ? 0.45 : 1, ctlOp: is.frozen ? 0.55 : 1 },
+      link: is.revoked ? { v: 'kb.hoandat.com/s/7f3k-dhcp', col: T.muted, deco: 'line-through' } : { v: 'kb.hoandat.com/s/7f3k-dhcp', col: T.text, deco: 'none' },
+      cp: st.copied
+        ? { t: 'Đã chép', done: true, bd: '1.5px solid rgba(110,231,183,.9)', bg: 'linear-gradient(180deg,rgba(16,185,129,.45) 0%,rgba(6,78,59,.75) 100%)', sh: 'inset 0 1px 0 rgba(255,255,255,.3),0 0 12px rgba(16,185,129,.55)' }
+        : { t: 'Sao chép', done: false, bd: ON.bd, bg: ON.bg, sh: ON.sh },
+      summary: is.revoked ? 'Không còn link nào đang hoạt động.' : (is.changed ? 'Link tạm ngưng cho tới khi quản trị hiện lại bài.' : 'Ai có link: ' + PR[st.perm].toLowerCase() + ' · hết hạn: ' + E[st.exp].toLowerCase() + '.'),
+      copy: function () { self.setState({ copied: true }); },
+      revoke: function () { self.setState({ mode: 'revoked', copied: false }); },
+      newLink: function () { self.setState({ mode: 'approved', copied: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

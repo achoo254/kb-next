@@ -1,0 +1,38 @@
+# Kiểm giống mock
+
+Mỗi màn của app được chụp và so từng pixel với ảnh xuất từ board tương ứng của mock
+([`design/mock-png/`](../design/mock-png), 51 ảnh đúng kích thước board, chụp với chế độ giảm chuyển động).
+
+## Chạy
+
+```sh
+pnpm e2e --project parity     # ở gốc repo; hoặc pnpm --filter @kb/web parity
+```
+
+Playwright tự dựng web (Vite, cổng 5321), API (PGlite trong RAM, cổng 5320) và IdP giả (cổng 5325), đăng nhập rồi mở
+từng màn. Mỗi màn in một dòng:
+
+```text
+C09-Universe (pending): 61.42% of pixels differ (ceiling 3%)
+```
+
+Báo cáo kèm ảnh chụp của app (`<board>-actual.png`) và ảnh khác biệt (`<board>-diff.png`, pixel khác tô đỏ):
+`apps/web/test-results/`, hoặc `pnpm exec playwright show-report` khi chạy với reporter html.
+
+## Quy tắc
+
+- Project `parity` của [`apps/web/e2e/playwright.config.ts`](../apps/web/e2e/playwright.config.ts): viewport bằng
+  kích thước board (1440×900 cho máy tính; board tablet 1180×820 và điện thoại 390×844 tự đặt theo kích thước ảnh),
+  `deviceScaleFactor: 1`, theme Tối, `reducedMotion: 'reduce'` (animation tắt như lúc xuất ảnh board).
+- Danh sách màn: [`apps/web/e2e/parity-screens.ts`](../apps/web/e2e/parity-screens.ts) (board, route, cần đăng nhập
+  không, `pending` hay `built`). Màn `pending` chỉ in khác biệt; màn `built` phải có tối đa 3% pixel khác
+  (`MAX_DIFF_RATIO`), so bằng `pixelmatch` với ngưỡng màu mặc định 0,1 (bỏ qua khử răng cưa).
+- Làm xong một màn: đổi `status` sang `built`, seed dữ liệu giống mock cho màn đó, chạy lại. Vượt ngưỡng thì sửa màn;
+  chỉ khi buộc phải khác mới ghi lý do vào [`mock-deviations.md`](mock-deviations.md) và đặt `maxDiff` riêng.
+- Mock tải font từ Google, app tự host cùng font qua `@fontsource`. Nếu chữ lệch vài pixel do bản font khác nhau, ghi
+  vào `mock-deviations.md` thay vì nới ngưỡng chung.
+
+## Xem mock gốc
+
+Ảnh tĩnh: `design/mock-png/<board>.png`. Bản chạy được (công tắc trạng thái, animation) chỉ có trong thư mục plan của
+workspace riêng (`node assets/serve-mock.mjs`); runtime của board không nằm trong repo public này.

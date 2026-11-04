@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · 3D, hybrid, 2D và hiệu năng</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.card{border-radius:22px;padding:16px;background:var(--surface);border:1.5px solid var(--border);box-shadow:var(--rimsh);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
+.card h3{margin:0;font-family:'Space Grotesk',sans-serif;font-size:18px}
+.mut{font-size:13px;color:var(--muted);line-height:1.45}
+.li{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.4}
+.li b{flex:none;min-width:22px;height:22px;border-radius:7px;background:var(--bg2);color:var(--link);font:700 11px 'Space Grotesk';display:flex;align-items:center;justify-content:center}
+.vis{height:110px;border-radius:16px;background:var(--bg2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.tag{height:26px;padding:0 10px;border-radius:13px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;background:var(--bg2);color:var(--link);text-decoration:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinr{to{transform:rotate(-360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.orb{animation:spin 14s linear infinite}
+.orb2{animation:spinr 20s linear infinite}
+.fl{animation:float 4s ease-in-out infinite}
+.sw{transition:transform .9s cubic-bezier(.65,0,.2,1),opacity .5s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:1200px;box-sizing:border-box;padding:36px 48px;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;gap:18px;--bg2:{{T.bg2}};--surface:{{T.surface}};--rimsh:{{T.rimsh}};--border:{{T.border}};--text:{{T.text}};--muted:{{T.muted}};--link:{{T.link}}">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between">
+<div>
+<div style="font-size:13px;font-weight:600;color:{{T.muted}}">KnowFlow · không gian 3D có kiểm soát</div>
+<h1 style="margin:4px 0 0;font-family:'Space Grotesk',sans-serif;font-size:42px;letter-spacing:-1.5px">3D, hybrid, 2D và hiệu năng</h1>
+</div>
+<button onClick="{{toggleTheme}}" style="height:46px;padding:0 16px;border-radius:23px;border:1px solid {{T.border}};background:none;color:{{T.text}};font:600 13px 'Inter',sans-serif;cursor:pointer">{{themeLabel}}</button>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+<section class="card" aria-label="3D chiếm ưu thế">
+<div class="vis" style="perspective:500px"><div style="width:120px;height:120px;transform:rotateX(62deg);transform-style:preserve-3d;position:relative"><span class="orb" style="position:absolute;inset:0;border-radius:50%;border:2px solid {{T.primary}}"></span><img src="/_blob/530a5d2134d54abf61d8650f0bf25c33" alt="" aria-hidden="true" style="position:absolute;inset:28px;width:64px;height:64px;object-fit:contain;transform:rotateX(-62deg)"></div></div>
+<h3>3D chiếm ưu thế</h3>
+<span class="mut">Khám phá, bay giữa các hành tinh, zoom, quỹ đạo, cảm giác quy mô.</span>
+<div style="display:flex;gap:6px"><a class="tag" href="C09-Universe.dc.html">C09 Universe</a><a class="tag" href="T01-TabletUniverse.dc.html">T01</a></div>
+</section>
+<section class="card" aria-label="Hybrid">
+<div class="vis"><span style="position:absolute;left:30%;top:30%;width:28px;height:28px;border-radius:50%;background:#7C3AED;box-shadow:0 0 14px #7C3AED"></span><span style="position:absolute;left:60%;top:22%;width:22px;height:22px;border-radius:50%;background:#06B6D4"></span><span style="position:absolute;left:52%;top:60%;width:20px;height:20px;border-radius:50%;background:#F59E0B"></span><span style="position:absolute;left:34%;top:42%;width:70px;height:2px;background:{{T.muted}};transform:rotate(-12deg);transform-origin:0 0"></span><span style="position:absolute;left:34%;top:44%;width:56px;height:2px;background:{{T.muted}};transform:rotate(30deg);transform-origin:0 0"></span></div>
+<h3>Hybrid</h3>
+<span class="mut">Có chiều sâu, nhưng nút, cạnh, nhãn sắc nét, chọn được chính xác, có viền focus.</span>
+<div style="display:flex;gap:6px"><a class="tag" href="C10-Space.dc.html">C10 Space</a><a class="tag" href="C13-Graph.dc.html">C13 Graph</a></div>
+</section>
+<section class="card" aria-label="2D chiếm ưu thế">
+<div class="vis" style="flex-direction:column;gap:6px;align-items:flex-start;padding:16px;justify-content:center"><span style="font:700 16px 'Space Grotesk'">Giao thức DHCP</span><span style="width:160px;height:6px;border-radius:3px;background:{{T.border}}"></span><span style="width:130px;height:6px;border-radius:3px;background:{{T.border}}"></span><span style="width:150px;height:6px;border-radius:3px;background:{{T.border}}"></span></div>
+<h3>2D chiếm ưu thế</h3>
+<span class="mut">Đọc và viết: chữ, tương phản, tốc độ, chọn chữ, phím tắt. Không ép 3D vào cột đọc.</span>
+<div style="display:flex;gap:6px"><a class="tag" href="C11-Reader.dc.html">C11 Reader</a><a class="tag" href="C02-Editor.dc.html">C02 Editor</a></div>
+</section>
+<section class="card" aria-label="Canvas 2D">
+<div class="vis" style="background-image:radial-gradient({{T.border}} 1.2px,transparent 1.2px);background-size:16px 16px"><span style="position:absolute;left:18%;top:26%;width:70px;height:36px;border-radius:10px;background:#F59E0B"></span><span style="position:absolute;left:55%;top:46%;width:80px;height:40px;border-radius:10px;background:#7C3AED"></span><span style="position:absolute;left:36%;top:46%;width:48px;height:2px;background:#F59E0B;transform:rotate(20deg);transform-origin:0 0"></span></div>
+<h3>Canvas không gian 2D</h3>
+<span class="mut">Kéo, thu phóng, sắp xếp tự do. Thẻ bên trong là component 2D rõ ràng, không trang trí thừa.</span>
+<div style="display:flex;gap:6px"><a class="tag" href="C15-Canvas.dc.html">C15 Canvas</a></div>
+</section>
+</div>
+
+<div style="display:flex;gap:14px;align-items:stretch">
+
+<section class="card" aria-label="Thử chế độ hiển thị" style="flex:1.25">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<h3 style="flex:1">Thử ngay</h3>
+<div role="group" aria-label="Chế độ hiển thị" style="display:flex;gap:4px;padding:4px;border-radius:22px;background:{{T.bg2}}">
+<button onClick="{{set3d}}" aria-pressed="{{demo.p3}}" style="height:40px;padding:0 16px;border-radius:20px;border:none;background:{{demo.b3}};color:{{demo.c3}};font:700 13px 'Space Grotesk',sans-serif;cursor:pointer">3D</button>
+<button onClick="{{set2d}}" aria-pressed="{{demo.p2}}" style="height:40px;padding:0 16px;border-radius:20px;border:none;background:{{demo.b2}};color:{{demo.c2}};font:700 13px 'Space Grotesk',sans-serif;cursor:pointer">2D</button>
+</div>
+<button role="switch" aria-checked="{{demo.rmAria}}" onClick="{{toggleRm}}" style="height:44px;padding:0 14px;border-radius:22px;border:1px solid {{T.border}};background:{{demo.rmBg}};color:{{T.text}};font:600 13px 'Inter',sans-serif;cursor:pointer">Giảm chuyển động: {{demo.rmText}}</button>
+</div>
+<div style="height:330px;border-radius:18px;background:{{T.bg2}};position:relative;overflow:hidden">
+<sc-if value="{{demo.is3d}}" hint-placeholder-val="{{true}}">
+<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:900px">
+<div style="width:420px;height:420px;position:relative;transform:rotateX(64deg) rotateZ(-12deg);transform-style:preserve-3d">
+<span class="orb" style="position:absolute;inset:0;border-radius:50%;border:2px solid {{T.border}};animation-play-state:{{demo.play}}"><span style="position:absolute;left:200px;top:-10px;width:20px;height:20px;border-radius:50%;background:#22D3EE;box-shadow:0 0 14px #22D3EE"></span></span>
+<span class="orb2" style="position:absolute;inset:70px;border-radius:50%;border:1.5px dashed {{T.muted}};animation-play-state:{{demo.play}}"><span style="position:absolute;left:130px;top:-9px;width:18px;height:18px;border-radius:50%;background:#F59E0B"></span></span>
+<img src="/_blob/530a5d2134d54abf61d8650f0bf25c33" alt="" aria-hidden="true" style="position:absolute;inset:130px;width:calc(100% - 260px);height:calc(100% - 260px);object-fit:contain;transform:rotateX(-64deg) translateZ(30px)">
+</div>
+</div>
+<span style="position:absolute;left:14px;bottom:12px;font-size:12px;font-weight:600;color:{{T.muted}}">CSS 3D: perspective, rotateX, translateZ · thật: Three.js</span>
+</sc-if>
+<sc-if value="{{demo.is2d}}" hint-placeholder-val="{{false}}">
+<ul style="list-style:none;margin:0;padding:18px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{flat}}" as="s" hint-placeholder-count="6">
+<li><a href="C10-Space.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;height:64px;padding:0 12px;border-radius:16px;background:{{T.surface}};border:1px solid {{T.border}};color:{{T.text}}"><span style="width:30px;height:30px;border-radius:50%;background:{{s.c}}"></span><span style="flex:1"><b style="display:block;font-size:14px">{{s.n}}</b><span style="font-size:12px;color:{{T.muted}}">{{s.k}}</span></span></a></li>
+</sc-for>
+</ul>
+<span style="position:absolute;left:14px;bottom:12px;font-size:12px;font-weight:600;color:{{T.muted}}">Bản 2D: cùng dữ liệu, cùng thứ tự Tab, không cần GPU</span>
+</sc-if>
+</div>
+</section>
+
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<section class="card" aria-label="Khi nào chuyển sang 2D">
+<h3>Tự chuyển sang 2D khi</h3>
+<div class="li"><b>1</b><span>Hệ điều hành bật giảm chuyển động (<code>prefers-reduced-motion</code>).</span></div>
+<div class="li"><b>2</b><span>Máy yếu: <code>navigator.hardwareConcurrency</code> ≤ 4 hoặc <code>deviceMemory</code> ≤ 4 GB, hoặc không có WebGL2.</span></div>
+<div class="li"><b>3</b><span>Đang tiết kiệm pin hoặc FPS đo được dưới 30 trong 3 giây đầu.</span></div>
+<div class="li"><b>4</b><span>Người dùng chọn 2D (nhớ trong cài đặt, H03).</span></div>
+</section>
+<section class="card" aria-label="Ngân sách hiệu năng">
+<h3>Ngân sách hiệu năng</h3>
+<div class="li"><b>60</b><span>Mục tiêu 60 fps; dưới 30 fps thì giảm chất lượng rồi mới chuyển 2D.</span></div>
+<div class="li"><b>40</b><span>Tối đa 40 hành tinh vẽ cùng lúc. Hành tinh xa vẽ bằng sprite (LOD).</span></div>
+<div class="li"><b>0</b><span>Dừng animation khi tab bị ẩn (<code>visibilitychange</code>).</span></div>
+<div class="li"><b>1</b><span>Skeleton hiện trước; engine 3D tải lười sau lần vẽ đầu, không chặn tìm kiếm và đọc.</span></div>
+</section>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+<section class="card" aria-label="Truy cập bằng bàn phím">
+<h3>Bàn phím và trình đọc màn hình</h3>
+<div class="li"><b>Tab</b><span>Đi qua từng hành tinh theo thứ tự cố định.</span></div>
+<div class="li"><b>←→</b><span>Xoay quỹ đạo; ↑↓ thu phóng.</span></div>
+<div class="li"><b>↵</b><span>Vào Space đang chọn; Esc lùi ra.</span></div>
+<span class="mut">Song song với canvas 3D luôn có một danh sách ẩn chứa đúng các hành tinh đó, cho trình đọc màn hình.</span>
+</section>
+<section class="card" aria-label="Giới hạn trên điện thoại">
+<h3>Giới hạn trên điện thoại</h3>
+<span class="mut">Điện thoại không chạy Universe 3D. Dùng quỹ đạo 2D đơn giản (Mobile) và khay kéo lên. Tablet ngang 1180×820 chạy 3D giảm nhẹ: ít hạt, ít vòng quỹ đạo.</span>
+<div style="display:flex;gap:6px"><a class="tag" href="Mobile.dc.html">Mobile</a><a class="tag" href="T01-TabletUniverse.dc.html">T01 Tablet</a><a class="tag" href="T02-TabletReader.dc.html">T02 Tablet</a></div>
+</section>
+<section class="card" aria-label="Ghi chú triển khai">
+<h3>Ghi chú triển khai</h3>
+<span class="mut">Mock dùng CSS 3D. Bản thật dùng Three.js / React Three Fiber, tải lười theo route C09. Nút, nhãn, panel vẫn là HTML phủ lên canvas để chọn chữ, focus và đọc màn hình hoạt động bình thường.</span>
+<span class="mut">Chuyển động không bao giờ chặn đọc, viết, tìm kiếm hay quản trị: mọi thao tác đó dùng được trước khi 3D tải xong.</span>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', mode: '3d', rm: false }; }
+  renderVals() {
+    var self = this, st = this.state, dark = st.theme === 'dark';
+    var D = { bg: 'linear-gradient(180deg,rgba(6,4,26,.45),rgba(6,4,26,.8)),url(/_blob/42f83192f57abb44ac4cfbe3bd649a21) 16% 40%/cover,#06041A', bg2: 'rgba(14,11,38,.78)', surface: 'linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%)', border: 'rgba(196,181,253,.55)', rimsh: 'inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', link: '#C4B5FD' };
+    var L = { rimsh: '0 6px 20px rgba(76,29,149,.08)', bg: '#F7F5FF', bg2: '#ECE8FF', surface: 'rgba(255,255,255,.78)', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', link: '#6D28D9' };
+    var T = dark ? D : L;
+    var is3d = st.mode === '3d';
+    return {
+      T: T,
+      themeLabel: dark ? 'Chuyển sang Sáng' : 'Chuyển sang Tối',
+      toggleTheme: function () { self.setState({ theme: dark ? 'light' : 'dark' }); },
+      demo: { is3d: is3d, is2d: !is3d, p3: is3d ? 'true' : 'false', p2: is3d ? 'false' : 'true',
+        b3: is3d ? T.primary : 'transparent', c3: is3d ? '#FFFFFF' : T.text, b2: is3d ? 'transparent' : T.primary, c2: is3d ? T.text : '#FFFFFF',
+        play: st.rm ? 'paused' : 'running', rmAria: st.rm ? 'true' : 'false', rmText: st.rm ? 'Bật' : 'Tắt', rmBg: st.rm ? 'rgba(124,58,237,.3)' : 'transparent' },
+      flat: [
+        { n: 'Networking', k: '8 lab', c: '#7C3AED' }, { n: 'Linux', k: '3 bài tập', c: '#22D3EE' }, { n: 'Docker', k: '3 phần', c: '#F59E0B' },
+        { n: 'Kubernetes', k: '2 bài', c: '#06B6D4' }, { n: 'Observability', k: '1 lab', c: '#10B981' }, { n: 'Học hàng tuần', k: '5 tuần', c: '#A855F7' }
+      ],
+      set3d: function () { self.setState({ mode: '3d' }); },
+      set2d: function () { self.setState({ mode: '2d' }); },
+      toggleRm: function () { self.setState({ rm: !st.rm }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

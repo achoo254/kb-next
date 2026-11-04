@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Điện thoại</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+.dk .glass{background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%)!important;border:1.5px solid rgba(196,181,253,.55)!important;box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.dk nav[aria-label="Điều hướng chính"]{background:rgba(12,9,32,.82)!important;border:1.5px solid rgba(196,181,253,.5)!important;box-shadow:inset 0 0 18px rgba(139,92,246,.3),inset 0 1px 0 rgba(255,255,255,.2),0 0 26px rgba(124,58,237,.4)!important}
+.bgimg{position:absolute;inset:0;width:390px;height:844px;object-fit:cover;object-position:16% 50%;pointer-events:none}
+.bgveil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,4,26,.35) 0%,rgba(6,4,26,.15) 40%,rgba(6,4,26,.7) 100%)}
+.lt .bgimg{opacity:.18}.lt .bgveil{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.85))}
+body{margin:0;background:#06041A}
+.dk a{color:#C4B5FD}.lt a{color:#6D28D9}
+.dk .glass{background:rgba(30,20,72,.6);border:1px solid rgba(167,139,250,.28);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.lt .glass{background:rgba(255,255,255,.88);border:1px solid rgba(109,40,217,.18);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+button:focus-visible,a:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt button:focus-visible,.lt a:focus-visible{outline-color:#0E7490}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes breathe{0%,100%{box-shadow:0 0 40px 8px rgba(124,58,237,.6)}50%{box-shadow:0 0 70px 18px rgba(124,58,237,.85)}}
+.sw{animation:spin 14s linear infinite}
+.orb{animation:breathe 4s ease-in-out infinite}
+.pl{animation:float 5s ease-in-out infinite;transition:opacity .4s}
+.pl-btn{transition:transform .3s cubic-bezier(.2,.9,.3,1.4)}
+.pl-btn:active{transform:scale(.92)}
+.star{animation:twinkle 3s ease-in-out infinite}
+@keyframes orun{from{offset-distance:0%}to{offset-distance:100%}}
+.odot{position:absolute;left:0;top:0;border-radius:50%;offset-rotate:0deg;offset-anchor:center;animation-name:orun;animation-timing-function:linear;animation-iteration-count:infinite;pointer-events:none}
+@keyframes orbglow{0%,100%{filter:drop-shadow(0 0 18px rgba(139,92,246,.7))}50%{filter:drop-shadow(0 0 34px rgba(167,139,250,.95))}}
+.orbimg{animation:orbglow 4s ease-in-out infinite}
+.sheet{transition:top .55s cubic-bezier(.2,.9,.3,1.1)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{T.cls}}" style="width:390px;height:844px;position:relative;overflow:hidden;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif">
+<div aria-hidden="true" style="position:absolute;inset:0;background:{{T.sky}}"></div>
+<img class="bgimg" src="/_blob/9327732977cfed2b3387b0901df2e24a" alt="" aria-hidden="true"><div class="bgveil" aria-hidden="true"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="40">
+<span class="star" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:{{T.star}};animation-delay:{{s.d}}s"></span>
+</sc-for>
+
+<div style="position:absolute;left:16px;right:16px;top:16px;display:flex;align-items:center;gap:8px">
+<a href="M06-MobileSearch.dc.html" class="glass" style="flex:1;min-width:0;text-decoration:none;height:48px;box-sizing:border-box;padding:0 6px 0 14px;border-radius:24px;display:flex;align-items:center;gap:8px;color:{{T.muted}};font-size:14px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+<span style="flex:1;white-space:nowrap;overflow:hidden">Tìm hoặc hỏi AI…</span>
+<span style="width:36px;height:36px;flex:none;border-radius:50%;background:{{T.primary}};display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg></span>
+</a>
+<span aria-hidden="true" style="width:44px;height:44px;flex:none;border-radius:50%;background:#7C3AED;border:2px solid #C4B5FD;display:flex;align-items:center;justify-content:center;font-weight:700;color:#FFFFFF">Đ</span>
+</div>
+<span style="position:absolute;left:16px;top:74px;display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;font-size:11px;font-weight:600;background:{{T.soft}};color:{{T.muted}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/></svg>Bản điện thoại: vũ trụ 2D rút gọn</span>
+
+<div style="position:absolute;left:0;top:18px;width:390px;height:520px">
+<svg aria-hidden="true" width="390" height="520" viewBox="0 0 390 520" style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible">
+<defs>
+<linearGradient id="mOrbG" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="380" y2="0"><stop offset="0" stop-color="#6D28D9" stop-opacity=".2"/><stop offset=".25" stop-color="#7C3AED" stop-opacity=".65"/><stop offset=".5" stop-color="#A78BFA" stop-opacity=".95"/><stop offset=".65" stop-color="#C4B5FD"/><stop offset=".9" stop-color="#818CF8" stop-opacity=".8"/><stop offset="1" stop-color="#6366F1" stop-opacity=".4"/></linearGradient>
+<filter id="mBloom" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="3.5"/></filter>
+<radialGradient id="mFade"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<mask id="mmnet" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="520"><circle cx="72" cy="177" r="70" fill="url(#mFade)"/></mask><mask id="mmk8s" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="520"><circle cx="318" cy="177" r="70" fill="url(#mFade)"/></mask><mask id="mmdkr" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="520"><circle cx="325" cy="295" r="70" fill="url(#mFade)"/></mask><mask id="mmlnx" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="520"><circle cx="65" cy="295" r="70" fill="url(#mFade)"/></mask><mask id="mmobs" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="520"><circle cx="195" cy="130" r="70" fill="url(#mFade)"/></mask><mask id="mmme" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="520"><circle cx="195" cy="350" r="70" fill="url(#mFade)"/></mask>
+</defs>
+<path fill="none" stroke="#A78BFA" stroke-width="1" stroke-dasharray="1.5 6" stroke-linecap="round" opacity=".45" d="M13 236 A182 78 0 1 1 377 236 A182 78 0 1 1 13 236"/>
+<g fill="none" stroke="#8B5CF6" stroke-width="5" opacity=".5" filter="url(#mBloom)"><path d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path d="M87 252 A108 42 0 1 1 303 252 A108 42 0 1 1 87 252"/></g>
+<g fill="none" stroke="url(#mOrbG)"><path stroke-width="1.6" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path stroke-width="1.2" d="M87 252 A108 42 0 1 1 303 252 A108 42 0 1 1 87 252"/></g>
+<g mask="url(#mmnet)" fill="none" stroke="#A78BFA"><path stroke-width="5" opacity=".75" filter="url(#mBloom)" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path stroke-width="1.8" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/></g>
+<g mask="url(#mmk8s)" fill="none" stroke="#60A5FA"><path stroke-width="5" opacity=".75" filter="url(#mBloom)" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path stroke-width="1.8" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/></g>
+<g mask="url(#mmdkr)" fill="none" stroke="#FBBF24"><path stroke-width="5" opacity=".75" filter="url(#mBloom)" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path stroke-width="1.8" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/></g>
+<g mask="url(#mmlnx)" fill="none" stroke="#22D3EE"><path stroke-width="5" opacity=".75" filter="url(#mBloom)" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path stroke-width="1.8" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/></g>
+<g mask="url(#mmobs)" fill="none" stroke="#34D399"><path stroke-width="5" opacity=".75" filter="url(#mBloom)" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path stroke-width="1.8" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/></g>
+<g mask="url(#mmme)" fill="none" stroke="#F472B6"><path stroke-width="5" opacity=".75" filter="url(#mBloom)" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/><path stroke-width="1.8" d="M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240"/></g>
+</svg>
+<span class="odot" aria-hidden="true" style="width:10px;height:10px;background:#F0F9FF;box-shadow:0 0 10px 4px #7DD3FC,0 0 22px 8px rgba(125,211,252,.4);offset-path:path('M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240');animation-duration:22s;animation-delay:-0s;"></span>
+<span class="odot" aria-hidden="true" style="width:8px;height:8px;background:#EDE9FE;box-shadow:0 0 9px 4px #A78BFA;offset-path:path('M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240');animation-duration:22s;animation-delay:-5.5s;"></span>
+<span class="odot" aria-hidden="true" style="width:9px;height:9px;background:#F5F3FF;box-shadow:0 0 10px 4px #C4B5FD,0 0 18px 6px rgba(167,139,250,.4);offset-path:path('M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240');animation-duration:22s;animation-delay:-11s;"></span>
+<span class="odot" aria-hidden="true" style="width:6px;height:6px;background:#CFFAFE;box-shadow:0 0 8px 3px #22D3EE;offset-path:path('M45 240 A150 110 0 1 1 345 240 A150 110 0 1 1 45 240');animation-duration:22s;animation-delay:-16.5s;"></span>
+<span class="odot" aria-hidden="true" style="width:8px;height:8px;background:#F5F3FF;box-shadow:0 0 10px 4px #C4B5FD,0 0 18px 6px rgba(167,139,250,.4);offset-path:path('M87 252 A108 42 0 1 1 303 252 A108 42 0 1 1 87 252');animation-duration:14s;animation-delay:-1.5s;animation-direction:reverse;"></span>
+<span class="odot" aria-hidden="true" style="width:6px;height:6px;background:#CFFAFE;box-shadow:0 0 8px 3px #22D3EE;offset-path:path('M87 252 A108 42 0 1 1 303 252 A108 42 0 1 1 87 252');animation-duration:14s;animation-delay:-6s;animation-direction:reverse;"></span>
+<span class="odot" aria-hidden="true" style="width:9px;height:9px;background:#F0F9FF;box-shadow:0 0 10px 4px #7DD3FC,0 0 22px 8px rgba(125,211,252,.4);offset-path:path('M87 252 A108 42 0 1 1 303 252 A108 42 0 1 1 87 252');animation-duration:14s;animation-delay:-10.5s;animation-direction:reverse;"></span>
+<button onClick="{{reset}}" aria-label="Học Cloud, toàn vũ trụ" style="position:absolute;left:135px;top:180px;width:120px;height:120px;border:none;padding:0;background:none;cursor:pointer;color:#FFFFFF;display:flex;align-items:center;justify-content:center">
+<img class="orbimg" src="/_blob/530a5d2134d54abf61d8650f0bf25c33" alt="" style="position:absolute;inset:-22px;width:164px;height:164px">
+<span style="position:relative;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.9),0 2px 12px rgba(20,8,60,.9)">Học Cloud</span>
+</button>
+
+<sc-for list="{{planets}}" as="p" hint-placeholder-count="6">
+<div class="pl" style="position:absolute;left:{{p.l}}px;top:{{p.t}}px;width:{{p.d}}px;height:{{p.d}}px;opacity:{{p.op}};animation-delay:{{p.dl}}s">
+<button class="pl-btn" onClick="{{p.pick}}" aria-label="{{p.aria}}" style="position:relative;width:{{p.d}}px;height:{{p.d}}px;border:none;padding:0;cursor:pointer;color:#FFFFFF;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">
+<img src="{{p.img}}" alt="" style="position:absolute;left:-12px;top:-12px;width:{{p.big}}px;height:{{p.big}}px;filter:{{p.imgf}}">
+<span aria-hidden="true" style="position:absolute;inset:2px;border-radius:50%;background:radial-gradient(ellipse 50% 44% at 50% 54%,rgba(8,4,28,.8) 0%,rgba(8,4,28,.6) 45%,rgba(8,4,28,.2) 78%,rgba(8,4,28,0) 100%)"></span>
+<span style="position:relative;font:700 12px 'Space Grotesk';white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.9),0 2px 10px rgba(0,0,0,.75)">{{p.name}}</span>
+<span style="position:relative;font-size:10px;font-weight:700;color:{{p.hi}};text-shadow:0 0 6px {{p.c}},0 1px 3px rgba(0,0,0,.9)">{{p.total}}</span>
+</button>
+</div>
+</sc-for>
+</div>
+
+<div class="sheet glass" style="position:absolute;left:0;right:0;top:{{sh.top}}px;height:640px;border-radius:30px 30px 0 0;padding:10px 18px 0;box-sizing:border-box;display:flex;flex-direction:column;gap:10px">
+<button onClick="{{toggleSheet}}" aria-label="{{sh.label}}" style="align-self:center;width:80px;height:24px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center"><span style="width:44px;height:5px;border-radius:3px;background:{{T.muted}}"></span></button>
+<div style="display:flex;align-items:center;justify-content:space-between">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px">{{f.name}}</span>
+<a href="C10-Space.dc.html" style="text-decoration:none;font-size:13px;font-weight:600;min-height:44px;display:flex;align-items:center">Mở Space</a>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{f.prov}}" as="pv" hint-placeholder-count="3">
+<span style="height:26px;padding:0 10px;border-radius:13px;background:{{pv.bg}};color:{{pv.col}};border:1px {{pv.line}} {{pv.bd}};font-size:11px;font-weight:700;display:flex;align-items:center">{{pv.n}}</span>
+</sc-for>
+</div>
+<span style="font-size:14px;color:{{T.lead}}">{{f.one}}</span>
+<div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+<sc-for list="{{f.items}}" as="it" hint-placeholder-count="4">
+<a href="M05-MobileDocs.dc.html" style="flex:none;text-decoration:none;display:flex;flex-direction:column;justify-content:space-between;width:112px;height:100px;padding:12px;box-sizing:border-box;border-radius:18px;background:{{T.card}};border:1px solid {{f.c}};color:{{T.text}}">
+<span style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,{{f.c}})"></span>
+<span style="font-size:13px;font-weight:700">{{it}}</span>
+</a>
+</sc-for>
+</div>
+<div style="display:flex;gap:8px">
+<a href="Flow.dc.html" style="flex:1;text-decoration:none;height:46px;border-radius:23px;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35);color:#FFFFFF;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center">Xem lối đi</a>
+<a href="M04-MobileCopilot.dc.html" style="flex:1;text-decoration:none;height:46px;border-radius:23px;border:1px solid {{T.ghostBd}};color:{{T.ghostText}};font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center">Hỏi AI</a>
+</div>
+</div>
+
+<nav aria-label="Điều hướng chính" class="glass" style="position:absolute;left:12px;right:12px;bottom:14px;height:72px;border-radius:36px;display:flex;align-items:center;justify-content:space-around">
+<sc-for list="{{dock}}" as="d" hint-placeholder-count="5">
+<a href="{{d.href}}" aria-label="{{d.label}}" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:{{d.col}};font-size:10px;font-weight:600;min-width:52px">
+<span style="width:{{d.s}}px;height:{{d.s}}px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:{{d.bg}};box-shadow:{{d.sh}};margin-top:{{d.mt}}px;color:{{d.ic}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{d.icon}}"/></svg></span>{{d.short}}</a>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { focus: 'net', open: false, theme: 'dark' }; }
+  renderVals() {
+    var self = this, st = this.state, dark = st.theme !== 'light';
+    var DT = { cls: 'dk', bg: '#06041A', sky: 'radial-gradient(ellipse 80% 45% at 50% 34%,#2B1670 0%,#120A3A 55%,#06041A 90%)', card: 'rgba(12,6,40,.7)', border: 'rgba(167,139,250,.28)', text: '#F5F3FF', muted: '#C4B5FD', lead: '#DDD6FE', primary: '#7C3AED', star: '#FFFFFF', soft: 'rgba(255,255,255,.08)', orbit: 'rgba(167,139,250,.35)', ring: 'rgba(196,181,253,.55)', badgeBg: '#1A1146', ghostBd: 'rgba(167,139,250,.45)', ghostText: '#EDE9FE',
+      pOff: { bg: 'rgba(124,58,237,.45)', col: '#EDE9FE' }, pCom: { bg: 'rgba(6,182,212,.25)', col: '#A5F3FC' }, pMine: { bg: 'rgba(236,72,153,.22)', col: '#FBCFE8' }, pWait: { bg: 'transparent', col: '#FCD34D', bd: '#F59E0B' },
+      themeLabel: 'Chuyển sang giao diện sáng', themeIcon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4' };
+    var LT = { cls: 'lt', bg: '#F7F5FF', sky: 'radial-gradient(ellipse 80% 45% at 50% 34%,#E4DBFF 0%,#ECE8FF 55%,#F7F5FF 90%)', card: '#FFFFFF', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', lead: '#3B2F63', primary: '#6D28D9', star: '#C4B5FD', soft: 'rgba(109,40,217,.08)', orbit: 'rgba(109,40,217,.25)', ring: 'rgba(109,40,217,.35)', badgeBg: '#FFFFFF', ghostBd: 'rgba(109,40,217,.35)', ghostText: '#4C1D95',
+      pOff: { bg: 'rgba(109,40,217,.14)', col: '#4C1D95' }, pCom: { bg: 'rgba(14,116,144,.12)', col: '#0E5566' }, pMine: { bg: 'rgba(190,24,93,.10)', col: '#9D174D' }, pWait: { bg: 'transparent', col: '#92400E', bd: '#B45309' },
+      themeLabel: 'Chuyển sang giao diện tối', themeIcon: 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z' };
+    var T = dark ? DT : LT;
+    var raw = [
+      { id: 'net', x: 72, y: 177, d: 76, name: 'Network', full: 'Networking', c: '#8B5CF6', hi: '#C4B5FD', img: '/_blob/31ddcd850e1b521cc8c03b8df4b6debb', imgf: 'none', dk: '#2E1065', off: 8, com: 1, mine: 0, wait: 0, one: 'Máy tính nói chuyện với nhau thế nào.', items: ['DHCP', 'DNS', 'HTTP', 'ARP', 'TCP vs UDP'] },
+      { id: 'k8s', x: 318, y: 177, d: 64, name: 'K8s', full: 'Kubernetes', c: '#3B82F6', hi: '#93C5FD', img: '/_blob/6feb28ce42686ed01217312e206531e3', imgf: 'hue-rotate(28deg) saturate(1.2)', dk: '#164E63', off: 2, com: 0, mine: 0, wait: 0, one: 'Điều phối hàng trăm container.', items: ['Kiến trúc cụm', 'Dựng từng bước'] },
+      { id: 'dkr', x: 325, y: 295, d: 64, name: 'Docker', full: 'Docker', c: '#F59E0B', hi: '#FDE68A', img: '/_blob/3f6f204a955e94d6e9f649463f561b67', imgf: 'none', dk: '#78350F', off: 3, com: 0, mine: 0, wait: 0, one: 'Đóng gói app chạy ở đâu cũng được.', items: ['Cơ bản', 'Storage', 'Compose'] },
+      { id: 'lnx', x: 65, y: 295, d: 62, name: 'Linux', full: 'Linux', c: '#22D3EE', hi: '#A5F3FC', img: '/_blob/4501a8df316926904685cf2b4456efb4', imgf: 'none', dk: '#0C4A6E', off: 3, com: 1, mine: 0, wait: 0, one: 'Hệ điều hành của server.', items: ['syslog', 'boot', 'swap', 'Ghi chú swap'] },
+      { id: 'obs', x: 195, y: 130, d: 62, name: 'Obs', full: 'Observability', c: '#10B981', hi: '#86EFAC', img: '/_blob/cbb5bd9baa920d2a16b0902798625c06', imgf: 'none', dk: '#064E3B', off: 1, com: 0, mine: 0, wait: 0, one: 'Nhìn thấy hệ thống qua log.', items: ['VictoriaLogs', 'LogsQL'] },
+      { id: 'me', x: 195, y: 350, d: 62, name: 'Của bạn', full: 'Vũ trụ của bạn', c: '#EC4899', hi: '#F9A8D4', img: '/_blob/27cad84bc553e15e9fb6b4ed457e5c7e', imgf: 'none', dk: '#831843', off: 0, com: 0, mine: 3, wait: 1, one: 'Tệp và ghi chú riêng. Chỉ bạn thấy cho tới khi được duyệt.', items: ['lab-notes.docx', 'subnet.xlsx', 'k8s-intro.pptx', 'TCP bằng hình'] }
+    ];
+    var focus = raw[0]; raw.forEach(function (r) { if (r.id === st.focus) focus = r; });
+    var planets = raw.map(function (r, i) { var total = r.off + r.com + r.mine + r.wait; return { name: r.name, c: r.c, hi: r.hi, dk: r.dk, d: r.d, big: r.d + 24, img: r.img, imgf: r.imgf, l: r.x - r.d / 2, t: r.y - r.d / 2, dl: i * 0.5, op: r.id === focus.id ? 1 : 0.72, total: total,
+      aria: r.full + ', ' + total + ' tài liệu',
+      pick: function () { self.setState({ focus: r.id, open: false }); } }; });
+    var prov = [];
+    if (focus.off) prov.push({ n: focus.off + ' chính thức', bg: T.pOff.bg, col: T.pOff.col, bd: 'transparent', line: 'solid' });
+    if (focus.com) prov.push({ n: focus.com + ' cộng đồng', bg: T.pCom.bg, col: T.pCom.col, bd: 'transparent', line: 'solid' });
+    if (focus.mine) prov.push({ n: focus.mine + ' riêng tư', bg: T.pMine.bg, col: T.pMine.col, bd: 'transparent', line: 'solid' });
+    if (focus.wait) prov.push({ n: focus.wait + ' chờ duyệt', bg: T.pWait.bg, col: T.pWait.col, bd: T.pWait.bd, line: 'dashed' });
+    var stars = []; for (var j = 0; j < 40; j++) { stars.push({ x: (j * 97) % 390, y: (j * 61 + 21) % 480, r: j % 4 === 0 ? 2 : 1, d: (j % 7) * 0.4 }); }
+    var DK = [['Mobile.dc.html', 'Vũ trụ', 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6'], ['C13-Graph.dc.html', 'Graph', 'M6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 6h8M7 8l4 8M17 8l-4 8'], ['M02-MobileCreate.dc.html', '', 'M12 5v14M5 12h14'], ['C08-MyContent.dc.html', 'Của tôi', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6'], ['M04-MobileCopilot.dc.html', 'Copilot', 'M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z']];
+    var dock = DK.map(function (d, i) { var on = i === 0, plus = i === 2; return { href: d[0], short: d[1], label: d[1] || 'Tạo mới', icon: d[2], col: on ? T.text : T.muted, ic: plus || on ? '#FFFFFF' : T.muted, s: plus ? 54 : 38, mt: plus ? -16 : 0, bg: plus || on ? 'linear-gradient(180deg,rgba(88,60,200,.55),rgba(44,26,112,.82))' : 'transparent', sh: plus || on ? 'inset 0 0 0 1.5px rgba(196,181,253,.9),inset 0 0 12px rgba(196,181,253,.45),0 0 16px rgba(139,92,246,.75)' : 'none' }; });
+    var open = st.open;
+    return {
+      T: T, planets: planets, stars: stars, dock: dock,
+      f: { name: focus.full, c: focus.c, one: focus.one, items: focus.items, prov: prov },
+      sh: { top: open ? 150 : 410, label: open ? 'Thu nhỏ' : 'Mở rộng' },
+      toggleSheet: function () { self.setState({ open: !open }); },
+      reset: function () { self.setState({ open: false }); },
+      toggleTheme: function () { self.setState({ theme: dark ? 'light' : 'dark' }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

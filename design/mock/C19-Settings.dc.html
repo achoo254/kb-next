@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Cài đặt workspace</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lt .glass{background:rgba(255,255,255,.86)!important;border-color:rgba(109,40,217,.3)!important;box-shadow:inset 0 0 18px rgba(139,92,246,.12),0 0 24px rgba(124,58,237,.12)!important}
+.gls{background:rgba(24,16,64,.52);border:1px solid rgba(167,139,250,.32);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lt .gls{background:rgba(255,255,255,.62);border-color:rgba(109,40,217,.22)}
+@keyframes twk{0%,100%{opacity:.2}50%{opacity:1}}
+.tw{animation:twk 3.2s ease-in-out infinite}
+.nav a:hover,.arail a:hover{background:rgba(124,58,237,.25)}
+a:focus-visible,button:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt a:focus-visible,.lt button:focus-visible{outline-color:#0E7490}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes slidein{from{transform:translateY(-12px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes flowv{to{background-position:0 24px}}
+.star{animation:twinkle 3.4s ease-in-out infinite}
+.pop{animation:pop .3s cubic-bezier(.2,.9,.3,1.2) both}
+.toast{animation:slidein .35s ease-out both}
+.rail{background:repeating-linear-gradient(180deg,rgba(167,139,250,.6) 0 8px,transparent 8px 14px);animation:flowv 1.2s linear infinite}
+.tab{transition:background .2s,color .2s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{T.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover;filter:{{T.bgFilter}}">
+<div aria-hidden="true" style="position:absolute;inset:0;background:{{T.veil}}"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="40">
+<span class="tw" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:{{T.star}};animation-delay:{{s.d}}s"></span>
+</sc-for>
+
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:{{T.text}}">KnowFlow</span>
+<span style="height:28px;padding:0 12px;border-radius:14px;background:rgba(245,158,11,.14);border:1px solid rgba(252,211,77,.7);box-shadow:inset 0 0 10px rgba(245,158,11,.3),0 0 12px rgba(245,158,11,.3);color:{{T.warnText}};font-size:12px;font-weight:700;display:flex;align-items:center">Trạm quản trị</span>
+</div>
+
+<div style="position:absolute;right:28px;top:16px;display:flex;align-items:center;gap:10px">
+<a href="C20-Inbox.dc.html" aria-label="Thông báo · 3 chưa đọc" class="gls" style="position:relative;width:48px;height:48px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;justify-content:center;color:{{T.text}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position:absolute;right:11px;top:10px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="gls" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;font:600 15px 'Space Grotesk',sans-serif;color:{{T.text}}">⌘ K</a>
+</div>
+
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:{{T.railBg}};backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<nav aria-label="Quản trị" class="arail" style="position:absolute;left:10px;top:230px;width:52px;display:flex;flex-direction:column;align-items:center;gap:10px">
+<a href="A01-AdminReview.dc.html" aria-label="Hàng duyệt" title="Hàng duyệt" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7M15 16l2.5 2.5L22 14"/></svg></a>
+<a href="A02-AdminContent.dc.html" aria-label="Nội dung" title="Nội dung" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10.5" ry="3.5" transform="rotate(-20 12 12)"/></svg></a>
+<a href="A03-AdminApi.dc.html" aria-label="API" title="API" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></a>
+<span aria-hidden="true" style="width:26px;height:1px;background:rgba(196,181,253,.4);margin:4px 0"></span>
+<a href="C19-Settings.dc.html" aria-label="Cài đặt workspace" title="Cài đặt workspace" aria-current="page" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;background:{{T.primary}};color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+<a href="C09-Universe.dc.html" aria-label="Về vũ trụ" title="Về vũ trụ" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+</nav>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+
+<div style="position:absolute;left:104px;top:84px;right:28px;display:flex;flex-direction:column;gap:14px">
+<div>
+<h1 style="margin:0;font-family:'Inter',sans-serif;font-weight:700;font-size:34px;letter-spacing:-.8px;background:linear-gradient(90deg,#7DD3FC 0%,#60A5FA 36%,#A78BFA 70%,#D8B4FE 100%);-webkit-background-clip:text;background-clip:text;color:transparent">Cài đặt workspace</h1>
+<span style="font-size:14px;color:{{T.muted}}">Thành viên, vai trò, đăng nhập, tích hợp, API và nhật ký</span>
+</div>
+<div role="tablist" aria-label="Mục cài đặt" style="display:flex;gap:6px;padding:5px;border-radius:24px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(16px);align-self:flex-start">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="6">
+<button class="tab" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="height:42px;padding:0 16px;border-radius:20px;border:1.5px solid {{t.bd}};background:{{t.bg}};color:{{t.col}};font:600 13px 'Inter',sans-serif;cursor:pointer">{{t.n}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{v.members}}" hint-placeholder-val="{{true}}">
+<div class="pop" style="display:flex;gap:16px">
+<section class="glass" aria-label="Thành viên" style="flex:1;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:13px;font-weight:700;color:{{T.muted}}">4 thành viên</span>
+<sc-for list="{{members}}" as="m" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;background:{{T.bg2}}">
+<span aria-hidden="true" style="width:44px;height:44px;border-radius:50%;background:{{m.c}};color:#FFFFFF;font-weight:700;display:flex;align-items:center;justify-content:center">{{m.i}}</span>
+<div style="flex:1"><div style="font-weight:700;font-size:15px">{{m.n}}</div><div style="font-size:12px;color:{{T.muted}}">[EMAIL] · {{m.last}}</div></div>
+<span style="height:30px;padding:0 12px;border-radius:15px;background:{{m.rbg}};color:{{m.rcol}};font-size:12px;font-weight:700;display:flex;align-items:center">{{m.role}}</span>
+<button onClick="{{m.change}}" disabled="{{m.locked}}" style="height:44px;padding:0 14px;border-radius:14px;border:1px solid {{T.border}};background:none;color:{{T.text}};font:600 13px 'Inter',sans-serif;cursor:pointer;opacity:{{m.op}}">Đổi vai trò</button>
+<button onClick="{{m.remove}}" disabled="{{m.locked}}" aria-label="Gỡ {{m.n}}" style="height:44px;padding:0 14px;border-radius:14px;border:none;background:none;color:{{T.warnText}};font:600 13px 'Inter',sans-serif;cursor:pointer;opacity:{{m.op}}">Gỡ</button>
+</div>
+</sc-for>
+</section>
+<section class="glass" aria-label="Mời thành viên" style="width:380px;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px">
+<span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700">Mời bằng link</span>
+<span style="font-size:13px;color:{{T.muted}}">Hệ thống không gửi email. Gửi link này qua chat; người nhận đăng nhập bằng tài khoản hoandat là vào.</span>
+<div style="display:flex;align-items:center;gap:8px;height:50px;padding:0 6px 0 14px;border-radius:16px;background:{{T.bg2}};border:1px solid {{T.border}}">
+<span style="flex:1;font-size:13px;font-weight:600">kb.hoandat.com/i/[MÃ MỜI]</span>
+<button onClick="{{copyInvite}}" style="height:40px;padding:0 14px;border-radius:12px;{{T.btnP}};font:700 13px 'Inter',sans-serif;cursor:pointer">{{inviteLabel}}</button>
+</div>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">Vai trò khi vào
+<select style="height:44px;padding:0 12px;border-radius:14px;border:1px solid {{T.border}};background:{{T.surfaceSolid}};color:{{T.text}};font:500 14px 'Inter',sans-serif"><option>Thành viên</option><option>Người duyệt</option></select>
+</label>
+<span style="font-size:12px;color:{{T.muted}}">Link hết hạn sau [THỜI HẠN LINK MỜI]</span>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{v.roles}}" hint-placeholder-val="{{false}}">
+<section class="glass pop" aria-label="Vai trò và quyền" style="border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:8px;max-width:900px">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;font-size:13px;font-weight:700;color:{{T.muted}};padding:0 12px"><span>Quyền</span><span>Quản trị</span><span>Người duyệt</span><span>Thành viên</span></div>
+<sc-for list="{{matrix}}" as="r" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-items:center;padding:10px 12px;border-radius:14px;background:{{T.bg2}};font-size:14px">
+<span style="font-weight:600">{{r.n}}</span>
+<sc-for list="{{r.cells}}" as="c" hint-placeholder-count="3">
+<span style="display:flex;align-items:center;gap:6px;color:{{c.col}};font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="{{c.icon}}"/></svg>{{c.t}}</span>
+</sc-for>
+</div>
+</sc-for>
+<span style="font-size:12px;color:{{T.muted}}">Bài gửi bởi Thành viên chỉ hiện công khai sau khi Quản trị hoặc Người duyệt duyệt.</span>
+</section>
+</sc-if>
+
+<sc-if value="{{v.sso}}" hint-placeholder-val="{{false}}">
+<div class="pop" style="display:flex;gap:16px;max-width:1000px">
+<section class="glass" aria-label="Đăng nhập một lần" style="flex:1;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px">
+<span aria-hidden="true" style="width:52px;height:52px;border-radius:16px;background:radial-gradient(circle at 35% 30%,#C4B5FD,#7C3AED 60%,#3B0F8C);display:flex;align-items:center;justify-content:center;color:#FFFFFF;font:700 18px 'Space Grotesk'">hd</span>
+<div style="flex:1"><div style="font-weight:700;font-size:17px">auth.hoandat.com</div><div style="font-size:13px;color:{{T.muted}}">OpenID Connect · nhà cung cấp đăng nhập duy nhất</div></div>
+<span style="height:30px;padding:0 12px;border-radius:15px;background:rgba(16,185,129,.18);color:{{T.successText}};font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:{{T.success}}"></span>Đã kết nối</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;font-size:13px">
+<div style="padding:12px;border-radius:14px;background:{{T.bg2}}"><div style="color:{{T.muted}}">Client</div><div style="font-weight:700">kb</div></div>
+<div style="padding:12px;border-radius:14px;background:{{T.bg2}}"><div style="color:{{T.muted}}">Lần kiểm gần nhất</div><div style="font-weight:700">21:40 · ổn</div></div>
+</div>
+</section>
+<section class="glass" aria-label="Chính sách phiên" style="flex:1;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<span style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700">Chính sách phiên</span>
+<sc-for list="{{policies}}" as="p" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:{{T.bg2}}">
+<div style="flex:1"><div style="font-size:14px;font-weight:600">{{p.n}}</div><div style="font-size:12px;color:{{T.muted}}">{{p.s}}</div></div>
+<button role="switch" aria-checked="{{p.aria}}" aria-label="{{p.n}}" onClick="{{p.flip}}" disabled="{{p.locked}}" style="width:52px;height:30px;padding:0;border:none;border-radius:15px;background:{{p.bg}};position:relative;cursor:pointer"><span style="position:absolute;top:3px;left:{{p.x}}px;width:24px;height:24px;border-radius:50%;background:#FFFFFF"></span></button>
+</div>
+</sc-for>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{v.integrations}}" hint-placeholder-val="{{false}}">
+<div class="pop" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:1000px">
+<sc-for list="{{integrations}}" as="g" hint-placeholder-count="4">
+<section class="glass" aria-label="{{g.n}}" style="border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:12px">
+<span aria-hidden="true" style="width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,{{g.c}} 55%);box-shadow:0 0 18px {{g.c}}"></span>
+<div style="flex:1"><div style="font-weight:700;font-size:16px">{{g.n}}</div><div style="font-size:12px;color:{{T.muted}}">{{g.role}}</div></div>
+<span style="height:30px;padding:0 12px;border-radius:15px;background:{{g.sbg}};color:{{g.scol}};font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:{{g.scol}}"></span>{{g.status}}</span>
+</div>
+<span style="font-size:13px;color:{{T.muted}}">{{g.detail}}</span>
+<button onClick="{{g.check}}" style="align-self:flex-start;height:40px;padding:0 14px;border-radius:12px;border:1px solid {{T.border}};background:none;color:{{T.text}};font:600 13px 'Inter',sans-serif;cursor:pointer">{{g.btn}}</button>
+</section>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{v.api}}" hint-placeholder-val="{{false}}">
+<section class="glass pop" aria-label="API keys" style="max-width:760px;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px">
+<span aria-hidden="true" style="width:48px;height:48px;border-radius:14px;background:rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;color:{{T.warnText}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/></svg></span>
+<div style="flex:1"><div style="font-weight:700;font-size:16px">Token quản trị</div><div style="font-size:13px;color:{{T.muted}}">••••[4 KÝ TỰ CUỐI] · tạo [NGÀY TẠO] · gọi gần nhất 21:32 (201)</div></div>
+<span style="height:30px;padding:0 12px;border-radius:15px;background:rgba(16,185,129,.18);color:{{T.successText}};font-size:12px;font-weight:700;display:flex;align-items:center">Đang dùng</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<span style="height:34px;padding:0 12px;border-radius:17px;background:{{T.bg2}};font:600 12px 'Space Grotesk';display:flex;align-items:center">POST /api/admin/posts</span>
+<span style="height:34px;padding:0 12px;border-radius:17px;background:{{T.bg2}};font:600 12px 'Space Grotesk';display:flex;align-items:center">PATCH /api/admin/posts/:id</span>
+<span style="height:34px;padding:0 12px;border-radius:17px;background:{{T.bg2}};font:600 12px 'Space Grotesk';display:flex;align-items:center">GET /api/admin/review</span>
+</div>
+<span style="font-size:13px;color:{{T.muted}}">Token chỉ hiện một lần lúc tạo; server chỉ lưu bản băm. Key AI riêng của từng người nằm ở Key riêng, không ở đây.</span>
+<a href="A03-AdminApi.dc.html" style="align-self:flex-start;text-decoration:none;height:44px;padding:0 18px;border-radius:22px;box-sizing:border-box;{{T.btnP}};font-size:14px;font-weight:700;display:flex;align-items:center">Mở trang API</a>
+</section>
+</sc-if>
+
+<sc-if value="{{v.audit}}" hint-placeholder-val="{{false}}">
+<section class="glass pop" aria-label="Nhật ký kiểm toán" style="max-width:1000px;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px">
+<div role="group" aria-label="Lọc nhật ký" style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+<button onClick="{{f.pick}}" aria-pressed="{{f.sel}}" style="height:38px;padding:0 14px;border-radius:19px;border:1px solid {{f.bd}};background:{{f.bg}};color:{{f.col}};font:600 13px 'Inter',sans-serif;cursor:pointer">{{f.n}}</button>
+</sc-for>
+</div>
+<div style="display:flex;gap:16px">
+<div class="rail" aria-hidden="true" style="width:3px;border-radius:2px"></div>
+<ol style="list-style:none;margin:0;padding:0;flex:1;display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{logs}}" as="l" hint-placeholder-count="6">
+<li style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:{{T.bg2}}">
+<span style="width:52px;font:700 13px 'Space Grotesk';color:{{T.muted}}">{{l.t}}</span>
+<span aria-hidden="true" style="width:32px;height:32px;border-radius:50%;background:{{l.c}};color:#FFFFFF;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center">{{l.i}}</span>
+<span style="flex:1;font-size:14px">{{l.what}}</span>
+<span style="height:26px;padding:0 10px;border-radius:13px;background:{{T.surface}};border:1px solid {{T.border}};font-size:11px;font-weight:700;display:flex;align-items:center">{{l.cat}}</span>
+</li>
+</sc-for>
+</ol>
+</div>
+</section>
+</sc-if>
+</div>
+
+<sc-if value="{{modal.on}}" hint-placeholder-val="{{false}}">
+<div style="position:absolute;inset:0;background:rgba(6,4,26,.6);display:flex;align-items:center;justify-content:center">
+<div class="pop glass" role="dialog" aria-modal="true" aria-label="{{modal.title}}" style="width:440px;border-radius:28px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px">
+<span style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700">{{modal.title}}</span>
+<span style="font-size:14px;color:{{T.muted}}">{{modal.body}}</span>
+<sc-if value="{{modal.isRole}}" hint-placeholder-val="{{true}}">
+<div role="radiogroup" aria-label="Vai trò mới" style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{roleOpts}}" as="o" hint-placeholder-count="3">
+<button role="radio" aria-checked="{{o.sel}}" onClick="{{o.pick}}" style="height:48px;padding:0 14px;border-radius:14px;border:2px solid {{o.bd}};background:{{o.bg}};color:{{T.text}};font:600 14px 'Inter',sans-serif;cursor:pointer;text-align:left">{{o.n}} <span style="font-weight:500;color:{{T.muted}};font-size:12px">· {{o.s}}</span></button>
+</sc-for>
+</div>
+</sc-if>
+<div style="display:flex;gap:8px;justify-content:flex-end">
+<button onClick="{{closeModal}}" style="height:46px;padding:0 18px;border-radius:23px;border:1px solid {{T.border}};background:none;color:{{T.text}};font:600 14px 'Inter',sans-serif;cursor:pointer">Huỷ</button>
+<button onClick="{{confirmModal}}" style="height:46px;padding:0 20px;border-radius:23px;{{modal.btnSt}};font:700 14px 'Inter',sans-serif;cursor:pointer">{{modal.btn}}</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{toast.on}}" hint-placeholder-val="{{false}}">
+<div class="toast" role="status" key="{{toast.k}}" style="position:absolute;right:28px;top:84px;width:380px;box-sizing:border-box;padding:14px 16px;border-radius:20px;background:{{T.surfaceSolid}};border:1px solid {{T.success}};display:flex;align-items:center;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.3)">
+<span aria-hidden="true" style="width:36px;height:36px;border-radius:50%;background:rgba(16,185,129,.2);color:{{T.successText}};display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></span>
+<div style="flex:1"><div style="font-weight:700;font-size:14px">Quyền đã thay đổi</div><div style="font-size:12px;color:{{T.muted}}">{{toast.msg}}</div></div>
+<button onClick="{{closeToast}}" aria-label="Đóng thông báo" style="width:44px;height:44px;border-radius:50%;border:none;background:none;color:{{T.muted}};cursor:pointer">×</button>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { theme: 'dark', tab: 0, roles: ['Quản trị', 'Người duyệt', 'Thành viên', 'Thành viên'], removed: [false, false, false, false],
+      modal: null, pick: 'Người duyệt', toast: null, invite: false, filter: 0, pol: [true, true, false], chk: -1 };
+  }
+  renderVals() {
+    var self = this, st = this.state, dark = st.theme === 'dark';
+    var D = { cls: 'dk', bgFilter: 'none', veil: 'linear-gradient(180deg,rgba(6,4,26,.72),rgba(6,4,26,.86))', railBg: 'linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%)', btnP: 'background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75)', btnS: 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#F5F3FF', bg: '#06041A', bg2: 'rgba(22,17,54,.7)', surface: 'rgba(30,20,72,.55)', surfaceSolid: '#1A1146', border: 'rgba(167,139,250,.28)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', accent: '#22D3EE', success: '#10B981', successText: '#6EE7B7', warn: '#F59E0B', warnText: '#FCD34D', star: '#FFFFFF', nebula: 'rgba(124,58,237,.25)' };
+    var L = { cls: 'lt', bgFilter: 'brightness(1.55) saturate(.75) hue-rotate(-8deg)', veil: 'linear-gradient(180deg,rgba(247,245,255,.82),rgba(236,232,255,.9))', railBg: 'linear-gradient(180deg,rgba(255,255,255,.72),rgba(237,233,254,.6))', btnP: 'background:#6D28D9;border:1.5px solid #6D28D9;color:#FFFFFF;box-shadow:0 0 12px rgba(109,40,217,.35)', btnS: 'background:#FFFFFF;border:1px solid rgba(109,40,217,.25);color:#1A1033', bg: '#F7F5FF', bg2: '#ECE8FF', surface: 'rgba(255,255,255,.78)', surfaceSolid: '#FFFFFF', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', accent: '#0E7490', success: '#047857', successText: '#047857', warn: '#B45309', warnText: '#92400E', star: '#C4B5FD', nebula: 'rgba(124,58,237,.10)' };
+    var T = dark ? D : L;
+    var TABS = ['Thành viên', 'Vai trò & quyền', 'Đăng nhập', 'Tích hợp', 'API keys', 'Nhật ký kiểm toán'];
+    var tabs = TABS.map(function (n, i) { var on = st.tab === i; return { n: n, sel: on ? 'true' : 'false', bg: on ? 'linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);box-shadow:inset 0 0 10px rgba(196,181,253,.4),0 0 12px rgba(139,92,246,.6)' : 'transparent', bd: on ? 'rgba(196,181,253,.9)' : 'transparent', col: on ? '#FFFFFF' : T.muted, pick: function () { self.setState({ tab: i }); } }; });
+    var roleStyle = function (r) {
+      if (r === 'Quản trị') return { bg: 'rgba(245,158,11,.2)', col: T.warnText };
+      if (r === 'Người duyệt') return { bg: 'rgba(34,211,238,.18)', col: dark ? '#67E8F9' : '#0E7490' };
+      return { bg: 'rgba(124,58,237,.22)', col: dark ? '#DDD6FE' : '#6D28D9' };
+    };
+    var P = [['Đạt', 'Đ', '#7C3AED', 'vừa xong'], ['Linh', 'L', '#0E7490', '21:10'], ['Minh', 'M', '#B45309', 'hôm qua'], ['An', 'A', '#047857', '20:30']];
+    var members = [];
+    P.forEach(function (p, i) {
+      if (st.removed[i]) return;
+      var r = st.roles[i], rs = roleStyle(r), locked = i === 0;
+      members.push({ n: p[0], i: p[1], c: p[2], last: p[3], role: r, rbg: rs.bg, rcol: rs.col, locked: locked, op: locked ? 0.4 : 1,
+        change: function () { self.setState({ modal: { kind: 'role', idx: i }, pick: r }); },
+        remove: function () { self.setState({ modal: { kind: 'remove', idx: i } }); } });
+    });
+    var ok = { icon: 'M5 12l5 5 9-10', t: 'Có', col: T.successText };
+    var no = { icon: 'M6 12h12', t: 'Không', col: T.muted };
+    var M = [['Đọc nội dung', [1, 1, 1]], ['Gửi bài', [1, 1, 1]], ['Duyệt bài', [1, 1, 0]], ['Ẩn / hiện bài', [1, 0, 0]], ['Quản lý thành viên', [1, 0, 0]], ['API đăng bài', [1, 0, 0]]];
+    var matrix = M.map(function (r) { return { n: r[0], cells: r[1].map(function (c) { return c ? ok : no; }) }; });
+    var PO = [['Đăng xuất ở IdP thì phiên KnowFlow cũng kết thúc', 'Phiên chết theo phiên ở auth.hoandat.com', true], ['Chỉ đăng nhập bằng tài khoản hoandat', 'Không có mật khẩu riêng của KnowFlow', true], ['Hết phiên sau [THỜI HẠN PHIÊN] không hoạt động', 'Tắt = theo mặc định của IdP', false]];
+    var policies = PO.map(function (p, i) {
+      var on = st.pol[i], locked = i === 1;
+      return { n: p[0], s: p[1], aria: on ? 'true' : 'false', bg: on ? T.primary : 'rgba(167,139,250,.3)', x: on ? 25 : 3, locked: locked,
+        flip: function () { var a = st.pol.slice(); a[i] = !a[i]; self.setState({ pol: a }); } };
+    });
+    var G = [
+      ['Học Cloud', 'Nguồn nội dung · chép một lần', 'Đã đồng bộ', '8 lab, 3 bài tập, 5 tuần học · lần chép gần nhất [NGÀY]', '#7C3AED'],
+      ['Jev · TypeSafe', 'Tìm theo nghĩa, kiểm trích dẫn, sơ duyệt', 'Đang chạy', 'Hôm nay [SỐ] / trần [SỐ] request · chạm trần thì chỉ tìm từ khoá', '#10B981'],
+      ['Cloudflare R2', 'Lưu file Office', 'Đang chạy', 'Đã dùng [DUNG LƯỢNG]', '#F59E0B'],
+      ['Meilisearch', 'Chỉ mục tìm kiếm công khai', 'Khoẻ', 'Chỉ chứa bài đã duyệt và đang hiện · [SỐ] tài liệu', '#06B6D4']
+    ];
+    var integrations = G.map(function (g, i) {
+      var checking = st.chk === i;
+      return { n: g[0], role: g[1], status: checking ? 'Đang kiểm…' : g[2], detail: g[3], c: g[4],
+        sbg: checking ? 'rgba(124,58,237,.22)' : 'rgba(16,185,129,.18)', scol: checking ? T.muted : T.successText,
+        btn: checking ? 'Xong' : 'Kiểm tra kết nối',
+        check: function () { self.setState({ chk: checking ? -1 : i }); } };
+    });
+    var F = ['Tất cả', 'Thành viên', 'Nội dung', 'API', 'Đăng nhập'];
+    var filters = F.map(function (n, i) { var on = st.filter === i; return { n: n, sel: on ? 'true' : 'false', bd: on ? 'rgba(196,181,253,.9)' : T.border, bg: on ? 'linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);box-shadow:inset 0 0 10px rgba(196,181,253,.4),0 0 12px rgba(139,92,246,.6)' : 'transparent', col: on ? '#FFFFFF' : T.text, pick: function () { self.setState({ filter: i }); } }; });
+    var LOGS = [
+      ['21:40', 'Đ', '#7C3AED', 'Đạt đổi vai trò Linh → Người duyệt', 'Thành viên'],
+      ['21:32', 'AI', '#6D28D9', 'API tạo bài "DNS bằng hình" · 201', 'API'],
+      ['21:10', 'L', '#0E7490', 'Linh duyệt "TCP vs UDP bằng hình"', 'Nội dung'],
+      ['20:55', 'Đ', '#7C3AED', 'Đạt ẩn bài "Ghi chú: swap trên Ubuntu"', 'Nội dung'],
+      ['20:30', 'A', '#047857', 'An đăng nhập qua auth.hoandat.com', 'Đăng nhập'],
+      ['19:02', 'Đ', '#7C3AED', 'Đạt tạo token API mới, token cũ bị thu hồi', 'API']
+    ];
+    var logs = LOGS.filter(function (l) { return st.filter === 0 || l[4] === F[st.filter]; }).map(function (l) { return { t: l[0], i: l[1], c: l[2], what: l[3], cat: l[4] }; });
+    var modal = { on: false, title: '', body: '', isRole: false, btn: '', btnSt: T.btnP };
+    if (st.modal) {
+      var who = P[st.modal.idx][0];
+      if (st.modal.kind === 'role') modal = { on: true, isRole: true, title: 'Đổi vai trò của ' + who, body: 'Quyền mới có hiệu lực ngay ở lần tải trang tiếp theo của ' + who + '.', btn: 'Đổi vai trò', btnSt: T.btnP };
+      else modal = { on: true, isRole: false, title: 'Gỡ ' + who + ' khỏi workspace?', body: 'Bài đã duyệt của ' + who + ' vẫn giữ. Bài riêng tư và chờ duyệt bị ẩn.', btn: 'Gỡ thành viên', btnSt: 'background:' + T.warn + ';border:1.5px solid ' + T.warn + ';color:#1C1206' };
+    }
+    var RO = [['Người duyệt', 'duyệt và từ chối bài'], ['Thành viên', 'đọc và gửi bài']];
+    var roleOpts = RO.map(function (o) { var on = st.pick === o[0]; return { n: o[0], s: o[1], sel: on ? 'true' : 'false', bd: on ? T.primary : T.border, bg: on ? 'rgba(124,58,237,.18)' : 'transparent', pick: function () { self.setState({ pick: o[0] }); } }; });
+    var stars = []; for (var j = 0; j < 40; j++) { stars.push({ x: (j * 211) % 1440, y: (j * 97 + 31) % 900, r: j % 4 === 0 ? 2 : 1, d: (j % 9) * 0.35 }); }
+    return {
+      T: T, stars: stars, tabs: tabs, members: members, matrix: matrix, policies: policies, integrations: integrations, filters: filters, logs: logs, roleOpts: roleOpts, modal: modal,
+      v: { members: st.tab === 0, roles: st.tab === 1, sso: st.tab === 2, integrations: st.tab === 3, api: st.tab === 4, audit: st.tab === 5 },
+      themeLabel: dark ? 'Sáng' : 'Tối',
+      themeIcon: dark ? 'M12 4V2M12 22v-2M4 12H2M22 12h-2M5 5L3.5 3.5M20.5 20.5L19 19M5 19l-1.5 1.5M20.5 3.5L19 5M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z' : 'M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z',
+      inviteLabel: st.invite ? 'Đã chép' : 'Sao chép',
+      toast: st.toast ? { on: true, k: st.toast.k, msg: st.toast.msg } : { on: false, k: 0, msg: '' },
+      toggleTheme: function () { self.setState({ theme: dark ? 'light' : 'dark' }); },
+      copyInvite: function () { self.setState({ invite: true }); },
+      closeModal: function () { self.setState({ modal: null }); },
+      closeToast: function () { self.setState({ toast: null }); },
+      confirmModal: function () {
+        var m = st.modal; if (!m) return;
+        var who = P[m.idx][0];
+        if (m.kind === 'role') { var r = st.roles.slice(); r[m.idx] = st.pick; self.setState({ roles: r, modal: null, toast: { k: Date.now(), msg: who + ' giờ là ' + st.pick + ' · đã ghi vào nhật ký' } }); }
+        else { var rm = st.removed.slice(); rm[m.idx] = true; self.setState({ removed: rm, modal: null, toast: { k: Date.now(), msg: 'Đã gỡ ' + who + ' · đã ghi vào nhật ký' } }); }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

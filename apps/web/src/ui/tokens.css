@@ -1,0 +1,95 @@
+/* =====================================================================
+   KNOWFLOW DESIGN TOKENS: Universe
+   Taken from the approved mock board C09 (design/KIT-universe-style.txt):
+   a deep-space night (Tối) and a lavender day (Sáng). The theme follows the
+   system (prefers-color-scheme) until Settings can pick one.
+
+   This file holds the ONLY colour literals of the web app (checked by
+   `pnpm check:tokens` and `pnpm check:brand`). Each theme declares its
+   colours once under its own prefix (--dark-*, --light-*); the semantic
+   tokens (--c-*) point at the active theme. `pnpm check:tokens` checks the
+   text and focus pairs of both themes at WCAG AA.
+   ===================================================================== */
+
+:root {
+  /* type: Space Grotesk for titles, Inter for the rest, both self-hosted (@fontsource, main.tsx) */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+
+  /* spacing and radii of the mock */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --radius-md: 16px;
+  --radius-lg: 28px;
+  --radius-full: 999px;
+  --tap: 44px;
+
+  /* Tối: the board's dark theme */
+  --dark-bg: #06041a;
+  --dark-surface: #1a1440; /* a rim panel's interior over the night sky, as an opaque colour for contrast checks */
+  --dark-text: #f5f3ff;
+  --dark-muted: #c4b5fd;
+  --dark-primary: #7c3aed;
+  --dark-on-primary: #ffffff;
+  --dark-focus: #22d3ee;
+  --dark-star: #ffffff;
+  --dark-veil:
+    radial-gradient(ellipse 380px 260px at 250px 190px, rgb(6 4 26 / 0.62) 0%, rgb(6 4 26 / 0.35) 55%, rgb(6 4 26 / 0) 100%),
+    linear-gradient(90deg, rgb(6 4 26 / 0.35), rgb(6 4 26 / 0) 40%, rgb(6 4 26 / 0.15));
+  --dark-glass: rgb(24 16 64 / 0.52);
+  --dark-glass-border: rgb(167 139 250 / 0.32);
+  --dark-logo-from: #7c3aed;
+  --dark-logo-to: #a78bfa;
+
+  /* Sáng: the board's light theme (the same landscape, brightened) */
+  --light-bg: #f7f5ff;
+  --light-surface: #ffffff;
+  --light-text: #1a1033;
+  --light-muted: #5b4b8a;
+  --light-primary: #6d28d9;
+  --light-on-primary: #ffffff;
+  --light-focus: #0e7490;
+  --light-star: #ffffff;
+  --light-veil: linear-gradient(180deg, rgb(247 245 255 / 0.55), rgb(236 232 255 / 0.35));
+  --light-glass: rgb(255 255 255 / 0.62);
+  --light-glass-border: rgb(109 40 217 / 0.22);
+
+  color-scheme: dark;
+  --c-bg: var(--dark-bg);
+  --c-surface: var(--dark-surface);
+  --c-text: var(--dark-text);
+  --c-text-muted: var(--dark-muted);
+  --c-primary: var(--dark-primary);
+  --c-on-primary: var(--dark-on-primary);
+  --c-focus: var(--dark-focus);
+  --c-star: var(--dark-star);
+  --c-veil: var(--dark-veil);
+  --c-glass: var(--dark-glass);
+  --c-glass-border: var(--dark-glass-border);
+  --c-logo-from: var(--dark-logo-from);
+  --c-logo-to: var(--dark-logo-to);
+  --bg-filter: none;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --c-bg: var(--light-bg);
+    --c-surface: var(--light-surface);
+    --c-text: var(--light-text);
+    --c-text-muted: var(--light-muted);
+    --c-primary: var(--light-primary);
+    --c-on-primary: var(--light-on-primary);
+    --c-focus: var(--light-focus);
+    --c-star: var(--light-star);
+    --c-veil: var(--light-veil);
+    --c-glass: var(--light-glass);
+    --c-glass-border: var(--light-glass-border);
+    --bg-filter: brightness(1.55) saturate(0.75) hue-rotate(-8deg);
+  }
+}

@@ -1,0 +1,193 @@
+/* Base of every screen: the Universe backdrop of design/KIT-universe-style.txt and the few pieces the empty
+   screens need. Colours come from tokens.css only. The full component kit is built on top of this. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--c-text-muted);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: 10;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.skip-link:focus {
+  top: var(--space-4);
+}
+
+/* --- The backdrop (KIT §2): landscape, veil, stars --- */
+
+.universe {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+.universe-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: var(--bg-filter);
+}
+
+.universe-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--c-veil);
+}
+
+.universe-star {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--c-star);
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- Logo (KIT §3) --- */
+
+.brand-logo {
+  position: absolute;
+  left: 44px;
+  top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  z-index: 1;
+}
+
+.brand-logo-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--c-text);
+}
+
+/* --- An empty screen: a glass card in the middle --- */
+
+.screen {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 96px var(--space-4) var(--space-6);
+}
+
+.glass-card {
+  width: min(480px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--c-glass);
+  border: 1px solid var(--c-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.screen-code {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--c-text-muted);
+}
+
+.screen-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 32px;
+}
+
+.screen-lead,
+.screen-note,
+.notice {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.screen-note {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.btn-primary,
+.btn-ghost {
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-md);
+  font: 600 15px var(--font-sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  border: 0;
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.btn-ghost {
+  border: 1px solid var(--c-glass-border);
+  background: transparent;
+  color: var(--c-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+# Share links are private to the people they were sent to.
+Disallow: /l/
+
+Sitemap: https://kb.hoandat.com/sitemap.xml

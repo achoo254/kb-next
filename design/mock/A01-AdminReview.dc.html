@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Hàng duyệt</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lt .glass{background:rgba(255,255,255,.86)!important;border-color:rgba(109,40,217,.3)!important;box-shadow:inset 0 0 18px rgba(139,92,246,.12),0 0 24px rgba(124,58,237,.12)!important}
+.gls{background:rgba(24,16,64,.52);border:1px solid rgba(167,139,250,.32);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lt .gls{background:rgba(255,255,255,.62);border-color:rgba(109,40,217,.22)}
+@keyframes twk{0%,100%{opacity:.2}50%{opacity:1}}
+.tw{animation:twk 3.2s ease-in-out infinite}
+.nav a:hover,.arail a:hover{background:rgba(124,58,237,.25)}
+a:focus-visible,button:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt a:focus-visible,.lt button:focus-visible{outline-color:#0E7490}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes toast{0%{transform:translate(-50%,20px);opacity:0}12%{transform:translate(-50%,0);opacity:1}85%{opacity:1}100%{opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.star{animation:twinkle 3.4s ease-in-out infinite}
+.pv{animation:rise .45s ease-out both}
+.bar{animation:grow .8s cubic-bezier(.2,.9,.3,1) both;transform-origin:left}
+.toast{animation:toast 3s ease-out both}
+.fl{animation:float 5s ease-in-out infinite}
+.ring{animation:spin 18s linear infinite}
+.q{transition:transform .2s,background .2s}
+.q:hover{transform:translateX(4px)}
+.lt .star{background:#A78BFA!important}
+.lt a{color:#6D28D9}
+.lt input,.lt textarea,.lt select{color:#1A1033!important}
+.lt :focus-visible{outline:2px solid #0E7490;outline-offset:2px}
+:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{TH.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:{{TH.bg}};color:{{TH.text}};font-family:'Inter',system-ui,sans-serif">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover;filter:{{TH.bgFilter}}">
+<div aria-hidden="true" style="position:absolute;inset:0;background:{{TH.veil}}"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="40">
+<span class="tw" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:#FFFFFF;animation-delay:{{s.d}}s"></span>
+</sc-for>
+
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:{{TH.text}}">KnowFlow</span>
+<span style="height:28px;padding:0 12px;border-radius:14px;background:rgba(245,158,11,.14);border:1px solid rgba(252,211,77,.7);box-shadow:inset 0 0 10px rgba(245,158,11,.3),0 0 12px rgba(245,158,11,.3);color:{{TH.warnText}};font-size:12px;font-weight:700;display:flex;align-items:center">Trạm quản trị</span>
+</div>
+
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:{{TH.railBg}};backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<nav aria-label="Quản trị" class="arail" style="position:absolute;left:10px;top:230px;width:52px;display:flex;flex-direction:column;align-items:center;gap:10px">
+<a href="A01-AdminReview.dc.html" aria-label="Hàng duyệt" title="Hàng duyệt" aria-current="page" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;background:{{TH.primary}};color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7M15 16l2.5 2.5L22 14"/></svg></a>
+<a href="A02-AdminContent.dc.html" aria-label="Nội dung" title="Nội dung" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{TH.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10.5" ry="3.5" transform="rotate(-20 12 12)"/></svg></a>
+<a href="A03-AdminApi.dc.html" aria-label="API" title="API" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{TH.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></a>
+<span aria-hidden="true" style="width:26px;height:1px;background:rgba(196,181,253,.4);margin:4px 0"></span>
+<a href="C19-Settings.dc.html" aria-label="Cài đặt workspace" title="Cài đặt workspace" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{TH.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+<a href="C09-Universe.dc.html" aria-label="Về vũ trụ" title="Về vũ trụ" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;color:{{TH.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+</nav>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+
+<div style="position:absolute;right:28px;top:16px;display:flex;align-items:center;gap:10px">
+<span style="font-size:12px;color:{{TH.muted}}">Phím: J/K chuyển · A duyệt · R từ chối</span>
+<button onClick="{{toggleEmpty}}" class="glass" style="height:44px;padding:0 14px;border-radius:22px;color:{{TH.text}};font:600 12px 'Inter',sans-serif;cursor:pointer">{{emptyLabel}}</button>
+<a href="C20-Inbox.dc.html" aria-label="Thông báo · 3 chưa đọc" class="gls" style="position:relative;width:48px;height:48px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;justify-content:center;color:{{TH.text}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span aria-hidden="true" style="position:absolute;right:11px;top:10px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="gls" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;font:600 15px 'Space Grotesk',sans-serif;color:{{TH.text}}">⌘ K</a>
+</div>
+
+<section aria-label="Hàng chờ" class="glass" style="position:absolute;left:104px;top:84px;width:300px;height:792px;box-sizing:border-box;border-radius:28px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px">Hàng chờ</span>
+<span style="height:28px;padding:0 10px;border-radius:14px;background:#F59E0B;color:#1C1206;font-size:12px;font-weight:700;display:flex;align-items:center">{{count}} chờ duyệt</span>
+</div>
+<div role="group" aria-label="Lọc loại" style="display:flex;gap:4px">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+<button onClick="{{f.pick}}" style="flex:1;height:36px;border-radius:12px;border:1px solid {{f.bd}};background:{{f.bg}};color:{{TH.text}};font:600 11px 'Inter',sans-serif;cursor:pointer">{{f.n}}</button>
+</sc-for>
+</div>
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{true}}">
+<div style="display:flex;flex-direction:column;gap:8px;overflow:hidden">
+<sc-for list="{{queue}}" as="it" hint-placeholder-count="6">
+<button class="q" onClick="{{it.pick}}" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;border:1.5px solid {{it.bd}};background:{{it.bg}};color:{{TH.text}};text-align:left;cursor:pointer;font:inherit">
+<span style="width:40px;height:40px;flex:none;border-radius:50%;background:radial-gradient(circle at 32% 28%,{{it.hi}},{{it.c}} 55%,#1E0A52);box-shadow:0 0 12px {{it.c}}"></span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+<span style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{it.title}}</span>
+<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:{{TH.muted}}"><span style="width:18px;height:18px;border-radius:50%;background:#8B5CF6;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">{{it.a}}</span>{{it.type}} · {{it.time}}</span>
+</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+</section>
+
+<sc-if value="{{hasItems}}" hint-placeholder-val="{{true}}">
+<article class="pv glass" key="{{cur.id}}" style="position:absolute;left:424px;top:84px;width:620px;height:792px;box-sizing:border-box;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px;font-size:12px;color:{{TH.muted}}">
+<span style="height:26px;padding:0 10px;border-radius:13px;background:rgba(245,158,11,.18);color:{{TH.warnText}};font-weight:700;display:flex;align-items:center">Chờ duyệt</span>
+<span style="height:26px;padding:0 10px;border-radius:13px;background:rgba(6,182,212,.18);border:1px solid rgba(6,182,212,.6);color:{{TH.text}};font-weight:700;display:flex;align-items:center">Cộng đồng</span>
+<span>Xem như người đọc</span><span>·</span><span>Gửi bởi {{cur.author}} · {{cur.time}}</span>
+</div>
+<div style="display:flex;gap:20px;align-items:center">
+<span class="fl" aria-hidden="true" style="width:120px;height:120px;flex:none;position:relative">
+<img src="/_blob/5b9a9986d346f25f1a3277a2349f6824" alt="" aria-hidden="true" style="position:absolute;inset:-12px;width:144px;height:144px;object-fit:contain;filter:drop-shadow(0 0 18px {{cur.c}})">
+<span class="ring" style="position:absolute;inset:-14px;border-radius:50%;border:1.5px dashed {{cur.c}}"></span>
+</span>
+<div style="display:flex;flex-direction:column;gap:6px">
+<span style="font-size:12px;font-weight:600;color:{{TH.muted}}">{{cur.type}} · {{cur.lang}}</span>
+<h1 style="margin:0;font-family:'Space Grotesk',sans-serif;font-size:32px;line-height:1.05">{{cur.title}}</h1>
+<span style="font-size:14px;color:{{TH.text}}">{{cur.lead}}</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+<sc-for list="{{cur.blocks}}" as="b" hint-placeholder-count="3">
+<div style="padding:14px;border-radius:18px;background:{{b.bg}};color:#06041A;display:flex;flex-direction:column;gap:4px">
+<span style="font:700 22px 'Space Grotesk'">{{b.k}}</span><span style="font-size:12px;font-weight:600;line-height:1.35">{{b.t}}</span>
+</div>
+</sc-for>
+</div>
+<div style="height:8px;width:94%;border-radius:4px;background:rgba(196,181,253,.18)"></div>
+<div style="height:8px;width:80%;border-radius:4px;background:rgba(196,181,253,.18)"></div>
+<div style="height:8px;width:88%;border-radius:4px;background:rgba(196,181,253,.18)"></div>
+<div style="height:8px;width:62%;border-radius:4px;background:rgba(196,181,253,.18)"></div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:auto">
+<span style="font-size:12px;font-weight:700;color:{{TH.muted}}">Đính kèm và nguồn</span>
+<sc-for list="{{cur.files}}" as="f" hint-placeholder-count="2">
+<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:{{TH.inset}};border:1px solid rgba(167,139,250,.2)">
+<span style="width:28px;height:28px;border-radius:8px;background:{{f.c}};font:700 11px 'Space Grotesk';display:flex;align-items:center;justify-content:center">{{f.k}}</span>
+<span style="flex:1;font-size:13px;font-weight:600">{{f.n}}</span><span style="font-size:11px;color:{{TH.muted}}">{{f.s}}</span>
+</div>
+</sc-for>
+</div>
+</article>
+
+<aside aria-label="Jev sơ duyệt và quyết định" class="glass" style="position:absolute;left:1064px;top:84px;width:352px;height:792px;box-sizing:border-box;border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#A7F3D0,#10B981 60%,#064E3B);box-shadow:0 0 16px rgba(16,185,129,.7)"></span>
+<div><div style="font-weight:700;font-size:15px">Jev sơ duyệt</div><div style="font-size:11px;color:{{TH.muted}}">Chỉ gợi ý · bạn quyết</div></div>
+</div>
+<sc-for list="{{cur.checks}}" as="c" hint-placeholder-count="4">
+<div key="{{c.k}}" style="display:flex;flex-direction:column;gap:5px">
+<div style="display:flex;justify-content:space-between;font-size:12px"><span style="font-weight:600">{{c.n}}</span><span style="font:700 12px 'Space Grotesk';color:{{c.c}}">{{c.v}}</span></div>
+<div style="height:8px;border-radius:4px;background:{{TH.track}};overflow:hidden"><div class="bar" style="width:{{c.w}}%;height:8px;border-radius:4px;background:{{c.c}}"></div></div>
+<span style="font-size:11px;color:{{TH.muted}}">{{c.hint}}</span>
+</div>
+</sc-for>
+<div style="display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:16px;background:{{TH.inset}}">
+<span style="font-size:11px;font-weight:700;color:{{TH.muted}}">Jev gợi ý xếp vào</span>
+<span style="font-size:13px;font-weight:700">{{cur.col}}</span>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{cur.tags}}" as="t" hint-placeholder-count="3"><span style="height:26px;padding:0 10px;border-radius:13px;background:rgba(124,58,237,.35);font-size:11px;font-weight:600;display:flex;align-items:center">{{t}}</span></sc-for></div>
+</div>
+<div style="flex:1"></div>
+<sc-if value="{{rejectOpen}}" hint-placeholder-val="{{false}}">
+<div class="pv" style="display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;background:{{TH.inset}};border:1px solid rgba(245,158,11,.5)">
+<span style="font-size:12px;font-weight:700">{{rj.title}}</span>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{reasons}}" as="r" hint-placeholder-count="4">
+<button onClick="{{r.pick}}" style="height:34px;padding:0 12px;border-radius:17px;border:1px solid {{r.bd}};background:{{r.bg}};color:{{TH.text}};font:600 12px 'Inter',sans-serif;cursor:pointer">{{r.n}}</button>
+</sc-for>
+</div>
+<label style="display:flex;flex-direction:column;gap:4px;font-size:11px;color:{{TH.muted}}">Lời nhắn cho tác giả
+<textarea rows="2" defaultValue="" placeholder="Ví dụ: thêm link tới lab TCP/UDP" style="border-radius:12px;border:1px solid rgba(167,139,250,.35);background:{{TH.surface}};color:{{TH.text}};font:500 13px 'Inter',sans-serif;padding:8px;resize:none;outline:none"></textarea></label>
+<div style="display:flex;gap:6px">
+<button onClick="{{cancelReject}}" style="flex:1;height:40px;border-radius:20px;border:1px solid rgba(167,139,250,.4);background:none;color:{{TH.text}};font:600 13px 'Inter',sans-serif;cursor:pointer">Huỷ</button>
+<button onClick="{{confirmReject}}" style="flex:1;height:40px;border-radius:20px;border:none;background:{{rj.btn}};color:#1C1206;font:700 13px 'Inter',sans-serif;cursor:pointer">{{rj.ok}}</button>
+</div>
+</div>
+</sc-if>
+<button onClick="{{approve}}" style="height:52px;border-radius:26px;border:none;background:#10B981;color:#04231A;font:700 15px 'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 22px rgba(16,185,129,.55)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>Duyệt · hiện trong vũ trụ</button>
+<div style="display:flex;gap:8px">
+<button onClick="{{askEdit}}" style="flex:1;height:46px;border-radius:23px;border:1px solid #F59E0B;background:rgba(245,158,11,.14);color:{{TH.warnText}};font:700 13px 'Inter',sans-serif;cursor:pointer">Yêu cầu sửa</button>
+<button onClick="{{openReject}}" style="flex:1;height:46px;border-radius:23px;border:1px solid rgba(248,113,113,.7);background:rgba(248,113,113,.12);color:{{TH.dangerText}};font:700 13px 'Inter',sans-serif;cursor:pointer">Từ chối</button>
+</div>
+</aside>
+</sc-if>
+
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+<div class="pv" style="position:absolute;left:424px;top:84px;width:992px;height:792px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center" >
+<span class="fl" aria-hidden="true" style="width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#A7F3D0,#10B981 50%,#064E3B);box-shadow:0 0 60px rgba(16,185,129,.6)"></span>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:30px">Hết bài chờ duyệt</span>
+<span style="font-size:15px;color:{{TH.muted}}">Vũ trụ đang gọn gàng. Bài mới sẽ hiện ở đây.</span>
+<a href="A02-AdminContent.dc.html" style="text-decoration:none;height:46px;padding:0 20px;border-radius:23px;box-sizing:border-box;{{TH.btnP}};font-weight:600;font-size:14px;display:flex;align-items:center">Xem nội dung đang hiện</a>
+</div>
+</sc-if>
+
+<sc-if value="{{toast.on}}" hint-placeholder-val="{{false}}">
+<div class="toast glass" key="{{toast.k}}" role="status" style="position:absolute;left:50%;bottom:28px;transform:translateX(-50%);height:52px;padding:0 18px;border-radius:26px;display:flex;align-items:center;gap:10px;border-color:{{toast.c}};font-size:14px;font-weight:600">
+<span style="width:10px;height:10px;border-radius:50%;background:{{toast.c}}"></span>{{toast.t}}
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', sel: 0, done: {}, filter: 'all', empty: false, reject: null, reason: 0, toast: null, tk: 0 }; }
+  renderVals() {
+    var __th = this; var TH = this.state.theme === 'light' ? { cls: 'lt', bgFilter: 'brightness(1.55) saturate(.75) hue-rotate(-8deg)', veil: 'linear-gradient(180deg,rgba(247,245,255,.82),rgba(236,232,255,.9))', railBg: 'linear-gradient(180deg,rgba(255,255,255,.72),rgba(237,233,254,.6))', btnP: 'background:#6D28D9;border:1.5px solid #6D28D9;color:#FFFFFF;box-shadow:0 0 12px rgba(109,40,217,.35)', btnS: 'background:#FFFFFF;border:1px solid rgba(109,40,217,.25);color:#1A1033', bg: '#F7F5FF', bg2: '#ECE8FF', surface: 'rgba(255,255,255,.85)', inset: 'rgba(109,40,217,.06)', track: 'rgba(26,16,51,.08)', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', accent: '#0E7490', successText: '#047857', warnText: '#92400E', dangerText: '#B91C1C', star: '#A78BFA' } : { cls: 'dk', bgFilter: 'none', veil: 'linear-gradient(180deg,rgba(6,4,26,.72),rgba(6,4,26,.86))', railBg: 'linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%)', btnP: 'background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75)', btnS: 'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#F5F3FF', bg: '#06041A', bg2: '#120A3A', surface: 'rgba(30,20,72,.6)', inset: 'rgba(22,17,54,.7)', track: 'rgba(255,255,255,.08)', border: 'rgba(167,139,250,.28)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', accent: '#22D3EE', successText: '#6EE7B7', warnText: '#FCD34D', dangerText: '#FCA5A5', star: '#FFFFFF' };
+
+    var self = this, st = this.state;
+    var ALL = [
+      { id: 'tcp', title: 'TCP vs UDP bằng hình', author: 'Minh', a: 'M', type: 'Ghi chú', k: 'note', time: '5 phút trước', lang: 'VI', c: '#7C3AED', hi: '#C4B5FD',
+        lead: 'So sánh bắt tay 3 lần với gửi luôn.', col: 'Networking › TCP/UDP', tags: ['tcp', 'udp', 'so sánh'],
+        blocks: [{ k: 'SYN', t: 'Mở kết nối', bg: '#C4B5FD' }, { k: 'ACK', t: 'Xác nhận', bg: '#67E8F9' }, { k: 'UDP', t: 'Gửi luôn, không chờ', bg: '#FDE68A' }],
+        files: [{ k: 'L', n: 'Lab TCP/UDP', s: 'nguồn trong kho', c: '#7C3AED' }],
+        scores: [0.92, 0.71, 0.12, 0.03] },
+      { id: 'swap', title: 'Ghi chú: swap trên Ubuntu', author: 'Lan', a: 'L', type: 'Ghi chú', k: 'note', time: '18 phút trước', lang: 'VI', c: '#22D3EE', hi: '#E0F2FE',
+        lead: 'Tạo swapfile 2 GB và chỉnh swappiness.', col: 'Linux › swap', tags: ['linux', 'swap'],
+        blocks: [{ k: '2G', t: 'fallocate swapfile', bg: '#67E8F9' }, { k: '600', t: 'chmod cho an toàn', bg: '#C4B5FD' }, { k: '10', t: 'swappiness', bg: '#A7F3D0' }],
+        files: [{ k: 'L', n: 'Bài tập swap', s: 'nguồn trong kho', c: '#0891B2' }],
+        scores: [0.95, 0.88, 0.41, 0.02] },
+      { id: 'dns', title: 'DNS cache poisoning.pptx', author: 'Huy', a: 'H', type: 'Office', k: 'office', time: '1 giờ trước', lang: 'EN', c: '#F59E0B', hi: '#FDE68A',
+        lead: 'Slide 12 trang về tấn công DNS.', col: 'Networking › DNS', tags: ['dns', 'bảo mật'],
+        blocks: [{ k: '12', t: 'slide', bg: '#FDE68A' }, { k: 'EN', t: 'tiếng Anh', bg: '#C4B5FD' }, { k: '!', t: 'chưa có nguồn', bg: TH.dangerText }],
+        files: [{ k: 'P', n: 'dns-poisoning.pptx', s: '3,2 MB', c: '#EA580C' }],
+        scores: [0.81, 0.22, 0.08, 0.05] },
+      { id: 'flow', title: 'Lối đi: Ping tới Google', author: 'Tú', a: 'T', type: 'Lối đi', k: 'flow', time: '2 giờ trước', lang: 'VI', c: '#10B981', hi: '#A7F3D0',
+        lead: '4 trạm: ARP → ICMP → DNS → TTL.', col: 'Lối đi · Networking', tags: ['icmp', 'ping'],
+        blocks: [{ k: '1', t: 'ARP tìm router', bg: '#A7F3D0' }, { k: '2', t: 'DNS ra IP', bg: '#67E8F9' }, { k: '3', t: 'ICMP echo', bg: '#C4B5FD' }],
+        files: [{ k: 'F', n: '4 trạm, nối 3 lab', s: 'Lab ICMP, ARP, DNS', c: '#059669' }],
+        scores: [0.9, 0.93, 0.18, 0.01] },
+      { id: 'k8s', title: 'K8s cho người mới.docx', author: 'An', a: 'A', type: 'Office', k: 'office', time: 'hôm qua', lang: 'VI', c: '#06B6D4', hi: '#A5F3FC',
+        lead: 'Pod, Deployment, Service trong 1 trang.', col: 'Kubernetes', tags: ['k8s', 'nhập môn'],
+        blocks: [{ k: 'Pod', t: 'đơn vị nhỏ nhất', bg: '#A5F3FC' }, { k: 'Dep', t: 'giữ số bản', bg: '#C4B5FD' }, { k: 'Svc', t: 'địa chỉ ổn định', bg: '#A7F3D0' }],
+        files: [{ k: 'W', n: 'k8s-nguoi-moi.docx', s: '480 KB', c: '#2563EB' }],
+        scores: [0.89, 0.6, 0.67, 0.02] },
+      { id: 'note2', title: 'Subnet bằng ngón tay', author: 'Vy', a: 'V', type: 'Ghi chú', k: 'note', time: 'hôm qua', lang: 'VI', c: '#A855F7', hi: '#E9D5FF',
+        lead: 'Mẹo nhẩm /24 /26 /28.', col: 'Networking › Subnet', tags: ['subnet', 'mẹo'],
+        blocks: [{ k: '/24', t: '254 host', bg: '#E9D5FF' }, { k: '/26', t: '62 host', bg: '#67E8F9' }, { k: '/28', t: '14 host', bg: '#FDE68A' }],
+        files: [{ k: 'L', n: 'Lab Subnet', s: 'nguồn trong kho', c: '#7C3AED' }],
+        scores: [0.94, 0.77, 0.09, 0.04] },
+      { id: 'note3', title: 'syslog đọc nhanh', author: 'Khoa', a: 'K', type: 'Ghi chú', k: 'note', time: '2 ngày trước', lang: 'VI', c: '#22D3EE', hi: '#CFFAFE',
+        lead: 'Lọc log bằng journalctl.', col: 'Linux › syslog', tags: ['syslog'],
+        blocks: [{ k: '-u', t: 'theo dịch vụ', bg: '#CFFAFE' }, { k: '-p', t: 'theo mức', bg: '#C4B5FD' }, { k: '-f', t: 'theo dõi', bg: '#A7F3D0' }],
+        files: [{ k: 'L', n: 'Bài tập syslog', s: 'nguồn trong kho', c: '#0891B2' }],
+        scores: [0.91, 0.69, 0.15, 0.02] }
+    ];
+    var F = [['all', 'Tất cả'], ['note', 'Ghi chú'], ['office', 'Office'], ['flow', 'Lối đi']];
+    var list = ALL.filter(function (x) { return !st.done[x.id] && (st.filter === 'all' || x.k === st.filter); });
+    var empty = st.empty || list.length === 0;
+    var sel = Math.min(st.sel, Math.max(0, list.length - 1));
+    var cur = list[sel] || ALL[0];
+    var CK = [['Đúng chủ đề', 'Khớp vùng tri thức đã có', false], ['Có nguồn', 'Trích tới lab hoặc tài liệu', false], ['Trùng bài đã có', 'Càng thấp càng tốt', true], ['Ngôn từ không phù hợp', 'Càng thấp càng tốt', true]];
+    var checks = CK.map(function (c, i) {
+      var v = cur.scores[i]; var bad = c[2] ? v > 0.5 : v < 0.5;
+      return { k: cur.id + i, n: c[0], hint: c[1], v: String(v.toFixed(2)).replace('.', ','), w: Math.round(v * 100), c: bad ? '#F59E0B' : (c[2] ? '#22D3EE' : '#10B981') };
+    });
+    var R = ['Trùng lặp', 'Sai chủ đề', 'Thiếu nguồn', 'Khác'];
+    var next = function (msg, col) {
+      var d = Object.assign({}, st.done); d[cur.id] = 1;
+      self.setState({ done: d, reject: null, toast: { t: msg, c: col }, tk: st.tk + 1 });
+    };
+    var stars = []; for (var j = 0; j < 40; j++) { stars.push({ x: (j * 211) % 1440, y: (j * 97 + 31) % 900, r: j % 4 === 0 ? 2 : 1, d: (j % 9) * 0.35 }); }
+    return {
+      stars: stars,
+      TH: TH, themeLabel: TH.cls === 'lt' ? 'Tối' : 'Sáng', toggleTheme: function () { __th.setState({ theme: __th.state.theme === 'light' ? 'dark' : 'light' }); },
+      count: list.length,
+      hasItems: !empty, isEmpty: empty,
+      emptyLabel: st.empty ? 'Xem hàng chờ' : 'Xem khi hết bài',
+      toggleEmpty: function () { self.setState({ empty: !st.empty }); },
+      filters: F.map(function (f) { var on = st.filter === f[0]; return { n: f[1], bg: on ? 'linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);box-shadow:inset 0 0 10px rgba(196,181,253,.4),0 0 12px rgba(139,92,246,.6)' : 'rgba(22,17,54,.5)', bd: on ? 'rgba(196,181,253,.9)' : 'rgba(167,139,250,.3)', pick: function () { self.setState({ filter: f[0], sel: 0 }); } }; }),
+      queue: list.map(function (x, i) { var on = i === sel; return { title: x.title, a: x.a, type: x.type, time: x.time, c: x.c, hi: x.hi,
+        bg: on ? 'rgba(88,60,200,.4);box-shadow:inset 0 0 14px rgba(196,181,253,.3),0 0 14px rgba(124,58,237,.35)' : 'rgba(22,17,54,.7)', bd: on ? 'rgba(196,181,253,.8)' : 'rgba(167,139,250,.22)', pick: function () { self.setState({ sel: i, reject: null }); } }; }),
+      cur: { id: cur.id, title: cur.title, author: cur.author, time: cur.time, type: cur.type, lang: cur.lang, c: cur.c, hi: cur.hi, lead: cur.lead, blocks: cur.blocks, files: cur.files, col: cur.col, tags: cur.tags, checks: checks },
+      rejectOpen: !!st.reject,
+      rj: st.reject === 'edit' ? { title: 'Cần sửa gì?', ok: 'Gửi yêu cầu sửa', btn: '#F59E0B' } : { title: 'Lý do từ chối', ok: 'Từ chối bài', btn: TH.dangerText },
+      reasons: R.map(function (n, i) { var on = st.reason === i; return {
+       n: n, bg: on ? 'rgba(245,158,11,.25)' : 'transparent', bd: on ? '#F59E0B' : 'rgba(167,139,250,.35)', pick: function () { self.setState({ reason: i }); } }; }),
+      approve: function () { next('Đã duyệt · bài đã hiện trong vũ trụ', '#10B981'); },
+      openReject: function () { self.setState({ reject: 'reject', reason: 0 }); },
+      askEdit: function () { self.setState({ reject: 'edit', reason: 2 }); },
+      cancelReject: function () { self.setState({ reject: null }); },
+      confirmReject: function () { next(st.reject === 'edit' ? 'Đã gửi yêu cầu sửa cho tác giả' : 'Đã từ chối · tác giả nhận lý do', '#F59E0B'); },
+      toast: st.toast ? { on: true, t: st.toast.t, c: st.toast.c, k: st.tk } : { on: false, t: '', c: '#10B981', k: 0 }
+    };
+  }
+}
+</script>
+</body>
+</html>

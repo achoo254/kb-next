@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Lối đi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:linear-gradient(180deg,rgba(26,20,64,.8) 0%,rgba(13,10,36,.86) 100%);border:1.5px solid rgba(196,181,253,.5);box-shadow:inset 0 0 22px rgba(139,92,246,.32),inset 0 0 2px rgba(233,213,255,.5),inset 0 1px 0 rgba(255,255,255,.2),0 0 26px rgba(124,58,237,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+button[style*="background:#7C3AED"],button[style*="background:{{T.primary}}"]{background:linear-gradient(180deg,rgba(88,60,200,.6) 0%,rgba(44,26,112,.82) 100%)!important;border:1.5px solid rgba(196,181,253,.9)!important;color:#FFFFFF!important;box-shadow:inset 0 0 12px rgba(196,181,253,.42),inset 0 1px 0 rgba(255,255,255,.3),0 0 14px rgba(139,92,246,.6)!important}
+.lt .glass{background:rgba(255,255,255,.78);border-color:rgba(109,40,217,.18)}
+.lt a{color:#6D28D9}
+:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt :focus-visible{outline-color:#0E7490}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes flow{to{background-position:28px 0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes ping{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.6);opacity:0}}
+@keyframes rise{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes orb{0%,100%{box-shadow:0 0 22px 4px rgba(124,58,237,.7)}50%{box-shadow:0 0 36px 10px rgba(34,211,238,.6)}}
+.star{animation:twinkle 3.4s ease-in-out infinite}
+.seg{background:linear-gradient(90deg,rgba(167,139,250,.9),currentColor);box-shadow:0 0 8px currentColor,0 0 16px rgba(139,92,246,.6);transition:opacity .6s}
+.stop{animation:float 5s ease-in-out infinite;transition:opacity .5s}
+.stop-btn{transition:transform .3s cubic-bezier(.2,.9,.3,1.4)}
+.stop-btn:hover{transform:scale(1.08)}
+.trav{transition:left 1s cubic-bezier(.65,0,.2,1),top 1s cubic-bezier(.65,0,.2,1)}
+.ping{animation:ping 1.6s ease-out infinite}
+.card{animation:rise .5s ease-out both}
+.sheet{animation:pop .4s cubic-bezier(.2,.9,.3,1.2) both}
+.cop{animation:orb 3s ease-in-out infinite}
+.dk{transition:transform .25s cubic-bezier(.2,.9,.3,1.4)}
+.dk:hover{transform:translateY(-6px)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{T.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif">
+
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover">
+<div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 55% 50%,rgba(6,4,26,.5),rgba(6,4,26,.8))"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="60">
+<span class="star" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:{{T.star}};animation-delay:{{s.d}}s"></span>
+</sc-for>
+
+
+<nav aria-label="Đường dẫn" style="position:absolute;left:108px;top:84px;display:flex;align-items:center;gap:8px;font-size:13px">
+<a href="C09-Universe.dc.html" style="text-decoration:none;color:{{T.link}}">Universe</a><span style="color:{{T.muted}}">›</span>
+<a href="C09-Universe.dc.html" style="text-decoration:none;color:{{T.link}}">Lối đi</a><span style="color:{{T.muted}}">›</span>
+<span aria-current="page" style="font-weight:600;color:{{T.text}}">Máy mới vào mạng</span>
+</nav>
+
+<div style="position:absolute;left:108px;top:118px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;gap:8px;align-items:center">
+<span style="height:26px;padding:0 10px;border-radius:13px;background:rgba(124,58,237,.22);border:1px solid rgba(124,58,237,.6);color:{{T.text}};font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z"/></svg>Chính thức · AI tạo</span>
+<span class="glass" style="height:26px;padding:0 10px;border-radius:13px;font-size:12px;font-weight:600;display:flex;align-items:center;color:{{T.muted}}">5 bước · ~4 phút</span>
+</div>
+<div style="font-family:'Inter',sans-serif;font-weight:700;font-size:40px;letter-spacing:-.8px;background:linear-gradient(90deg,#7DD3FC 0%,#60A5FA 36%,#A78BFA 70%,#D8B4FE 100%);-webkit-background-clip:text;background-clip:text;color:transparent">Máy mới vào mạng</div>
+</div>
+
+<div style="position:absolute;right:28px;top:84px;display:flex;gap:10px">
+<button onClick="{{openShare}}" style="height:46px;padding:0 18px;border-radius:23px;border:none;background:{{T.primary}};color:#FFFFFF;font:700 14px 'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7h16v-7M12 3v12M7 8l5-5 5 5"/></svg>Chia sẻ</button>
+<a href="C07-FlowBuilder.dc.html" class="glass" style="text-decoration:none;height:46px;padding:0 18px;box-sizing:border-box;border-radius:23px;display:flex;align-items:center;gap:8px;color:{{T.text}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 7h10v10M7 17L17 7"/></svg>Remix</a>
+</div>
+
+<sc-for list="{{segs}}" as="g" hint-placeholder-count="4">
+<div class="seg" aria-hidden="true" style="position:absolute;left:{{g.x}}px;top:{{g.y}}px;width:{{g.len}}px;height:2px;border-radius:2px;transform-origin:0 50%;transform:rotate({{g.a}}deg);color:{{g.c}};opacity:{{g.op}};filter:drop-shadow(0 0 6px {{g.c}})"></div>
+</sc-for>
+
+<sc-for list="{{stops}}" as="s" hint-placeholder-count="5">
+<div class="stop" style="position:absolute;left:{{s.l}}px;top:{{s.t}}px;width:120px;height:120px;opacity:{{s.op}};animation-delay:{{s.dl}}s">
+<button class="stop-btn" onClick="{{s.go}}" aria-label="Bước {{s.n}}: {{s.name}}" aria-current="{{s.cur}}" style="position:relative;width:120px;height:120px;padding:0;border:none;background:none;cursor:pointer;color:#FFFFFF;filter:drop-shadow(0 0 {{s.glow}}px {{s.c}})">
+<img src="{{s.img}}" alt="" aria-hidden="true" style="position:absolute;inset:-14px;width:148px;height:148px;filter:{{s.imgf}}">
+<span aria-hidden="true" style="position:absolute;inset:6px;border-radius:50%;background:radial-gradient(ellipse 46% 42% at 50% 54%,rgba(8,4,28,.78) 0%,rgba(8,4,28,.6) 45%,rgba(8,4,28,.22) 75%,rgba(8,4,28,0) 100%)"></span>
+<span style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:2px">
+<span style="font:700 12px 'Space Grotesk';opacity:.9">{{s.n}}</span>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;text-shadow:0 1px 8px rgba(0,0,0,.6)">{{s.name}}</span>
+</span>
+</button>
+</div>
+</sc-for>
+
+<div class="trav" aria-hidden="true" style="position:absolute;left:{{tr.x}}px;top:{{tr.y}}px;width:24px;height:24px">
+<span class="ping" style="position:absolute;inset:0;border-radius:50%;background:#22D3EE"></span>
+<span style="position:absolute;inset:4px;border-radius:50%;background:#22D3EE;box-shadow:0 0 20px 6px #22D3EE"></span>
+</div>
+
+<div class="card glass" key="{{cur.n}}" style="position:absolute;left:50%;bottom:44px;transform:translateX(-50%);width:640px;box-sizing:border-box;padding:16px 20px;border-radius:28px;display:flex;align-items:center;gap:18px">
+<div style="width:88px;height:88px;flex:none;border-radius:24px;background:{{T.inset}};border:1px solid {{cur.c}};display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;color:{{cur.c}}">{{cur.big}}</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:12px;font-weight:600;color:{{T.muted}}">Bước {{cur.n}} / 5 · {{cur.name}}</span>
+<span style="font-size:19px;font-weight:700;line-height:1.3">{{cur.line}}</span>
+<a href="C11-Reader.dc.html" style="font-size:13px;font-weight:600;color:{{T.link}}">{{cur.link}}</a>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button onClick="{{togglePlay}}" aria-label="{{playLabel}}" style="width:56px;height:56px;border-radius:50%;border:none;background:#7C3AED;color:#FFFFFF;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(124,58,237,.8)">
+<sc-if value="{{playing}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></sc-if>
+<sc-if value="{{paused}}" hint-placeholder-val="{{true}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg></sc-if>
+</button>
+<button onClick="{{next}}" aria-label="Bước tiếp" style="width:56px;height:44px;border-radius:22px;border:1px solid {{T.border}};background:none;color:{{T.text}};cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+</div>
+</div>
+
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:#F5F3FF">KnowFlow</span>
+</div>
+
+<nav aria-label="Chế độ xem" class="nav" style="position:absolute;left:480px;top:16px;height:52px;padding:4px;box-sizing:border-box;border-radius:26px;display:flex;gap:4px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)">
+<a href="C09-Universe.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Orbit</a>
+<a href="C13-Graph.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg>Graph</a>
+<a href="C15-Canvas.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Canvas</a>
+<a href="C11-Reader.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>Docs</a>
+</nav>
+
+<div style="position:absolute;right:28px;top:16px;display:flex;gap:10px;align-items:center">
+<a href="C20-Inbox.dc.html" aria-label="Thông báo, 3 chưa đọc" class="glass" style="position:relative;width:48px;height:48px;border-radius:16px;color:#F5F3FF;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span style="position:absolute;right:12px;top:11px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="glass" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;gap:8px;font:600 15px 'Space Grotesk',sans-serif;color:#F5F3FF">⌘ K</a>
+</div>
+
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<div style="position:absolute;left:10px;top:190px;width:52px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<a href="C09-Universe.dc.html" aria-label="Universe" style="margin-bottom:6px;width:46px;height:46px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg></a>
+<a href="C13-Graph.dc.html" aria-label="Graph" style="margin-bottom:22px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg></a>
+<a href="C01-CreateMenu.dc.html" aria-label="Tạo mới" style="margin-bottom:8px;width:46px;height:46px;border-radius:14px;background:rgba(124,58,237,.4);border:1px solid rgba(196,181,253,.7);display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 18px rgba(124,58,237,.6)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+<a href="C12-Search.dc.html" aria-label="Tìm kiếm" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
+<a href="C14-Copilot.dc.html" aria-label="AI Copilot" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.8 5.5L17 9.3l-5.2 1.8L10 16.5l-1.8-5.4L3 9.3l5.2-1.8zM18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/></svg></a>
+<a href="C10-Space.dc.html" aria-label="Spaces" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+<a href="C08-MyContent.dc.html" aria-label="Của tôi" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></a>
+<a href="H03-Settings.dc.html" aria-label="Cài đặt" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+</div>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+
+<sc-if value="{{share}}" hint-placeholder-val="{{false}}">
+<div style="position:absolute;inset:0;background:{{T.scrim}};display:flex;align-items:center;justify-content:center;gap:40px">
+<div class="sheet" style="width:270px;height:480px;border-radius:28px;overflow:hidden;position:relative;background:linear-gradient(180deg,rgba(6,4,26,.55),rgba(6,4,26,.3) 55%,rgba(6,4,26,.75)),url(/_blob/9327732977cfed2b3387b0901df2e24a) center/cover;border:1px solid rgba(200,185,255,.6);box-shadow:0 0 60px rgba(124,58,237,.6);display:flex;flex-direction:column;padding:22px;box-sizing:border-box;gap:14px;color:#F5F3FF">
+<span style="font:700 14px 'Space Grotesk'">KnowFlow</span>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px;line-height:1.05">Máy mới vào mạng</span>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+<sc-for list="{{stops}}" as="s" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:9px;background:{{s.c}};color:#06041A;font:700 12px 'Space Grotesk';display:flex;align-items:center;justify-content:center">{{s.n}}</span><span style="font-size:14px;font-weight:600">{{s.name}}</span></div>
+</sc-for>
+</div>
+<div style="flex:1;position:relative"><img src="/_blob/56a22b41db3f5dc7ee6cf1c736fd571f" alt="" aria-hidden="true" style="position:absolute;right:-18px;bottom:-6px;width:150px;height:150px;object-fit:contain"></div>
+<span style="font-size:12px;color:#C4B5FD;position:relative">kb.hoandat.com/p/may-moi-vao-mang</span>
+</div>
+<div class="sheet glass" style="width:340px;border-radius:28px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation-delay:.1s">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px">Chia sẻ lối đi</span>
+<span style="font-size:14px;color:{{T.muted}}">Lối đi chính thức nên chia sẻ được. Người nhận bấm là bay vào đúng lối đi.</span>
+<button onClick="{{copy}}" style="height:52px;border-radius:26px;border:none;background:#22D3EE;color:#06041A;font:700 15px 'Inter',sans-serif;cursor:pointer">{{copyLabel}}</button>
+<button style="height:52px;border-radius:26px;border:1px solid {{T.border}};background:none;color:{{T.text}};font:600 15px 'Inter',sans-serif;cursor:pointer">Tải ảnh story</button>
+<a href="C18-Share.dc.html" style="text-align:center;font-size:13px;font-weight:600;color:{{T.link}}">Quyền và hạn link…</a>
+<button onClick="{{closeShare}}" style="height:44px;border-radius:22px;border:none;background:none;color:{{T.muted}};font:600 14px 'Inter',sans-serif;cursor:pointer">Đóng</button>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', step: 0, playing: true, share: false, copied: false }; }
+  componentDidMount() { this.timer = setInterval(() => { if (this.state.playing && !this.state.share) this.setState({ step: (this.state.step + 1) % 5 }); }, 2600); }
+  componentWillUnmount() { clearInterval(this.timer); }
+  renderVals() {
+    var self = this, st = this.state.step, dark = this.state.theme !== 'light';
+    var T = dark
+      ? { cls: 'dk', bg: '#06041A', text: '#F5F3FF', muted: '#C4B5FD', link: '#C4B5FD', title: '#C4B5FD', inset: 'rgba(12,6,40,.6)', border: 'rgba(167,139,250,.4)', primary: '#7C3AED', star: '#FFFFFF', nebula: 'rgba(124,58,237,.25)', stage: 'rgba(196,181,253,.7)', scrim: 'rgba(6,4,26,.75)', dockMuted: '#C4B5FD' }
+      : { cls: 'lt', bg: '#F7F5FF', text: '#1A1033', muted: '#5B4B8A', link: '#6D28D9', title: '#6D28D9', inset: 'rgba(109,40,217,.06)', border: 'rgba(109,40,217,.25)', primary: '#6D28D9', star: '#C4B5FD', nebula: 'rgba(124,58,237,.10)', stage: 'rgba(109,40,217,.35)', scrim: 'rgba(26,16,51,.35)', dockMuted: '#5B4B8A' };
+    var raw = [
+      { x: 230, y: 560, name: 'Cắm mạng', big: 'Wi-Fi', c: '#B9A6FF', c2: '#3B2A9E', line: 'Máy mới vào mạng. Chưa có IP, chưa biết ai.', link: 'Mở Packet Journey →' },
+      { x: 480, y: 380, name: 'DHCP', big: 'DORA', c: '#22D3EE', c2: '#0E5E6E', line: 'Hét lên cả mạng: ai cấp IP cho mình với?', link: 'Mở lab DHCP →' },
+      { x: 760, y: 500, name: 'ARP', big: 'MAC?', c: '#8FD8FF', c2: '#1F5F9E', line: 'Hỏi: router ở địa chỉ MAC nào?', link: 'Mở lab ARP →' },
+      { x: 1010, y: 330, name: 'DNS', big: '.com', c: '#FFB347', c2: '#B4621A', line: 'Đổi tên miền thành địa chỉ IP.', link: 'Mở lab DNS →' },
+      { x: 1250, y: 480, name: 'HTTP', big: '200', c: '#FF8FBE', c2: '#9E2A5C', line: 'Gửi GET, nhận trang web. Xong!', link: 'Mở lab HTTP →' }
+    ];
+    var stops = raw.map(function (r, i) {
+      var IMG = ['/_blob/31ddcd850e1b521cc8c03b8df4b6debb', '/_blob/4501a8df316926904685cf2b4456efb4', '/_blob/6feb28ce42686ed01217312e206531e3', '/_blob/3f6f204a955e94d6e9f649463f561b67', '/_blob/27cad84bc553e15e9fb6b4ed457e5c7e'];
+      return { name: r.name, n: i + 1, c: r.c, c2: r.c2, l: r.x - 60, t: r.y - 60, dl: i * 0.4, img: IMG[i], imgf: 'saturate(1.15) contrast(1.08) drop-shadow(0 0 ' + (i === st ? 22 : 10) + 'px ' + r.c + ')',
+        op: i <= st ? 1 : 0.4, glow: i === st ? 26 : 10, cur: i === st ? 'step' : 'false',
+        go: function () { self.setState({ step: i, playing: false }); } };
+    });
+    var segs = [];
+    for (var i = 0; i < raw.length - 1; i++) {
+      var a = raw[i], b = raw[i + 1], dx = b.x - a.x, dy = b.y - a.y;
+      segs.push({ x: a.x, y: a.y, len: Math.sqrt(dx * dx + dy * dy), a: Math.atan2(dy, dx) * 180 / Math.PI, c: b.c, op: i < st ? 1 : 0.25 });
+    }
+    var c = raw[st];
+    var stars = []; for (var j = 0; j < 70; j++) { stars.push({ x: (j * 211) % 1440, y: (j * 97 + 31) % 900, r: j % 4 === 0 ? 2 : 1, d: (j % 9) * 0.35 }); }
+    var D = [
+      { href: 'C09-Universe.dc.html', label: 'Universe', icon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6', on: 1 },
+      { href: 'C15-Canvas.dc.html', label: 'Canvas', icon: 'M4 4h16v16H4zM4 9h16M9 4v16' },
+      { href: 'C13-Graph.dc.html', label: 'Graph', icon: 'M6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 6h8M7 8l4 8M17 8l-4 8' },
+      { href: 'C01-CreateMenu.dc.html', label: '', icon: 'M12 5v14M5 12h14', plus: 1 },
+      { href: 'C08-MyContent.dc.html', label: 'Của tôi', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6' }
+    ];
+    var dock = D.map(function (d) {
+      return { href: d.href, label: d.label, icon: d.icon, cur: d.on ? 'page' : 'false', col: d.on || d.plus ? (d.plus ? '#FFFFFF' : T.text) : T.dockMuted, s: d.plus ? 60 : 40, mt: d.plus ? -18 : 0,
+        bg: d.plus ? 'radial-gradient(circle at 35% 30%,#C4B5FD,#7C3AED 60%,#4C1D95)' : (d.on ? 'rgba(124,58,237,.35)' : 'transparent'),
+        sh: d.plus ? '0 0 26px rgba(124,58,237,.9)' : (d.on ? '0 0 16px rgba(124,58,237,.5)' : 'none') };
+    });
+    return {
+      T: T, themeLabel: dark ? 'Sáng' : 'Tối',
+      toggleTheme: function () { self.setState({ theme: dark ? 'light' : 'dark' }); },
+      stops: stops, segs: segs, stars: stars, dock: dock,
+      tr: { x: c.x - 12, y: c.y - 84 },
+      cur: { n: st + 1, name: c.name, big: c.big, c: c.c, line: c.line, link: c.link },
+      playing: this.state.playing, paused: !this.state.playing,
+      playLabel: this.state.playing ? 'Tạm dừng' : 'Chạy',
+      share: this.state.share,
+      copyLabel: this.state.copied ? 'Đã chép link' : 'Sao chép link',
+      copy: function () { self.setState({ copied: true }); },
+      togglePlay: function () { self.setState({ playing: !self.state.playing }); },
+      next: function () { self.setState({ step: (st + 1) % 5, playing: false }); },
+      openShare: function () { self.setState({ share: true, copied: false }); },
+      closeShare: function () { self.setState({ share: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

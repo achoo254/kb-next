@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Trạm điều khiển</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:linear-gradient(180deg,rgba(26,20,64,.8) 0%,rgba(13,10,36,.86) 100%);border:1.5px solid rgba(196,181,253,.5);box-shadow:inset 0 0 22px rgba(139,92,246,.32),inset 0 0 2px rgba(233,213,255,.5),inset 0 1px 0 rgba(255,255,255,.2),0 0 26px rgba(124,58,237,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+button[style*="background:#7C3AED"],a[style*="background:#7C3AED"],button[style*="background:{{th.primary}}"],a[style*="background:{{th.primary}}"]{background:linear-gradient(180deg,rgba(88,60,200,.6) 0%,rgba(44,26,112,.82) 100%)!important;border:1.5px solid rgba(196,181,253,.9)!important;color:#FFFFFF!important;box-shadow:inset 0 0 12px rgba(196,181,253,.42),inset 0 1px 0 rgba(255,255,255,.3),0 0 14px rgba(139,92,246,.6)!important}
+section,aside{scrollbar-width:thin}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes breathe{0%,100%{box-shadow:0 0 50px 10px rgba(124,58,237,.55)}50%{box-shadow:0 0 90px 22px rgba(124,58,237,.8)}}
+@keyframes flow{to{background-position:24px 0}}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.star-on{animation:twinkle 3.4s ease-in-out infinite}
+.star-off{opacity:.45}
+.orb-on{animation:breathe 4s ease-in-out infinite}
+.ring-on{animation:spin 20s linear infinite}
+.ln-on{background:repeating-linear-gradient(90deg,currentColor 0 8px,transparent 8px 14px);animation:flow 1.2s linear infinite}
+.ln-off{background:repeating-linear-gradient(90deg,currentColor 0 8px,transparent 8px 14px)}
+.pp{animation:pop .4s cubic-bezier(.2,.9,.3,1.3) both}
+.card{transition:transform .25s cubic-bezier(.2,.9,.3,1.3)}
+.card:hover{transform:translateY(-4px)}
+.dk{transition:transform .25s cubic-bezier(.2,.9,.3,1.4)}
+.dk:hover{transform:translateY(-6px)}
+.kf-light{background:#F7F5FF!important;color:#1A1033!important}
+.kf-light .glass{background:rgba(255,255,255,.78)!important;border-color:rgba(109,40,217,.18)!important}
+.kf-light [style*="color:#F5F3FF"],.kf-light [style*="color:#EDE9FE"],.kf-light [style*="color:#DDD6FE"],.kf-light [style*="color:#E4E0FF"]{color:#1A1033!important}
+.kf-light [style*="color:#C4B5FD"],.kf-light [style*="color:#A78BFA"]{color:#5B4B8A!important}
+.kf-light [style*="color:#6EE7B7"]{color:#047857!important}
+.kf-light [style*="color:#FCD34D"],.kf-light [style*="color:#FDE68A"]{color:#92400E!important}
+.kf-light [style*="color:#F59E0B"]{color:#B45309!important}
+.kf-light [style*="color:#67E8F9"],.kf-light [style*="color:#22D3EE"]{color:#0E7490!important}
+.kf-light [style*="color:#FCA5A5"]{color:#B91C1C!important}
+.kf-light [style*="background:#06041A"],.kf-light [style*="background:#07051C"],.kf-light [style*="background:#0B0726"],.kf-light [style*="background:#160C40"],.kf-light [style*="background:#1A1146"]{background:#FFFFFF!important}
+.kf-light [style*="background:rgba(12,6,40"],.kf-light [style*="background:rgba(22,14,58"],.kf-light [style*="background:rgba(18,12,52"],.kf-light [style*="background:rgba(30,20,72"],.kf-light [style*="background:rgba(20,10,60"],.kf-light [style*="background:rgba(15,23,42"]{background:rgba(255,255,255,.9)!important}
+.kf-light [style*="background:radial-gradient(ellipse"]{background:radial-gradient(ellipse 60% 55% at 45% 40%,#FFFFFF 0%,#ECE8FF 55%,#E2DBFF 100%)!important}
+.kf-light [style*="background:rgba(6,4,26"]{background:rgba(236,232,255,.62)!important}
+.kf-light [style*="background:rgba(255,255,255,.1"],.kf-light [style*="background:rgba(255,255,255,.08"],.kf-light [style*="background:rgba(255,255,255,.18"]{background:rgba(109,40,217,.14)!important}
+.kf-light [style*="background:#7C3AED"],.kf-light [style*="background:#EF4444"]{color:#FFFFFF!important}
+.kf-light mark{color:#1A1033!important;background:rgba(14,116,144,.2)!important}
+.kf-light .star,.kf-light [class*="star"]{background:#C4B5FD!important}
+.kf-light a{color:#6D28D9}
+.kf-dark :focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.kf-light :focus-visible{outline:2px solid #0E7490;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{th.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:#06041A;color:#F5F3FF;font-family:'Inter',system-ui,sans-serif">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover">
+<div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 55% 45%,rgba(6,4,26,.55),rgba(6,4,26,.82))"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="70">
+<span class="{{fx.star}}" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:#FFFFFF;animation-delay:{{s.d}}s"></span>
+</sc-for>
+<div style="position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:translate(78px,10px) scale(.944)">
+
+<div style="position:absolute;left:24px;top:58px;display:flex;flex-direction:column;align-items:flex-start">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:28px">Trạm điều khiển</span>
+</div>
+<a href="C09-Universe.dc.html" class="glass" style="position:absolute;right:270px;top:18px;text-decoration:none;height:46px;padding:0 18px;box-sizing:border-box;border-radius:23px;display:flex;align-items:center;gap:8px;color:#F5F3FF;font-size:14px;font-weight:600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>Về vũ trụ</a>
+
+<sc-for list="{{lines}}" as="l" hint-placeholder-count="6">
+<div class="{{fx.ln}}" aria-hidden="true" style="position:absolute;left:{{l.x}}px;top:{{l.y}}px;width:{{l.len}}px;height:2px;transform-origin:0 50%;transform:rotate({{l.a}}deg);color:rgba(196,181,253,.45)"></div>
+</sc-for>
+
+<div aria-hidden="true" class="{{fx.ring}}" style="position:absolute;left:600px;top:320px;width:240px;height:240px;border-radius:50%;border:1.5px dashed rgba(196,181,253,.5)"><span style="position:absolute;left:112px;top:-8px;width:16px;height:16px;border-radius:50%;background:#22D3EE;box-shadow:0 0 14px #22D3EE"></span></div>
+<div class="{{fx.orb}}" style="position:absolute;left:640px;top:360px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#DDD6FE 0%,#A78BFA 20%,#7C3AED 50%,#2E1065 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:44px;text-shadow:0 2px 12px rgba(20,8,60,.9)">Đ</span>
+<span style="font-size:13px;font-weight:600;text-shadow:0 1px 8px rgba(20,8,60,.9)">dattqh</span>
+</div>
+
+<section class="glass card" aria-label="Tài khoản hoandat" style="position:absolute;left:120px;top:100px;width:360px;box-sizing:border-box;padding:20px;border-radius:26px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:12px;font-weight:700;color:#C4B5FD">Tài khoản hoandat</span>
+<div style="display:flex;align-items:center;gap:12px">
+<span aria-hidden="true" style="width:48px;height:48px;border-radius:50%;background:#7C3AED;border:2px solid #C4B5FD;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px">Đ</span>
+<div style="display:flex;flex-direction:column"><span style="font-weight:700;font-size:16px">dattqh</span><span style="font-size:13px;color:#C4B5FD">[EMAIL]</span></div>
+</div>
+<span style="font-size:12px;color:#C4B5FD">Chuyển sang app khác cùng tài khoản</span>
+<div style="display:flex;gap:8px">
+<sc-for list="{{apps}}" as="a" hint-placeholder-count="4">
+<button aria-label="Mở {{a.n}}" style="flex:1;height:64px;border-radius:16px;border:1px solid rgba(167,139,250,.3);background:rgba(12,6,40,.6);color:#F5F3FF;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px 'Inter',sans-serif">
+<span style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF,{{a.c}} 60%);box-shadow:0 0 10px {{a.c}}"></span>{{a.n}}</button>
+</sc-for>
+</div>
+<a href="C19-Settings.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:16px;background:rgba(124,58,237,.25);border:1px solid rgba(167,139,250,.45);color:#F5F3FF;font-size:13px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg><span style="flex:1">Cài đặt workspace</span><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;background:rgba(124,58,237,.5)">Quản trị</span></a>
+</section>
+
+<section class="glass card" aria-label="Ngôn ngữ và chuyển động" style="position:absolute;left:960px;top:100px;width:360px;box-sizing:border-box;padding:20px;border-radius:26px;display:flex;flex-direction:column;gap:14px">
+<span style="font-size:12px;font-weight:700;color:#C4B5FD">Ngôn ngữ</span>
+<div role="group" aria-label="Ngôn ngữ" style="display:flex;gap:6px">
+<button onClick="{{setVi}}" style="flex:1;height:46px;border-radius:16px;border:1px solid {{lg.vibd}};background:{{lg.vibg}};color:#F5F3FF;font:700 14px 'Space Grotesk',sans-serif;cursor:pointer">Tiếng Việt</button>
+<button onClick="{{setEn}}" style="flex:1;height:46px;border-radius:16px;border:1px solid {{lg.enbd}};background:{{lg.enbg}};color:#F5F3FF;font:700 14px 'Space Grotesk',sans-serif;cursor:pointer">English</button>
+</div>
+<span style="font-size:12px;font-weight:700;color:#C4B5FD">Giao diện</span>
+<div role="radiogroup" aria-label="Giao diện" style="display:flex;gap:6px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="3">
+<button role="radio" aria-checked="{{t.aria}}" onClick="{{t.pick}}" style="flex:1;height:46px;border-radius:16px;border:1px solid {{t.bd}};background:{{t.bg}};color:#F5F3FF;font:600 13px 'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"/></svg>{{t.n}}</button>
+</sc-for>
+</div>
+<sc-if value="{{themeSys}}" hint-placeholder-val="{{false}}"><span style="font-size:12px;color:#C4B5FD">Theo máy: đang Tối</span></sc-if>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+<div style="display:flex;flex-direction:column"><span style="font-weight:700;font-size:15px">Giảm chuyển động</span><span style="font-size:12px;color:#C4B5FD">Sao, quỹ đạo, dây chạy</span></div>
+<button role="switch" aria-checked="{{rm.aria}}" aria-label="Giảm chuyển động" onClick="{{toggleMotion}}" style="width:60px;height:34px;flex:none;padding:0;border:none;border-radius:17px;background:{{rm.bg}};position:relative;cursor:pointer"><span style="position:absolute;left:{{rm.knob}}px;top:4px;width:26px;height:26px;border-radius:50%;background:#FFFFFF;transition:left .25s"></span></button>
+</div>
+<sc-if value="{{rm.on}}" hint-placeholder-val="{{false}}">
+<span class="pp" style="font-size:12px;padding:8px 12px;border-radius:12px;background:rgba(34,211,238,.14);color:#67E8F9">Đã dừng sao lấp lánh, quỹ đạo và dây chạy. Chuyển cảnh chỉ còn mờ dần.</span>
+</sc-if>
+</section>
+
+<section class="glass card" aria-label="Chế độ hiển thị mặc định" style="position:absolute;left:80px;top:420px;width:340px;box-sizing:border-box;padding:20px;border-radius:26px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:12px;font-weight:700;color:#C4B5FD">Mở app ở chế độ</span>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+<button onClick="{{setOrbit}}" style="height:96px;border-radius:18px;border:1.5px solid {{vw.obd}};background:{{vw.obg}};color:#F5F3FF;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font:700 14px 'Inter',sans-serif">
+<span aria-hidden="true" style="position:relative;width:40px;height:40px"><span style="position:absolute;inset:8px;border-radius:50%;background:#7C3AED;box-shadow:0 0 12px #7C3AED"></span><span style="position:absolute;inset:0;border-radius:50%;border:1.5px dashed #C4B5FD"></span></span>Orbit</button>
+<button onClick="{{setList}}" style="height:96px;border-radius:18px;border:1.5px solid {{vw.lbd}};background:{{vw.lbg}};color:#F5F3FF;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font:700 14px 'Inter',sans-serif">
+<span aria-hidden="true" style="display:flex;flex-direction:column;gap:4px;width:40px"><span style="height:6px;border-radius:3px;background:#C4B5FD"></span><span style="height:6px;border-radius:3px;background:#C4B5FD;width:80%"></span><span style="height:6px;border-radius:3px;background:#C4B5FD;width:90%"></span></span>Danh sách</button>
+</div>
+<span style="font-size:12px;color:#C4B5FD">Danh sách hợp trình đọc màn hình và máy yếu.</span>
+</section>
+
+<section class="glass card" aria-label="Lưu offline" style="position:absolute;left:1020px;top:420px;width:340px;box-sizing:border-box;padding:20px;border-radius:26px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:12px;font-weight:700;color:#C4B5FD">Lưu offline trên máy này</span>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font:700 30px 'Space Grotesk'">{{cache.used}}</span><span style="font-size:13px;color:#C4B5FD">/ [MB] cho phép</span></div>
+<div role="progressbar" aria-label="Dung lượng đã dùng" aria-valuenow="{{cache.pct}}" aria-valuemin="0" aria-valuemax="100" style="height:10px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden"><span style="display:block;height:10px;width:{{cache.pct}}%;border-radius:5px;background:linear-gradient(90deg,#22D3EE,#7C3AED);transition:width .6s"></span></div>
+<span style="font-size:12px;color:#C4B5FD">{{cache.note}}</span>
+<button onClick="{{clearCache}}" style="height:46px;border-radius:23px;border:1px solid rgba(245,158,11,.6);background:none;color:#FCD34D;font:600 14px 'Inter',sans-serif;cursor:pointer">Xoá bộ nhớ đệm</button>
+</section>
+
+<a href="F03-Keys.dc.html" class="glass card" style="position:absolute;left:280px;top:690px;width:340px;box-sizing:border-box;padding:18px 20px;border-radius:26px;display:flex;align-items:center;gap:14px;text-decoration:none;color:#F5F3FF">
+<span style="width:48px;height:48px;flex:none;border-radius:16px;background:rgba(124,58,237,.4);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EDE9FE" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M15 8l2 2"/></svg></span>
+<span style="flex:1;display:flex;flex-direction:column"><span style="font-weight:700;font-size:15px">Key riêng</span><span style="font-size:12px;color:#C4B5FD">OpenAI ••••a1b2 · đang dùng</span></span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+</a>
+
+<button onClick="{{askLogout}}" class="glass card" style="position:absolute;left:820px;top:690px;width:340px;box-sizing:border-box;padding:18px 20px;border-radius:26px;display:flex;align-items:center;gap:14px;color:#F5F3FF;cursor:pointer;font:inherit;text-align:left">
+<span style="width:48px;height:48px;flex:none;border-radius:16px;background:rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FCA5A5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg></span>
+<span style="flex:1;display:flex;flex-direction:column"><span style="font-weight:700;font-size:15px">Đăng xuất</span><span style="font-size:12px;color:#C4B5FD">Thoát cả các app hoandat</span></span>
+</button>
+
+<sc-if value="{{logout}}" hint-placeholder-val="{{false}}">
+<div style="position:absolute;inset:0;background:rgba(6,4,26,.72);display:flex;align-items:center;justify-content:center">
+<div role="dialog" aria-modal="true" aria-label="Xác nhận đăng xuất" class="glass pp" style="width:420px;box-sizing:border-box;padding:26px;border-radius:28px;display:flex;flex-direction:column;gap:14px;background:rgba(30,20,72,.92)">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px">Rời trạm?</span>
+<span style="font-size:14px;color:#DDD6FE">Bạn sẽ đăng xuất ở mọi app hoandat. Bản nháp offline vẫn còn trên máy này.</span>
+<div style="display:flex;gap:10px">
+<button onClick="{{cancelLogout}}" style="flex:1;height:50px;border-radius:25px;border:1px solid rgba(167,139,250,.5);background:none;color:#EDE9FE;font:600 15px 'Inter',sans-serif;cursor:pointer">Ở lại</button>
+<a href="H02-SharedOpen.dc.html" style="flex:1;text-decoration:none;height:50px;border-radius:25px;background:#EF4444;color:#FFFFFF;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center">Đăng xuất</a>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:#F5F3FF">KnowFlow</span>
+</div>
+
+<nav aria-label="Chế độ xem" class="nav" style="position:absolute;left:480px;top:16px;height:52px;padding:4px;box-sizing:border-box;border-radius:26px;display:flex;gap:4px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)">
+<a href="C09-Universe.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Orbit</a>
+<a href="C13-Graph.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg>Graph</a>
+<a href="C15-Canvas.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Canvas</a>
+<a href="C11-Reader.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>Docs</a>
+</nav>
+
+<div style="position:absolute;right:28px;top:16px;display:flex;gap:10px;align-items:center">
+<a href="C20-Inbox.dc.html" aria-label="Thông báo, 3 chưa đọc" class="glass" style="position:relative;width:48px;height:48px;border-radius:16px;color:#F5F3FF;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span style="position:absolute;right:12px;top:11px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="glass" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;gap:8px;font:600 15px 'Space Grotesk',sans-serif;color:#F5F3FF">⌘ K</a>
+</div>
+
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<div style="position:absolute;left:10px;top:190px;width:52px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<a href="C09-Universe.dc.html" aria-label="Universe" style="margin-bottom:6px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg></a>
+<a href="C13-Graph.dc.html" aria-label="Graph" style="margin-bottom:22px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg></a>
+<a href="C01-CreateMenu.dc.html" aria-label="Tạo mới" style="margin-bottom:8px;width:46px;height:46px;border-radius:14px;background:rgba(124,58,237,.4);border:1px solid rgba(196,181,253,.7);display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 18px rgba(124,58,237,.6)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+<a href="C12-Search.dc.html" aria-label="Tìm kiếm" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
+<a href="C14-Copilot.dc.html" aria-label="AI Copilot" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.8 5.5L17 9.3l-5.2 1.8L10 16.5l-1.8-5.4L3 9.3l5.2-1.8zM18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/></svg></a>
+<a href="C10-Space.dc.html" aria-label="Spaces" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+<a href="C08-MyContent.dc.html" aria-label="Của tôi" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></a>
+<a href="H03-Settings.dc.html" aria-label="Cài đặt" style="width:46px;height:46px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+</div>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', lang: 'vi', reduce: false, view: 'orbit', cleared: false, logout: false }; }
+  renderVals() {
+    var kfSelf = this, kfDark = this.state.theme !== 'light';
+    var th = kfDark
+      ? { cls: 'kf-dark', bg: '#06041A', surface: 'rgba(30,20,72,.55)', border: 'rgba(167,139,250,.28)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', label: 'Tối', icon: 'M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z' }
+      : { cls: 'kf-light', bg: '#F7F5FF', surface: 'rgba(255,255,255,.78)', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', label: 'Sáng', icon: 'M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6L4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z' };
+    var self = this, st = this.state;
+    var cx = 720, cy = 440;
+    var ends = [[300, 230], [1140, 230], [250, 520], [1190, 520], [450, 740], [990, 740]];
+    var lines = ends.map(function (e) { var dx = e[0] - cx, dy = e[1] - cy; return { x: cx, y: cy, len: Math.sqrt(dx * dx + dy * dy), a: Math.atan2(dy, dx) * 180 / Math.PI }; });
+    var stars = []; for (var j = 0; j < 70; j++) { stars.push({ x: (j * 211) % 1440, y: (j * 97 + 31) % 900, r: j % 4 === 0 ? 2 : 1, d: (j % 9) * 0.35 }); }
+    var on = st.reduce;
+    var D = [
+      { href: 'C09-Universe.dc.html', label: 'Universe', name: 'Universe', icon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6' },
+      { href: 'C15-Canvas.dc.html', label: 'Canvas', name: 'Canvas', icon: 'M6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 6h8M7 8l4 8M17 8l-4 8' },
+      { href: 'C13-Graph.dc.html', label: 'Graph', name: 'Graph', icon: 'M5 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM19 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM10 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 6.5l10 2.5M6 8l3.5 9M17.5 11.5L11.5 17' },
+      { href: 'C01-CreateMenu.dc.html', label: '', name: 'Tạo mới', icon: 'M12 5v14M5 12h14', plus: 1 },
+      { href: 'C08-MyContent.dc.html', label: 'Của tôi', name: 'Của tôi', icon: 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21c1-4 4-6 8-6s7 2 8 6' }
+    ];
+    var dock = D.map(function (d) {
+      return { href: d.href, label: d.label, icon: d.icon, col: d.on || d.plus ? '#FFFFFF' : '#C4B5FD', s: d.plus ? 60 : 40, mt: d.plus ? -18 : 0,
+        bg: d.plus ? 'radial-gradient(circle at 35% 30%,#C4B5FD,#7C3AED 60%,#4C1D95)' : (d.on ? 'rgba(124,58,237,.55)' : 'transparent'),
+        sh: d.plus ? '0 0 26px rgba(124,58,237,.9)' : (d.on ? '0 0 16px rgba(124,58,237,.7)' : 'none') };
+    });
+    var vi = st.lang === 'vi', orbit = st.view === 'orbit';
+    return {
+      th: th, toggleTheme: function () { kfSelf.setState({ theme: kfDark ? 'light' : 'dark' }); },
+      
+      stars: stars, lines: lines, dock: dock,
+      fx: on ? { star: 'star-off', orb: '', ring: '', ln: 'ln-off' } : { star: 'star-on', orb: 'orb-on', ring: 'ring-on', ln: 'ln-on' },
+      apps: [{ n: 'Scribe', c: '#22D3EE' }, { n: 'Chat', c: '#10B981' }, { n: 'Localman', c: '#F59E0B' }, { n: 'Miu', c: '#EC4899' }],
+      lg: { vibg: vi ? '#7C3AED' : 'transparent', vibd: vi ? '#C4B5FD' : 'rgba(167,139,250,.35)', enbg: vi ? 'transparent' : '#7C3AED', enbd: vi ? 'rgba(167,139,250,.35)' : '#C4B5FD' },
+      rm: { on: on, aria: on ? 'true' : 'false', bg: on ? '#22D3EE' : 'rgba(255,255,255,.18)', knob: on ? 30 : 4 },
+      vw: { obg: orbit ? 'rgba(124,58,237,.45)' : 'transparent', obd: orbit ? '#C4B5FD' : 'rgba(167,139,250,.3)', lbg: orbit ? 'transparent' : 'rgba(124,58,237,.45)', lbd: orbit ? 'rgba(167,139,250,.3)' : '#C4B5FD' },
+      cache: st.cleared ? { used: '0 MB', pct: 0, note: 'Đã xoá. Tệp sẽ tải lại khi bạn mở.' } : { used: '[MB]', pct: 38, note: '12 tài liệu, 3 tệp Office, bộ editor' },
+      themeSys: st.theme === 'system',
+      themes: [['dark', 'Tối', 'M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z'], ['light', 'Sáng', 'M12 4V2M12 22v-2M4 12H2M22 12h-2M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z'], ['system', 'Theo hệ thống', 'M3 5h18v11H3zM8 20h8M12 16v4']].map(function (t) {
+        var on = (st.theme || 'dark') === t[0];
+        return { n: t[1], icon: t[2], aria: on ? 'true' : 'false', bg: on ? '#7C3AED' : 'transparent', bd: on ? '#C4B5FD' : 'rgba(167,139,250,.35)', pick: function () { self.setState({ theme: t[0] }); } };
+      }),
+      logout: st.logout,
+      setVi: function () { self.setState({ lang: 'vi' }); },
+      setEn: function () { self.setState({ lang: 'en' }); },
+      toggleMotion: function () { self.setState({ reduce: !on }); },
+      setOrbit: function () { self.setState({ view: 'orbit' }); },
+      setList: function () { self.setState({ view: 'list' }); },
+      clearCache: function () { self.setState({ cleared: true }); },
+      askLogout: function () { self.setState({ logout: true }); },
+      cancelLogout: function () { self.setState({ logout: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

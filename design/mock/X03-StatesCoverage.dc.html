@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · 18 trạng thái giao diện</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.card{border-radius:22px;padding:14px;background:linear-gradient(180deg,rgba(26,20,64,.8) 0%,rgba(13,10,36,.86) 100%);border:1.5px solid rgba(196,181,253,.5);box-shadow:inset 0 0 22px rgba(139,92,246,.32),inset 0 0 2px rgba(233,213,255,.5),inset 0 1px 0 rgba(255,255,255,.2),0 0 26px rgba(124,58,237,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:10px;height:300px;box-sizing:border-box}
+.vis{flex:1;border-radius:16px;background:radial-gradient(ellipse 80% 70% at 50% 40%,rgba(40,26,110,.55),rgba(10,7,32,.85));box-shadow:inset 0 0 18px rgba(139,92,246,.3),inset 0 0 0 1px rgba(196,181,253,.18);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;padding:12px;box-sizing:border-box}
+.ttl{font-weight:700;font-size:15px}
+.where{display:flex;gap:6px;flex-wrap:wrap}
+.where a{text-decoration:none;height:30px;padding:0 10px;border-radius:15px;border:1.5px solid rgba(196,181,253,.6);background:rgba(14,10,40,.6);box-shadow:inset 0 0 8px rgba(139,92,246,.35),0 0 8px rgba(124,58,237,.3);color:var(--link);font:700 12px 'Space Grotesk',sans-serif;display:flex;align-items:center}
+.mut{font-size:12px;color:var(--muted);text-align:center}
+.bar{height:8px;border-radius:4px;background:var(--border);box-shadow:0 0 8px rgba(139,92,246,.35)}
+.pill{box-shadow:inset 0 0 8px rgba(196,181,253,.25),0 0 10px rgba(124,58,237,.3)}
+[style*="background:var(--primary)"]{box-shadow:0 0 12px rgba(139,92,246,.7)}
+.ttl{color:#F5F3FF;text-shadow:0 0 10px rgba(167,139,250,.5)}
+.sk{background:linear-gradient(90deg,var(--border) 0%,var(--surface) 50%,var(--border) 100%);background-size:200% 100%;animation:shim 1.4s linear infinite;border-radius:8px}
+.btn{height:36px;padding:0 14px;border-radius:18px;background:linear-gradient(180deg,rgba(88,60,200,.6) 0%,rgba(44,26,112,.82) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;box-shadow:inset 0 0 12px rgba(196,181,253,.42),inset 0 1px 0 rgba(255,255,255,.3),0 0 14px rgba(139,92,246,.6);font:700 12px 'Inter',sans-serif;cursor:pointer}
+.ghost{height:36px;padding:0 14px;border-radius:18px;border:1.5px solid rgba(196,181,253,.55);background:rgba(14,10,40,.55);box-shadow:inset 0 0 10px rgba(139,92,246,.3);color:var(--text);font:600 12px 'Inter',sans-serif;cursor:pointer}
+.pill{height:28px;padding:0 10px;border-radius:14px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+@keyframes shim{to{background-position:-200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes dots{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes caret{50%{opacity:0}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.15);opacity:.5}}
+.spin{animation:spin 1s linear infinite}
+.d1{animation:dots 1s infinite}.d2{animation:dots 1s .2s infinite}.d3{animation:dots 1s .4s infinite}
+.caret{animation:caret 1s step-end infinite}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width:1440px;height:1500px;box-sizing:border-box;padding:40px 48px;position:relative;isolation:isolate;overflow:hidden;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column;gap:22px;--bg:{{T.bg}};--bg2:{{T.bg2}};--surface:{{T.surface}};--border:{{T.border}};--text:{{T.text}};--muted:{{T.muted}};--primary:{{T.primary}};--link:{{T.link}};--success:{{T.success}};--successText:{{T.successText}};--warn:{{T.warn}};--warnText:{{T.warnText}};--accent:{{T.accent}}">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2">
+<div aria-hidden="true" style="position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 80% 55% at 55% 30%,rgba(6,4,26,.6),rgba(6,4,26,.86))"></div>
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between">
+<div>
+<div style="font-size:13px;font-weight:600;color:{{T.muted}}">KnowFlow · UI states theo review</div>
+<h1 style="margin:4px 0 0;font-family:'Inter',sans-serif;font-weight:700;background:linear-gradient(90deg,#7DD3FC 0%,#60A5FA 36%,#A78BFA 70%,#D8B4FE 100%);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:42px;letter-spacing:-1px">18 trạng thái giao diện</h1>
+<span style="font-size:14px;color:{{T.muted}}">Mỗi thẻ: hình thu nhỏ + màn hình đang chứa trạng thái đó. Ba thẻ có viền là mẫu đầy đủ, chỉ định nghĩa ở đây.</span>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+
+<section class="card" aria-label="First-time onboarding">
+<div class="vis"><div style="display:flex;gap:6px"><span style="width:22px;height:6px;border-radius:3px;background:var(--primary)"></span><span style="width:10px;height:6px;border-radius:3px;background:var(--border)"></span><span style="width:10px;height:6px;border-radius:3px;background:var(--border)"></span></div><div style="display:flex;gap:10px"><span style="width:70px;height:56px;border-radius:14px;border:2px solid var(--primary);display:flex;align-items:center;justify-content:center;font:700 18px 'Space Grotesk'">VI</span><span style="width:70px;height:56px;border-radius:14px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font:700 18px 'Space Grotesk'">EN</span></div><span class="mut">Bước 1/3 · chọn ngôn ngữ</span></div>
+<span class="ttl">1 · Lần đầu vào</span><div class="where"><a href="S03-Onboarding.dc.html">S03</a></div>
+</section>
+
+<section class="card" aria-label="Empty Universe">
+<div class="vis"><span class="pulse" style="width:64px;height:64px;border-radius:50%;border:2px dashed var(--accent);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--accent)">+</span><span class="mut">Vũ trụ của bạn còn trống<br>Tạo hành tinh đầu tiên</span></div>
+<span class="ttl">2 · Universe trống</span><div class="where"><a href="S05-OrbitEmpty.dc.html">S05</a><a href="C09-Universe.dc.html">C09</a></div>
+</section>
+
+<section class="card" aria-label="Loading skeleton">
+<div class="vis"><div style="display:flex;gap:12px;align-items:center"><span class="sk" style="width:44px;height:44px;border-radius:50%"></span><span class="sk" style="width:70px;height:70px;border-radius:50%"></span><span class="sk" style="width:36px;height:36px;border-radius:50%"></span></div><span class="sk" style="width:70%;height:10px"></span><span class="sk" style="width:50%;height:10px"></span></div>
+<span class="ttl">3 · Đang tải / skeleton</span><div class="where"><a href="S04-OrbitSkeleton.dc.html">S04</a><a href="C09-Universe.dc.html">C09</a></div>
+</section>
+
+<section class="card" aria-label="Search loading">
+<div class="vis" style="align-items:stretch;justify-content:flex-start"><div style="height:36px;border-radius:18px;border:1px solid var(--border);display:flex;align-items:center;padding:0 12px;font-size:13px;gap:8px">dhcp<span class="caret" style="color:var(--accent)">|</span><span style="flex:1"></span><span class="spin" style="width:14px;height:14px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent)"></span></div><span class="sk" style="height:30px"></span><span class="sk" style="height:30px;width:85%"></span><span class="sk" style="height:30px;width:70%"></span></div>
+<span class="ttl">4 · Đang tìm</span><div class="where"><a href="C12-Search.dc.html">C12</a><a href="F01-Search.dc.html">F01</a></div>
+</section>
+
+<section class="card" aria-label="No search results">
+<div class="vis"><img src="/_blob/5a899644867961466e08c30df4f31912" alt="" aria-hidden="true" style="width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(124,58,237,.6))"><span class="mut">Không tìm thấy “dhcpv7”<br>Thử: DHCP · lease · DORA</span><div style="display:flex;gap:6px"><button class="btn">Hỏi AI</button><button class="ghost">Tạo ghi chú</button></div></div>
+<span class="ttl">5 · Không có kết quả</span><div class="where"><a href="C12-Search.dc.html">C12</a></div>
+</section>
+
+<section class="card" aria-label="AI thinking">
+<div class="vis" style="align-items:stretch;justify-content:flex-start"><div style="display:flex;align-items:center;gap:8px"><img class="pulse" src="/_blob/a96642c7304a45d2188b0f403cd0e6f1" alt="" aria-hidden="true" style="width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(124,58,237,.7))"><span class="pill" style="background:rgba(16,185,129,.18);color:var(--successText)">Jev đang tìm nguồn · 3 đoạn</span></div><span style="font-size:13px;line-height:1.5">DHCP cấp IP qua 4 bước: Discover, Offer<span class="caret" style="color:var(--accent)">|</span></span><div style="display:flex;gap:4px"><span class="d1" style="width:6px;height:6px;border-radius:50%;background:var(--muted)"></span><span class="d2" style="width:6px;height:6px;border-radius:50%;background:var(--muted)"></span><span class="d3" style="width:6px;height:6px;border-radius:50%;background:var(--muted)"></span></div><button class="ghost" style="align-self:flex-start">Dừng</button></div>
+<span class="ttl">6 · AI đang nghĩ / đang viết</span><div class="where"><a href="C14-Copilot.dc.html">C14</a><a href="F02-CopilotStates.dc.html">F02</a></div>
+</section>
+
+<section class="card" aria-label="No relevant sources">
+<div class="vis"><img src="/_blob/a96642c7304a45d2188b0f403cd0e6f1" alt="" aria-hidden="true" style="width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(245,158,11,.45))"><span class="mut">Kho chưa có câu trả lời<br>Không tốn key của bạn</span><button class="ghost">Tạo ghi chú về chủ đề này</button></div>
+<span class="ttl">7 · Không có nguồn liên quan</span><div class="where"><a href="C14-Copilot.dc.html">C14</a><a href="F02-CopilotStates.dc.html">F02</a></div>
+</section>
+
+<section class="card" aria-label="Parsing failed">
+<div class="vis" style="align-items:stretch"><div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:12px;border:1px solid var(--warn)"><span style="width:28px;height:28px;border-radius:8px;background:#C2410C;color:#FFFFFF;font:700 11px 'Space Grotesk';display:flex;align-items:center;justify-content:center">P</span><span style="flex:1;font-size:12px;font-weight:600">scan-lab.pdf</span><span class="pill" style="background:rgba(245,158,11,.18);color:var(--warnText)">Đọc lỗi</span></div><span class="mut" style="text-align:left">Ảnh scan mờ, OCR không đọc được chữ. Thử tệp rõ hơn hoặc bỏ qua bước OCR.</span><div style="display:flex;gap:6px"><button class="btn">Thử lại</button><button class="ghost">Bỏ qua</button></div></div>
+<span class="ttl">8 · Đọc tệp thất bại</span><div class="where"><a href="C16-ImportCenter.dc.html">C16</a><a href="C03-Upload.dc.html">C03</a></div>
+</section>
+
+<section class="card" aria-label="Offline reconnecting">
+<div class="vis"><img src="/_blob/941c0dd96847fe9849110759b28e1cd4" alt="" aria-hidden="true" style="width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(245,158,11,.45))"><span class="pill" style="background:rgba(245,158,11,.18);color:var(--warnText)"><span class="spin" style="width:12px;height:12px;border-radius:50%;border:2px solid rgba(245,158,11,.4);border-top-color:var(--warn)"></span>Offline · đang kết nối lại</span><span class="mut">3 thay đổi chờ đồng bộ<br>Vẫn đọc và sửa được tệp đã lưu</span></div>
+<span class="ttl">9 · Offline / kết nối lại</span><div class="where"><a href="H04-Offline.dc.html">H04</a></div>
+</section>
+
+<section class="card" aria-label="Access denied">
+<div class="vis"><img src="/_blob/62323fef5b19bcdb614db1abe4e0145e" alt="" aria-hidden="true" style="width:72px;height:72px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(124,58,237,.6))"><span class="mut">Bài này chưa được duyệt<br>hoặc là bài riêng tư</span><button class="ghost">Về vũ trụ</button></div>
+<span class="ttl">10 · Không có quyền</span><div class="where"><a href="X02-Errors.dc.html">X02</a><a href="C11-Reader.dc.html">C11</a></div>
+</section>
+
+<section class="card" aria-label="Delete confirmation">
+<div class="vis"><span style="font-weight:700;font-size:14px">Xoá “Ghi chú: swap”?</span><span class="mut">Vào Thùng rác 30 ngày, khôi phục được</span><div style="display:flex;gap:6px"><button class="ghost">Huỷ</button><button class="btn" style="background:var(--warn);color:#1C1206">Chuyển vào thùng rác</button></div></div>
+<span class="ttl">11 · Xác nhận xoá</span><div class="where"><a href="C08-MyContent.dc.html">C08</a><a href="X01-Feedback.dc.html">X01</a></div>
+</section>
+
+<section class="card" aria-label="Conflict resolution">
+<div class="vis"><div style="display:flex;gap:8px;width:100%"><div style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--accent);font-size:11px"><b>Máy này</b><br>21:05</div><div style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--primary);font-size:11px"><b>Server</b><br>21:12</div></div><div style="display:flex;gap:6px"><button class="ghost">Giữ bản này</button><button class="btn">Giữ cả hai</button></div></div>
+<span class="ttl">12 · Giải quyết xung đột</span><div class="where"><a href="H04-Offline.dc.html">H04</a></div>
+</section>
+
+<section class="card" aria-label="Import progress">
+<div class="vis" style="align-items:stretch"><span style="font-size:12px;font-weight:600">lab-notes.docx · Chia đoạn</span><div class="bar"><div style="width:64%;height:8px;border-radius:4px;background:var(--accent)"></div></div><span style="font-size:12px;font-weight:600">subnet.xlsx · Lập chỉ mục</span><div class="bar"><div style="width:88%;height:8px;border-radius:4px;background:var(--primary)"></div></div><span class="mut" style="text-align:left">2/3 tệp xong</span></div>
+<span class="ttl">13 · Tiến độ nhập</span><div class="where"><a href="C16-ImportCenter.dc.html">C16</a><a href="C03-Upload.dc.html">C03</a></div>
+</section>
+
+<section class="card" aria-label="Publish success failure">
+<div class="vis"><div style="display:flex;gap:8px"><span class="pill" style="background:rgba(16,185,129,.18);color:var(--successText)">Đã gửi duyệt</span><span class="pill" style="background:rgba(245,158,11,.18);color:var(--warnText)">Chưa gửi được</span></div><span class="mut">Thất bại: đã giữ bản nháp<br>Mất mạng giữa chừng · Thử lại</span></div>
+<span class="ttl">14 · Gửi bài thành công / thất bại</span><div class="where"><a href="C06-Submit.dc.html">C06</a></div>
+</section>
+
+<section class="card" aria-label="Permission changed" style="border:2px solid {{T.accent}}">
+<div class="vis" style="align-items:stretch;justify-content:flex-start;gap:10px">
+<div role="status" style="display:flex;gap:10px;padding:10px;border-radius:14px;background:var(--surface);border:1px solid var(--accent)">
+<span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:50%;background:rgba(34,211,238,.18);color:var(--accent);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg></span>
+<div><div style="font-size:13px;font-weight:700">Quyền của bạn vừa đổi</div><div style="font-size:12px;color:var(--muted)">Đạt cho bạn vai trò Người duyệt. Tải lại để thấy Hàng duyệt.</div></div>
+</div>
+<div style="display:flex;gap:6px"><button class="btn">Tải lại</button><button class="ghost">Để sau</button></div>
+<span style="font-size:11px;color:var(--muted)">Mất quyền khi đang xem bài: nội dung mờ đi, giữ phần đã nhập, hiện nút Về vũ trụ.</span>
+</div>
+<span class="ttl">15 · Quyền thay đổi <span class="pill" style="background:rgba(34,211,238,.18);color:var(--accent)">mẫu đầy đủ</span></span><div class="where"><a href="C18-Share.dc.html">C18</a><a href="C20-Inbox.dc.html">C20</a><a href="C19-Settings.dc.html">C19</a></div>
+</section>
+
+<section class="card" aria-label="Document autosaved">
+<div class="vis"><div style="display:flex;flex-direction:column;gap:6px"><span class="pill" style="background:rgba(16,185,129,.18);color:var(--successText)"><span style="width:8px;height:8px;border-radius:50%;background:var(--success)"></span>Đã lưu 21:24</span><span class="pill" style="background:rgba(124,58,237,.22);color:var(--muted)"><span class="spin" style="width:10px;height:10px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--muted)"></span>Đang lưu…</span><span class="pill" style="background:rgba(34,211,238,.16);color:var(--accent)">Offline · lưu trên máy</span></div></div>
+<span class="ttl">16 · Đã tự lưu</span><div class="where"><a href="C02-Editor.dc.html">C02</a></div>
+</section>
+
+<section class="card" aria-label="AI citation unavailable" style="border:2px solid {{T.accent}}">
+<div class="vis" style="align-items:stretch;justify-content:flex-start;gap:8px">
+<span style="font-size:13px;line-height:1.45">Lease DHCP thường kéo dài 24 giờ <span class="pill" style="height:22px;padding:0 6px;background:rgba(245,158,11,.18);color:var(--warnText);font-size:11px">chưa có nguồn</span></span>
+<div style="padding:8px 10px;border-radius:12px;border:1px dashed var(--warn);font-size:12px;color:var(--warnText)">Jev không tìm thấy đoạn nào trong kho ủng hộ câu này. Câu bị gắn cờ, không xoá.</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="ghost">Ẩn câu chưa có nguồn</button><button class="ghost">Hỏi lại, chỉ dùng nguồn</button></div>
+</div>
+<span class="ttl">17 · AI không có trích dẫn <span class="pill" style="background:rgba(34,211,238,.18);color:var(--accent)">mẫu đầy đủ</span></span><div class="where"><a href="C14-Copilot.dc.html">C14</a></div>
+</section>
+
+<section class="card" aria-label="Retry recover" style="border:2px solid {{T.accent}}">
+<div class="vis" style="align-items:stretch;justify-content:flex-start;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:700;flex:1">{{rr.title}}</span><span class="pill" style="background:{{rr.bg}};color:{{rr.col}}">{{rr.badge}}</span></div>
+<span style="font-size:12px;color:var(--muted)">{{rr.body}}</span>
+<div class="bar"><div style="width:{{rr.w}}%;height:8px;border-radius:4px;background:{{rr.barc}}"></div></div>
+<div style="display:flex;gap:6px"><button class="btn" onClick="{{retry}}">{{rr.btn}}</button><button class="ghost" onClick="{{reset}}">Đặt lại demo</button></div>
+</div>
+<span class="ttl">18 · Thử lại / khôi phục <span class="pill" style="background:rgba(34,211,238,.18);color:var(--accent)">mẫu đầy đủ</span></span><div class="where"><a href="C16-ImportCenter.dc.html">C16</a><a href="C06-Submit.dc.html">C06</a><a href="C14-Copilot.dc.html">C14</a></div>
+</section>
+
+</div>
+
+<section style="border-radius:22px;padding:18px;background:{{T.surface}};border:1px solid {{T.border}};display:flex;flex-direction:column;gap:8px">
+<span style="font-weight:700">Quy tắc chung cho mọi trạng thái lỗi</span>
+<span style="font-size:13px;color:{{T.muted}}">Nói điều gì đã xảy ra và việc người dùng làm được ngay. Giữ dữ liệu người dùng đã nhập. Thử lại tự động tối đa 3 lần (1 s, 3 s, 9 s), sau đó hiện nút Thử lại. Không chỉ dùng màu: luôn có chữ hoặc biểu tượng đi kèm.</span>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', rr: 0 }; }
+  renderVals() {
+    var self = this, dark = this.state.theme === 'dark';
+    var D = { bg: '#06041A', bg2: '#120A3A', surface: 'rgba(30,20,72,.55)', border: 'rgba(167,139,250,.28)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', accent: '#22D3EE', link: '#C4B5FD', success: '#10B981', successText: '#6EE7B7', warn: '#F59E0B', warnText: '#FCD34D' };
+    var L = { bg: '#F7F5FF', bg2: '#ECE8FF', surface: 'rgba(255,255,255,.78)', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', accent: '#0E7490', link: '#6D28D9', success: '#047857', successText: '#047857', warn: '#B45309', warnText: '#92400E' };
+    var T = dark ? D : L;
+    var R = [
+      { title: 'Gửi bài thất bại', badge: 'Lần 3/3', body: 'Đã thử lại tự động 3 lần. Bản nháp vẫn an toàn trên máy.', w: 100, btn: 'Thử lại ngay', bg: 'rgba(245,158,11,.18)', col: T.warnText, barc: T.warn },
+      { title: 'Đang thử lại…', badge: 'Đang chạy', body: 'Gửi lại phần còn thiếu, không gửi lại từ đầu.', w: 60, btn: 'Đang thử…', bg: 'rgba(124,58,237,.22)', col: T.muted, barc: T.primary },
+      { title: 'Đã khôi phục', badge: 'Xong', body: 'Bài đã vào hàng duyệt. Không mất gì.', w: 100, btn: 'Xem bài', bg: 'rgba(16,185,129,.18)', col: T.successText, barc: T.success }
+    ];
+    return {
+      T: T, rr: R[this.state.rr],
+      themeLabel: dark ? 'Chuyển sang Sáng' : 'Chuyển sang Tối',
+      toggleTheme: function () { self.setState({ theme: dark ? 'light' : 'dark' }); },
+      retry: function () { self.setState({ rr: Math.min(self.state.rr + 1, 2) }); },
+      reset: function () { self.setState({ rr: 0 }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

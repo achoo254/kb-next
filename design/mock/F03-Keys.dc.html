@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Key riêng</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:linear-gradient(180deg,rgba(26,20,64,.8) 0%,rgba(13,10,36,.86) 100%);border:1.5px solid rgba(196,181,253,.5);box-shadow:inset 0 0 22px rgba(139,92,246,.32),inset 0 0 2px rgba(233,213,255,.5),inset 0 1px 0 rgba(255,255,255,.2),0 0 26px rgba(124,58,237,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+button[style*="background:#7C3AED"],a[style*="background:#7C3AED"],button[style*="background:{{th.primary}}"],a[style*="background:{{th.primary}}"]{background:linear-gradient(180deg,rgba(88,60,200,.6) 0%,rgba(44,26,112,.82) 100%)!important;border:1.5px solid rgba(196,181,253,.9)!important;color:#FFFFFF!important;box-shadow:inset 0 0 12px rgba(196,181,253,.42),inset 0 1px 0 rgba(255,255,255,.3),0 0 14px rgba(139,92,246,.6)!important}
+section,aside{scrollbar-width:thin}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.star{animation:twinkle 3.4s ease-in-out infinite}
+.fl{animation:float 5s ease-in-out infinite}
+.spin{animation:spin 1s linear infinite}
+.pop{animation:pop .35s cubic-bezier(.2,.9,.3,1.3) both}
+.shake{animation:shake .35s ease-in-out 2}
+.card{transition:transform .25s cubic-bezier(.2,.9,.3,1.3)}
+.card:hover{transform:translateY(-4px)}
+.dk{transition:transform .25s cubic-bezier(.2,.9,.3,1.4)}
+.dk:hover{transform:translateY(-6px)}
+.kf-light{background:#F7F5FF!important;color:#1A1033!important}
+.kf-light .glass{background:rgba(255,255,255,.78)!important;border-color:rgba(109,40,217,.18)!important}
+.kf-light [style*="color:#F5F3FF"],.kf-light [style*="color:#EDE9FE"],.kf-light [style*="color:#DDD6FE"],.kf-light [style*="color:#E4E0FF"]{color:#1A1033!important}
+.kf-light [style*="color:#C4B5FD"],.kf-light [style*="color:#A78BFA"]{color:#5B4B8A!important}
+.kf-light [style*="color:#6EE7B7"]{color:#047857!important}
+.kf-light [style*="color:#FCD34D"],.kf-light [style*="color:#FDE68A"]{color:#92400E!important}
+.kf-light [style*="color:#F59E0B"]{color:#B45309!important}
+.kf-light [style*="color:#67E8F9"],.kf-light [style*="color:#22D3EE"]{color:#0E7490!important}
+.kf-light [style*="color:#FCA5A5"]{color:#B91C1C!important}
+.kf-light [style*="background:#06041A"],.kf-light [style*="background:#07051C"],.kf-light [style*="background:#0B0726"],.kf-light [style*="background:#160C40"],.kf-light [style*="background:#1A1146"]{background:#FFFFFF!important}
+.kf-light [style*="background:rgba(12,6,40"],.kf-light [style*="background:rgba(22,14,58"],.kf-light [style*="background:rgba(18,12,52"],.kf-light [style*="background:rgba(30,20,72"],.kf-light [style*="background:rgba(20,10,60"],.kf-light [style*="background:rgba(15,23,42"]{background:rgba(255,255,255,.9)!important}
+.kf-light [style*="background:radial-gradient(ellipse"]{background:radial-gradient(ellipse 60% 55% at 45% 40%,#FFFFFF 0%,#ECE8FF 55%,#E2DBFF 100%)!important}
+.kf-light [style*="background:rgba(6,4,26"]{background:rgba(236,232,255,.62)!important}
+.kf-light [style*="background:rgba(255,255,255,.1"],.kf-light [style*="background:rgba(255,255,255,.08"],.kf-light [style*="background:rgba(255,255,255,.18"]{background:rgba(109,40,217,.14)!important}
+.kf-light [style*="background:#7C3AED"],.kf-light [style*="background:#EF4444"]{color:#FFFFFF!important}
+.kf-light mark{color:#1A1033!important;background:rgba(14,116,144,.2)!important}
+.kf-light .star,.kf-light [class*="star"]{background:#C4B5FD!important}
+.kf-light a{color:#6D28D9}
+.kf-dark :focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.kf-light :focus-visible{outline:2px solid #0E7490;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{th.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:#06041A;color:#F5F3FF;font-family:'Inter',system-ui,sans-serif">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover">
+<div aria-hidden="true" style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 55% 45%,rgba(6,4,26,.55),rgba(6,4,26,.82))"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="60">
+<span class="star" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:#FFFFFF;animation-delay:{{s.d}}s"></span>
+</sc-for>
+<div style="position:absolute;left:0;top:0;width:1440px;height:900px;transform-origin:0 0;transform:translate(78px,10px) scale(.944)">
+
+
+<img class="fl" src="/_blob/5a168036f5b4859cdde4a9f7750d7dce" alt="" aria-hidden="true" style="position:absolute;left:1090px;top:70px;width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 0 24px rgba(124,58,237,.55))">
+<div style="position:absolute;left:120px;top:90px;display:flex;flex-direction:column;gap:6px">
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;letter-spacing:-1px;background:linear-gradient(90deg,#8FD8FF,#C4B5FD);-webkit-background-clip:text;background-clip:text;color:transparent">Key riêng</span>
+<span style="font-size:14px;color:#DDD6FE">Key được mã hoá, không ai xem lại được. Không có key: vẫn tìm được nhờ Jev.</span>
+</div>
+
+<div style="position:absolute;left:120px;top:190px;width:820px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px">
+<sc-for list="{{provs}}" as="p" hint-placeholder-count="3">
+<div class="card glass" style="border-radius:26px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;border-color:{{p.bd}};box-shadow:{{p.sh}}">
+<button onClick="{{p.pick}}" aria-label="Chọn {{p.n}}" class="fl" style="width:84px;height:84px;border-radius:50%;border:none;padding:0;cursor:pointer;background:radial-gradient(circle at 32% 28%,{{p.hi}},{{p.c}} 45%,{{p.dk}});box-shadow:0 0 26px {{p.c}};color:#FFFFFF;font:700 15px 'Space Grotesk';animation-delay:{{p.dl}}s">{{p.k}}</button>
+<span style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700">{{p.n}}</span>
+<span style="display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:14px;background:{{p.sbg}};color:{{p.scol}};font-size:12px;font-weight:600"><span style="width:8px;height:8px;border-radius:50%;background:{{p.scol}}"></span>{{p.status}}</span>
+<span style="font-size:11px;color:#C4B5FD;min-height:16px">{{p.sub}}</span>
+<sc-if value="{{p.canDel}}" hint-placeholder-val="{{false}}">
+<button onClick="{{askDelete}}" style="height:44px;padding:0 14px;border-radius:22px;border:1px solid rgba(245,158,11,.5);background:none;color:#FCD34D;font:600 12px 'Inter',sans-serif;cursor:pointer">Xoá key</button>
+</sc-if>
+</div>
+</sc-for>
+</div>
+
+<section class="glass pop" key="{{flow.k}}" aria-label="Thêm key Gemini" style="position:absolute;left:120px;top:470px;width:820px;box-sizing:border-box;border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#A5F3FC,#06B6D4 45%,#164E63)"></span>
+<span style="font-size:17px;font-weight:700">Thêm key Gemini</span>
+<span style="margin-left:auto;font-size:12px;color:#C4B5FD">Mô phỏng:</span>
+<button onClick="{{toggleGood}}" style="height:36px;padding:0 12px;border-radius:18px;border:1px solid rgba(167,139,250,.4);background:none;color:#EDE9FE;font:600 12px 'Inter',sans-serif;cursor:pointer">{{flow.goodLabel}}</button>
+</div>
+<div class="{{flow.shake}}" style="display:flex;gap:10px;align-items:flex-end">
+<label style="flex:1;display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#C4B5FD">API key
+<input type="password" value="AIzaSyD-demo-key-0000" readOnly="{{true}}" style="height:50px;padding:0 16px;border-radius:16px;border:1.5px solid {{flow.bd}};background:rgba(12,6,40,.7);color:#F5F3FF;font:500 15px 'Inter',sans-serif;outline:none"></label>
+<button onClick="{{save}}" style="height:50px;min-width:170px;padding:0 18px;border-radius:25px;border:none;background:{{flow.btnBg}};color:{{flow.btnCol}};font:700 14px 'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+<sc-if value="{{flow.checking}}" hint-placeholder-val="{{false}}"><span class="spin" aria-hidden="true" style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.35);border-top-color:#FFFFFF"></span></sc-if>
+<sc-if value="{{flow.ok}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg></sc-if>
+{{flow.btn}}</button>
+</div>
+<span role="status" style="font-size:13px;font-weight:600;color:{{flow.msgCol}}">{{flow.msg}}</span>
+<a href="https://aistudio.google.com/apikey" style="font-size:12px;font-weight:600">Lấy key Gemini ở đâu?</a>
+</section>
+
+<section class="glass" aria-label="Dùng key nào" style="position:absolute;left:980px;top:190px;width:340px;box-sizing:border-box;border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:17px;font-weight:700">Dùng key nào</span>
+<span style="font-size:12px;color:#C4B5FD">Cho hỏi đáp, tóm tắt và dịch</span>
+<fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+<legend style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Nhà cung cấp</legend>
+<sc-for list="{{radios}}" as="r" hint-placeholder-count="3">
+<label style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border-radius:14px;background:{{r.bg}};border:1px solid {{r.bd}};cursor:pointer;opacity:{{r.op}}">
+<input type="radio" name="prov" checked="{{r.on}}" disabled="{{r.dis}}" onChange="{{r.pick}}" style="width:18px;height:18px;accent-color:#7C3AED">
+<span style="flex:1;font-size:14px;font-weight:600">{{r.n}}</span><span style="font-size:11px;color:#C4B5FD">{{r.note}}</span></label>
+</sc-for>
+</fieldset>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#C4B5FD">Model
+<select style="height:48px;padding:0 12px;border-radius:14px;border:1px solid rgba(167,139,250,.4);background:#160C40;color:#F5F3FF;font:500 14px 'Inter',sans-serif">
+<option>gpt-4.1-mini · rẻ, nhanh</option><option>gemini-3.8-flash</option><option>claude-haiku-5-5</option>
+</select></label>
+<div style="padding:12px;border-radius:14px;background:rgba(12,6,40,.6);display:flex;flex-direction:column;gap:6px;font-size:12px">
+<span style="font-weight:700">Các trạng thái key</span>
+<span style="display:flex;gap:6px;flex-wrap:wrap">
+<span style="padding:4px 8px;border-radius:10px;background:rgba(255,255,255,.08);color:#C4B5FD">Chưa có</span>
+<span style="padding:4px 8px;border-radius:10px;background:rgba(16,185,129,.18);color:#6EE7B7">Hợp lệ</span>
+<span style="padding:4px 8px;border-radius:10px;background:rgba(245,158,11,.18);color:#FCD34D">Bị từ chối</span>
+<span style="padding:4px 8px;border-radius:10px;background:rgba(245,158,11,.18);color:#FCD34D">Hết credit</span>
+</span>
+</div>
+</section>
+
+<sc-if value="{{confirm}}" hint-placeholder-val="{{false}}">
+<div style="position:absolute;inset:0;background:rgba(6,4,26,.72);display:flex;align-items:center;justify-content:center">
+<div role="alertdialog" aria-label="Xoá key OpenAI" class="glass pop" style="width:420px;border-radius:28px;padding:26px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;background:rgba(22,14,58,.95);border-color:rgba(245,158,11,.6)">
+<span style="width:56px;height:56px;border-radius:50%;background:rgba(245,158,11,.18);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FCD34D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></span>
+<span style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700">Xoá key OpenAI ••••a1b2?</span>
+<span style="font-size:14px;color:#DDD6FE">Các nút AI sẽ cần key khác. Tìm kiếm vẫn chạy bình thường.</span>
+<div style="display:flex;gap:10px">
+<button onClick="{{doDelete}}" style="flex:1;height:48px;border-radius:24px;border:none;background:#F59E0B;color:#1C1206;font:700 14px 'Inter',sans-serif;cursor:pointer">Xoá key</button>
+<button onClick="{{cancel}}" style="flex:1;height:48px;border-radius:24px;border:1px solid rgba(167,139,250,.45);background:none;color:#EDE9FE;font:600 14px 'Inter',sans-serif;cursor:pointer">Giữ lại</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:#F5F3FF">KnowFlow</span>
+</div>
+
+<nav aria-label="Chế độ xem" class="nav" style="position:absolute;left:480px;top:16px;height:52px;padding:4px;box-sizing:border-box;border-radius:26px;display:flex;gap:4px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)">
+<a href="C09-Universe.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Orbit</a>
+<a href="C13-Graph.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg>Graph</a>
+<a href="C15-Canvas.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Canvas</a>
+<a href="C11-Reader.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:#C4B5FD;font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>Docs</a>
+</nav>
+
+<div style="position:absolute;right:28px;top:16px;display:flex;gap:10px;align-items:center">
+<a href="C20-Inbox.dc.html" aria-label="Thông báo, 3 chưa đọc" class="glass" style="position:relative;width:48px;height:48px;border-radius:16px;color:#F5F3FF;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span style="position:absolute;right:12px;top:11px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="glass" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;gap:8px;font:600 15px 'Space Grotesk',sans-serif;color:#F5F3FF">⌘ K</a>
+</div>
+
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<div style="position:absolute;left:10px;top:190px;width:52px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<a href="C09-Universe.dc.html" aria-label="Universe" style="margin-bottom:6px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg></a>
+<a href="C13-Graph.dc.html" aria-label="Graph" style="margin-bottom:22px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg></a>
+<a href="C01-CreateMenu.dc.html" aria-label="Tạo mới" style="margin-bottom:8px;width:46px;height:46px;border-radius:14px;background:rgba(124,58,237,.4);border:1px solid rgba(196,181,253,.7);display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 18px rgba(124,58,237,.6)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+<a href="C12-Search.dc.html" aria-label="Tìm kiếm" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
+<a href="C14-Copilot.dc.html" aria-label="AI Copilot" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.8 5.5L17 9.3l-5.2 1.8L10 16.5l-1.8-5.4L3 9.3l5.2-1.8zM18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/></svg></a>
+<a href="C10-Space.dc.html" aria-label="Spaces" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+<a href="C08-MyContent.dc.html" aria-label="Của tôi" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#C4B5FD"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></a>
+<a href="H03-Settings.dc.html" aria-label="Cài đặt" style="width:46px;height:46px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+</div>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { theme: 'dark', step: 0, good: true, prov: 0, confirm: false, openaiGone: false }; }
+  componentWillUnmount() { clearTimeout(this.t); }
+  renderVals() {
+    var kfSelf = this, kfDark = this.state.theme !== 'light';
+    var th = kfDark
+      ? { cls: 'kf-dark', bg: '#06041A', surface: 'rgba(30,20,72,.55)', border: 'rgba(167,139,250,.28)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', label: 'Tối', icon: 'M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z' }
+      : { cls: 'kf-light', bg: '#F7F5FF', surface: 'rgba(255,255,255,.78)', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', label: 'Sáng', icon: 'M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6L4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z' };
+    var self = this, st = this.state;
+    var P = [
+      { n: 'OpenAI', k: 'AI', c: '#10B981', hi: '#A7F3D0', dk: '#064E3B' },
+      { n: 'Gemini', k: 'G', c: '#06B6D4', hi: '#A5F3FC', dk: '#164E63' },
+      { n: 'Claude', k: 'C', c: '#F59E0B', hi: '#FDE68A', dk: '#78350F' }
+    ];
+    var gem = st.step === 2 ? 'ok' : (st.step === 3 ? 'bad' : 'none');
+    var S = {
+      ok: ['Hợp lệ ••••a1b2', 'kiểm 21:10', 'rgba(16,185,129,.18)', '#6EE7B7'],
+      none: ['Chưa có', 'Thêm key bên dưới', 'rgba(255,255,255,.08)', '#C4B5FD'],
+      bad: ['Bị từ chối', 'kiểm 21:12 · 401', 'rgba(245,158,11,.18)', '#FCD34D'],
+      quota: ['Hết credit', 'kiểm 20:40', 'rgba(245,158,11,.18)', '#FCD34D'],
+      gemOk: ['Hợp lệ ••••9f3c', 'vừa kiểm', 'rgba(16,185,129,.18)', '#6EE7B7']
+    };
+    var keys = [st.openaiGone ? 'none' : 'ok', gem === 'ok' ? 'gemOk' : gem, 'quota'];
+    var provs = P.map(function (p, i) {
+      var s = S[keys[i]], on = st.prov === i;
+      return { n: p.n, k: p.k, c: p.c, hi: p.hi, dk: p.dk, dl: i * 0.5, status: s[0], sub: s[1], sbg: s[2], scol: s[3],
+        canDel: i === 0 && !st.openaiGone, bd: on ? p.c : 'rgba(167,139,250,.28)', sh: on ? '0 0 26px ' + p.c : 'none',
+        pick: function () { self.setState({ prov: i }); } };
+    });
+    var usable = [keys[0] === 'ok', keys[1] === 'gemOk', false];
+    var R = [['OpenAI', 'gpt-4.1-mini'], ['Gemini', 'gemini-3.8-flash'], ['Claude', 'hết credit']];
+    var radios = R.map(function (r, i) { var on = st.prov === i && usable[i]; return { n: r[0], note: usable[i] ? r[1] : (i === 2 ? r[1] : 'chưa có key'), on: on, dis: !usable[i], op: usable[i] ? 1 : 0.5,
+      bg: on ? 'rgba(124,58,237,.35)' : 'rgba(12,6,40,.5)', bd: on ? '#A78BFA' : 'rgba(167,139,250,.2)', pick: function () { self.setState({ prov: i }); } }; });
+    var F = [
+      { btn: 'Lưu và kiểm', msg: 'Kiểm bằng một lần gọi miễn phí tới Google.', msgCol: '#C4B5FD', bd: 'rgba(167,139,250,.4)', btnBg: '#7C3AED', btnCol: '#FFFFFF' },
+      { btn: 'Đang kiểm…', msg: 'Đang hỏi Google key này có dùng được không…', msgCol: '#67E8F9', bd: '#22D3EE', btnBg: 'rgba(124,58,237,.5)', btnCol: '#FFFFFF' },
+      { btn: 'Đã lưu', msg: 'Key hợp lệ. Đã mã hoá và lưu, chỉ hiện 4 ký tự cuối.', msgCol: '#6EE7B7', bd: '#10B981', btnBg: '#10B981', btnCol: '#04231A' },
+      { btn: 'Thử lại', msg: 'Google từ chối key này (401). Kiểm lại key rồi lưu lại.', msgCol: '#FCD34D', bd: '#F59E0B', btnBg: '#F59E0B', btnCol: '#1C1206' }
+    ];
+    var f = F[st.step];
+    var stars = []; for (var j = 0; j < 70; j++) { stars.push({ x: (j * 211) % 1440, y: (j * 97 + 31) % 900, r: j % 4 === 0 ? 2 : 1, d: (j % 9) * 0.35 }); }
+    var D = [
+      { href: 'C09-Universe.dc.html', label: 'Universe', name: 'Universe', icon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6' },
+      { href: 'C15-Canvas.dc.html', label: 'Canvas', name: 'Canvas', icon: 'M6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 6h8M7 8l4 8M17 8l-4 8' },
+      { href: 'C13-Graph.dc.html', label: 'Graph', name: 'Graph', icon: 'M5 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM19 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM10 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 6.5l10 2.5M6 8l3.5 9M17.5 11.5L11.5 17' },
+      { href: 'C01-CreateMenu.dc.html', label: '', name: 'Tạo mới', icon: 'M12 5v14M5 12h14', plus: 1 },
+      { href: 'C08-MyContent.dc.html', label: 'Của tôi', name: 'Của tôi', icon: 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21c1-4 4-6 8-6s7 2 8 6' }
+    ];
+    var dock = D.map(function (d) {
+      return { href: d.href, label: d.label, icon: d.icon, col: d.plus ? '#FFFFFF' : '#C4B5FD', s: d.plus ? 60 : 40, mt: d.plus ? -18 : 0,
+        bg: d.plus ? 'radial-gradient(circle at 35% 30%,#C4B5FD,#7C3AED 60%,#4C1D95)' : 'transparent',
+        sh: d.plus ? '0 0 26px rgba(124,58,237,.9)' : 'none' };
+    });
+    return {
+      th: th, toggleTheme: function () { kfSelf.setState({ theme: kfDark ? 'light' : 'dark' }); },
+      
+      provs: provs, radios: radios, stars: stars, dock: dock, confirm: st.confirm,
+      flow: { k: 'f' + st.step, btn: f.btn, msg: f.msg, msgCol: f.msgCol, bd: f.bd, btnBg: f.btnBg, btnCol: f.btnCol,
+        checking: st.step === 1, ok: st.step === 2, shake: st.step === 3 ? 'shake' : '', goodLabel: st.good ? 'Key đúng' : 'Key sai' },
+      toggleGood: function () { self.setState({ good: !st.good, step: 0 }); },
+      save: function () {
+        if (st.step === 1) return;
+        self.setState({ step: 1 });
+        clearTimeout(self.t);
+        self.t = setTimeout(function () { self.setState({ step: self.state.good ? 2 : 3 }); }, 1400);
+      },
+      askDelete: function () { self.setState({ confirm: true }); },
+      cancel: function () { self.setState({ confirm: false }); },
+      doDelete: function () { self.setState({ confirm: false, openaiGone: true }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

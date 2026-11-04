@@ -1,0 +1,71 @@
+/** UI strings in Vietnamese and English. `{app}` is replaced by the brand name. */
+export const vi = {
+  'layout.skip': 'Bỏ qua tới nội dung',
+  'layout.home': 'Trang chủ {app}',
+  'layout.signIn': 'Đăng nhập',
+  'layout.signOut': 'Đăng xuất',
+  'layout.checkingSession': 'Đang kiểm tra phiên đăng nhập…',
+
+  'signIn.title': 'Đăng nhập vào {app}',
+  'signIn.lead': 'Đọc, tìm và hỏi AI về tri thức trong Universe bằng tài khoản {domain}.',
+  'signIn.cta': 'Đăng nhập bằng {domain}',
+  'signIn.note': 'Dùng tài khoản {domain}: đăng nhập bằng Google, GitHub hoặc Apple. App không bao giờ thấy mật khẩu của bạn.',
+  'login.fail': 'Đăng nhập chưa thành công. Thử lại nhé.',
+  'login.unavailable': 'Đăng nhập tạm thời chưa mở. Quay lại sau ít phút nhé.',
+  'login.busy': 'Có quá nhiều lần đăng nhập từ mạng của bạn. Đợi vài phút rồi thử lại.',
+
+  'screen.placeholder': 'Màn này đang được dựng theo board {code} của mock.',
+  'screen.S01': 'Trang giới thiệu',
+  'screen.S02': 'Đăng nhập',
+  'screen.C09': 'Universe',
+  'screen.C10': 'Không gian tri thức',
+  'screen.C11': 'Đọc tài liệu',
+  'screen.C12': 'Tìm kiếm',
+  'screen.C13': 'Graph',
+  'screen.C14': 'AI Copilot',
+  'screen.C15': 'Canvas',
+  'screen.C08': 'Nội dung của tôi',
+  'screen.H03': 'Cài đặt',
+  'screen.A01': 'Quản trị',
+  'screen.H02': 'Link chia sẻ',
+  'screen.X02': 'Không tìm thấy trang',
+  'notFound.lead': 'Trang này không có trong Universe.',
+  'notFound.back': 'Về trang chủ',
+};
+
+export type MessageKey = keyof typeof vi;
+export type Messages = Record<MessageKey, string>;
+
+export const en: Messages = {
+  'layout.skip': 'Skip to content',
+  'layout.home': '{app} home',
+  'layout.signIn': 'Sign in',
+  'layout.signOut': 'Sign out',
+  'layout.checkingSession': 'Checking your sign-in…',
+
+  'signIn.title': 'Sign in to {app}',
+  'signIn.lead': 'Read, search and ask AI about the knowledge in the Universe with your {domain} account.',
+  'signIn.cta': 'Sign in with {domain}',
+  'signIn.note': 'Use your {domain} account: sign in with Google, GitHub or Apple. The app never sees your password.',
+  'login.fail': 'Sign-in did not go through. Please try again.',
+  'login.unavailable': 'Sign-in is not open right now. Please come back in a few minutes.',
+  'login.busy': 'Too many sign-ins from your network. Wait a few minutes and try again.',
+
+  'screen.placeholder': 'This screen is being built from mock board {code}.',
+  'screen.S01': 'Landing',
+  'screen.S02': 'Sign in',
+  'screen.C09': 'Universe',
+  'screen.C10': 'Knowledge space',
+  'screen.C11': 'Reader',
+  'screen.C12': 'Search',
+  'screen.C13': 'Graph',
+  'screen.C14': 'AI Copilot',
+  'screen.C15': 'Canvas',
+  'screen.C08': 'My content',
+  'screen.H03': 'Settings',
+  'screen.A01': 'Admin',
+  'screen.H02': 'Shared link',
+  'screen.X02': 'Page not found',
+  'notFound.lead': 'This page is not in the Universe.',
+  'notFound.back': 'Back to home',
+};

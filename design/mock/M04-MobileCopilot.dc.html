@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · AI Copilot trên điện thoại</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+.dk div.msg:not([style*="align-self:flex-end"]){background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%)!important;border:1.5px solid rgba(196,181,253,.55)!important;box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35)!important}
+.dk label.glass{background:rgba(14,11,38,.85)!important;border:1.5px solid rgba(196,181,253,.5)!important;box-shadow:inset 0 0 14px rgba(139,92,246,.3),0 0 14px rgba(124,58,237,.25)!important}
+.dk .msg a[href^="M05"]{background:rgba(255,255,255,.05)!important;border:1px solid rgba(196,181,253,.22)}
+.dk .glass{background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%)!important;border:1.5px solid rgba(196,181,253,.55)!important;box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.dk nav[aria-label="Điều hướng chính"]{background:rgba(12,9,32,.82)!important;border:1.5px solid rgba(196,181,253,.5)!important;box-shadow:inset 0 0 18px rgba(139,92,246,.3),inset 0 1px 0 rgba(255,255,255,.2),0 0 26px rgba(124,58,237,.4)!important}
+.bgimg{position:absolute;inset:0;width:390px;height:844px;object-fit:cover;object-position:50% 50%;pointer-events:none}
+.bgveil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(6,4,26,.35) 0%,rgba(6,4,26,.15) 40%,rgba(6,4,26,.7) 100%)}
+.lt .bgimg{opacity:.18}.lt .bgveil{background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,.85))}
+body{margin:0;background:#06041A}
+.dk a{color:#C4B5FD}.lt a{color:#6D28D9}
+.dk .glass{background:rgba(30,20,72,.6);border:1px solid rgba(167,139,250,.28);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.lt .glass{background:rgba(255,255,255,.85);border:1px solid rgba(109,40,217,.18);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt button:focus-visible,.lt a:focus-visible,.lt input:focus-visible{outline-color:#0E7490}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.9}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinr{to{transform:rotate(-360deg)}}
+@keyframes core{0%,100%{box-shadow:0 0 26px 6px rgba(124,58,237,.7)}50%{box-shadow:0 0 44px 14px rgba(34,211,238,.55)}}
+@keyframes grow{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes draw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.star{animation:twinkle 3s ease-in-out infinite}
+.r1{animation:spin 8s linear infinite}
+.r2{animation:spinr 12s linear infinite}
+.core{animation:core 3s ease-in-out infinite}
+.nd{animation:grow .45s cubic-bezier(.2,.9,.3,1.4) both}
+.wire{animation:draw .35s ease-out both;transform-origin:top}
+.msg{animation:rise .45s ease-out both}
+.drift{animation:drift 4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="{{T.cls}}" style="width:390px;height:844px;position:relative;overflow:hidden;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif">
+<div aria-hidden="true" style="position:absolute;inset:0;background:{{T.sky}}"></div>
+<img class="bgimg" src="/_blob/9327732977cfed2b3387b0901df2e24a" alt="" aria-hidden="true"><div class="bgveil" aria-hidden="true"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="40">
+<span class="star" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:{{T.star}};animation-delay:{{s.d}}s"></span>
+</sc-for>
+
+<div style="position:absolute;left:16px;right:16px;top:14px;display:flex;align-items:center;gap:10px">
+<div aria-hidden="true" style="position:relative;width:52px;height:52px;flex:none">
+<span class="r1" style="position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(167,139,250,.6)"></span>
+<span class="r2" style="position:absolute;inset:6px;border-radius:50%;border:2px solid transparent;border-top-color:#22D3EE"></span>
+<img class="core" src="/_blob/a96642c7304a45d2188b0f403cd0e6f1" alt="" style="position:absolute;inset:2px;width:48px;height:48px;object-fit:contain">
+</div>
+<div style="flex:1;display:flex;flex-direction:column;min-width:0"><span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px">AI Copilot</span><span style="font-size:12px;color:{{T.muted}}">{{status}}</span></div>
+<a href="Mobile.dc.html" aria-label="Đóng" class="glass" style="width:44px;height:44px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.text}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+</div>
+
+<div role="group" aria-label="Phạm vi hỏi" style="position:absolute;left:16px;right:16px;top:76px;display:flex;align-items:center;gap:6px">
+<span style="font-size:12px;font-weight:600;color:{{T.muted}}">Phạm vi</span>
+<sc-for list="{{scopes}}" as="sc" hint-placeholder-count="2">
+<button onClick="{{sc.pick}}" aria-pressed="{{sc.on}}" style="height:36px;padding:0 12px;border-radius:18px;border:1px solid {{sc.bd}};background:{{sc.bg}};color:{{sc.col}};font:600 12px 'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap"><span style="width:10px;height:10px;border-radius:50%;background:{{sc.dot}}"></span>{{sc.n}}</button>
+</sc-for>
+</div>
+
+<div role="group" aria-label="Trạng thái mock" style="position:absolute;left:16px;right:16px;top:122px;display:flex;gap:6px">
+<sc-for list="{{modes}}" as="m" hint-placeholder-count="4">
+<button onClick="{{m.pick}}" aria-pressed="{{m.on}}" style="flex:1;height:44px;padding:0 4px;border-radius:14px;border:1px solid {{m.bd}};background:{{m.bg}};color:{{m.col}};font:600 11px 'Inter',sans-serif;cursor:pointer;line-height:1.15">{{m.n}}</button>
+</sc-for>
+</div>
+
+<div style="position:absolute;left:16px;right:16px;top:178px;bottom:170px;display:flex;flex-direction:column;gap:12px;overflow-y:auto">
+<span style="align-self:flex-start;font-size:11px;font-weight:600;padding:4px 10px;border-radius:10px;background:{{T.soft}};color:{{T.muted}}">Mở từ: Giao thức DHCP · hỏi trong {{scopeName}}</span>
+<div class="msg" style="align-self:flex-end;max-width:280px;padding:12px 14px;border-radius:20px 20px 4px 20px;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35);color:#FFFFFF;font-size:15px;font-weight:600">{{q}}</div>
+
+<sc-if value="{{isAnswer}}" hint-placeholder-val="{{true}}">
+<div class="msg" style="animation-delay:.15s;padding:14px;border-radius:22px;background:{{T.card}};border:1px solid {{T.border}};display:flex;flex-direction:column;gap:12px">
+<span style="font-size:14px;font-weight:700">DHCP · 4 bước DORA <span style="font-size:12px;font-weight:600;color:{{T.muted}}">[1][2]</span></span>
+<div style="display:flex;flex-direction:column;align-items:stretch">
+<sc-for list="{{nodes}}" as="n" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;align-items:center">
+<sc-if value="{{n.wire}}" hint-placeholder-val="{{false}}"><span class="wire" style="width:2px;height:14px;background:linear-gradient(#7C3AED,#22D3EE);animation-delay:{{n.wd}}s"></span></sc-if>
+<span class="nd" style="width:100%;display:flex;align-items:center;gap:10px;min-height:48px;padding:8px 12px;box-sizing:border-box;border-radius:14px;border:1.5px solid {{n.c}};background:{{T.surface}};animation-delay:{{n.d}}s">
+<span style="width:30px;height:30px;flex:none;border-radius:9px;background:{{n.c}};color:#06041A;font:700 14px 'Space Grotesk';display:flex;align-items:center;justify-content:center">{{n.k}}</span>
+<span style="flex:1;display:flex;flex-direction:column"><span style="font-size:13px;font-weight:700">{{n.n}}</span><span style="font-size:12px;color:{{T.muted}}">{{n.t}}</span></span>
+</span>
+</div>
+</sc-for>
+</div>
+<span style="font-size:12px;font-weight:600;color:{{T.muted}}">Nguồn</span>
+<a href="M05-MobileDocs.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-radius:14px;background:{{T.surface}};color:{{T.text}}"><span style="font:700 11px 'Space Grotesk';color:{{T.muted}}">[1]</span><span style="flex:1;font-size:13px;font-weight:600">Lab DHCP § DORA</span><span style="font:700 10px 'Space Grotesk';padding:3px 7px;border-radius:8px;background:{{T.chip}}">Chính thức</span></a>
+<a href="M05-MobileDocs.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-radius:14px;background:{{T.surface}};color:{{T.text}}"><span style="font:700 11px 'Space Grotesk';color:{{T.muted}}">[2]</span><span style="flex:1;font-size:13px;font-weight:600">lab-notes.docx § DHCP</span><span style="font:700 10px 'Space Grotesk';padding:3px 7px;border-radius:8px;background:{{T.chip}}">Của bạn</span></a>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<span style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:6px 10px;border-radius:12px;background:{{T.successBg}};color:{{T.successText}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>Jev: 2/2 trích dẫn khớp</span>
+<span style="font-size:11px;font-weight:600;padding:6px 10px;border-radius:12px;background:{{T.soft}};color:{{T.muted}}">Key OpenAI ••••a1b2</span>
+</div>
+<div style="display:flex;gap:8px">
+<a href="Flow.dc.html" style="flex:1;text-decoration:none;height:44px;border-radius:22px;background:{{T.accentBtn}};color:{{T.accentBtnText}};font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">Lưu thành lối đi</a>
+<a href="C15-Canvas.dc.html" style="flex:1;text-decoration:none;height:44px;border-radius:22px;border:1px solid {{T.ghostBd}};color:{{T.ghostText}};font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">Mở Canvas</a>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isCiteGone}}" hint-placeholder-val="{{false}}">
+<div class="msg" style="padding:14px;border-radius:22px;background:{{T.card}};border:1px solid {{T.border}};display:flex;flex-direction:column;gap:10px">
+<span style="font-size:14px;line-height:1.5">Máy mới hỏi cả mạng bằng broadcast để xin IP <span style="font-size:12px;font-weight:700;color:{{T.muted}}">[1]</span>. <span style="text-decoration:underline;text-decoration-color:#F59E0B;text-decoration-thickness:2px;text-underline-offset:3px">Server giữ IP đó cho máy trong 24 giờ</span> <span style="font-size:12px;font-weight:700;color:{{T.warnText}};text-decoration:line-through">[2]</span>.</span>
+<div role="alert" style="display:flex;gap:10px;padding:12px;border-radius:16px;background:{{T.warnBg}};border:1px solid #F59E0B">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{T.warnText}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 3l10 18H2zM12 10v4M12 17v.5"/></svg>
+<span style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:700;color:{{T.warnText}}">Nguồn [2] không còn khả dụng</span><span style="font-size:12px;color:{{T.text}}">Bài đó vừa bị quản trị ẩn. Câu gạch chân cam chưa có nguồn, đừng tin vội.</span></span>
+</div>
+<div style="display:flex;gap:8px">
+<button style="flex:1;height:44px;border-radius:22px;border:none;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35);color:#FFFFFF;font:700 13px 'Inter',sans-serif;cursor:pointer">Hỏi lại với nguồn khác</button>
+<button style="flex:1;height:44px;border-radius:22px;border:1px solid {{T.ghostBd}};background:none;color:{{T.ghostText}};font:600 13px 'Inter',sans-serif;cursor:pointer">Bỏ câu này</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isNoKey}}" hint-placeholder-val="{{false}}">
+<div class="msg" style="padding:16px;border-radius:22px;background:{{T.card}};border:1px solid rgba(245,158,11,.55);display:flex;flex-direction:column;gap:12px">
+<span style="font-size:14px;font-weight:700;color:{{T.warnText}}">Jev tìm thấy 3 đoạn liên quan</span>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{found}}" as="f" hint-placeholder-count="3">
+<a href="M05-MobileDocs.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border-radius:14px;background:{{T.surface}};color:{{T.text}}"><span style="flex:1;font-size:13px;font-weight:600">{{f.n}}</span><span style="width:56px;height:6px;border-radius:3px;background:{{T.soft}}"><span style="display:block;height:6px;border-radius:3px;width:{{f.w}}%;background:#10B981"></span></span></a>
+</sc-for>
+</div>
+<span style="font-size:14px;line-height:1.45">Muốn AI viết câu trả lời và vẽ sơ đồ, thêm key của bạn. Key được mã hoá, không ai xem lại được.</span>
+<a href="F03-Keys.dc.html" style="text-decoration:none;height:48px;border-radius:24px;background:#F59E0B;color:#1C1206;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">Mở Key riêng</a>
+</div>
+</sc-if>
+
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+<div class="msg" style="padding:20px 16px;border-radius:22px;background:{{T.card}};border:1px solid {{T.border}};display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+<span class="drift" style="width:84px;height:84px;border-radius:50%;border:2px dashed {{T.muted}};display:flex;align-items:center;justify-content:center;font:700 26px 'Space Grotesk';color:{{T.muted}}">?</span>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px">Kho chưa có</span>
+<span style="font-size:14px;color:{{T.muted}};line-height:1.45">Chưa hành tinh nào trong {{scopeName}} nói về chuyện này. Không tốn key của bạn.</span>
+<div style="display:flex;gap:8px;width:100%">
+<a href="M02-MobileCreate.dc.html" style="flex:1;text-decoration:none;height:44px;border-radius:22px;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35);color:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">Thêm tài liệu</a>
+<button onClick="{{widen}}" style="flex:1;height:44px;border-radius:22px;border:1px solid {{T.ghostBd}};background:none;color:{{T.ghostText}};font:600 13px 'Inter',sans-serif;cursor:pointer">Mở rộng phạm vi</button>
+</div>
+</div>
+</sc-if>
+</div>
+
+<label class="glass" style="position:absolute;left:12px;right:12px;bottom:96px;height:60px;border-radius:30px;display:flex;align-items:center;gap:6px;padding:0 6px 0 18px">
+<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Câu hỏi cho AI</span>
+<input type="text" placeholder="Hỏi tiếp…" style="flex:1;min-width:0;border:none;background:none;color:{{T.text}};font:500 15px 'Inter',sans-serif;outline:none">
+<button aria-label="Nói" style="width:44px;height:44px;border-radius:50%;border:none;background:{{T.soft}};color:{{T.text}};cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+<button aria-label="Gửi" style="width:48px;height:48px;border-radius:50%;border:none;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35);color:#FFFFFF;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg></button>
+</label>
+
+<nav aria-label="Điều hướng chính" class="glass" style="position:absolute;left:12px;right:12px;bottom:14px;height:72px;border-radius:36px;display:flex;align-items:center;justify-content:space-around">
+<sc-for list="{{dock}}" as="d" hint-placeholder-count="5">
+<a href="{{d.href}}" aria-label="{{d.label}}" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:{{d.col}};font-size:10px;font-weight:600;min-width:52px">
+<span style="width:{{d.s}}px;height:{{d.s}}px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:{{d.bg}};box-shadow:{{d.sh}};margin-top:{{d.mt}}px;color:{{d.ic}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{d.icon}}"/></svg></span>{{d.short}}</a>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { mode: 0, scope: 1, theme: 'dark' }; }
+  renderVals() {
+    var self = this, st = this.state, m = st.mode, dark = st.theme !== 'light';
+    var D = { cls: 'dk', bg: '#06041A', sky: 'radial-gradient(ellipse 80% 40% at 50% 10%,#2B1670 0%,#120A3A 55%,#06041A 90%)', surface: 'rgba(30,20,72,.75)', card: 'rgba(12,6,40,.7)', border: 'rgba(167,139,250,.28)', text: '#F5F3FF', muted: '#C4B5FD', primary: '#7C3AED', star: '#FFFFFF', successBg: 'rgba(16,185,129,.18)', successText: '#6EE7B7', warnBg: 'rgba(245,158,11,.14)', warnText: '#FCD34D', chip: 'rgba(124,58,237,.45)', soft: 'rgba(255,255,255,.08)', ghostBd: 'rgba(167,139,250,.45)', ghostText: '#EDE9FE', accentBtn: '#22D3EE', accentBtnText: '#06041A', themeLabel: 'Chuyển sang giao diện sáng', themeIcon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4' };
+    var L = { cls: 'lt', bg: '#F7F5FF', sky: 'radial-gradient(ellipse 80% 40% at 50% 10%,#E4DBFF 0%,#ECE8FF 55%,#F7F5FF 90%)', surface: '#FFFFFF', card: 'rgba(255,255,255,.9)', border: 'rgba(109,40,217,.18)', text: '#1A1033', muted: '#5B4B8A', primary: '#6D28D9', star: '#C4B5FD', successBg: 'rgba(4,120,87,.12)', successText: '#047857', warnBg: 'rgba(180,83,9,.12)', warnText: '#92400E', chip: 'rgba(109,40,217,.14)', soft: 'rgba(109,40,217,.08)', ghostBd: 'rgba(109,40,217,.35)', ghostText: '#4C1D95', accentBtn: '#0E7490', accentBtnText: '#FFFFFF', themeLabel: 'Chuyển sang giao diện tối', themeIcon: 'M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z' };
+    var T = dark ? D : L;
+    var S = [['Space Networking', '#7C3AED'], ['Tài liệu DHCP', '#22D3EE']];
+    var scopes = S.map(function (s, i) { var on = st.scope === i; return { n: s[0], dot: s[1], on: on ? 'true' : 'false', bg: on ? T.primary : T.soft, col: on ? '#FFFFFF' : T.text, bd: on ? T.primary : T.border, pick: function () { self.setState({ scope: i }); } }; });
+    var M = ['Có key', 'Nguồn bị ẩn', 'Chưa có key', 'Kho chưa có'];
+    var modes = M.map(function (n, i) { var on = m === i; return { n: n, on: on ? 'true' : 'false', bg: on ? T.primary : T.soft, col: on ? '#FFFFFF' : T.text, bd: on ? T.primary : T.border, pick: function () { self.setState({ mode: i }); } }; });
+    var N = [['D', 'Discover', 'Máy hét lên cả mạng xin IP', '#C4B5FD'], ['O', 'Offer', 'Server mời một IP', '#67E8F9'], ['R', 'Request', 'Máy xin đúng IP đó', '#C4B5FD'], ['A', 'Acknowledge', 'Chốt, cho mượn có hạn', '#67E8F9']];
+    var nodes = N.map(function (n, i) { return { k: n[0], n: n[1], t: n[2], c: n[3], wire: i > 0, d: 0.25 + i * 0.22, wd: 0.15 + i * 0.22 }; });
+    var stars = []; for (var j = 0; j < 40; j++) { stars.push({ x: (j * 97) % 390, y: (j * 61 + 21) % 844, r: j % 4 === 0 ? 2 : 1, d: (j % 7) * 0.4 }); }
+    var DK = [['Mobile.dc.html', 'Vũ trụ', 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6'], ['C13-Graph.dc.html', 'Graph', 'M6 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM18 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 16a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM8 6h8M7 8l4 8M17 8l-4 8'], ['M02-MobileCreate.dc.html', '', 'M12 5v14M5 12h14'], ['C08-MyContent.dc.html', 'Của tôi', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6'], ['M04-MobileCopilot.dc.html', 'Copilot', 'M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z']];
+    var dock = DK.map(function (d, i) { var on = i === 4, plus = i === 2; return { href: d[0], short: d[1], label: d[1] || 'Tạo mới', icon: d[2], col: on ? T.text : T.muted, ic: plus || on ? '#FFFFFF' : T.muted, s: plus ? 54 : 38, mt: plus ? -16 : 0, bg: plus || on ? 'linear-gradient(180deg,rgba(88,60,200,.55),rgba(44,26,112,.82))' : 'transparent', sh: plus || on ? 'inset 0 0 0 1.5px rgba(196,181,253,.9),inset 0 0 12px rgba(196,181,253,.45),0 0 16px rgba(139,92,246,.75)' : 'none' }; });
+    return {
+      T: T, stars: stars, scopes: scopes, modes: modes, nodes: nodes, dock: dock,
+      scopeName: st.scope === 0 ? 'Space Networking' : 'tài liệu DHCP',
+      isAnswer: m === 0, isCiteGone: m === 1, isNoKey: m === 2, isEmpty: m === 3,
+      q: m === 3 ? 'Blockchain hoạt động thế nào?' : 'Máy mới vào mạng lấy IP kiểu gì?',
+      status: m === 0 ? 'Trả lời bằng key của bạn' : (m === 1 ? 'Một nguồn không còn khả dụng' : (m === 2 ? 'Chưa có key · vẫn tìm được' : 'Jev đã tìm, chưa thấy')),
+      found: [{ n: 'Lab DHCP § Discover', w: 96 }, { n: 'Packet Journey § Lớp 3', w: 71 }, { n: 'lab-notes.docx § DHCP', w: 64 }],
+      widen: function () { self.setState({ scope: 0 }); },
+      toggleTheme: function () { self.setState({ theme: dark ? 'light' : 'dark' }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

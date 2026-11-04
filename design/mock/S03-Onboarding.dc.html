@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>KnowFlow · Onboarding</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#06041A}
+a{color:#C4B5FD}a:hover{color:#DDD6FE}
+.glass{background:rgba(24,16,64,.52);border:1px solid rgba(167,139,250,.32);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.lt .glass{background:rgba(255,255,255,.62);border-color:rgba(109,40,217,.22)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes spinr{to{transform:rotate(-360deg)}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes breathe{0%,100%{filter:drop-shadow(0 0 30px rgba(124,58,237,.75)) drop-shadow(0 0 70px rgba(34,211,238,.25))}50%{filter:drop-shadow(0 0 50px rgba(124,58,237,.95)) drop-shadow(0 0 110px rgba(34,211,238,.4))}}
+@keyframes stage{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.cr{transition:transform .35s cubic-bezier(.2,.9,.3,1.4),opacity .5s,filter .35s}
+.cr:hover{transform:scale(1.08)}
+.fl{animation:float 6s ease-in-out infinite}
+.orb{animation:breathe 5s ease-in-out infinite}
+.orbspin{animation:spin 120s linear infinite}
+@keyframes oglow{0%,100%{filter:drop-shadow(0 0 2px rgba(196,181,253,.7)) drop-shadow(0 0 7px rgba(139,92,246,.55));opacity:.72}50%{filter:drop-shadow(0 0 3px rgba(224,242,254,.85)) drop-shadow(0 0 11px rgba(139,92,246,.75));opacity:.88}}
+.orbitglow{animation:oglow 4s ease-in-out infinite;-webkit-mask-image:linear-gradient(90deg,transparent 12%,#000 30%);mask-image:linear-gradient(90deg,transparent 12%,#000 30%)}
+@keyframes orun{from{offset-distance:0%}to{offset-distance:100%}}
+.odot{position:absolute;left:0;top:0;border-radius:50%;offset-rotate:0deg;offset-anchor:center;animation-name:orun;animation-timing-function:linear;animation-iteration-count:infinite;pointer-events:none}
+.trav{animation:spin 11s linear infinite}
+.trav2{animation:spinr 16s linear infinite}
+.tw{animation:twinkle 3.2s ease-in-out infinite}
+.stage{animation:stage 3.4s ease-in-out infinite}
+.msg{animation:rise .6s ease-out both}
+.pop{animation:pop .35s cubic-bezier(.2,.9,.3,1.3) both}
+.dcard{transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
+.dcard:hover{transform:perspective(900px) rotateX(-6deg) rotateY(0deg) translateY(-10px)!important}
+.nav a:hover{background:rgba(124,58,237,.25)}
+a:focus-visible,button:focus-visible{outline:2px solid #22D3EE;outline-offset:2px}
+.lt a:focus-visible,.lt button:focus-visible{outline-color:#0E7490}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<style>
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.shim{background:linear-gradient(90deg,rgba(124,58,237,.14) 0%,rgba(196,181,253,.32) 50%,rgba(124,58,237,.14) 100%);background-size:800px 100%;animation:shimmer 1.6s linear infinite}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+.pulse{animation:pulse 1.8s ease-in-out infinite}
+@keyframes suck{0%{transform:rotate(0deg) translateX(110px) scale(1);opacity:1}100%{transform:rotate(540deg) translateX(0) scale(.1);opacity:0}}
+.suck{animation:suck 3.2s ease-in infinite}
+@keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,-1px)}80%{transform:translate(2px,1px)}}
+.shake{animation:shake .5s ease-in-out infinite}
+.ring1{animation:spin 6s linear infinite}
+.ring2{animation:spinr 9s linear infinite}
+@keyframes warp{0%{transform:translateX(0) scaleX(1);opacity:0}30%{opacity:1}100%{transform:translateX(-160px) scaleX(3);opacity:0}}
+.warp{animation:warp 1.4s ease-in infinite}
+.btnp:hover{filter:brightness(1.15)}
+</style>
+</helmet>
+<div class="{{T.cls}}" style="width:1440px;height:900px;position:relative;overflow:hidden;background:{{T.bg}};color:{{T.text}};font-family:'Inter',system-ui,sans-serif">
+<img src="/_blob/42f83192f57abb44ac4cfbe3bd649a21" alt="" aria-hidden="true" style="position:absolute;inset:0;width:1440px;height:900px;object-fit:cover;filter:{{T.bgFilter}}">
+<div aria-hidden="true" style="position:absolute;inset:0;background:{{T.veil}}"></div>
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="40">
+<span class="tw" aria-hidden="true" style="position:absolute;left:{{s.x}}px;top:{{s.y}}px;width:{{s.r}}px;height:{{s.r}}px;border-radius:50%;background:#FFFFFF;animation-delay:{{s.d}}s"></span>
+</sc-for>
+<svg aria-hidden="true" width="1440" height="900" viewBox="0 0 1440 900" style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible">
+<defs>
+<linearGradient id="orbG" gradientUnits="userSpaceOnUse" x1="260" y1="0" x2="1140" y2="0"><stop offset="0" stop-color="#6D28D9" stop-opacity=".15"/><stop offset=".2" stop-color="#7C3AED" stop-opacity=".6"/><stop offset=".45" stop-color="#A78BFA" stop-opacity=".95"/><stop offset=".6" stop-color="#C4B5FD" stop-opacity="1"/><stop offset=".85" stop-color="#818CF8" stop-opacity=".85"/><stop offset="1" stop-color="#6366F1" stop-opacity=".4"/></linearGradient>
+<linearGradient id="orbV" gradientUnits="userSpaceOnUse" x1="0" y1="90" x2="0" y2="600"><stop offset="0" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".5" stop-color="#C4B5FD" stop-opacity=".95"/><stop offset="1" stop-color="#A78BFA" stop-opacity=".7"/></linearGradient>
+<linearGradient id="spoke" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A78BFA" stop-opacity=".05"/><stop offset=".5" stop-color="#A78BFA" stop-opacity=".4"/><stop offset="1" stop-color="#C4B5FD" stop-opacity=".08"/></linearGradient>
+<filter id="orbBloom" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="3.5"/></filter>
+<radialGradient id="tintFade"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+<mask id="tmnet" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="900"><circle cx="590" cy="154" r="125" fill="url(#tintFade)"/></mask>
+<mask id="tmk8s" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="900"><circle cx="822" cy="158" r="125" fill="url(#tintFade)"/></mask>
+<mask id="tmobs" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="900"><circle cx="954" cy="293" r="125" fill="url(#tintFade)"/></mask>
+<mask id="tmme" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="900"><circle cx="899" cy="464" r="125" fill="url(#tintFade)"/></mask>
+<mask id="tmwk" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="900"><circle cx="655" cy="532" r="125" fill="url(#tintFade)"/></mask>
+<mask id="tmdkr" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="900"><circle cx="475" cy="435" r="125" fill="url(#tintFade)"/></mask>
+<mask id="tmlnx" maskUnits="userSpaceOnUse" x="0" y="0" width="1440" height="900"><circle cx="464" cy="250" r="125" fill="url(#tintFade)"/></mask>
+</defs>
+<g stroke="url(#spoke)" stroke-width="1" fill="none"><path d="M700 335 L590 154"/><path d="M700 335 L822 158"/><path d="M700 335 L954 293"/><path d="M700 335 L899 464"/><path d="M700 335 L655 532"/><path d="M700 335 L475 435"/><path d="M700 335 L464 250"/></g>
+<g fill="none" stroke="#A78BFA" stroke-width="1" stroke-dasharray="1.5 7" stroke-linecap="round" opacity=".4"><path d="M1001.6 335.0 A301.6 232.0 0.0 1 1 398.4 335.0 A301.6 232.0 0.0 1 1 1001.6 335.0"/><path d="M963.5 425.7 A278.7 104.0 19.0 1 1 436.5 244.3 A278.7 104.0 19.0 1 1 963.5 425.7"/></g>
+<g fill="none" stroke="#8B5CF6" stroke-width="5" opacity=".5" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g>
+<g fill="none"><path stroke="url(#orbG)" stroke-width="1.6" d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path stroke="url(#orbG)" stroke-width="1.2" d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path stroke="url(#orbV)" stroke-width="1.2" d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g>
+<g mask="url(#tmnet)" fill="none"><g stroke="#A78BFA" stroke-width="6" opacity=".7" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g><g stroke="#A78BFA" stroke-width="1.6"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g></g>
+<g mask="url(#tmk8s)" fill="none"><g stroke="#60A5FA" stroke-width="6" opacity=".7" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g><g stroke="#60A5FA" stroke-width="1.6"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g></g>
+<g mask="url(#tmobs)" fill="none"><g stroke="#34D399" stroke-width="6" opacity=".7" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g><g stroke="#34D399" stroke-width="1.6"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g></g>
+<g mask="url(#tmme)" fill="none"><g stroke="#F472B6" stroke-width="6" opacity=".7" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g><g stroke="#F472B6" stroke-width="1.6"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g></g>
+<g mask="url(#tmwk)" fill="none"><g stroke="#E879F9" stroke-width="6" opacity=".7" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g><g stroke="#E879F9" stroke-width="1.6"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g></g>
+<g mask="url(#tmdkr)" fill="none"><g stroke="#FBBF24" stroke-width="6" opacity=".7" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g><g stroke="#FBBF24" stroke-width="1.6"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g></g>
+<g mask="url(#tmlnx)" fill="none"><g stroke="#22D3EE" stroke-width="6" opacity=".7" filter="url(#orbBloom)"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g><g stroke="#22D3EE" stroke-width="1.6"><path d="M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0"/><path d="M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0"/><path d="M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6"/></g></g>
+</svg>
+<span class="odot" aria-hidden="true" style="width:12px;height:12px;background:#F0F9FF;box-shadow:0 0 10px 4px #7DD3FC,0 0 22px 8px rgba(125,211,252,.4);offset-path:path('M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0');animation-duration:26s;animation-delay:-0.0s;"></span>
+<span class="odot" aria-hidden="true" style="width:9px;height:9px;background:#EDE9FE;box-shadow:0 0 9px 4px #A78BFA;offset-path:path('M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0');animation-duration:26s;animation-delay:-6.5s;"></span>
+<span class="odot" aria-hidden="true" style="width:10px;height:10px;background:#F5F3FF;box-shadow:0 0 10px 4px #C4B5FD,0 0 18px 6px rgba(167,139,250,.4);offset-path:path('M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0');animation-duration:26s;animation-delay:-13.0s;"></span>
+<span class="odot" aria-hidden="true" style="width:7px;height:7px;background:#CFFAFE;box-shadow:0 0 8px 3px #22D3EE;offset-path:path('M960.0 335.0 A260.0 200.0 0.0 1 1 440.0 335.0 A260.0 200.0 0.0 1 1 960.0 335.0');animation-duration:26s;animation-delay:-19.5s;"></span>
+<span class="odot" aria-hidden="true" style="width:9px;height:9px;background:#EDE9FE;box-shadow:0 0 9px 4px #A78BFA;offset-path:path('M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0');animation-duration:19s;animation-delay:-1.3s;"></span>
+<span class="odot" aria-hidden="true" style="width:10px;height:10px;background:#F5F3FF;box-shadow:0 0 10px 4px #C4B5FD,0 0 18px 6px rgba(167,139,250,.4);offset-path:path('M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0');animation-duration:19s;animation-delay:-6.0s;"></span>
+<span class="odot" aria-hidden="true" style="width:7px;height:7px;background:#CFFAFE;box-shadow:0 0 8px 3px #22D3EE;offset-path:path('M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0');animation-duration:19s;animation-delay:-10.8s;"></span>
+<span class="odot" aria-hidden="true" style="width:12px;height:12px;background:#F0F9FF;box-shadow:0 0 10px 4px #7DD3FC,0 0 22px 8px rgba(125,211,252,.4);offset-path:path('M954.0 72.0 A365.6 118.5 -46.0 1 1 446.0 598.0 A365.6 118.5 -46.0 1 1 954.0 72.0');animation-duration:19s;animation-delay:-15.6s;"></span>
+<span class="odot" aria-hidden="true" style="width:10px;height:10px;background:#F5F3FF;box-shadow:0 0 10px 4px #C4B5FD,0 0 18px 6px rgba(167,139,250,.4);offset-path:path('M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6');animation-duration:15s;animation-delay:-2.6s;animation-direction:reverse;"></span>
+<span class="odot" aria-hidden="true" style="width:7px;height:7px;background:#CFFAFE;box-shadow:0 0 8px 3px #22D3EE;offset-path:path('M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6');animation-duration:15s;animation-delay:-6.3s;animation-direction:reverse;"></span>
+<span class="odot" aria-hidden="true" style="width:12px;height:12px;background:#F0F9FF;box-shadow:0 0 10px 4px #7DD3FC,0 0 22px 8px rgba(125,211,252,.4);offset-path:path('M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6');animation-duration:15s;animation-delay:-10.1s;animation-direction:reverse;"></span>
+<span class="odot" aria-hidden="true" style="width:9px;height:9px;background:#EDE9FE;box-shadow:0 0 9px 4px #A78BFA;offset-path:path('M1076.4 464.6 A398.1 148.6 19.0 1 1 323.6 205.4 A398.1 148.6 19.0 1 1 1076.4 464.6');animation-duration:15s;animation-delay:-13.8s;animation-direction:reverse;"></span>
+<button onClick="{{reset}}" aria-label="Về toàn cảnh Universe" class="orb" style="position:absolute;left:{{orb.l}}px;top:{{orb.t}}px;width:{{orb.d}}px;height:{{orb.d}}px;border:none;padding:0;background:none;cursor:pointer;color:#FFFFFF;transition:all .6s cubic-bezier(.65,0,.2,1)">
+<img class="orbspin" src="/_blob/530a5d2134d54abf61d8650f0bf25c33" alt="" style="position:absolute;inset:-18%;width:136%;height:136%;filter:saturate(1.1)">
+<span aria-hidden="true" style="position:absolute;inset:6%;border-radius:50%;background:radial-gradient(ellipse 44% 34% at 50% 54%,rgba(8,4,30,.74) 0%,rgba(8,4,30,.55) 45%,rgba(8,4,30,.18) 78%,rgba(8,4,30,0) 100%)"></span>
+<span style="position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;text-shadow:0 1px 3px rgba(0,0,0,.9),0 2px 14px rgba(20,8,60,.95)">
+<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#DDD6FE" stroke-width="1.8" style="filter:drop-shadow(0 0 8px #A78BFA)" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 9l9 5 9-5"/></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;white-space:nowrap">{{orb.title}}</span>
+<span style="display:flex;gap:6px;font-size:11px;font-weight:600">
+<sc-for list="{{orb.chips}}" as="c" hint-placeholder-count="3"><span style="padding:4px 9px;border-radius:10px;background:rgba(10,6,40,.6);border:1px solid rgba(196,181,253,.35)">{{c}}</span></sc-for>
+</span>
+</span>
+</button>
+<sc-for list="{{crystals}}" as="c" hint-placeholder-count="7">
+<div class="fl" style="position:absolute;left:{{c.x}}px;top:{{c.y}}px;width:140px;height:140px;animation-delay:{{c.dl}}s">
+<button class="cr" onClick="{{c.pick}}" aria-label="{{c.name}} · {{c.count}}" style="position:relative;width:140px;height:140px;border:none;padding:0;background:none;cursor:pointer;color:#FFFFFF;opacity:{{c.op}};filter:{{c.filter}}">
+<img src="{{c.img}}" alt="" style="position:absolute;inset:-14px;width:168px;height:168px;filter:{{c.imgf}}">
+<span aria-hidden="true" style="position:absolute;inset:4px;border-radius:50%;background:radial-gradient(ellipse 46% 42% at 50% 54%,rgba(8,4,28,.78) 0%,rgba(8,4,28,.6) 45%,rgba(8,4,28,.22) 75%,rgba(8,4,28,0) 100%)"></span>
+<span style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:3px;text-shadow:0 1px 3px rgba(0,0,0,.9),0 2px 12px rgba(0,0,0,.75)">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="{{c.tint}}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="filter:drop-shadow(0 0 6px {{c.glow}})"><path d="{{c.icon}}"/></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;white-space:nowrap">{{c.name}}</span>
+<span style="font-size:11px;font-weight:600;opacity:.95">{{c.count}}</span>
+</span>
+</button>
+</div>
+</sc-for>
+<div style="position:absolute;left:44px;top:24px;display:flex;align-items:center;gap:10px">
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" aria-hidden="true"><path d="M3 21L12 5l8 13 8-13 9 16" stroke="url(#kfg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="kfg" x1="0" y1="0" x2="40" y2="0"><stop stop-color="#7C3AED"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs></svg>
+<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:{{T.text}}">KnowFlow</span>
+</div>
+<nav aria-label="Chế độ xem" class="nav" style="position:absolute;left:480px;top:16px;height:52px;padding:4px;box-sizing:border-box;border-radius:26px;display:flex;gap:4px;background:rgba(12,9,32,.72);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)">
+<a href="C09-Universe.dc.html" aria-current="page" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 22px;border-radius:22px;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;font-size:14px;font-weight:600;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Orbit</a>
+<a href="C13-Graph.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{T.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg>Graph</a>
+<a href="C15-Canvas.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{T.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>Canvas</a>
+<a href="C11-Reader.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px;border-radius:22px;color:{{T.muted}};font-size:14px;font-weight:600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>Docs</a>
+</nav>
+<div style="position:absolute;right:28px;top:16px;display:flex;gap:10px;align-items:center">
+<a href="C20-Inbox.dc.html" aria-label="Thông báo, 3 chưa đọc" class="glass" style="position:relative;width:48px;height:48px;border-radius:16px;color:{{T.text}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg><span style="position:absolute;right:12px;top:11px;width:9px;height:9px;border-radius:50%;background:#F43F5E;box-shadow:0 0 8px #F43F5E"></span></a>
+<a href="F01-Search.dc.html" class="glass" style="text-decoration:none;height:48px;padding:0 18px;box-sizing:border-box;border-radius:16px;display:flex;align-items:center;gap:8px;font:600 15px 'Space Grotesk',sans-serif;color:{{T.text}}">⌘ K</a>
+</div>
+<div aria-hidden="true" style="position:absolute;left:0;top:0;width:96px;height:760px;clip-path:path('M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z');background:{{T.railBg}};backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)"></div>
+<svg aria-hidden="true" width="96" height="760" viewBox="0 0 96 760" style="position:absolute;left:0;top:0;overflow:visible">
+<defs>
+<linearGradient id="railRim" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#A78BFA" stop-opacity="0"/><stop offset=".18" stop-color="#8B5CF6" stop-opacity=".55"/><stop offset=".42" stop-color="#E9D5FF" stop-opacity=".95"/><stop offset=".55" stop-color="#FFFFFF" stop-opacity="1"/><stop offset=".72" stop-color="#C4B5FD" stop-opacity=".8"/><stop offset=".9" stop-color="#7C3AED" stop-opacity=".45"/><stop offset="1" stop-color="#7C3AED" stop-opacity="0"/></linearGradient>
+<linearGradient id="railSheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="735"><stop offset="0" stop-color="#C4B5FD" stop-opacity="0"/><stop offset=".35" stop-color="#C4B5FD" stop-opacity=".22"/><stop offset=".55" stop-color="#F5F3FF" stop-opacity=".38"/><stop offset=".8" stop-color="#A78BFA" stop-opacity=".18"/><stop offset="1" stop-color="#A78BFA" stop-opacity="0"/></linearGradient>
+<filter id="railBlur" x="-50%" y="-10%" width="200%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+</defs>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railSheen)" stroke-width="16" filter="url(#railBlur)" transform="translate(-6 0)"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="5" filter="url(#railBlur)" opacity=".9"/>
+<path d="M4 0 C54 110 80 250 80 395 C80 540 56 650 0 735" fill="none" stroke="url(#railRim)" stroke-width="1.6"/>
+</svg>
+<div style="position:absolute;left:10px;top:190px;width:52px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<a href="C09-Universe.dc.html" aria-label="Universe" style="margin-bottom:6px;width:46px;height:46px;border-radius:50%;background:{{T.primary}};display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 22px rgba(124,58,237,.95)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg></a>
+<a href="C13-Graph.dc.html" aria-label="Graph" style="margin-bottom:22px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><path d="M8 8l2.5 2.5M16 8l-2.5 2.5M8 16l2.5-2.5M16 16l-2.5-2.5"/></svg></a>
+<a href="C01-CreateMenu.dc.html" aria-label="Tạo mới" style="margin-bottom:8px;width:46px;height:46px;border-radius:14px;background:rgba(124,58,237,.4);border:1px solid rgba(196,181,253,.7);display:flex;align-items:center;justify-content:center;color:#FFFFFF;box-shadow:0 0 18px rgba(124,58,237,.6)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>
+<a href="C12-Search.dc.html" aria-label="Tìm kiếm" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
+<a href="C14-Copilot.dc.html" aria-label="AI Copilot" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 2l1.8 5.5L17 9.3l-5.2 1.8L10 16.5l-1.8-5.4L3 9.3l5.2-1.8zM18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/></svg></a>
+<a href="C10-Space.dc.html" aria-label="Spaces" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></a>
+<a href="C08-MyContent.dc.html" aria-label="Của tôi" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></a>
+<a href="H03-Settings.dc.html" aria-label="Cài đặt" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:{{T.muted}}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg></a>
+</div>
+<a href="H03-Settings.dc.html" aria-label="Tài khoản của Đạt" style="position:absolute;left:28px;top:808px;width:48px;height:48px;border-radius:50%;background:linear-gradient(140deg,#A78BFA,#7C3AED);border:2px solid rgba(255,255,255,.75);box-shadow:0 0 16px rgba(124,58,237,.8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#FFFFFF;text-decoration:none">Đ</a>
+<div aria-hidden="true" style="position:absolute;left:236px;top:596px;width:888px;height:236px;-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 14%,#000 86%,transparent 100%);clip-path:path('M0 112 Q444 -6 888 112 Q872 196 812 222 Q444 262 76 222 Q16 196 0 112 Z');background:linear-gradient(180deg,rgba(170,150,255,.26) 0%,rgba(90,64,190,.22) 40%,rgba(40,24,100,.18) 80%,rgba(30,18,80,.08) 100%)"></div>
+<svg aria-hidden="true" width="888" height="236" viewBox="0 0 888 236" style="position:absolute;left:236px;top:596px;overflow:visible;filter:drop-shadow(0 0 6px rgba(196,181,253,.8));-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 16%,#000 84%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 16%,#000 84%,transparent 100%)"><path d="M0 112 Q444 -6 888 112" fill="none" stroke="rgba(221,214,254,.8)" stroke-width="1.6"/></svg>
+<img class="stage" src="/_blob/d809409356184261b811a2878af38d69" alt="" aria-hidden="true" style="position:absolute;left:198px;top:744px;width:964px;height:159px">
+<section aria-label="AI Knowledge Assistant" style="position:absolute;left:1034px;top:82px;width:386px;height:630px;box-sizing:border-box;border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)">
+<div style="display:flex;align-items:center;gap:12px">
+<span style="width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 50% 45%,rgba(124,58,237,.55),rgba(30,20,72,.9) 70%);border:1.5px solid rgba(196,181,253,.75);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 12px rgba(196,181,253,.45),0 0 18px rgba(124,58,237,.6)"><svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M10 2l1.8 5.5L17 9.3l-5.2 1.8L10 16.5l-1.8-5.4L3 9.3l5.2-1.8zM18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/></svg></span>
+<div style="flex:1"><div style="font-weight:700;font-size:16px">AI Knowledge Assistant</div><div style="font-size:12px;color:{{T.muted}}">Hỏi bất cứ điều gì về tri thức trong Universe</div></div>
+<a href="C14-Copilot.dc.html" aria-label="Mở rộng Copilot" style="width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;color:{{T.text}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg></a>
+</div>
+<div class="msg" style="align-self:flex-end;padding:11px 18px;border-radius:16px;background:linear-gradient(180deg,#7C5CFF,#6338F0);color:#FFFFFF;font-size:14px;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 20px rgba(99,56,240,.45)">Máy mới vào mạng lấy IP thế nào?</div>
+<div class="msg" style="animation-delay:.25s;padding:14px;border-radius:18px;background:rgba(30,24,70,.55);border:1px solid rgba(167,139,250,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);display:flex;flex-direction:column;gap:10px">
+<span style="font-size:13px;line-height:1.45">Dựa trên 3 tài liệu trong Universe, máy mới xin IP qua 4 bước DORA:</span>
+<div style="padding:12px 10px;border-radius:14px;background:rgba(14,11,38,.72);border:1px solid rgba(167,139,250,.14);display:flex;flex-direction:column;align-items:center;gap:0">
+<span style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;border:1px solid rgba(196,181,253,.55);background:rgba(28,22,66,.85);font-size:12px;font-weight:600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/></svg>Máy mới (chưa có IP)</span>
+<span style="width:2px;height:12px;background:rgba(196,181,253,.7)"></span>
+<span style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;border:1px solid rgba(196,181,253,.55);background:rgba(28,22,66,.85);font-size:12px;font-weight:600">DISCOVER · broadcast</span>
+<span style="width:220px;height:12px;border:2px solid rgba(196,181,253,.7);border-bottom:none;border-radius:4px 4px 0 0"></span>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%">
+<span style="padding:7px 4px;border-radius:10px;border:1px solid rgba(103,232,249,.55);font-size:11px;font-weight:600;text-align:center">OFFER<br>IP đề nghị</span>
+<span style="padding:7px 4px;border-radius:10px;border:1px solid rgba(103,232,249,.55);font-size:11px;font-weight:600;text-align:center">REQUEST<br>xin IP đó</span>
+<span style="padding:7px 4px;border-radius:10px;border:1px solid rgba(103,232,249,.55);font-size:11px;font-weight:600;text-align:center">ACK<br>xác nhận</span>
+</div>
+<span style="width:220px;height:12px;border:2px solid rgba(196,181,253,.7);border-top:none;border-radius:0 0 4px 4px"></span>
+<span style="display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;border:1px solid rgba(196,181,253,.6);font-size:12px;font-weight:600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 8z"/></svg>Có IP · gateway · DNS · lease</span>
+</div>
+</div>
+<span style="font-size:13px;font-weight:600">Nguồn tham khảo:</span>
+<sc-for list="{{sources}}" as="s" hint-placeholder-count="3">
+<a href="C11-Reader.dc.html" style="text-decoration:none;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(22,17,54,.7);border:1px solid rgba(167,139,250,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);color:{{T.text}}">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>
+<span style="flex:1;min-width:0"><span style="display:block;font-size:12px;font-weight:600">{{s.t}}</span><span style="display:block;font-size:11px;color:{{T.muted}}">{{s.s}}</span></span>
+<span style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:7px;background:rgba(124,58,237,.45);color:#FFFFFF">{{s.v}}</span>
+</a>
+</sc-for>
+<div style="flex:1"></div>
+<label style="display:flex;align-items:center;gap:8px;height:52px;padding:0 6px 0 16px;border-radius:18px;background:rgba(14,11,38,.8);border:1.5px solid rgba(196,181,253,.5);box-shadow:inset 0 0 14px rgba(139,92,246,.3),0 0 14px rgba(124,58,237,.25)">
+<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Câu hỏi cho AI</span>
+<input type="text" placeholder="Hỏi thêm về lab, ghi chú, quy trình…" style="flex:1;min-width:0;border:none;background:none;color:{{T.text}};font:500 14px 'Inter',sans-serif;outline:none">
+<a href="C14-Copilot.dc.html" aria-label="Gửi" style="width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#A78BFA,#7C3AED 70%);box-shadow:0 0 14px rgba(139,92,246,.8),inset 0 1px 0 rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l16-8-6 16-3-7z"/></svg></a>
+</label>
+</section>
+<div aria-hidden="true" style="position:absolute;inset:0;background:rgba(6,4,26,{{dimOp}})"></div>
+
+<sc-if value="{{isLang}}" hint-placeholder-val="{{true}}">
+<section class="pop" aria-label="Chọn ngôn ngữ" style="position:absolute;left:420px;top:190px;width:600px;box-sizing:border-box;border-radius:30px;padding:30px;display:flex;flex-direction:column;gap:18px;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)">
+<span style="font-size:13px;font-weight:600;color:#C4B5FD">Bước 1/3</span>
+<span style="font-family:'Inter',sans-serif;font-weight:700;font-size:32px;background:linear-gradient(90deg,#7DD3FC,#60A5FA 40%,#A78BFA 75%,#D8B4FE);-webkit-background-clip:text;background-clip:text;color:transparent">Bạn muốn đọc bằng ngôn ngữ nào?</span>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+<sc-for list="{{langs}}" as="l" hint-placeholder-count="2">
+<button onClick="{{l.pick}}" aria-pressed="{{l.pr}}" style="height:130px;border-radius:22px;cursor:pointer;color:#F5F3FF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:inherit;{{l.css}}"><span style="font:700 34px 'Space Grotesk'">{{l.k}}</span><span style="font-size:14px">{{l.n}}</span></button>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{isTopics}}" hint-placeholder-val="{{false}}">
+<section class="pop" aria-label="Chọn chủ đề" style="position:absolute;left:300px;top:150px;width:840px;box-sizing:border-box;border-radius:30px;padding:28px;display:flex;flex-direction:column;gap:16px;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)">
+<span style="font-size:13px;font-weight:600;color:#C4B5FD">Bước 2/3 · chọn nhiều</span>
+<span style="font-family:'Inter',sans-serif;font-weight:700;font-size:30px;background:linear-gradient(90deg,#7DD3FC,#60A5FA 40%,#A78BFA 75%,#D8B4FE);-webkit-background-clip:text;background-clip:text;color:transparent">Bạn quan tâm hành tinh nào?</span>
+<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px">
+<sc-for list="{{topics}}" as="c" hint-placeholder-count="5">
+<button onClick="{{c.pick}}" aria-pressed="{{c.pr}}" style="position:relative;height:190px;border-radius:22px;cursor:pointer;color:#F5F3FF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font:inherit;{{c.css}}">
+<img src="{{c.img}}" alt="" style="width:110px;height:110px;filter:{{c.imgf}};opacity:{{c.op}}">
+<span style="font-weight:700;font-size:14px">{{c.name}}</span>
+<sc-if value="{{c.on}}" hint-placeholder-val="{{false}}"><span style="position:absolute;right:10px;top:10px;width:24px;height:24px;border-radius:50%;background:#7C3AED;border:1.5px solid #DDD6FE;display:flex;align-items:center;justify-content:center;font-size:12px">✓</span></sc-if>
+</button>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{isTour}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" class="pulse" style="position:absolute;left:{{sp.x}}px;top:{{sp.y}}px;width:{{sp.w}}px;height:{{sp.h}}px;border-radius:{{sp.r}}px;box-shadow:0 0 0 9999px rgba(6,4,26,.66),0 0 0 2px #DDD6FE,0 0 26px 6px rgba(167,139,250,.9);pointer-events:none"></div>
+<section class="pop" aria-label="Mẹo" style="position:absolute;left:{{sp.tx}}px;top:{{sp.ty}}px;width:330px;box-sizing:border-box;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,rgba(26,20,64,.82) 0%,rgba(13,10,36,.88) 100%);border:1.5px solid rgba(196,181,253,.55);box-shadow:inset 0 0 26px rgba(139,92,246,.38),inset 0 0 3px rgba(233,213,255,.55),inset 0 1px 0 rgba(255,255,255,.25),0 0 32px rgba(124,58,237,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)">
+<span style="font-size:12px;font-weight:600;color:#C4B5FD">Bước 3/3 · mẹo {{sp.n}}/4</span>
+<span style="font-size:20px;font-weight:700">{{sp.title}}</span>
+<span style="font-size:14px;line-height:1.5;color:#C8C4DC">{{sp.text}}</span>
+</section>
+</sc-if>
+
+<div style="position:absolute;left:0;right:0;bottom:30px;display:flex;justify-content:center;align-items:center;gap:14px">
+<a href="C09-Universe.dc.html" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#E5E7EB;font:600 14px 'Inter',sans-serif;cursor:pointer">Bỏ qua</a>
+<button onClick="{{back}}" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);color:#E5E7EB;font:600 14px 'Inter',sans-serif;cursor:pointer">Quay lại</button>
+<div style="display:flex;gap:8px">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="3"><span style="width:{{d.w}}px;height:8px;border-radius:4px;background:{{d.c}};box-shadow:{{d.sh}}"></span></sc-for>
+</div>
+<sc-if value="{{notLast}}" hint-placeholder-val="{{true}}"><button onClick="{{next}}" class="btnp" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:24px;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;font:600 14px 'Inter',sans-serif;cursor:pointer;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35)">Tiếp</button></sc-if>
+<sc-if value="{{isLast}}" hint-placeholder-val="{{false}}"><a href="C09-Universe.dc.html" class="btnp" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:24px;background:linear-gradient(180deg,rgba(88,60,200,.55) 0%,rgba(44,26,112,.78) 100%);border:1.5px solid rgba(196,181,253,.9);color:#FFFFFF;font:600 14px 'Inter',sans-serif;cursor:pointer;box-shadow:inset 0 0 14px rgba(196,181,253,.45),inset 0 1px 0 rgba(255,255,255,.35),0 0 16px rgba(139,92,246,.75),0 0 34px rgba(124,58,237,.35)">Bắt đầu khám phá</a></sc-if>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { step: 0, tour: 0, lang: 'vi', picked: { net: true, lnx: true } }; }
+  renderVals() {
+    var self = this, st = this.state;
+    var VEIL = 'radial-gradient(ellipse 380px 260px at 250px 190px,rgba(6,4,26,.62) 0%,rgba(6,4,26,.35) 55%,rgba(6,4,26,0) 100%),linear-gradient(90deg,rgba(6,4,26,.35),rgba(6,4,26,0) 40%,rgba(6,4,26,.15))';
+
+    var T = {
+      cls: 'dk', bg: '#06041A', text: '#F5F3FF', muted: '#C4B5FD', sub: '#C8C4DC', primary: '#7C3AED',
+      inset: 'rgba(14,8,44,.55)', inset2: 'rgba(10,6,34,.6)', veil: VEIL,
+      bgFilter: 'none', heroGrad: 'linear-gradient(90deg,#7DD3FC 0%,#60A5FA 36%,#A78BFA 70%,#D8B4FE 100%)',
+      railBg: 'linear-gradient(90deg,rgba(40,28,96,.35) 0%,rgba(90,70,170,.32) 70%,rgba(150,130,230,.28) 100%)', railEdge: 'rgba(221,214,254,.9)'
+    };
+    var I = {
+      net: 'M5 6a2 2 0 1 0 0 .1M19 6a2 2 0 1 0 0 .1M12 19a2 2 0 1 0 0 .1M6.5 7.5l4.5 9.5M17.5 7.5L13 17M7 6h10',
+      k8s: 'M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 8v8M8.5 10l7 4M15.5 10l-7 4',
+      lnx: 'M4 5h16v14H4zM7 9l3 3-3 3M12 15h5',
+      obs: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+      dkr: 'M3 13h18v5H3zM6 13V9h4v4M10 9V6h4v7M14 13V9h4v4',
+      wk: 'M4 6h16v14H4zM4 10h16M9 3v4M15 3v4',
+      me: 'M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z'
+    };
+    var RAW = [
+      { id: 'net', x: 520, y: 84, name: 'Networking', count: '8 lab', img: '/_blob/31ddcd850e1b521cc8c03b8df4b6debb', icon: I.net },
+      { id: 'k8s', x: 752, y: 88, name: 'Kubernetes', count: '2 bài', img: '/_blob/6feb28ce42686ed01217312e206531e3', hue: 'hue-rotate(28deg) saturate(1.2)', icon: I.k8s },
+      { id: 'lnx', x: 394, y: 180, name: 'Linux', count: '3 bài tập', img: '/_blob/4501a8df316926904685cf2b4456efb4', icon: I.lnx },
+      { id: 'obs', x: 884, y: 223, name: 'Observability', count: '1 lab', img: '/_blob/cbb5bd9baa920d2a16b0902798625c06', icon: I.obs },
+      { id: 'dkr', x: 405, y: 365, name: 'Docker', count: '3 phần', img: '/_blob/3f6f204a955e94d6e9f649463f561b67', icon: I.dkr },
+      { id: 'wk', x: 585, y: 462, name: 'Học hàng tuần', count: '5 tuần', img: '/_blob/c68697d6385f197de89b319385117d31', icon: I.wk },
+      { id: 'me', x: 829, y: 394, name: 'Vũ trụ của bạn', count: '3 tệp · riêng tư', img: '/_blob/27cad84bc553e15e9fb6b4ed457e5c7e', icon: I.me }
+    ];
+    var TINT = { net: ['#C4B5FD', '#8B5CF6'], k8s: ['#93C5FD', '#3B82F6'], lnx: ['#A5F3FC', '#22D3EE'], obs: ['#86EFAC', '#10B981'], dkr: ['#FDE68A', '#F59E0B'], wk: ['#F0ABFC', '#C026D3'], me: ['#F9A8D4', '#EC4899'] };
+    function crystalsOf(opFn, pickFn, skip) {
+      return RAW.filter(function (r) { return !skip || skip.indexOf(r.id) < 0; }).map(function (r, i) {
+        var t = TINT[r.id];
+        return { id: r.id, name: r.name, count: r.count, img: r.img, icon: r.icon, hue: r.hue || 'none', x: r.x, y: r.y, dl: i * 0.7,
+          imgf: (r.hue || '') + ' saturate(1.15) contrast(1.08) drop-shadow(0 0 14px ' + t[1] + ')', tint: t[0], glow: t[1],
+          op: opFn ? opFn(r) : 1, filter: 'none', pick: pickFn ? function () { pickFn(r); } : function () {} };
+      });
+    }
+    var stars = []; for (var j = 0; j < 46; j++) { stars.push({ x: 380 + (j * 197) % 1000, y: 20 + (j * 83) % 520, r: j % 5 === 0 ? 2 : 1, d: (j % 8) * 0.4 }); }
+    var orb = { l: 575, t: 210, d: 250, title: 'Học Cloud', chips: ['Universe', '7 Space', 'VI · EN'] };
+
+    var step = st.step, tour = st.tour || 0;
+    var SEL = 'background:radial-gradient(120% 70% at 50% 0%,rgba(221,214,254,.42) 0%,rgba(221,214,254,0) 60%),linear-gradient(180deg,rgba(167,139,250,.55) 0%,rgba(124,58,237,.55) 50%,rgba(76,29,149,.72) 100%);border:1.5px solid rgba(243,232,255,.95);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 0 22px rgba(233,213,255,.35),inset 0 -14px 26px rgba(216,180,254,.55),0 0 26px rgba(167,139,250,.9),0 0 70px rgba(124,58,237,.55);backdrop-filter:blur(16px)', OFF = 'background:radial-gradient(120% 60% at 50% 0%,rgba(196,181,253,.16) 0%,rgba(196,181,253,0) 60%),linear-gradient(180deg,rgba(64,48,130,.55) 0%,rgba(28,18,70,.62) 100%);border:1px solid rgba(196,181,253,.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 18px rgba(139,92,246,.12);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)';
+    var langs = [['VI', 'Tiếng Việt', 'vi'], ['EN', 'English', 'en']].map(function (l) { var on = st.lang === l[2];
+      return { k: l[0], n: l[1], pr: on ? 'true' : 'false', css: on ? SEL : OFF, pick: function () { self.setState({ lang: l[2] }); } }; });
+    var topics = RAW.filter(function (r) { return ['net', 'lnx', 'dkr', 'k8s', 'obs'].indexOf(r.id) >= 0; }).map(function (r) {
+      var on = !!st.picked[r.id], t = TINT[r.id];
+      return { name: r.name, img: r.img, on: on, pr: on ? 'true' : 'false', css: on ? SEL : OFF, op: on ? 1 : 0.6,
+        imgf: (r.hue || '') + ' drop-shadow(0 0 14px ' + t[1] + ')',
+        pick: function () { var p = Object.assign({}, st.picked); p[r.id] = !p[r.id]; self.setState({ picked: p }); } };
+    });
+    var TIPS = [
+      { x: 9, y: 322, w: 54, h: 54, r: 16, tx: 96, ty: 300, title: 'Tạo mới ở đây', text: 'Nút + trên thanh trái: viết ghi chú, tải file Office, tạo lối đi.' },
+      { x: 596, y: 18, w: 112, h: 48, r: 24, tx: 560, ty: 90, title: 'Xem dạng Graph', text: 'Chuyển giữa Orbit, Graph, Canvas và Docs ngay trên thanh trên.' },
+      { x: 9, y: 438, w: 54, h: 54, r: 27, tx: 96, ty: 420, title: 'Hỏi AI mọi lúc', text: 'Copilot trả lời có nguồn. Chưa có key vẫn tìm được nhờ Jev.' },
+      { x: 1326, y: 14, w: 90, h: 52, r: 18, tx: 1060, ty: 90, title: 'Tìm nhanh ⌘K', text: 'Gõ ⌘K ở bất cứ đâu để tìm tri thức hoặc hỏi AI.' }
+    ];
+    var sp = Object.assign({ n: tour + 1 }, TIPS[tour]);
+    var lastStep = step === 2 && tour === 3;
+    return {
+      T: T, nl: '\n', stars: stars, orb: orb, crystals: crystalsOf(null, null), reset: function () {},
+      sources: [
+        { t: 'Giao thức DHCP', s: '§ DORA 4 bước · Chính thức', v: 'v4' },
+        { t: 'Hành trình gói tin', s: '§ Máy mới vào mạng · Chính thức', v: 'v2' },
+        { t: 'lab-notes.docx', s: '§ Ghi chú của bạn · riêng tư', v: 'v1' }
+      ],
+      dimOp: step === 2 ? 0 : 0.7,
+      isLang: step === 0, isTopics: step === 1, isTour: step === 2,
+      langs: langs, topics: topics, sp: sp,
+      dots: [0, 1, 2].map(function (i) { var on = i === step; return { w: on ? 28 : 8, c: on ? '#C4B5FD' : 'rgba(196,181,253,.35)', sh: on ? '0 0 10px #A78BFA' : 'none' }; }),
+      notLast: !lastStep, isLast: lastStep,
+      next: function () { if (step < 2) self.setState({ step: step + 1, tour: 0 }); else self.setState({ tour: Math.min(3, tour + 1) }); },
+      back: function () { if (step === 2 && tour > 0) self.setState({ tour: tour - 1 }); else self.setState({ step: Math.max(0, step - 1), tour: 0 }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

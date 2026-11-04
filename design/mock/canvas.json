@@ -1,0 +1,655 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "A01-AdminReview.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "admin",
+      "title": "A01 · Hàng duyệt",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "A02-AdminContent.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "admin",
+      "title": "A02 · Quản lý nội dung (ẩn/hiện)",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "A03-AdminApi.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "admin",
+      "title": "A03 · API đăng bài và token",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "C01-CreateMenu.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C01 · Quick Create (+)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "C02-Editor.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C02 · Editor + AI Writing + backlinks",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "C03-Upload.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C03 · Tải file Office (nhiều tệp)",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "C04-Publish.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p2",
+      "title": "C04 · Xuất bản / Chia sẻ",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "C05-Preview.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p2",
+      "title": "C05 · Xem trước (công khai/riêng tư, responsive, OG)",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "C06-Submit.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p2",
+      "title": "C06 · Đang gửi, đã gửi duyệt, lỗi có hướng sửa",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "C07-FlowBuilder.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p2",
+      "title": "C07 · Knowledge Journey",
+      "w": 1440,
+      "x": 0,
+      "y": 1020
+    },
+    "C08-MyContent.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C08 · Của tôi: gần đây, yêu thích, thùng rác",
+      "w": 1440,
+      "x": 0,
+      "y": 1020
+    },
+    "C09-Universe.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p0",
+      "title": "C09 · Knowledge Universe Home",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "C10-Space.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p0",
+      "title": "C10 · Space / Planet Detail",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "C11-Reader.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p0",
+      "title": "C11 · Document Reader",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "C12-Search.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p0",
+      "title": "C12 · Universal Search",
+      "w": 1440,
+      "x": 0,
+      "y": 1020
+    },
+    "C13-Graph.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p0",
+      "title": "C13 · Knowledge Graph Explorer",
+      "w": 1440,
+      "x": 1520,
+      "y": 1020
+    },
+    "C14-Copilot.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p0",
+      "title": "C14 · AI Knowledge Copilot",
+      "w": 1440,
+      "x": 3040,
+      "y": 1020
+    },
+    "C15-Canvas.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C15 · Canvas Workspace",
+      "w": 1440,
+      "x": 1520,
+      "y": 1020
+    },
+    "C16-ImportCenter.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C16 · Knowledge Import Center",
+      "w": 1440,
+      "x": 3040,
+      "y": 1020
+    },
+    "C17-Timeline.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C17 · Version & Activity Timeline",
+      "w": 1440,
+      "x": 0,
+      "y": 2040
+    },
+    "C18-Share.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C18 · Share & Access Control",
+      "w": 1440,
+      "x": 1520,
+      "y": 2040
+    },
+    "C19-Settings.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p1",
+      "title": "C19 · Workspace Settings",
+      "w": 1440,
+      "x": 3040,
+      "y": 2040
+    },
+    "C20-Inbox.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "p2",
+      "title": "C20 · Notification & Inbox",
+      "w": 1440,
+      "x": 1520,
+      "y": 1020
+    },
+    "DesignSystem.dc.html": {
+      "h": 2400,
+      "is_interactive": true,
+      "page": "system",
+      "title": "Design System · Dark + Light",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "F01-Search.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "F01 · Command palette ⌘K",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "F02-CopilotStates.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "F02 · Copilot: 8 trạng thái",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "F03-Keys.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "F03 · Key riêng",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "F04-Translate.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "F04 · Dịch bằng AI",
+      "w": 1440,
+      "x": 0,
+      "y": 1020
+    },
+    "Flow.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "Lối đi (xem và chạy)",
+      "w": 1440,
+      "x": 1520,
+      "y": 2040
+    },
+    "H02-SharedOpen.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "H02 · Người nhận mở link",
+      "w": 1440,
+      "x": 1520,
+      "y": 1020
+    },
+    "H03-Settings.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "H03 · Cài đặt cá nhân",
+      "w": 1440,
+      "x": 3040,
+      "y": 1020
+    },
+    "H04-Offline.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "extra",
+      "title": "H04 · Offline, kết nối lại, xung đột",
+      "w": 1440,
+      "x": 0,
+      "y": 2040
+    },
+    "Interaction.dc.html": {
+      "h": 1360,
+      "is_interactive": true,
+      "page": "system",
+      "title": "Navigation · Interaction · Animation",
+      "w": 1440,
+      "x": 4560,
+      "y": 0
+    },
+    "M02-MobileCreate.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "device",
+      "radius": 36,
+      "title": "Điện thoại · Tạo bài",
+      "w": 390,
+      "x": 2990,
+      "y": 0
+    },
+    "M03-MobilePublish.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "device",
+      "radius": 36,
+      "title": "Điện thoại · Gửi duyệt",
+      "w": 390,
+      "x": 3460,
+      "y": 0
+    },
+    "M04-MobileCopilot.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "device",
+      "radius": 36,
+      "title": "Điện thoại · Copilot",
+      "w": 390,
+      "x": 3930,
+      "y": 0
+    },
+    "M05-MobileDocs.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "device",
+      "radius": 36,
+      "title": "Điện thoại · Reader",
+      "w": 390,
+      "x": 4400,
+      "y": 0
+    },
+    "M06-MobileSearch.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "device",
+      "radius": 36,
+      "title": "Điện thoại · Tìm kiếm",
+      "w": 390,
+      "x": 4870,
+      "y": 0
+    },
+    "Mobile.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "device",
+      "radius": 36,
+      "title": "Điện thoại · Universe 2D",
+      "w": 390,
+      "x": 2520,
+      "y": 0
+    },
+    "S01-Landing.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "start",
+      "title": "S01 · Landing chưa đăng nhập",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "S02-Login.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "start",
+      "title": "S02 · Đăng nhập, callback, lỗi",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "S03-Onboarding.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "start",
+      "title": "S03 · First-time onboarding",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "S04-OrbitSkeleton.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "start",
+      "title": "S04 · Universe loading skeleton",
+      "w": 1440,
+      "x": 0,
+      "y": 1020
+    },
+    "S05-OrbitEmpty.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "start",
+      "title": "S05 · Empty Universe + offline",
+      "w": 1440,
+      "x": 1520,
+      "y": 1020
+    },
+    "T01-TabletUniverse.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "page": "device",
+      "title": "T01 · Tablet Universe",
+      "w": 1180,
+      "x": 0,
+      "y": 0
+    },
+    "T02-TabletReader.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "page": "device",
+      "title": "T02 · Tablet Reader",
+      "w": 1180,
+      "x": 1260,
+      "y": 0
+    },
+    "X01-Feedback.dc.html": {
+      "h": 1500,
+      "is_interactive": true,
+      "page": "states",
+      "title": "X01 · Toast, modal, trống, skeleton, loader, nhãn",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "X02-Errors.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "start",
+      "title": "X02 · 404, 403, 500, bảo trì",
+      "w": 1440,
+      "x": 3040,
+      "y": 1020
+    },
+    "X03-StatesCoverage.dc.html": {
+      "h": 1500,
+      "is_interactive": true,
+      "page": "states",
+      "title": "X03 · 18 trạng thái UI và nơi thiết kế",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Z01-Sitemap.dc.html": {
+      "h": 1200,
+      "is_interactive": true,
+      "page": "system",
+      "title": "Z01 · Sitemap và user flows P0",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Z02-Spatial3D.dc.html": {
+      "h": 1200,
+      "is_interactive": true,
+      "page": "system",
+      "title": "Z02 · 3D / Hybrid / 2D, fallback, hiệu năng",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-03T21:15:00+07:00",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "page": "p0",
+    "view": "canvas"
+  },
+  "notes": {
+    "tadmin": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "admin",
+      "text": "Quản trị: duyệt bài, ẩn/hiện, API đăng bài",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "tdevice": {
+      "kind": "title1",
+      "maxW": 5260,
+      "page": "device",
+      "text": "Tablet (3D giảm) và điện thoại (2D rút gọn)",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "textra": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "extra",
+      "text": "Tìm nhanh, trạng thái AI, key, dịch, link chia sẻ, cài đặt, offline, lối đi",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "tp0": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "p0",
+      "text": "P0 · Universe → Space → Document · Search · Graph · Copilot",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "tp1": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "p1",
+      "text": "P1 · Tạo, nhập, quản lý, phiên bản, chia sẻ, cài đặt",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "tp2": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "p2",
+      "text": "P2 · Xuất bản, xem trước, gửi duyệt, hành trình, thông báo",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "tstart": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "start",
+      "text": "Bắt đầu: landing, đăng nhập, onboarding, tải, trống, lỗi",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "tstates": {
+      "kind": "title1",
+      "maxW": 2960,
+      "page": "states",
+      "text": "18 trạng thái UI và thành phần phản hồi",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "tsys": {
+      "kind": "title1",
+      "maxW": 6000,
+      "page": "system",
+      "text": "Sitemap, phân bổ 3D/2D, design system, tương tác",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    }
+  },
+  "order": [
+    "C09-Universe.dc.html",
+    "C10-Space.dc.html",
+    "C11-Reader.dc.html",
+    "C12-Search.dc.html",
+    "C13-Graph.dc.html",
+    "C14-Copilot.dc.html",
+    "C01-CreateMenu.dc.html",
+    "C02-Editor.dc.html",
+    "C03-Upload.dc.html",
+    "C08-MyContent.dc.html",
+    "C15-Canvas.dc.html",
+    "C16-ImportCenter.dc.html",
+    "C17-Timeline.dc.html",
+    "C18-Share.dc.html",
+    "C19-Settings.dc.html",
+    "C04-Publish.dc.html",
+    "C05-Preview.dc.html",
+    "C06-Submit.dc.html",
+    "C07-FlowBuilder.dc.html",
+    "C20-Inbox.dc.html",
+    "S01-Landing.dc.html",
+    "S02-Login.dc.html",
+    "S03-Onboarding.dc.html",
+    "S04-OrbitSkeleton.dc.html",
+    "S05-OrbitEmpty.dc.html",
+    "X02-Errors.dc.html",
+    "F01-Search.dc.html",
+    "F02-CopilotStates.dc.html",
+    "F03-Keys.dc.html",
+    "F04-Translate.dc.html",
+    "H02-SharedOpen.dc.html",
+    "H03-Settings.dc.html",
+    "H04-Offline.dc.html",
+    "Flow.dc.html",
+    "A01-AdminReview.dc.html",
+    "A02-AdminContent.dc.html",
+    "A03-AdminApi.dc.html",
+    "X03-StatesCoverage.dc.html",
+    "X01-Feedback.dc.html",
+    "T01-TabletUniverse.dc.html",
+    "T02-TabletReader.dc.html",
+    "Mobile.dc.html",
+    "M02-MobileCreate.dc.html",
+    "M03-MobilePublish.dc.html",
+    "M04-MobileCopilot.dc.html",
+    "M05-MobileDocs.dc.html",
+    "M06-MobileSearch.dc.html",
+    "Z01-Sitemap.dc.html",
+    "Z02-Spatial3D.dc.html",
+    "DesignSystem.dc.html",
+    "Interaction.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "p0",
+      "name": "1 · P0 Core (C09–C14)"
+    },
+    {
+      "id": "p1",
+      "name": "2 · P1 Quản lý tri thức"
+    },
+    {
+      "id": "p2",
+      "name": "3 · P2 Xuất bản & thông báo"
+    },
+    {
+      "id": "start",
+      "name": "4 · Bắt đầu & lỗi"
+    },
+    {
+      "id": "extra",
+      "name": "5 · Tìm, AI, tài khoản"
+    },
+    {
+      "id": "admin",
+      "name": "6 · Quản trị"
+    },
+    {
+      "id": "states",
+      "name": "7 · Trạng thái UI"
+    },
+    {
+      "id": "device",
+      "name": "8 · Tablet & điện thoại"
+    },
+    {
+      "id": "system",
+      "name": "9 · Sitemap, 3D, design system"
+    }
+  ],
+  "title": "KnowFlow · kb.hoandat.com Mock UI"
+}

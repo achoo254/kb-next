@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/@achoo254/brand/brand.config.schema.json",
+  "appName": "KnowFlow",
+  "shortName": "KnowFlow",
+  "description": "Knowledge base song ngữ Anh – Việt: tri thức cloud, mạng, Linux và DevOps xếp thành một vũ trụ để đọc, tìm và hỏi AI.",
+  "colors": {
+    "primary": "#7c3aed",
+    "background": "#06041a",
+    "backgroundDark": "#06041a"
+  },
+  "icon": "brand/app-icon.svg",
+  "iconMaskable": "brand/app-icon-maskable.svg",
+  "webInstall": true,
+  "appIds": {
+    "ios": "com.hoandat.kb"
+  },
+  "urlScheme": "com.hoandat.kb",
+  "primaryTenant": {
+    "domain": "hoandat.com",
+    "issuer": "https://auth.hoandat.com"
+  },
+  "hostTemplates": {
+    "web": "kb.{domain}"
+  }
+}
