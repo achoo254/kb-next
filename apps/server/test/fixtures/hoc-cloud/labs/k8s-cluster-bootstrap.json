@@ -1,0 +1,579 @@
+{
+  "lab": {
+    "slug": "k8s-cluster-bootstrap",
+    "module": "04-k8s",
+    "title": "Kubernetes · Phần 2 — Dựng cụm K8s thật bằng kubeadm",
+    "estimated_minutes": 70,
+    "content_hash": "00665087b0e4405e080a878ac9e3b6176874db0f6be79b806805a11aa511d1bc",
+    "updated_at": 1789636368,
+    "tldr": [
+      {
+        "what": "Giữ containerd.io, không apt install containerd",
+        "why": "Node đã có <code>containerd.io</code> (từ kho Docker) và <code>docker-ce</code> cùng tồn tại; gói <code>containerd</code> của kho hệ thống conflict với <code>containerd.io</code> ở cấp dpkg, cài vào là gỡ <code>containerd.io</code> kéo theo <code>docker-ce</code> (đo 2026-09-17, evidence §0). Kubernetes chỉ cần một container runtime phục vụ CRI, không quan tâm runtime đó cài từ kho nào — <code>containerd config default</code> rồi bật CRI là đủ, không cần cài lại runtime (<a href=\"https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd\">Kubernetes: container runtimes</a>).",
+        "whyBreaks": "Chạy nguyên script <code>apt install containerd</code> của tài liệu trên node đã có Docker sẽ mất luôn môi trường Docker của series trước, không chỉ ảnh hưởng phần K8s.",
+        "deploymentUse": "Trước khi chạy bất kỳ script chuẩn bị node nào, kiểm <code>apt-cache policy containerd.io</code> trên node đích; nếu đã có, bỏ bước cài runtime, chỉ làm phần cấu hình."
+      },
+      {
+        "what": "Registry mirror qua config_path + certs.d (containerd 2.x)",
+        "why": "<code>containerd config default</code> trên containerd 2.x sinh ra <code>version = 4</code> với tên plugin CRI <code>io.containerd.cri.v1.*</code>, khác cấu trúc mà cú pháp <code>sed</code> mirror của tài liệu cũ nhắm tới (<a href=\"https://github.com/containerd/containerd/blob/main/docs/cri/config.md\">containerd: CRI plugin config</a>). Đo trên cụm lab: pattern <code>sed</code> cũ khớp 0 dòng, không báo lỗi nhưng cũng không sửa gì. Cấu hình mirror đúng của containerd 2.x là khai <code>config_path = '/etc/containerd/certs.d'</code> trong khối registry, mỗi registry một file <code>hosts.toml</code>.",
+        "whyBreaks": "Tin rằng <code>sed</code> chạy không lỗi là mirror đã khai dẫn tới học viên vẫn kéo image thẳng từ Docker Hub và dính rate limit mà không hiểu nguyên nhân.",
+        "deploymentUse": "Kiểm hiệu quả bằng đo thời gian <code>kubeadm config images pull</code>: cụm lab kéo đủ 7 image control plane trong 18.9 giây sau khi mirror được khai đúng cú pháp <code>certs.d</code>."
+      },
+      {
+        "what": "Bốn gói preflight hay bị bỏ sót: conntrack, socat, ethtool, jq",
+        "why": "kube-proxy ở chế độ iptables cần <code>conntrack</code> để theo dõi kết nối khi dịch địa chỉ Service, và kubeadm kiểm sự tồn tại của binary này ngay ở bước preflight, dừng cả quá trình init nếu thiếu (<a href=\"https://kubernetes.io/docs/reference/networking/virtual-ips/#proxy-mode-iptables\">Kubernetes: virtual IPs — proxy mode iptables</a>). <code>socat</code> cần cho <code>kubectl port-forward</code>, <code>ethtool</code> cho một số driver network, <code>jq</code> cho script lấy IP theo tài liệu.",
+        "whyBreaks": "Thiếu conntrack làm <code>kubeadm init</code> dừng ngay dòng đầu của preflight — đúng hiện tượng đo được trên cụm lab lần chạy đầu tiên, trước khi bốn gói này được cài.",
+        "deploymentUse": "Cài đủ bốn gói trên cả ba node TRƯỚC khi chạy <code>kubeadm init</code> lần đầu, tránh vòng lặp sửa-chạy-lại từng lỗi một."
+      },
+      {
+        "what": "Pod CIDR 10.244.0.0/16 — chọn để tránh cả ba dải node lab",
+        "why": "Mô hình mạng Kubernetes yêu cầu Pod trên hai node khác nhau liên lạc trực tiếp, không qua NAT; dải pod CIDR do CNI cấp không được giao với bất kỳ dải mạng thật nào của cụm (<a href=\"https://kubernetes.io/docs/concepts/cluster-administration/networking/\">Kubernetes: cluster networking</a>). Cụm lab có ba dải node thật <code>192.168.122/123/124.0/24</code> và một dải <code>docker0</code> <code>172.17.0.0/16</code>.",
+        "whyBreaks": "Chọn pod CIDR trùng một trong bốn dải trên làm gói tin đi sai hướng ngay từ node — hiện tượng là Pod trên node khác không tới được nhau dù cụm báo Ready.",
+        "deploymentUse": "Chốt và ghi lại pod CIDR trước khi <code>kubeadm init</code>; flannel mặc định <code>10.244.0.0/16</code>, calico mặc định <code>192.168.0.0/16</code> (BẮT BUỘC đổi khi node network cũng là dải <code>192.168.x.x</code>), cilium cluster-pool mặc định <code>10.0.0.0/8</code> — ba CNI ba con số khác nhau, đừng giả định."
+      },
+      {
+        "what": "apiserver advertise = <ADDR-1>, dải quản trị ens160",
+        "why": "Tài liệu chỉ cấu hình dải quản trị: interface đó giữ default route và DNS, hai dải còn lại là L2 cô lập không gateway. <code>--apiserver-advertise-address</code> phải trỏ đúng interface đó, vì kubeadm không tự đoán khi node có nhiều dải mạng (<a href=\"https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/\">kubeadm init</a>).",
+        "whyBreaks": "Không khai rõ địa chỉ advertise trên node nhiều interface, kubeadm có thể chọn nhầm dải nội bộ không có gateway, làm worker và người vận hành từ ngoài không join/gọi được cụm.",
+        "deploymentUse": "Luôn truyền <code>--apiserver-advertise-address</code> tường minh khi node có nhiều hơn một interface, đừng để kubeadm tự chọn theo default route."
+      },
+      {
+        "what": "Flannel ghim release, không dùng URL nhánh master",
+        "why": "URL <code>raw.githubusercontent.com/.../coreos/flannel/master</code> vẫn trả 200 nhờ GitHub redirect tổ chức cũ, và nội dung hiện tại khớp v0.28.9 — nhưng đó là nhánh <code>master</code>, nội dung đổi theo thời gian mà không có changelog đi kèm phiên bản đang xem.",
+        "whyBreaks": "Ghim theo URL nhánh master làm lab không tái lập được ở một thời điểm khác: cùng một lệnh apply có thể kéo về một bản CNI khác vào tuần sau.",
+        "deploymentUse": "Dùng URL release có tag cụ thể: <code>https://github.com/flannel-io/flannel/releases/download/v0.28.9/kube-flannel.yml</code> — ghim đúng bản đã kiểm chứng."
+      },
+      {
+        "what": "K8s 1.31.14 là bản đã EOL — chỉ dùng để khớp tài liệu giảng dạy",
+        "why": "Kubernetes vá ba nhánh minor gần nhất; tại 2026-09-17 đó là 1.35, 1.36, 1.37 (<a href=\"https://kubernetes.io/releases/patch-releases/\">Kubernetes: patch releases</a>). Repo <code>pkgs.k8s.io</code> vẫn phục vụ HTTP 200 cho 1.31 nhưng phục vụ được không đồng nghĩa còn được vá bảo mật.",
+        "whyBreaks": "Copy nguyên số phiên bản của tài liệu giảng dạy sang môi trường thật sẽ chạy một nhánh Kubernetes không còn nhận bản vá bảo mật.",
+        "deploymentUse": "Production chọn một trong ba nhánh còn được vá tại thời điểm triển khai, không lấy số phiên bản từ tài liệu học."
+      },
+      {
+        "what": "FORWARD policy DROP của Docker + FLANNEL-FWD/KUBE-FORWARD giữ pod network sống",
+        "why": "Docker đặt policy mặc định của chain FORWARD thành DROP để tránh host vô tình thành router mở (<a href=\"https://docs.docker.com/engine/network/packet-filtering-firewalls/\">Docker: packet filtering and firewalls</a>). flanneld tự chèn chain <code>FLANNEL-FWD</code> và kube-proxy tự chèn <code>KUBE-FORWARD</code> với rule ACCEPT nằm trước vị trí traffic bị rớt (<a href=\"https://kubernetes.io/docs/reference/networking/virtual-ips/#proxy-mode-iptables\">Kubernetes: virtual IPs</a>).",
+        "whyBreaks": "Không biết hai chain này tồn tại dẫn tới việc tự thêm rule iptables ACCEPT thủ công, mở toang FORWARD cho mọi traffic thay vì chỉ traffic K8s cần.",
+        "deploymentUse": "Không sửa iptables tay khi thấy FORWARD policy DROP trên node có cả Docker và K8s — kiểm <code>FLANNEL-FWD</code>/<code>KUBE-FORWARD</code> đã có trước khi nghi ngờ mạng hỏng."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "Giữ containerd.io, sinh lại config.toml, không apt install containerd",
+        "why": "Tài liệu giả định node trắng và cài containerd từ kho hệ thống; cụm lab đã có <code>containerd.io 2.3.3</code> và <code>docker-ce 5:29.7.2</code> từ kho Docker, hai gói <code>containerd</code> và <code>containerd.io</code> conflict nhau ở cấp dpkg. Cách đúng: giữ <code>containerd.io</code>, sinh lại <code>/etc/containerd/config.toml</code> bằng <code>containerd config default</code> rồi chỉnh sửa, không cài thêm runtime nào (<a href=\"https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd\">Kubernetes: container runtimes — containerd</a>).",
+        "whyBreaks": "<code>apt -y install containerd</code> trên node này sẽ gỡ <code>containerd.io</code>, kéo theo gỡ <code>docker-ce</code> vì nó phụ thuộc <code>containerd.io</code> — mất luôn môi trường Docker của series trước trên chính node đó.",
+        "observeWith": "<code>apt-cache policy containerd.io docker-ce</code> trên từng node trước khi chạy bất kỳ script cài runtime nào",
+        "code": "cp /etc/containerd/config.toml /etc/containerd/config.toml.bak-$(date +%F)\ncontainerd config default > /etc/containerd/config.toml\nsystemctl restart containerd",
+        "note": "Làm trên cả ba node .182/.183/.184 — không riêng control plane."
+      },
+      {
+        "step": 2,
+        "what": "Hai giá trị còn phải sửa sau khi sinh lại config: cgroup driver và sandbox image",
+        "why": "Việc bật CRI đã xong ở bước 1 chứ không phải ở đây, và đó chính là lý do phải <em>sinh lại</em> config thay vì sửa tay file của Docker: file gốc kèm Docker có <code>disabled_plugins = [\"cri\"]</code>, còn bản <code>containerd config default</code> sinh ra <code>disabled_plugins = []</code> — dòng chặn CRI biến mất cùng lúc file được ghi đè. Hai giá trị bản mặc định vẫn đặt sai với nhu cầu của kubeadm: <code>SystemdCgroup = false</code> phải đổi thành <code>true</code> để khớp driver cgroup v2 của host, và <code>sandbox = 'registry.k8s.io/pause:3.10.2'</code> nên đổi về <code>pause:3.10</code> cho khớp đúng bản mà kubeadm 1.31 kéo về, tránh tải một image rồi không dùng (<a href=\"https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cgroup-drivers\">Kubernetes: container runtimes — cgroup drivers</a>).",
+        "whyBreaks": "Bỏ sót SystemdCgroup thì containerd và kubelet dùng hai cgroup driver khác nhau, biểu hiện là kubelet crash-loop sau khi container đầu tiên chạy — lỗi khó chẩn đoán hơn nhiều so với lỗi preflight rõ ràng. Còn nếu chạy thêm một <code>sed</code> để xoá <code>disabled_plugins = [\"cri\"]</code> thì lệnh đó khớp 0 dòng và im lặng thành công, tạo cảm giác sai rằng chính nó vừa bật CRI.",
+        "observeWith": "<code>ctr plugins ls</code> sau khi restart — cột trạng thái của <code>cri</code> phải là <code>ok</code>",
+        "code": "grep -n '^disabled_plugins' /etc/containerd/config.toml\nsed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml\nsed -i \"s#registry.k8s.io/pause:3.10.2#registry.k8s.io/pause:3.10#\" /etc/containerd/config.toml\nsystemctl restart containerd\nctr plugins ls | grep cri",
+        "note": "Kiểm chứng: <code>systemctl is-active docker</code> vẫn <code>active</code> sau khi bật CRI — Docker dùng namespace <code>moby</code>, không dùng plugin CRI, nên hai runtime không tranh nhau."
+      },
+      {
+        "step": 3,
+        "what": "Registry mirror qua config_path + certs.d — chỗ sed thất bại im lặng",
+        "why": "containerd 2.x đổi tên plugin CRI sang <code>io.containerd.cri.v1.*</code> và <code>version = 4</code>; cấu hình mirror registry chuyển từ <code>registry.mirrors</code> sang <code>config_path</code> trỏ tới thư mục <code>certs.d</code>, mỗi registry một file <code>hosts.toml</code> (<a href=\"https://github.com/containerd/containerd/blob/main/docs/cri/config.md\">containerd: CRI plugin config</a>). Pattern <code>sed</code> của tài liệu nhắm <code>registry.mirrors</code> của containerd 1.x, khớp 0 dòng trên cấu hình 2.x của cụm lab. Khai <code>config_path</code> qua file drop-in trong <code>/etc/containerd/conf.d/</code> vì bản config mặc định đã có sẵn dòng <code>imports = ['/etc/containerd/conf.d/*.toml']</code>, nên containerd tự trộn file này đè lên giá trị trong config chính.",
+        "whyBreaks": "<code>sed</code> thất bại im lặng: exit code 0, không báo lỗi, nhưng mirror không bao giờ được khai — học viên tưởng đã cấu hình xong trong khi image vẫn kéo thẳng từ Docker Hub. Hai cách sửa tay cũng hỏng, đều đã thử trên cụm lab: <code>cat >> config.toml</code> một dòng <code>config_path</code> trần thì TOML gán key đó cho bảng cuối cùng trong file (<code>[stream_processors.'io.containerd.ocicrypt.decoder.v1.tar.gzip']</code>), còn append kèm lại dòng <code>[plugins.'io.containerd.cri.v1.images'.registry]</code> thì containerd từ chối khởi động với <code>failed to unmarshal TOML: toml: table registry already exists</code>.",
+        "observeWith": "<code>time kubeadm config images pull</code> — mirror hoạt động đúng khi 7 image control plane kéo về nhanh",
+        "code": "mkdir -p /etc/containerd/certs.d/docker.io /etc/containerd/conf.d\ncat > /etc/containerd/conf.d/10-registry-mirror.toml <<'EOF'\nversion = 3\n\n[plugins.'io.containerd.cri.v1.images'.registry]\n  config_path = '/etc/containerd/certs.d'\nEOF\ncat > /etc/containerd/certs.d/docker.io/hosts.toml <<'EOF'\nserver = \"https://docker.io\"\n\n[host.\"https://mirror.gcr.io\"]\n  capabilities = [\"pull\", \"resolve\"]\n\n[host.\"https://registry-1.docker.io\"]\n  capabilities = [\"pull\", \"resolve\"]\nEOF\nsystemctl restart containerd",
+        "note": "Kiểm bằng <code>containerd config dump | grep -A2 \"cri.v1.images'.registry]\"</code> — phải thấy <code>config_path</code> đúng đường dẫn, đó là giá trị containerd thật sự dùng sau khi trộn. Đo trên cụm lab: <code>kubeadm config images pull</code> kéo đủ 7 image control plane trong 18.9 giây sau khi mirror được khai đúng cú pháp."
+      },
+      {
+        "step": 4,
+        "what": "Cài kubeadm/kubelet/kubectl 1.31.14 + bốn gói preflight hay thiếu",
+        "why": "Kho <code>pkgs.k8s.io/core:/stable:/v1.31/deb/</code> phục vụ kubeadm/kubelet/kubectl 1.31.14 kèm cri-tools và kubernetes-cni cùng nhánh (<a href=\"https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/\">kubeadm: install kubeadm</a>). Tài liệu không cài bốn gói <code>conntrack</code>, <code>socat</code>, <code>ethtool</code>, <code>jq</code>, và bốn gói này KHÔNG cùng mức độ: đo trên cụm lab 2026-09-17, ẩn cả <code>socat</code> lẫn <code>ethtool</code> khỏi PATH rồi chạy <code>kubeadm init --dry-run</code> thì kubeadm chỉ in <code>[WARNING FileExisting-ethtool]</code> và không nhắc <code>socat</code> lần nào. Chỉ <code>conntrack</code> mới là <code>ERROR</code> chặn hẳn, vì kube-proxy chế độ iptables cần nó để theo dõi kết nối khi dịch địa chỉ Service (<a href=\"https://kubernetes.io/docs/reference/networking/virtual-ips/#proxy-mode-iptables\">Kubernetes: virtual IPs</a>); <code>socat</code> cần cho <code>kubectl port-forward</code> của kubelet, còn <code>jq</code> chỉ script lấy IP trong tài liệu dùng tới.",
+        "whyBreaks": "Bỏ qua bốn gói này rồi chạy <code>kubeadm init</code> sẽ dừng ngay ở preflight với lỗi <code>FileExisting-conntrack</code> — đúng hiện tượng đo được ở cụm lab.",
+        "observeWith": "<code>apt-cache policy kubeadm</code> để xác nhận candidate version trước khi cài",
+        "code": "apt-get install -y conntrack socat ethtool jq\napt-cache policy kubeadm\napt-get install -y kubelet=1.31.14-1.1 kubeadm=1.31.14-1.1 kubectl=1.31.14-1.1\napt-mark hold kubelet kubeadm kubectl",
+        "note": "Bản cài được trên cả ba node: kubeadm v1.31.14, kubelet v1.31.14, kubectl v1.31.14, cri-tools 1.31.1-1.1, kubernetes-cni 1.5.1-1.1."
+      },
+      {
+        "step": 5,
+        "what": "kubeadm init — đọc đúng dòng quyết định trong output",
+        "why": "<code>kubeadm init</code> chạy qua các phase certs → kubeconfig → static pod → kubelet-check → api-check → addon (<a href=\"https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/\">kubeadm init phases</a>). Output ghi lại chính xác cụm nhận dải địa chỉ nào: dòng certs liệt kê IP mà apiserver serving cert ký cho, dòng ClusterConfiguration lưu trong kubeadm-config xác nhận podSubnet và serviceSubnet đã khai.",
+        "whyBreaks": "Không đọc output mà chỉ nhìn \"Your Kubernetes control-plane has initialized successfully!\" sẽ bỏ sót việc xác nhận cụm advertise đúng địa chỉ và đúng dải pod/service đã định.",
+        "observeWith": "<code>kubectl -n kube-system get cm kubeadm-config -o jsonpath='{.data.ClusterConfiguration}'</code> để xác nhận podSubnet/serviceSubnet đã ghi đúng",
+        "code": "kubeadm init \\\n  --apiserver-advertise-address=<ADDR-1> \\\n  --pod-network-cidr=10.244.0.0/16 \\\n  --kubernetes-version=v1.31.14",
+        "failModes": [
+          {
+            "symptom": "<code>kubeadm init</code> dừng ở preflight, dòng đầu tiên là lỗi conntrack",
+            "evidence": "<code>[ERROR FileExisting-conntrack]: conntrack not found in system path</code> — log thật của lần chạy đầu tiên trên <code>.182</code>."
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Cài conntrack (cùng socat/ethtool/jq) rồi chạy lại đúng lệnh trên, không đổi tham số nào khác",
+            "command": "apt-get install -y conntrack && kubeadm init --apiserver-advertise-address=<ADDR-1> --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.31.14"
+          }
+        ],
+        "note": "Log đầy đủ của lần chạy thành công lưu tại <code>/root/kubeadm-init-260917.log</code> trên <code>.182</code>."
+      },
+      {
+        "step": 6,
+        "what": "CNI flannel — ghim release, đọc log xác nhận interface tự chọn",
+        "why": "CNI cấp IP cho từng Pod và dựng đường Pod-tới-Pod giữa các node, đúng yêu cầu không NAT của mô hình mạng Kubernetes (<a href=\"https://kubernetes.io/docs/concepts/cluster-administration/networking/\">Kubernetes: cluster networking</a>). URL nhánh master của tài liệu (<code>raw.githubusercontent.com/coreos/flannel/master</code>) vẫn trả 200 nhờ GitHub redirect nhưng trỏ nội dung trôi nổi; lab dùng URL release ghim tag v0.28.9.",
+        "whyBreaks": "Dùng URL nhánh master không tái lập được lab ở thời điểm khác — nội dung CNI có thể đổi mà không có changelog đi kèm phiên bản đang chạy.",
+        "observeWith": "<code>kubectl -n kube-flannel logs ds/kube-flannel-ds | grep \"Using interface\"</code> để xác nhận flannel tự chọn đúng dải quản trị",
+        "code": "kubectl apply -f https://github.com/flannel-io/flannel/releases/download/v0.28.9/kube-flannel.yml",
+        "note": "Log đo được: \"Using interface with name ens160 and address <ADDR-1>\" — flannel bám InternalIP của node, mà kubelet lấy IP của interface có default route."
+      },
+      {
+        "step": 7,
+        "what": "Join 2 worker, kiểm Pod CIDR /24 chia cho từng node",
+        "why": "<code>kubeadm token create --print-join-command</code> sinh lệnh join kèm token và discovery-token-ca-cert-hash; chạy đúng lệnh đó trên worker là đủ để worker xác thực control-plane và tự cấu hình kubelet (<a href=\"https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-join/\">kubeadm join</a>). Sau khi join, controller-manager chia mỗi node một dải /24 con từ dải /16 đã khai lúc init.",
+        "whyBreaks": "Không kiểm PODCIDR từng node sau khi join dễ bỏ sót trường hợp một worker nhận trùng dải với node khác — dấu hiệu duy nhất là Pod trên node đó không liên lạc được dù node báo Ready.",
+        "observeWith": "<code>kubectl wait --for=condition=Ready node --all</code> rồi <code>kubectl get node -o wide</code> xem cột INTERNAL-IP, CONTAINER-RUNTIME",
+        "code": "kubeadm token create --print-join-command\n# chạy lệnh in ra trên .183 và .184\nkubectl wait --for=condition=Ready node --all --timeout=120s",
+        "note": "Kết quả đo được: cả ba node Ready ở v1.31.14; PODCIDR chia đúng 10.244.0.0/24 (.182), 10.244.1.0/24 (.183), 10.244.2.0/24 (.184)."
+      },
+      {
+        "step": 8,
+        "what": "FORWARD policy DROP của Docker — vì sao pod network không đứt",
+        "why": "Docker đặt policy mặc định của chain FORWARD thành DROP để tránh host vô tình thành router mở (<a href=\"https://docs.docker.com/engine/network/packet-filtering-firewalls/\">Docker: packet filtering and firewalls</a>). Trên node vừa chạy Docker vừa chạy K8s, nếu không có gì chèn rule ACCEPT thì pod-to-pod xuyên node sẽ đứt ngay khi policy DROP có hiệu lực.",
+        "whyBreaks": "Thấy <code>iptables -L FORWARD</code> báo policy DROP dễ kết luận nhầm là phải tự thêm rule ACCEPT thủ công, trong khi flanneld và kube-proxy đã tự lo phần này.",
+        "observeWith": "<code>iptables -L FORWARD -n</code> xem thứ tự chain <code>FLANNEL-FWD</code> và <code>KUBE-FORWARD</code> nằm trước vị trí traffic bị rớt",
+        "code": "iptables -L FORWARD -n\n# curl từ pod trên dattqh-cloud-2 tới pod 10.244.2.2 trên dattqh-cloud-3\nkubectl exec netcheck-59f7664bd8-p6687 -- curl -s -o /dev/null -w \"HTTP %{http_code} trong %{time_total}s\\n\" http://10.244.2.2/",
+        "note": "Đo được: <code>FLANNEL-FWD</code> (do flanneld chèn) và <code>KUBE-FORWARD</code> (do kube-proxy chèn) đứng trước phần traffic bị DROP; curl cross-node trả HTTP 200 trong 0.001342s."
+      }
+    ],
+    "quiz": [
+      {
+        "q": "Node đã có containerd.io + docker-ce từ trước. Script chuẩn bị của tài liệu chạy <code>apt -y install containerd</code>. Hệ quả nào đúng với trạng thái gói đã đo trên cụm lab?",
+        "options": [
+          "Không có gì xảy ra vì containerd.io và containerd tương thích nhau",
+          "apt gỡ containerd.io, kéo theo gỡ docker-ce vì hai gói conflict nhau ở cấp dpkg",
+          "apt tự động nâng cấp containerd.io lên bản mới hơn",
+          "Lệnh báo lỗi và không cài gì cả"
+        ],
+        "correct": 1,
+        "whyCorrect": "Cái đo được trên cụm lab là trạng thái gói: cả ba node có containerd.io 2.3.3 + docker-ce 5:29.7.2. Quan hệ Conflicts ở cấp dpkg giữa containerd (kho hệ thống) và containerd.io khiến cài gói này buộc gỡ gói kia, mà docker-ce phụ thuộc containerd.io nên bị gỡ theo. Bước này đã được BỎ khi dựng cụm chứ không chạy thử, nên đây là hệ quả suy ra từ quan hệ phụ thuộc, không phải kết quả quan sát. <em>Các phương án còn lại:</em> Hai gói không tương thích để cùng tồn tại; apt không \"nâng cấp\" giữa hai gói khác nguồn; conflict của apt xử lý bằng cách gỡ, không phải từ chối cài.",
+        "whyOthersWrong": "Hai gói không tương thích để cùng tồn tại; apt không \"nâng cấp\" giữa hai gói khác nguồn; conflict của apt xử lý bằng cách gỡ, không phải từ chối cài."
+      },
+      {
+        "q": "Pattern sed <code>[plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors]</code> của tài liệu chạy trên containerd 2.3.3 của cụm lab cho kết quả gì?",
+        "options": [
+          "sed báo lỗi \"no such file\", dừng ngay",
+          "sed khớp 0 dòng nhưng vẫn exit thành công, mirror không được khai",
+          "sed sửa đúng vì containerd luôn giữ tên plugin này",
+          "sed xoá nhầm toàn bộ file config.toml"
+        ],
+        "correct": 1,
+        "whyCorrect": "containerd 2.x đổi tên plugin CRI sang io.containerd.cri.v1.* và version = 4; pattern cũ khớp 0 dòng trên cấu hình thật của cụm lab, sed vẫn trả về thành công dù không sửa gì — đây là lỗi im lặng. <em>Các phương án còn lại:</em> sed không báo lỗi khi 0 dòng khớp, đó chính là vấn đề; tên plugin đã đổi giữa containerd 1.x và 2.x; sed chỉ thay thế theo pattern, không xoá file khi không khớp.",
+        "whyOthersWrong": "sed không báo lỗi khi 0 dòng khớp, đó chính là vấn đề; tên plugin đã đổi giữa containerd 1.x và 2.x; sed chỉ thay thế theo pattern, không xoá file khi không khớp."
+      },
+      {
+        "q": "Lần <code>kubeadm init</code> đầu tiên trên cụm lab fail đúng một dòng. Đâu là nguyên nhân đã đo được?",
+        "options": [
+          "Thiếu module br_netfilter",
+          "containerd chưa bật CRI",
+          "Thiếu binary conntrack",
+          "SystemdCgroup vẫn để false"
+        ],
+        "correct": 2,
+        "whyCorrect": "Bốn hạng mục module/sysctl/CRI/cgroup đã sửa xong trước khi chạy kubeadm init; log lỗi thật duy nhất là <code>[ERROR FileExisting-conntrack]: conntrack not found in system path</code>. <em>Các phương án còn lại:</em> Ba phương án còn lại đều thuộc nhóm đã sửa TRƯỚC khi init — không phải nguyên nhân của lần fail đã ghi log.",
+        "whyOthersWrong": "Ba phương án còn lại đều thuộc nhóm đã sửa TRƯỚC khi init — không phải nguyên nhân của lần fail đã ghi log."
+      },
+      {
+        "q": "URL <code>raw.githubusercontent.com/coreos/flannel/master/...</code> trong tài liệu vẫn trả HTTP 200 và đúng nội dung flannel v0.28.9. Vì sao lab vẫn không dùng URL này?",
+        "options": [
+          "Vì URL đó không tồn tại nữa",
+          "Vì URL đó trỏ nhánh master trôi nổi, nội dung có thể đổi theo thời gian mà không báo",
+          "Vì GitHub chặn raw.githubusercontent.com ở một số vùng",
+          "Vì nó chỉ hỗ trợ pod CIDR /24"
+        ],
+        "correct": 1,
+        "whyCorrect": "URL đó redirect coreos → flannel-io và hiện khớp v0.28.9, nhưng là nhánh master — nội dung một nhánh Git đổi theo mỗi commit, không đảm bảo tái lập được lab ở thời điểm khác. <em>Các phương án còn lại:</em> URL vẫn sống và trả 200; không có chặn theo vùng nào được ghi nhận; pod CIDR do tham số --pod-network-cidr quyết định, không phải do URL manifest.",
+        "whyOthersWrong": "URL vẫn sống và trả 200; không có chặn theo vùng nào được ghi nhận; pod CIDR do tham số --pod-network-cidr quyết định, không phải do URL manifest."
+      },
+      {
+        "q": "Docker đặt <code>iptables -L FORWARD</code> thành <code>policy DROP</code> trên cả ba node. Sau khi flannel và kube-proxy chạy, vì sao pod-to-pod traffic xuyên node vẫn thông?",
+        "options": [
+          "Vì K8s tự tắt policy DROP của Docker",
+          "Vì FLANNEL-FWD và KUBE-FORWARD chèn rule ACCEPT nằm trước phần traffic bị DROP",
+          "Vì Docker và K8s dùng hai bảng iptables riêng biệt",
+          "Vì policy DROP chỉ áp cho traffic ra Internet, không áp cho traffic nội bộ"
+        ],
+        "correct": 1,
+        "whyCorrect": "flanneld tự chèn chain FLANNEL-FWD, kube-proxy tự chèn KUBE-FORWARD, cả hai có rule ACCEPT nằm trước vị trí traffic bị policy DROP chặn — đo end-to-end: curl cross-node trả HTTP 200. <em>Các phương án còn lại:</em> Policy DROP của Docker không bị K8s tắt; cả hai dùng chung bảng filter của kernel; policy DROP áp cho mọi traffic forward qua node, không phân biệt nội bộ hay Internet — chỉ có rule ACCEPT mới cứu được.",
+        "whyOthersWrong": "Policy DROP của Docker không bị K8s tắt; cả hai dùng chung bảng filter của kernel; policy DROP áp cho mọi traffic forward qua node, không phân biệt nội bộ hay Internet — chỉ có rule ACCEPT mới cứu được."
+      },
+      {
+        "q": "Kubernetes 1.31.14 vẫn cài được từ <code>pkgs.k8s.io</code> ngày 2026-09-17. Kết luận nào đúng?",
+        "options": [
+          "1.31 vẫn nằm trong ba nhánh được vá bảo mật",
+          "1.31 tải được không đồng nghĩa còn được vá; ba nhánh được vá lúc này là 1.35–1.37",
+          "stable.txt cũng trả về v1.31.14 nên đây là bản mới nhất",
+          "Repo chỉ phục vụ đúng một nhánh duy nhất tại một thời điểm"
+        ],
+        "correct": 1,
+        "whyCorrect": "dl.k8s.io/release/stable.txt trả v1.37.0; repo phục vụ HTTP 200 cho mọi nhánh từ 1.31 tới 1.37 nhưng chỉ ba nhánh mới nhất (1.35–1.37) còn nhận bản vá. <em>Các phương án còn lại:</em> 1.31 nằm ngoài ba nhánh được vá; stable.txt trả 1.37.0 chứ không phải 1.31.14; repo pkgs.k8s.io phục vụ song song nhiều nhánh, không chỉ một.",
+        "whyOthersWrong": "1.31 nằm ngoài ba nhánh được vá; stable.txt trả 1.37.0 chứ không phải 1.31.14; repo pkgs.k8s.io phục vụ song song nhiều nhánh, không chỉ một."
+      },
+      {
+        "q": "Vì sao pod CIDR của cụm lab chốt là <code>10.244.0.0/16</code> thay vì để mặc định của Calico (<code>192.168.0.0/16</code>)?",
+        "options": [
+          "Vì 10.244.0.0/16 là dải duy nhất kubeadm chấp nhận",
+          "Vì 192.168.0.0/16 bao trùm cả ba dải node thật của cụm lab",
+          "Vì flannel không hỗ trợ dải /16",
+          "Vì service CIDR đã chiếm 192.168.0.0/16"
+        ],
+        "correct": 1,
+        "whyCorrect": "Pod CIDR không được giao với dải node network; 192.168.0.0/16 (mặc định Calico) bao trùm cả 192.168.122/123/124.0/24 của cụm lab, còn 10.244.0.0/16 (mặc định flannel) không giao dải nào. <em>Các phương án còn lại:</em> kubeadm chấp nhận bất kỳ dải hợp lệ nào qua --pod-network-cidr; flannel hỗ trợ /16 bình thường (đang dùng); service CIDR mặc định là 10.96.0.0/12, không liên quan 192.168.0.0/16.",
+        "whyOthersWrong": "kubeadm chấp nhận bất kỳ dải hợp lệ nào qua --pod-network-cidr; flannel hỗ trợ /16 bình thường (đang dùng); service CIDR mặc định là 10.96.0.0/12, không liên quan 192.168.0.0/16."
+      },
+      {
+        "q": "<code>--apiserver-advertise-address=<ADDR-1></code> được truyền tường minh khi node có ba interface. Vì sao cần khai rõ thay vì để kubeadm tự chọn?",
+        "options": [
+          "Vì kubeadm luôn chọn interface có tên ens160 theo mặc định",
+          "Vì chỉ dải 192.168.122.0/24 có gateway/DNS — đây là dải quản trị mà node dùng để nói chuyện với worker và người vận hành",
+          "Vì hai dải còn lại không cho phép chạy container",
+          "Vì địa chỉ advertise phải trùng địa chỉ IP của Pod CoreDNS"
+        ],
+        "correct": 1,
+        "whyCorrect": "Tài liệu chỉ cấu hình dải quản trị: chỉ ens160/192.168.122.0/24 có gateway và DNS, hai dải kia là L2 cô lập. Khai rõ địa chỉ advertise tránh kubeadm chọn nhầm một dải nội bộ khi node có nhiều interface. <em>Các phương án còn lại:</em> kubeadm không có quy tắc ưu tiên theo tên interface; container chạy được trên node bất kể interface nào; địa chỉ advertise là của apiserver, không liên quan IP Pod CoreDNS.",
+        "whyOthersWrong": "kubeadm không có quy tắc ưu tiên theo tên interface; container chạy được trên node bất kể interface nào; địa chỉ advertise là của apiserver, không liên quan IP Pod CoreDNS."
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "Vì sao không chạy <code>apt -y install containerd</code> trên cụm lab?",
+        "back": "containerd (kho hệ thống) conflict containerd.io (kho Docker) đang có — cài vào sẽ gỡ containerd.io kéo theo docker-ce.",
+        "why": "Đo 2026-09-17 (evidence §0): cả ba node đã có containerd.io 2.3.3 + docker-ce 5:29.7.2; giữ nguyên, chỉ sinh lại config.toml."
+      },
+      {
+        "front": "Vì sao sed mirror registry của tài liệu không ăn trên cụm lab?",
+        "back": "containerd 2.x đổi tên plugin CRI và cấu trúc file (version=4); pattern sed cũ khớp 0 dòng, thất bại im lặng.",
+        "why": "Cách đúng: config_path trỏ certs.d, mỗi registry một hosts.toml."
+      },
+      {
+        "front": "Bốn gói hay bị bỏ sót trước khi chạy kubeadm init?",
+        "back": "conntrack, socat, ethtool, jq.",
+        "why": "Thiếu conntrack làm kubeadm init dừng ngay dòng đầu preflight — đúng log đo được trên cụm lab."
+      },
+      {
+        "front": "Ba giá trị phải sửa trong config.toml của containerd?",
+        "back": "Bỏ disabled_plugins=[\"cri\"], SystemdCgroup=true, sandbox pause:3.10 (khớp bản kubeadm 1.31 kéo về).",
+        "why": "Kiểm bằng <code>ctr plugins ls</code> trả cri - ok; <code>systemctl is-active docker</code> vẫn active."
+      },
+      {
+        "front": "Pod CIDR chốt cho cụm lab là gì và vì sao?",
+        "back": "10.244.0.0/16 — không giao ba dải node thật (192.168.122/123/124.0/24) và 172.17.0.0/16 của docker0.",
+        "why": "Mặc định của flannel. Calico mặc định 192.168.0.0/16 sẽ giao cả ba dải node; cilium cluster-pool mặc định 10.0.0.0/8, rộng hơn nhưng không giao dải nào của lab."
+      },
+      {
+        "front": "apiserver advertise address của cụm lab là gì, tại sao chọn đúng interface đó?",
+        "back": "<ADDR-1> trên ens160 — dải duy nhất có gateway và DNS trong ba dải node.",
+        "why": "kubeadm không tự đoán đúng interface khi node có nhiều dải; phải khai tường minh."
+      },
+      {
+        "front": "Vì sao không dùng URL <code>raw.githubusercontent.com/coreos/flannel/master/...</code> dù nó vẫn trả 200?",
+        "back": "URL đó trỏ nhánh master trôi nổi; nội dung đổi theo thời gian không báo trước.",
+        "why": "Lab dùng URL release ghim tag v0.28.9 để tái lập được."
+      },
+      {
+        "front": "Log nào xác nhận flannel tự chọn đúng interface quản trị mà không cần khai --iface?",
+        "back": "\"Using interface with name ens160 and address <ADDR-1>\" trong log kube-flannel-ds.",
+        "why": "Flannel bám InternalIP của node; kubelet lấy IP của interface có default route."
+      },
+      {
+        "front": "Sau khi join 2 worker, Pod CIDR chia cho từng node là gì?",
+        "back": "10.244.0.0/24 (.182), 10.244.1.0/24 (.183), 10.244.2.0/24 (.184).",
+        "why": "controller-manager cắt /24 từ dải /16 đã khai lúc kubeadm init."
+      },
+      {
+        "front": "Docker đặt policy FORWARD thành gì, và pod network vẫn sống nhờ đâu?",
+        "back": "Docker Engine đặt FORWARD policy DROP; pod network sống nhờ chain FLANNEL-FWD (flanneld chèn) và KUBE-FORWARD (kube-proxy chèn).",
+        "why": "Đo end-to-end: curl cross-node trả HTTP 200, không cần sửa iptables tay."
+      },
+      {
+        "front": "Vì sao Kubernetes 1.31.14 được gọi là bản EOL dù vẫn cài được?",
+        "back": "Kubernetes chỉ vá ba nhánh minor gần nhất; tại 2026-09-17 đó là 1.35–1.37, 1.31 đã ngoài phạm vi.",
+        "why": "Chọn 1.31 để khớp tài liệu giảng dạy; production phải chọn nhánh còn được vá."
+      },
+      {
+        "front": "kube-proxy chạy chế độ gì trên cụm lab, và conntrack phục vụ việc gì trong đó?",
+        "back": "Chế độ iptables; conntrack theo dõi trạng thái kết nối khi kernel dịch địa chỉ Service sang địa chỉ Pod.",
+        "why": "kubeadm kiểm sự tồn tại của conntrack ngay ở preflight vì kube-proxy iptables cần nó."
+      },
+      {
+        "front": "Dòng log certs của kubeadm init xác nhận điều gì về địa chỉ cụm?",
+        "back": "IP mà apiserver serving cert ký cho: 10.96.0.1 (Service IP của apiserver) và <ADDR-1> (địa chỉ advertise).",
+        "why": "Đọc đúng dòng này xác nhận cụm nhận đúng dải service và đúng địa chỉ quản trị."
+      },
+      {
+        "front": "Vì sao node NotReady và CoreDNS Pending ngay sau kubeadm init là bình thường?",
+        "back": "kubeadm không cài sẵn CNI; Pod và node chỉ Ready sau khi CNI (flannel) được cài.",
+        "why": "Đây là hành vi tài liệu kubeadm mô tả, không phải lỗi cần sửa gấp."
+      }
+    ],
+    "try_at_home": [
+      {
+        "title": "Bật CRI containerd, sửa cgroup driver, cài 4 gói preflight — trên cả ba node",
+        "phaseType": "core",
+        "estimatedMinutes": 20,
+        "cmd": "cp /etc/containerd/config.toml /etc/containerd/config.toml.bak-$(date +%F)\ncontainerd config default > /etc/containerd/config.toml ; systemctl restart containerd ; apt-get install -y conntrack socat ethtool jq",
+        "why": "Bốn hạng mục chuẩn bị mà Phần 1 đã xác định còn thiếu — CRI, cgroup driver, sandbox image, bốn gói preflight — đều phải sửa trước khi chạy <code>kubeadm init</code> trên cả ba node, không riêng control plane (<a href=\"https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd\">Kubernetes: container runtimes — containerd</a>).",
+        "observeWith": "<code>ctr plugins ls | grep cri</code> ; <code>systemctl is-active docker</code> ; <code>dpkg -l conntrack socat ethtool jq</code>",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Trên <code>.182</code>: backup rồi sinh lại cấu hình containerd — <code>cp /etc/containerd/config.toml /etc/containerd/config.toml.bak-$(date +%F)</code> rồi <code>containerd config default &gt; /etc/containerd/config.toml</code>.",
+            "expect": "File mới không còn dòng <code>disabled_plugins = [\"cri\"]</code>; <code>SystemdCgroup = false</code> và <code>sandbox = 'registry.k8s.io/pause:3.10.2'</code> là giá trị mặc định cần sửa tiếp ở bước sau."
+          },
+          {
+            "n": 2,
+            "do": "Sửa ba giá trị: <code>sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml</code> và đổi sandbox sang <code>pause:3.10</code>.",
+            "expect": "<code>grep SystemdCgroup</code> và <code>grep sandbox</code> trên file trả đúng hai giá trị mới."
+          },
+          {
+            "n": 3,
+            "do": "Restart và kiểm CRI: <code>systemctl restart containerd && ctr plugins ls | grep cri</code>.",
+            "expect": "Dòng plugin CRI báo trạng thái <code>ok</code>."
+          },
+          {
+            "n": 4,
+            "do": "Kiểm Docker không bị ảnh hưởng: <code>systemctl is-active docker</code>.",
+            "expect": "<code>active</code> — Docker dùng namespace <code>moby</code>, không dùng plugin CRI, nên bật CRI không làm Docker chết."
+          },
+          {
+            "n": 5,
+            "do": "Cài bốn gói preflight: <code>apt-get install -y conntrack socat ethtool jq</code>.",
+            "expect": "Cả bốn cài thành công; <code>dpkg -l | grep -E \"conntrack|socat|ethtool|jq\"</code> liệt kê đủ bốn dòng <code>ii</code>."
+          },
+          {
+            "n": 6,
+            "do": "Lặp 5 bước trên với <code>.183</code> và <code>.184</code>.",
+            "expect": "Cả ba node cùng trạng thái: CRI ok, Docker active, đủ bốn gói preflight."
+          }
+        ],
+        "analysis": {
+          "observation": "Trạng thái runtime đã đổi từ \"containerd chạy cho Docker\" sang \"containerd phục vụ cả Docker lẫn CRI\"; các gói preflight nhỏ dễ bị tài liệu bỏ sót nhất lại là nguyên nhân duy nhất chặn kubeadm init sau này.",
+          "mechanism": "containerd tách chức năng theo plugin, disabled_plugins tắt hẳn một nhóm API mà không ảnh hưởng runtime chính; kube-proxy cần conntrack cho chế độ iptables — đây là hai cơ chế độc lập nhau nhưng cùng phải đúng trước khi kubelet hoạt động.",
+          "lesson": "Sửa cả năm mắt xích trong cùng một lượt trước khi chạy kubeadm init tránh vòng lặp sửa-chạy-lại-từng-lỗi."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "<code>ctr plugins ls</code> không thấy dòng cri báo ok",
+            "fix": "Kiểm lại file config.toml còn dòng <code>disabled_plugins</code> hay không; containerd chỉ đọc lại config khi restart, sửa file mà quên restart sẽ không có hiệu lực."
+          },
+          {
+            "symptom": "Không chắc containerd.io hay containerd đang cài",
+            "fix": "<code>apt-cache policy containerd.io containerd</code> — cụm lab đúng chuẩn chỉ có containerd.io ở trạng thái Installed, containerd không được cài."
+          }
+        ]
+      },
+      {
+        "title": "Registry mirror qua certs.d + cài kubeadm 1.31.14 + kubeadm init lần đầu (đọc lỗi conntrack)",
+        "phaseType": "core",
+        "estimatedMinutes": 25,
+        "cmd": "mkdir -p /etc/containerd/certs.d/docker.io ; apt-cache policy kubeadm ; kubeadm init --apiserver-advertise-address=<ADDR-1> --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.31.14",
+        "why": "Mirror registry đúng cú pháp containerd 2.x giúp kéo image nhanh và tránh rate limit Docker Hub; <code>kubeadm init</code> lần đầu trên cụm lab fail đúng một dòng preflight, là bằng chứng thật cho việc bốn hạng mục khác đã sửa đúng ở phần trước (<a href=\"https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/\">kubeadm init</a>).",
+        "observeWith": "<code>time kubeadm config images pull</code> — đo hiệu quả mirror bằng thời gian kéo 7 image control plane",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Khai config_path + certs.d trên cả ba node theo cú pháp containerd 2.x (xem walkthrough bước 3).",
+            "expect": "File <code>/etc/containerd/certs.d/docker.io/hosts.toml</code> tồn tại với hai host <code>mirror.gcr.io</code> và <code>registry-1.docker.io</code>."
+          },
+          {
+            "n": 2,
+            "do": "Đo hiệu quả mirror: <code>time kubeadm config images pull</code>.",
+            "expect": "7 image control plane kéo về trong 18.9 giây (đo thật trên .182)."
+          },
+          {
+            "n": 3,
+            "do": "Kiểm candidate version: <code>apt-cache policy kubeadm</code>.",
+            "expect": "Candidate: <code>1.31.14-1.1</code> — khớp nhánh v1.31 đã khai trong <code>/etc/apt/sources.list.d</code>."
+          },
+          {
+            "n": 4,
+            "do": "Cài và giữ phiên bản: <code>apt-get install -y kubelet=1.31.14-1.1 kubeadm=1.31.14-1.1 kubectl=1.31.14-1.1 && apt-mark hold kubelet kubeadm kubectl</code>.",
+            "expect": "kubeadm v1.31.14, kubelet v1.31.14, kubectl v1.31.14, cri-tools 1.31.1-1.1, kubernetes-cni 1.5.1-1.1 cài xong trên cả ba node; <code>apt-mark showhold</code> liệt kê đủ ba gói."
+          },
+          {
+            "n": 5,
+            "do": "Chạy <code>kubeadm init --apiserver-advertise-address=<ADDR-1> --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.31.14</code> lần đầu trên <code>.182</code>.",
+            "expect": "Nếu chưa cài conntrack ở phần trước: dừng ở preflight với đúng dòng <code>[ERROR FileExisting-conntrack]: conntrack not found in system path</code> — số liệu evidence ghi lại đúng lần chạy này."
+          },
+          {
+            "n": 6,
+            "do": "Cài <code>conntrack</code> (nếu bước trước bỏ sót) rồi chạy lại đúng lệnh trên.",
+            "expect": "\"Your Kubernetes control-plane has initialized successfully!\" — log đầy đủ lưu tại <code>/root/kubeadm-init-260917.log</code> trên <code>.182</code>."
+          }
+        ],
+        "analysis": {
+          "observation": "Lần init đầu chỉ fail đúng một dòng — bằng chứng trực tiếp rằng phần chuẩn bị runtime/module/cgroup đã đúng trước khi chạm tới kubeadm.",
+          "mechanism": "kubeadm chạy preflight tuần tự và dừng ở fatal error đầu tiên gặp phải; mỗi check độc lập nên một log ngắn gọn không có nghĩa là chỉ có một vấn đề, mà nghĩa là các vấn đề khác chưa tồn tại.",
+          "lesson": "Đọc đúng một dòng lỗi thay vì đoán tất cả nguyên nhân có thể — preflight của kubeadm được thiết kế để chỉ đúng ra một chỗ hỏng."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "kubeadm init treo lâu ở \"Running pre-flight checks\" không lỗi",
+            "fix": "Kiểm cổng 6443 đã trống chưa: <code>ss -lntp | grep 6443</code>; nếu một tiến trình cũ còn giữ cổng, dừng nó trước khi init lại."
+          },
+          {
+            "symptom": "Sau khi cài conntrack vẫn thấy lỗi tương tự",
+            "fix": "Kiểm <code>which conntrack</code> — gói cài xong nhưng PATH của shell hiện tại chưa cập nhật thì mở lại phiên SSH mới."
+          }
+        ]
+      },
+      {
+        "title": "Cài CNI flannel ghim bản, join 2 worker, kiểm ba mặt phẳng CIDR",
+        "phaseType": "core",
+        "estimatedMinutes": 20,
+        "cmd": "kubectl apply -f https://github.com/flannel-io/flannel/releases/download/v0.28.9/kube-flannel.yml ; kubeadm token create --print-join-command",
+        "why": "CNI là điều kiện để node chuyển Ready và Pod hệ thống rời trạng thái Pending; ghim đúng release tránh việc nội dung CNI trôi theo nhánh master (<a href=\"https://kubernetes.io/docs/concepts/cluster-administration/networking/\">Kubernetes: cluster networking</a>).",
+        "observeWith": "<code>kubectl -n kube-flannel logs ds/kube-flannel-ds | grep \"Using interface\"</code> ; <code>kubectl get node -o wide</code>",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Cài flannel bản ghim: <code>kubectl apply -f https://github.com/flannel-io/flannel/releases/download/v0.28.9/kube-flannel.yml</code>.",
+            "expect": "Namespace <code>kube-flannel</code> xuất hiện, DaemonSet <code>kube-flannel-ds</code> chạy trên <code>.182</code>."
+          },
+          {
+            "n": 2,
+            "do": "Kiểm flannel tự chọn đúng interface: <code>kubectl -n kube-flannel logs ds/kube-flannel-ds | grep \"Using interface\"</code>.",
+            "expect": "\"Using interface with name ens160 and address <ADDR-1>\" — không cần khai <code>--iface</code>."
+          },
+          {
+            "n": 3,
+            "do": "Lấy lệnh join: <code>kubeadm token create --print-join-command</code> trên <code>.182</code>.",
+            "expect": "In ra <code>kubeadm join <ADDR-1>:<PORT> --token &lt;token&gt; --discovery-token-ca-cert-hash sha256:1e0de8e5...</code>."
+          },
+          {
+            "n": 4,
+            "do": "Chạy đúng lệnh join đó trên <code>.183</code> và <code>.184</code>.",
+            "expect": "\"This node has joined the cluster.\" trên cả hai worker."
+          },
+          {
+            "n": 5,
+            "do": "Chờ và kiểm toàn cụm: <code>kubectl wait --for=condition=Ready node --all --timeout=120s && kubectl get node -o wide</code>.",
+            "expect": "Ba node Ready ở v1.31.14, container-runtime <code>containerd://2.3.3</code>; <code>dattqh-cloud-1</code> role control-plane, hai node còn lại <code>&lt;none&gt;</code>."
+          },
+          {
+            "n": 6,
+            "do": "Kiểm Pod CIDR chia cho từng node: <code>kubectl get nodes -o custom-columns=NAME:.metadata.name,PODCIDR:.spec.podCIDR</code>.",
+            "expect": "<code>dattqh-cloud-1</code> → 10.244.0.0/24, <code>dattqh-cloud-2</code> → 10.244.1.0/24, <code>dattqh-cloud-3</code> → 10.244.2.0/24."
+          }
+        ],
+        "analysis": {
+          "observation": "Node chuyển Ready ngay sau khi flannel DaemonSet chạy trên đủ số node, không phải ngay sau kubeadm init.",
+          "mechanism": "kubelet báo NotReady cho tới khi plugin CNI ghi xong cấu hình vào /etc/cni/net.d; controller-manager chỉ cắt PodCIDR cho node khi node đã đăng ký, không phụ thuộc CNI.",
+          "lesson": "Thứ tự đúng là init → cài CNI → join: join trước khi có CNI vẫn chạy được nhưng worker sẽ NotReady cho tới khi CNI phủ tới node đó."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Lệnh join báo token hết hạn",
+            "fix": "Token bootstrap mặc định sống 24h (<a href=\"https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/\">kubeadm token</a>); chạy lại <code>kubeadm token create --print-join-command</code> để lấy token mới."
+          },
+          {
+            "symptom": "Node join xong vẫn NotReady",
+            "fix": "Kiểm DaemonSet kube-flannel-ds đã có Pod chạy trên đúng node đó chưa: <code>kubectl -n kube-flannel get pod -o wide</code>."
+          }
+        ]
+      },
+      {
+        "title": "Kiểm iptables FORWARD DROP của Docker + demo pod network, Service, NodePort sống",
+        "phaseType": "core",
+        "estimatedMinutes": 15,
+        "cmd": "iptables -L FORWARD -n ; kubectl get deployments hello-app ; curl http://<ADDR-1>:<PORT>/",
+        "why": "Docker đặt policy FORWARD thành DROP trên cả ba node; xác nhận thật bằng đo iptables và demo ứng dụng NodePort chạy xuyên cả ba node là bằng chứng cụm sống, không chỉ lý thuyết (<a href=\"https://docs.docker.com/engine/network/packet-filtering-firewalls/\">Docker: packet filtering and firewalls</a>, <a href=\"https://kubernetes.io/docs/reference/networking/virtual-ips/#proxy-mode-iptables\">Kubernetes: virtual IPs</a>).",
+        "observeWith": "<code>iptables -L FORWARD -n</code> ; <code>kubectl -n kube-system logs ds/kube-proxy | grep -i proxy</code>",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Đo policy FORWARD trên <code>.182</code>: <code>iptables -L FORWARD -n</code>.",
+            "expect": "<code>Chain FORWARD (policy DROP)</code>, kèm các chain <code>FLANNEL-FWD</code> và <code>KUBE-FORWARD</code> xuất hiện trước phần traffic bị rớt."
+          },
+          {
+            "n": 2,
+            "do": "Kiểm kube-proxy đang chạy chế độ nào: <code>kubectl -n kube-system logs ds/kube-proxy | grep -i proxy</code>.",
+            "expect": "\"Using iptables proxy\" và \"Using iptables Proxier\"."
+          },
+          {
+            "n": 3,
+            "do": "Kiểm DNS trong cụm: <code>kubectl exec &lt;pod&gt; -- cat /etc/resolv.conf</code>.",
+            "expect": "<code>nameserver 10.96.0.10</code>, search domain <code>default.svc.cluster.local svc.cluster.local cluster.local</code>."
+          },
+          {
+            "n": 4,
+            "do": "Deploy ứng dụng demo (giữ nguyên nội dung hello-app.yml của tài liệu, có sẵn trên <code>.182</code> tại <code>/root/hello-app.yml</code>): <code>kubectl apply -f /root/hello-app.yml</code>.",
+            "expect": "<code>kubectl get deployments hello-app</code> báo <code>2/2 READY</code>; <code>kubectl get services hello-app</code> báo NodePort cổng <code>8080:30001/TCP</code>."
+          },
+          {
+            "n": 5,
+            "do": "Gọi qua NodePort từ chính <code>.182</code>: <code>curl http://<ADDR-1>:<PORT>/</code>.",
+            "expect": "<code>Hello, world! Version: 1.0.0 Hostname: hello-app-&lt;hash&gt;</code> — ứng dụng phản hồi thật."
+          },
+          {
+            "n": 6,
+            "do": "Kiểm NodePort mở trên cả ba node kể cả node không có Pod: lặp curl <code><ADDR-1>/183/184:30001</code>.",
+            "expect": "Cả ba trả HTTP 200 — NodePort mở trên mọi node bất kể Pod nằm ở đâu, đúng cơ chế Service."
+          },
+          {
+            "n": 7,
+            "do": "Kiểm trạng thái cuối phiên: <code>kubectl get --raw='/readyz?verbose' | tail -1</code>.",
+            "expect": "<code>readyz check passed</code> — cụm ở trạng thái sẵn sàng."
+          }
+        ],
+        "analysis": {
+          "observation": "Policy DROP của Docker không chặn traffic K8s vì hai chain FLANNEL-FWD và KUBE-FORWARD đã tự lo phần ACCEPT cần thiết; NodePort mở đồng loạt trên mọi node bất kể Pod chạy ở đâu.",
+          "mechanism": "kube-proxy dựng quy tắc NAT để bất kỳ traffic nào tới cổng NodePort trên bất kỳ node nào cũng được chuyển hướng tới đúng Pod, dù Pod đó ở node khác; đây là lý do NodePort \"mở khắp cụm\" chứ không chỉ node có Pod.",
+          "lesson": "Đọc <code>iptables -L FORWARD</code> trước khi kết luận mạng hỏng; hai chain FLANNEL-FWD/KUBE-FORWARD là bằng chứng trực tiếp cho việc CNI và kube-proxy đã cấu hình đúng."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "curl NodePort không phản hồi từ ngoài VPN",
+            "fix": "Chỉ dải 192.168.122.0/24 đi qua VPN lab được (theo bài học Phần 1); kiểm đang đứng ở dải nào trước khi kết luận NodePort hỏng."
+          },
+          {
+            "symptom": "Không thấy chain FLANNEL-FWD",
+            "fix": "Kiểm DaemonSet kube-flannel-ds đã Running trên node đó chưa — chain này chỉ được flanneld chèn sau khi nó khởi động thành công."
+          }
+        ]
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Node đã có <code>containerd.io</code> cho Docker thì <code>apt -y install containerd</code> theo tài liệu là bước dọn dẹp an toàn trước khi cài K8s.",
+        "right": "Gói <code>containerd</code> của Ubuntu conflict trực tiếp với <code>containerd.io</code> (Docker); cài vào sẽ gỡ <code>containerd.io</code> kéo theo cả <code>docker-ce</code>, xoá luôn môi trường Docker trên chính node đó.",
+        "why": "Trên Ubuntu, gói <code>containerd</code> của kho hệ thống và gói <code>containerd.io</code> của kho Docker cùng cung cấp một binary <code>/usr/bin/containerd</code> nên hai gói được apt đánh dấu conflict — cài gói này buộc gỡ gói kia trước theo cơ chế Conflicts của dpkg (<a href=\"https://kubernetes.io/docs/setup/production-environment/container-runtimes/#containerd\">Kubernetes: container runtimes — containerd</a>). Đo trên cụm lab ngày 2026-09-17 (evidence §0): cả ba node đã có <code>containerd.io 2.3.3</code> và <code>docker-ce 5:29.7.2</code> từ kho Docker — chạy nguyên lệnh <code>apt -y install containerd</code> của tài liệu sẽ gỡ <code>containerd.io</code>, kéo theo gỡ <code>docker-ce</code> vì nó phụ thuộc <code>containerd.io</code>. Cách đúng ở Phần 2: giữ nguyên <code>containerd.io</code> đang có, chỉ sinh lại <code>/etc/containerd/config.toml</code> bằng <code>containerd config default</code> rồi bật CRI — không cài thêm gói runtime nào."
+      },
+      {
+        "wrong": "<code>sed</code> chèn mirror registry của tài liệu chạy xong không báo lỗi nghĩa là mirror đã được áp dụng.",
+        "right": "containerd 2.x đổi tên plugin CRI và cấu trúc file (<code>version = 4</code>); pattern <code>sed</code> của tài liệu khớp 0 dòng — lệnh vẫn thành công nhưng không sửa gì, mirror không bao giờ được khai.",
+        "why": "<code>containerd config default</code> trên containerd 2.x sinh ra file có <code>version = 4</code> và tên plugin CRI dạng <code>io.containerd.cri.v1.images</code> / <code>io.containerd.cri.v1.runtime</code>, khác hẳn tên plugin <code>io.containerd.grpc.v1.cri</code> của containerd 1.x mà pattern <code>sed</code> của tài liệu nhắm tới (<a href=\"https://github.com/containerd/containerd/blob/main/docs/cri/config.md\">containerd: CRI plugin config</a>). Đo trực tiếp trên cụm lab: pattern <code>[plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors]</code> khớp 0 dòng trên file <code>config.toml</code> thật của containerd 2.3.3, trong khi <code>sed</code> không có cờ báo lỗi khi 0 dòng khớp — lệnh trả về thành công nhưng không sửa gì. Cách đúng của containerd 2.x là khai <code>config_path</code> trỏ tới một thư mục <code>certs.d</code>, mỗi registry một file <code>hosts.toml</code> riêng; không phát hiện được lỗi này thì image vẫn kéo thẳng từ Docker Hub và dính rate limit mà không hiểu vì sao cấu hình \"đã sed\" lại không có tác dụng."
+      },
+      {
+        "wrong": "<code>kubeadm init</code> fail ngay lần đầu tiên nghĩa là kiến trúc chuẩn bị đang sai, phải cài lại từ đầu.",
+        "right": "Lần đầu fail đúng một dòng preflight vì thiếu binary <code>conntrack</code> — một dependency nhỏ độc lập; phần runtime/cgroup/module đều đã đúng vì được sửa trước đó.",
+        "why": "kubeadm chạy một danh sách preflight check trước khi khởi tạo control plane, mỗi item báo lỗi độc lập, không phụ thuộc các item khác (<a href=\"https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/\">kubeadm troubleshooting</a>). Trên cụm lab, lần <code>kubeadm init --apiserver-advertise-address=<ADDR-1> --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.31.14</code> đầu tiên dừng đúng một dòng: <code>[ERROR FileExisting-conntrack]: conntrack not found in system path</code> — không có lỗi CRI, không có lỗi cgroup, không có lỗi module, vì bốn hạng mục đó đã sửa xong trước đó. kube-proxy ở chế độ iptables cần <code>conntrack</code> để theo dõi trạng thái kết nối khi dịch địa chỉ Service (<a href=\"https://kubernetes.io/docs/reference/networking/virtual-ips/#proxy-mode-iptables\">Kubernetes: virtual IPs — proxy mode iptables</a>). Cài thêm <code>conntrack</code>, <code>socat</code>, <code>ethtool</code>, <code>jq</code> rồi chạy lại là đủ — không cần format lại VM hay nghi ngờ containerd."
+      },
+      {
+        "wrong": "URL <code>raw.githubusercontent.com/coreos/flannel/master/...</code> trong tài liệu vẫn trả về HTTP 200 nên dùng nó để ghim bản production là an toàn.",
+        "right": "URL đó trỏ nhánh <code>master</code> trôi nổi (GitHub redirect <code>coreos</code> → <code>flannel-io</code>); nội dung hôm nay khớp v0.28.9 nhưng có thể đổi bất kỳ lúc nào mà không báo. Lab dùng URL release ghim tag.",
+        "why": "URL <code>https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</code> của tài liệu vẫn phản hồi HTTP 200 vì GitHub tự động redirect tổ chức cũ <code>coreos</code> sang <code>flannel-io</code>, và nội dung đo được ngày 2026-09-17 đúng là bản flannel v0.28.9 với <code>\"Network\": \"10.244.0.0/16\"</code>. Nhưng đường dẫn này trỏ nhánh <code>master</code> — nội dung một nhánh Git thay đổi theo mỗi commit mới, không có gì đảm bảo phiên bản hôm nay còn giữ nguyên vào tuần sau; một manifest CNI khác version giữa hai lần chạy lab có thể đổi luôn tên field hay default image tag mà không có changelog đi kèm (<a href=\"https://kubernetes.io/docs/concepts/cluster-administration/networking/\">Kubernetes: cluster networking</a>). Lab dùng bản ghim theo release tag: <code>https://github.com/flannel-io/flannel/releases/download/v0.28.9/kube-flannel.yml</code> — cùng nội dung đo được, nhưng không đổi theo thời gian, nên tái lập được lab ở một thời điểm khác."
+      },
+      {
+        "wrong": "Kubernetes 1.31 đang cài được từ repo <code>pkgs.k8s.io</code> nghĩa là bản này vẫn an toàn dùng cho production.",
+        "right": "Repo phục vụ 1.31 không có nghĩa 1.31 còn được vá bảo mật — Kubernetes chỉ vá ba nhánh minor gần nhất. Chọn 1.31 ở đây là để khớp tài liệu giảng dạy.",
+        "why": "Kubernetes duy trì bản vá cho ba nhánh minor gần nhất tính từ bản mới nhất; khi một bản minor mới phát hành, nhánh cũ nhất trong ba nhánh đang được vá sẽ hết hỗ trợ (<a href=\"https://kubernetes.io/releases/patch-releases/\">Kubernetes: patch releases</a>, <a href=\"https://kubernetes.io/releases/\">kubernetes.io/releases</a>). Kiểm tại 2026-09-17: <code>dl.k8s.io/release/stable.txt</code> trả <code>v1.37.0</code>, và repo <code>pkgs.k8s.io</code> phục vụ HTTP 200 cho mọi nhánh từ <code>v1.31</code> tới <code>v1.37</code> — nghĩa là 1.31 vẫn TẢI được, không có nghĩa là 1.31 còn được VÁ. Ba nhánh được vá tại thời điểm này là 1.35, 1.36, 1.37; 1.31 đã ngoài phạm vi đó. Cụm lab chọn <code>v1.31.14</code> vì tài liệu giảng dạy khai đúng nhánh này (<code>pkgs.k8s.io/core:/stable:/v1.31/deb/</code>); khi triển khai thật, phải chọn một trong ba nhánh còn được vá, không copy nguyên số phiên bản của bài giảng."
+      },
+      {
+        "wrong": "iptables trên node đã có Docker đặt policy FORWARD thành DROP, nên pod-to-pod traffic xuyên node chắc chắn bị chặn khi cài K8s lên node đó.",
+        "right": "Docker đặt policy FORWARD DROP, nhưng flanneld tự chèn chain <code>FLANNEL-FWD</code> và kube-proxy tự chèn <code>KUBE-FORWARD</code> với rule ACCEPT — hai chain này giữ pod network sống mà không cần sửa iptables tay.",
+        "why": "Docker đặt policy mặc định của chain FORWARD trong bảng filter thành DROP, để container không vô tình biến host thành router mở (<a href=\"https://docs.docker.com/engine/network/packet-filtering-firewalls/\">Docker: packet filtering and firewalls</a>). Đo trên cụm lab ba node đều có Docker: <code>iptables -L FORWARD</code> trả <code>policy DROP</code> trên cả ba, đúng như tài liệu Docker mô tả. Nhưng sau khi flannel và kube-proxy lên, <code>iptables -L FORWARD -n</code> đo được thêm hai chain có rule ACCEPT nằm TRƯỚC vị trí traffic bị đánh rớt: <code>FLANNEL-FWD</code> do flanneld tự chèn khi khởi động, và <code>KUBE-FORWARD</code> do kube-proxy dựng khi chạy chế độ iptables (<a href=\"https://kubernetes.io/docs/reference/networking/virtual-ips/#proxy-mode-iptables\">Kubernetes: virtual IPs — proxy mode iptables</a>). Đo end-to-end: pod trên <code>dattqh-cloud-2</code> gọi pod <code>10.244.2.2</code> trên <code>dattqh-cloud-3</code> trả <code>HTTP 200</code> trong <code>0.001342s</code> — không cần sửa iptables tay, hai chain đó đã lo phần accept traffic xuyên node."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "K8sClusterBootstrapLab"
+    }
+  }
+}

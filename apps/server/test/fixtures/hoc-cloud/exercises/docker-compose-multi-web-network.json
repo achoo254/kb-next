@@ -1,0 +1,178 @@
+{
+  "exercise": {
+    "slug": "docker-compose-multi-web-network",
+    "title": "Docker — Compose nhiều service & cách ly network (Phần 3)",
+    "topic": "docker",
+    "tags": [
+      "docker",
+      "docker-compose",
+      "network",
+      "bridge",
+      "isolation",
+      "ports"
+    ],
+    "source": "Bài tập thực hành — buổi Docker Phần 3",
+    "brief": "Trên host Linux đã cài Docker (ví dụ <strong>Ubuntu 24.04</strong>), viết một file <code>compose.yaml</code> chạy <strong>ba service web</strong> cùng lúc, trong đó <strong>cố ý để một service nằm ngoài network chung</strong> rồi đo sự cách ly bằng <code>ping</code>. <br><strong>Nghiệm thu:</strong> (1) <code>docker compose config</code> sạch và <code>up -d</code> cho ba container Up trên ba cổng 8080/8081/8082; (2) <code>docker inspect</code> cho thấy web01 và web02 cùng dải IP của <code>app-network</code>, còn web03 ở dải khác; (3) ping từ trong web01 sang web02 <strong>thông</strong>, sang web03 <strong>không thông</strong>; (4) đọc được nhãn <code>com.docker.compose.project.config_files</code> trỏ đúng file đã sinh container; (5) chứng minh <code>stop</code> khác <code>down</code>, và cả hai đều không xoá thư mục bind mount trên host.",
+    "estimated_minutes": 45,
+    "content_hash": "3094893a569516fb1a65277ef083653cc85e299f8ece463bea25a5abd92e156d",
+    "updated_at": 1786181486,
+    "guide": [
+      {
+        "step": 1,
+        "instruction": "<strong>Xác nhận đang dùng Compose v2 và dọn cổng</strong> — lệnh v2 viết không dấu gạch nối. Trước khi bắt đầu, bảo đảm ba cổng 8080, 8081, 8082 đang rảnh để không xung đột với bài cũ.",
+        "command": "docker compose version\ndocker ps --format \"table {{.Names}}\\t{{.Ports}}\"\nss -lntp | grep -E \":(8080|8081|8082) \" || echo \"ba cong dang ranh\"",
+        "note": "<code>docker-compose</code> (có dấu gạch nối) là v1 đã hết hỗ trợ — tài liệu cũ copy nguyên văn sẽ gõ sai lệnh (<a href=\"https://docs.docker.com/compose/releases/migrate/\">Docker: migrate to Compose v2</a>)."
+      },
+      {
+        "step": 2,
+        "instruction": "<strong>Tạo thư mục project và nội dung web</strong> — mỗi project Compose một thư mục riêng, vì mọi đường dẫn tương đối trong compose file được tính theo vị trí của chính file đó.",
+        "command": "mkdir -p ~/docker-lab/compose-multi/html\ncd ~/docker-lab/compose-multi\n\ncat > html/index.html <<'EOF'\n<!doctype html>\n<html lang=\"vi\">\n<head><meta charset=\"utf-8\"><title>Compose Multi Web</title></head>\n<body><h1>Web 01 - noi dung mount tu host</h1></body>\n</html>\nEOF\n\nls -la html",
+        "note": "Heredoc viết với nháy đơn nên nội dung được ghi nguyên văn, không bị shell khai triển biến."
+      },
+      {
+        "step": 3,
+        "instruction": "<strong>Viết compose.yaml ba service</strong> — mỗi service một cổng host riêng vì một cổng chỉ một tiến trình chiếm được. <strong>web01 và web02 khai <code>networks: [app-network]</code>; web03 KHÔNG khai</strong> — đây chính là điểm sẽ đo ở bước sau.",
+        "command": "cat > compose.yaml <<'EOF'\nservices:\n  web01:\n    image: nginx:alpine\n    container_name: compose-web01\n    restart: unless-stopped\n    ports:\n      - \"0.0.0.0:8080:80\"\n    volumes:\n      - ./html:/usr/share/nginx/html:ro\n    networks:\n      - app-network\n\n  web02:\n    image: nginx:alpine\n    container_name: compose-web02\n    restart: unless-stopped\n    ports:\n      - \"0.0.0.0:8081:80\"\n    networks:\n      - app-network\n\n  web03:\n    image: nginx:alpine\n    container_name: compose-web03\n    restart: unless-stopped\n    ports:\n      - \"0.0.0.0:8082:80\"\n\nnetworks:\n  app-network:\n    driver: bridge\nEOF\n\ncat compose.yaml",
+        "note": "Vế trái của <code>ports</code> là <code>0.0.0.0</code> để máy khác trong mạng vào được. Để <code>127.0.0.1</code> thì chỉ chính host truy cập được (<a href=\"https://docs.docker.com/engine/network/#published-ports\">Docker: published ports</a>)."
+      },
+      {
+        "step": 4,
+        "instruction": "<strong>Validate trước khi tạo container nào</strong> — YAML thụt lề bằng dấu cách, không dùng tab. Lệnh <code>config</code> in ra cấu hình đã hợp nhất và báo lỗi ngay tại dòng sai.",
+        "command": "docker compose config",
+        "note": "Bỏ qua bước này thì lỗi thụt lề lộ ra giữa lúc <code>up</code>, khi một phần service đã tạo và một phần chưa (<a href=\"https://docs.docker.com/reference/cli/docker/compose/config/\">docker compose config</a>)."
+      },
+      {
+        "step": 5,
+        "instruction": "<strong>Khởi động và kiểm ba web đều phục vụ được</strong> — cách ly nằm ở mạng giữa các container, không phải ở đường vào từ host, nên cả ba cổng đều phải curl được.",
+        "command": "docker compose up -d\ndocker compose ps\ndocker ps\ncurl -s http://127.0.0.1:8080/ | head -3\ncurl -s -o /dev/null -w \"8081 -> %{http_code}\\n\" http://127.0.0.1:8081/\ncurl -s -o /dev/null -w \"8082 -> %{http_code}\\n\" http://127.0.0.1:8082/",
+        "note": "Chỉ web01 có bind mount nên trả về nội dung tự viết; web02 và web03 trả trang mặc định của Nginx."
+      },
+      {
+        "step": 6,
+        "instruction": "<strong>Đọc IP thật của từng container</strong> — đây là số liệu để đối chiếu ở bước ping. web01 và web02 phải cùng một dải; web03 nằm ở dải khác vì thuộc network mặc định của project.",
+        "command": "docker network ls\ndocker inspect compose-web01 --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}\"\ndocker inspect compose-web02 --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}\"\ndocker inspect compose-web03 --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}\"\ndocker network inspect compose-multi_app-network --format \"{{range .Containers}}{{.Name}} {{end}}\"",
+        "note": "Compose đặt tên network theo dạng <code>tên-thư-mục_tên-network</code>. Lệnh cuối liệt kê container nằm trong network đó — chỉ thấy web01 và web02 (<a href=\"https://docs.docker.com/compose/how-tos/networking/\">Compose: networking</a>)."
+      },
+      {
+        "step": 7,
+        "instruction": "<strong>Đo sự cách ly bằng ping</strong> — đây là bước nghiệm thu quan trọng nhất của bài. Trong cùng network, ping theo TÊN service cũng thông vì Compose cấp DNS nội bộ. Sang web03 thì cả tên lẫn IP đều không tới.",
+        "command": "docker exec compose-web01 ping -c 3 compose-web02\ndocker exec compose-web01 ping -c 3 <IP_CUA_WEB03>\ndocker exec compose-web01 ping -c 3 compose-web03",
+        "note": "Lệnh thứ hai và thứ ba <strong>phải thất bại</strong> — 100% packet loss hoặc bad address. Đó là kết quả đúng của bài, không phải sự cố (<a href=\"https://docs.docker.com/engine/network/drivers/bridge/\">Docker: bridge network</a>)."
+      },
+      {
+        "step": 8,
+        "instruction": "<strong>Truy container về đúng compose file</strong> — Compose không giữ trạng thái ở đâu khác ngoài các nhãn gắn vào container. Đây là đường tra khi host có hàng chục project.",
+        "command": "docker inspect compose-web01 --format '{{json .Config.Labels}}'\ndocker inspect compose-web01 --format '{{index .Config.Labels \"com.docker.compose.project.config_files\"}}'\ndocker inspect compose-web01 --format '{{index .Config.Labels \"com.docker.compose.project\"}}'",
+        "note": "Nhãn <code>config_files</code> ghi đường dẫn tuyệt đối của file đã sinh container (<a href=\"https://docs.docker.com/reference/cli/docker/inspect/\">docker inspect</a>)."
+      },
+      {
+        "step": 9,
+        "instruction": "<strong>Chứng minh phải đứng đúng thư mục</strong> — Compose tìm file cấu hình ở thư mục hiện tại. Rời đi rồi gõ lệnh của project sẽ thất bại, trừ khi chỉ đường bằng cờ <code>-f</code>.",
+        "command": "cd ..\ndocker compose ps\ndocker compose -f ~/docker-lab/compose-multi/compose.yaml ps\ncd ~/docker-lab/compose-multi",
+        "note": "Lệnh thứ hai báo <code>no configuration file provided: not found</code>; lệnh thứ ba chạy được (<a href=\"https://docs.docker.com/reference/cli/docker/compose/\">docker compose CLI</a>). Khuyến nghị khi làm tay vẫn là <code>cd</code> vào thư mục project."
+      },
+      {
+        "step": 10,
+        "instruction": "<strong>Phân biệt stop với down, rồi dọn lab</strong> — <code>stop</code> giữ container ở trạng thái đã dừng; <code>down</code> xoá container và network của project. Cả hai đều không chạm thư mục bind mount trên host.",
+        "command": "docker compose stop\ndocker compose ps --all\ndocker compose start\ndocker compose ps\n\ndocker compose down\ndocker ps -a\ndocker network ls | grep compose-multi || echo \"network cua project da bi xoa\"\nls -l html",
+        "note": "Sau <code>down</code>, container và network biến mất nhưng thư mục <code>html</code> còn nguyên — dữ liệu bind mount thuộc quyền sở hữu của host (<a href=\"https://docs.docker.com/reference/cli/docker/compose/down/\">docker compose down</a>)."
+      }
+    ],
+    "demo": [
+      {
+        "step": 1,
+        "what": "<strong>docker compose version</strong> — xác nhận đang dùng plugin v2.",
+        "command": "docker compose version",
+        "output": "Docker Compose version v2.39.1",
+        "note": "Lệnh v2 viết không dấu gạch nối. Nếu máy trả về dạng 1.x thì đang dùng bản đã hết hỗ trợ."
+      },
+      {
+        "step": 2,
+        "what": "<strong>docker compose config</strong> — cấu hình đã hợp nhất, in ra trước khi tạo container.",
+        "command": "docker compose config",
+        "output": "name: compose-multi\nservices:\n  web01:\n    container_name: compose-web01\n    image: nginx:alpine\n    networks:\n      app-network: null\n    ports:\n      - mode: ingress\n        host_ip: 0.0.0.0\n        target: 80\n        published: \"8080\"\n        protocol: tcp\n    restart: unless-stopped\n...",
+        "note": "Dòng <code>name: compose-multi</code> là tên project, suy ra từ tên thư mục — nó cũng là tiền tố của tên network."
+      },
+      {
+        "step": 3,
+        "what": "<strong>docker compose ps</strong> — ba service Up trên ba cổng khác nhau.",
+        "command": "docker compose up -d\ndocker compose ps",
+        "output": "NAME             IMAGE          SERVICE   STATUS         PORTS\ncompose-web01    nginx:alpine   web01     Up 12 seconds  0.0.0.0:8080-&gt;80/tcp\ncompose-web02    nginx:alpine   web02     Up 12 seconds  0.0.0.0:8081-&gt;80/tcp\ncompose-web03    nginx:alpine   web03     Up 12 seconds  0.0.0.0:8082-&gt;80/tcp",
+        "note": "Trùng cổng host thì service thứ hai không lên, kèm lỗi address already in use trong output của up."
+      },
+      {
+        "step": 4,
+        "what": "<strong>IP của ba container</strong> — hai dải khác nhau.",
+        "command": "docker inspect compose-web01 --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}\"\ndocker inspect compose-web02 --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}\"\ndocker inspect compose-web03 --format \"{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}\"",
+        "output": "172.21.0.2\n172.21.0.3\n172.22.0.2",
+        "note": "web01 và web02 nằm trong 172.21.0.0/16 của app-network; web03 nằm ở 172.22.0.0/16 — network mặc định của project. Dải cụ thể trên mỗi máy có thể khác, điều cần quan sát là <em>hai dải khác nhau</em>."
+      },
+      {
+        "step": 5,
+        "what": "<strong>Ping trong cùng network</strong> — thông, và phân giải được theo tên service.",
+        "command": "docker exec compose-web01 ping -c 3 compose-web02",
+        "output": "PING compose-web02 (172.21.0.3): 56 data bytes\n64 bytes from 172.21.0.3: seq=0 ttl=64 time=0.089 ms\n64 bytes from 172.21.0.3: seq=1 ttl=64 time=0.104 ms\n64 bytes from 172.21.0.3: seq=2 ttl=64 time=0.098 ms\n--- compose-web02 ping statistics ---\n3 packets transmitted, 3 packets received, 0% packet loss",
+        "note": "Không cần biết IP: DNS nội bộ của network phân giải tên container và tên service."
+      },
+      {
+        "step": 6,
+        "what": "<strong>Ping sang container ngoài network</strong> — không thông. Đây là kết quả đúng của bài.",
+        "command": "docker exec compose-web01 ping -c 3 172.22.0.2\ndocker exec compose-web01 ping -c 3 compose-web03",
+        "output": "PING 172.22.0.2 (172.22.0.2): 56 data bytes\n--- 172.22.0.2 ping statistics ---\n3 packets transmitted, 0 packets received, 100% packet loss\nping: bad address 'compose-web03'",
+        "note": "Theo IP thì mất gói hoàn toàn; theo tên thì không phân giải được, vì DNS nội bộ chỉ hoạt động trong phạm vi cùng network."
+      },
+      {
+        "step": 7,
+        "what": "<strong>Nhãn Compose gắn vào container</strong> — đường truy về compose file.",
+        "command": "docker inspect compose-web01 --format '{{json .Config.Labels}}'",
+        "output": "{\n  \"com.docker.compose.project\": \"compose-multi\",\n  \"com.docker.compose.service\": \"web01\",\n  \"com.docker.compose.working_dir\": \"/root/docker-lab/compose-multi\",\n  \"com.docker.compose.project.config_files\": \"/root/docker-lab/compose-multi/compose.yaml\",\n  \"com.docker.compose.version\": \"2.39.1\"\n}",
+        "note": "Container không có nhóm nhãn này là container sinh từ lệnh <code>docker run</code> đơn lẻ, không thuộc project Compose nào."
+      },
+      {
+        "step": 8,
+        "what": "<strong>stop khác down</strong> — trạng thái container sau mỗi lệnh.",
+        "command": "docker compose stop\ndocker compose ps --all\ndocker compose down\ndocker ps -a",
+        "output": "NAME             IMAGE          SERVICE   STATUS                     PORTS\ncompose-web01    nginx:alpine   web01     Exited (0) 3 seconds ago\ncompose-web02    nginx:alpine   web02     Exited (0) 3 seconds ago\ncompose-web03    nginx:alpine   web03     Exited (0) 2 seconds ago\nCONTAINER ID   IMAGE   COMMAND   CREATED   STATUS   PORTS   NAMES",
+        "note": "Sau <code>stop</code> container vẫn còn ở trạng thái Exited; sau <code>down</code> danh sách rỗng hoàn toàn, network của project cũng bị xoá."
+      }
+    ],
+    "references": [
+      {
+        "label": "Docker — Compose file reference",
+        "url": "https://docs.docker.com/reference/compose-file/"
+      },
+      {
+        "label": "Docker — docker compose CLI",
+        "url": "https://docs.docker.com/reference/cli/docker/compose/"
+      },
+      {
+        "label": "Docker — docker compose config",
+        "url": "https://docs.docker.com/reference/cli/docker/compose/config/"
+      },
+      {
+        "label": "Docker — docker compose down",
+        "url": "https://docs.docker.com/reference/cli/docker/compose/down/"
+      },
+      {
+        "label": "Docker — Compose networking",
+        "url": "https://docs.docker.com/compose/how-tos/networking/"
+      },
+      {
+        "label": "Docker — bridge network driver",
+        "url": "https://docs.docker.com/engine/network/drivers/bridge/"
+      },
+      {
+        "label": "Docker — published ports",
+        "url": "https://docs.docker.com/engine/network/#published-ports"
+      },
+      {
+        "label": "Docker — docker inspect",
+        "url": "https://docs.docker.com/reference/cli/docker/inspect/"
+      },
+      {
+        "label": "Docker — chuyển từ Compose v1 sang v2",
+        "url": "https://docs.docker.com/compose/releases/migrate/"
+      }
+    ]
+  }
+}

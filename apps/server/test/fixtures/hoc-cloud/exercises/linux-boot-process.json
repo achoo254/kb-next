@@ -1,0 +1,67 @@
+{
+  "exercise": {
+    "slug": "linux-boot-process",
+    "title": "Quá trình khởi động Linux",
+    "topic": "linux",
+    "tags": [
+      "boot",
+      "systemd",
+      "systemd-analyze"
+    ],
+    "source": "Bài tập thực hành",
+    "brief": "Phân tích quá trình khởi động Linux: đo thời gian boot và <strong>xác định service làm chậm boot</strong> bằng <code>systemd-analyze</code> (blame / critical-chain / --failed), giải thích 5 tầng boot (firmware → GRUB → kernel → initramfs → systemd) và đề xuất cách khắc phục boot chậm.",
+    "estimated_minutes": 40,
+    "content_hash": "931247b79e32d42bc133c7c34887b5b0c7f5b567f75f20941f4bc74c6e724967",
+    "updated_at": 1780494935,
+    "guide": [
+      {
+        "step": 1,
+        "instruction": "<strong>Phase 1 — Đo boot + tìm thủ phạm trên VM chậm (171)</strong> — Quy trình chuẩn tìm boot chậm là systemd-analyze → blame → critical-chain → --failed (systemd-analyze(1)).",
+        "command": "# Trên dattqh-nat (<ADDR-1>)\nsystemd-analyze\nsystemd-analyze blame | head -10\nsystemd-analyze critical-chain | head -20\nsystemctl --failed\nsudo journalctl -b -u systemd-networkd-wait-online --no-pager | tail",
+        "note": "Quan sát: <code>systemd-analyze</code> → <code>4.065s (kernel) + 2min 2.993s (userspace)</code>. <code>blame</code> top = <code>2min 131ms systemd-networkd-wait-online.service</code>. <code>systemctl --failed</code> liệt kê unit này FAILED. journal: <code>Timeout occurred while waiting for network connectivity</code>."
+      },
+      {
+        "step": 2,
+        "instruction": "<strong>Phase 2 — So sánh VM boot nhanh (172) để xác nhận thủ phạm</strong> — Cùng image, dattqh-client boot 8.9s.",
+        "command": "# Trên dattqh-client (<ADDR-2>)\nsystemd-analyze\nsystemd-analyze blame | head -6\nsystemctl --failed\nsudo journalctl -b -u systemd-networkd-wait-online --no-pager | tail -3",
+        "note": "Quan sát: <code>systemd-analyze</code> → <code>4.322s + 4.663s = 8.985s</code>. blame: <code>1.140s systemd-networkd-wait-online.service</code> (xong nhanh). <code>systemctl --failed</code> trống. journal: <code>Finished systemd-networkd-wait-online.service</code> (~1s, không timeout)."
+      },
+      {
+        "step": 3,
+        "instruction": "<strong>Phase 3 — Khảo sát từng tầng + cách fix (không apply trên VM)</strong> — Hiểu boot không chỉ là đo thời gian mà còn đọc được hiện trạng từng tầng: kernel cmdline, GRUB, initramfs, default.target.",
+        "command": "# Trên 171 — đọc từng tầng (read-only)\ncat /proc/cmdline\nps -p 1 -o pid,comm\nfindmnt /\nlsinitramfs /boot/initrd.img-$(uname -r) | grep -iE 'lvm|virtio' | head\nsystemctl get-default\n\n# CÁCH FIX wait-online (tham khảo — không chạy trên VM lab):\n#   sudo nano /etc/netplan/50-cloud-init.yaml  -> thêm 'optional: true' dưới ens160\n#   sudo netplan try && sudo netplan apply\n# hoặc bỏ 'dhcp4: true' nếu chỉ dùng static.",
+        "note": "Quan sát: <code>cat /proc/cmdline</code> → <code>BOOT_IMAGE=/vmlinuz-6.8.0-31-generic root=/dev/mapper/ubuntu--vg-ubuntu--lv ro</code>. <code>ps -p 1</code> → <code>1 systemd</code>. <code>findmnt /</code> → root trên <code>/dev/mapper/ubuntu--vg-ubuntu--lv</code>. <code>systemctl get-default</code> → <code>graphical.target</code>."
+      }
+    ],
+    "demo": [
+      {
+        "step": 1,
+        "what": "<strong>Đo boot + tìm thủ phạm (VM chậm 171)</strong>",
+        "screenshot": {
+          "src": "https://hoc-cloud.inetdev.io.vn/exercises/linux-boot-process/screenshots/boot-1-analyze-blame.png?v=260603",
+          "alt": "systemd-analyze 2min; blame đứng đầu networkd-wait-online",
+          "caption": "<code>systemd-analyze</code>: userspace 2 phút; <code>blame</code> đứng đầu = <code>systemd-networkd-wait-online</code>."
+        }
+      },
+      {
+        "step": 2,
+        "what": "<strong>Unit FAILED + lý do (journal)</strong>",
+        "screenshot": {
+          "src": "https://hoc-cloud.inetdev.io.vn/exercises/linux-boot-process/screenshots/boot-2-failed-journal.png?v=260603",
+          "alt": "systemctl --failed liệt kê wait-online; journal Timeout 120s",
+          "caption": "<code>systemctl --failed</code> + journal: wait-online timeout 120s → <code>status=1/FAILURE</code>."
+        }
+      },
+      {
+        "step": 3,
+        "what": "<strong>So sánh VM boot nhanh (172)</strong>",
+        "screenshot": {
+          "src": "https://hoc-cloud.inetdev.io.vn/exercises/linux-boot-process/screenshots/boot-3-fast-compare.png?v=260603",
+          "alt": "systemd-analyze 9s; wait-online 1.1s; no failed unit",
+          "caption": "Cùng image: boot <strong>9s</strong>, wait-online xong 1.1s, không unit nào FAILED → thủ phạm là service treo, không phải phần cứng."
+        }
+      }
+    ],
+    "references": []
+  }
+}

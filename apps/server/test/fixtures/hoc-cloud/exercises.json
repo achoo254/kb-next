@@ -1,0 +1,166 @@
+{
+  "exercises": [
+    {
+      "slug": "docker-build-run-compose",
+      "title": "Docker — Đóng gói app và dựng stack web + database bằng Compose",
+      "topic": "docker",
+      "tags": [
+        "docker",
+        "dockerfile",
+        "compose",
+        "volume",
+        "network"
+      ],
+      "estimated_minutes": 45,
+      "updated_at": 1784297513
+    },
+    {
+      "slug": "docker-compose-log-stack",
+      "title": "Docker — Compose stack thu log: VictoriaLogs, Vector & rsyslog (Phần 3)",
+      "topic": "docker",
+      "tags": [
+        "docker",
+        "docker-compose",
+        "logging",
+        "vector",
+        "victorialogs",
+        "rsyslog",
+        "logsql",
+        "syslog"
+      ],
+      "estimated_minutes": 60,
+      "updated_at": 1786191819
+    },
+    {
+      "slug": "docker-compose-multi-web-network",
+      "title": "Docker — Compose nhiều service & cách ly network (Phần 3)",
+      "topic": "docker",
+      "tags": [
+        "docker",
+        "docker-compose",
+        "network",
+        "bridge",
+        "isolation",
+        "ports"
+      ],
+      "estimated_minutes": 45,
+      "updated_at": 1786181486
+    },
+    {
+      "slug": "docker-image-build-push",
+      "title": "Docker — Viết Dockerfile, build image & push lên registry (Phần 2)",
+      "topic": "docker",
+      "tags": [
+        "docker",
+        "dockerfile",
+        "build",
+        "image",
+        "registry",
+        "docker-hub",
+        "quay",
+        "landing-page",
+        "latest"
+      ],
+      "estimated_minutes": 60,
+      "updated_at": 1786110784
+    },
+    {
+      "slug": "docker-lifecycle-immutability",
+      "title": "Docker — Vòng đời container & chứng minh tính bất biến (Phần 1)",
+      "topic": "docker",
+      "tags": [
+        "docker",
+        "container",
+        "lifecycle",
+        "immutable",
+        "logs",
+        "events"
+      ],
+      "estimated_minutes": 40,
+      "updated_at": 1784771256
+    },
+    {
+      "slug": "docker-volume-bind-logging",
+      "title": "Docker — Volume, Bind mount & Thu log tập trung (Phần 2)",
+      "topic": "docker",
+      "tags": [
+        "docker",
+        "volume",
+        "bind-mount",
+        "storage",
+        "logging",
+        "vector",
+        "victorialogs"
+      ],
+      "estimated_minutes": 50,
+      "updated_at": 1785644774
+    },
+    {
+      "slug": "cmdlog-rsyslog",
+      "title": "Command logging tập trung với rsyslog",
+      "topic": "linux",
+      "tags": [
+        "rsyslog",
+        "logging",
+        "cmdlog",
+        "audit",
+        "bash",
+        "logrotate"
+      ],
+      "estimated_minutes": 60,
+      "updated_at": 1782180299
+    },
+    {
+      "slug": "linux-boot-process",
+      "title": "Quá trình khởi động Linux",
+      "topic": "linux",
+      "tags": [
+        "boot",
+        "systemd",
+        "systemd-analyze"
+      ],
+      "estimated_minutes": 40,
+      "updated_at": 1780494935
+    },
+    {
+      "slug": "linux-login-shell-cmdlog",
+      "title": "SSH login: file khởi động shell & cấu hình Command Logging",
+      "topic": "linux",
+      "tags": [
+        "ssh",
+        "bash",
+        "login-shell",
+        "pam",
+        "rsyslog",
+        "cmdlog",
+        "logging"
+      ],
+      "estimated_minutes": 45,
+      "updated_at": 1782965129
+    },
+    {
+      "slug": "linux-swap",
+      "title": "Swap — khi nào dùng và cấu hình",
+      "topic": "linux",
+      "tags": [
+        "swap",
+        "memory",
+        "swappiness"
+      ],
+      "estimated_minutes": 35,
+      "updated_at": 1780494935
+    },
+    {
+      "slug": "syslog",
+      "title": "Syslog tập trung (rsyslog server ↔ client)",
+      "topic": "linux",
+      "tags": [
+        "syslog",
+        "rsyslog",
+        "logging"
+      ],
+      "estimated_minutes": 45,
+      "updated_at": 1780494935
+    }
+  ]
+}

@@ -6,8 +6,9 @@
 #   kb-activate-incoming <release-id>
 # The release waits in /var/www/kb/ci-incoming/<id> (writable by the deploy
 # user). It is moved out of the deploy user's reach before any check, must hold
-# only plain files and directories with the web app, the server bundle and the
-# migrations, then becomes releases/<id> and `current`. kb-server restarts and
+# only plain files and directories with the web app, the server bundle, the
+# migrations and content/ (what the importer reads), then becomes
+# releases/<id> and `current`. kb-server restarts and
 # /healthz (loopback) and https://kb.hoandat.com/ (origin) are checked; on
 # failure `current` goes back to the previous release, the service restarts and
 # the script exits 1. The five newest releases stay. The release id is written
@@ -38,7 +39,7 @@ reject() {
 	exit 2
 }
 [ -z "$(find "$STAGE/$ID" ! -type f ! -type d -print -quit)" ] || reject "has links or special files"
-for f in apps/web/dist/index.html apps/server/dist/server/index.mjs apps/server/drizzle/meta/_journal.json; do
+for f in apps/web/dist/index.html apps/server/dist/server/index.mjs apps/server/drizzle/meta/_journal.json content/hoc-cloud/curation.json; do
 	[ -f "$STAGE/$ID/$f" ] || reject "has no $f"
 done
 find "$STAGE/$ID" -type d -exec chmod 755 {} +

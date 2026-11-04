@@ -1,0 +1,454 @@
+{
+  "lab": {
+    "slug": "subnet-cidr",
+    "module": "01-networking",
+    "title": "IPv4",
+    "estimated_minutes": 50,
+    "content_hash": "2026-04-24T06:13:29.053Z",
+    "updated_at": 1776912183,
+    "tldr": [
+      {
+        "term": "IP Class A",
+        "value": "1.0.0.0 – 126.255.255.255 (octet đầu: 1–126)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.2\">RFC 791 §3.2</a> định nghĩa classful addressing: Class A có high-order bit=0, network ID 8 bit (octet đầu 1–126), host 24 bit — mỗi block Class A chứa 2²⁴−2 = 16,777,214 host usable. Phân bổ nguyên Class A /8 cho một tổ chức là đặc trưng của classful era trước khi CIDR ra đời; ngày nay không còn IP Class A chưa phân bổ.",
+        "whyBreaks": "Nhầm 127.x.x.x là Class A → cấu hình sai. 127.0.0.0/8 là loopback (localhost), không phải Class A thông thường. Ngoài ra, cấp nguyên /8 cho 1 tổ chức = lãng phí IP → đây là lý do CIDR ra đời thay thế classful.",
+        "deploymentUse": "Ngày nay hiếm ai được cấp nguyên Class A. Tuy nhiên vẫn cần nhận biết: 10.0.0.0/8 (private Class A) rất phổ biến trong VPC AWS/GCP. Khi thấy IP 10.x.x.x, biết ngay đó là private range Class A."
+      },
+      {
+        "term": "IP Class B",
+        "value": "128.0.0.0 – 191.255.255.255 (octet đầu: 128–191)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.2\">RFC 791 §3.2</a> định nghĩa Class B có high-order bits=10, network ID 16 bit (octet đầu 128–191), host 16 bit — mỗi block Class B chứa 2¹⁶−2 = 65,534 host usable. Dải 172.16.0.0–172.31.255.255 thuộc Class B nhưng được RFC 1918 §3 reserve cho private use — không route trên internet.",
+        "whyBreaks": "Nhầm 172.16.x.x – 172.31.x.x là public Class B → expose internal service ra internet. Dải 172.16.0.0/12 là private theo RFC 1918, không route trên internet. Kiểm tra kỹ trước khi mở firewall.",
+        "deploymentUse": "172.16.0.0/12 (private Class B) hay dùng cho VPN, office network. Docker default 172.17.0.0/16 cũng nằm trong range này → dễ conflict với office VPN. Khi thiết kế network, tránh overlap với các range phổ biến."
+      },
+      {
+        "term": "IP Class C",
+        "value": "192.0.0.0 – 223.255.255.255 (octet đầu: 192–223)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.2\">RFC 791 §3.2</a> định nghĩa Class C có high-order bits=110, network ID 24 bit (octet đầu 192–223), host 8 bit — mỗi block Class C chứa 2⁸−2 = 254 host usable. Class C chỉ là range địa chỉ; CIDR cho phép chia nhỏ hơn /24 (VLSM) hoặc gộp nhiều /24 thành supernet — không đồng nghĩa Class C = /24.",
+        "whyBreaks": "Nghĩ Class C = /24 luôn → không hiểu VLSM. Class C chỉ là range địa chỉ, có thể chia nhỏ hơn /24 (như /26, /28) hoặc gộp lớn hơn (/23, /22). Đừng nhầm lẫn classful với CIDR.",
+        "deploymentUse": "192.168.0.0/16 (private Class C) là range mặc định của router home/SMB. Khi dev test local, hay dùng 192.168.1.x. Trên cloud, tránh dùng 192.168.1.0/24 vì dễ conflict với home network khi VPN."
+      },
+      {
+        "term": "IP Class D & E",
+        "value": "D: 224–239 (multicast), E: 240–255 (reserved)",
+        "why": "Class D (224.0.0.0 – 239.255.255.255) dành cho multicast — gửi 1 packet tới nhiều host đăng ký nhận (video streaming, routing protocol OSPF). Class E (240.0.0.0 – 255.255.255.255) reserved cho nghiên cứu.",
+        "whyBreaks": "Gán IP Class D/E cho host → network không hoạt động. Đây là các địa chỉ đặc biệt, không dùng cho unicast thông thường. Nếu thấy IP 224.x.x.x trong config → sai hoàn toàn.",
+        "deploymentUse": "Multicast dùng trong nội bộ datacenter (VXLAN, PIM). Ít khi dev cần cấu hình trực tiếp. Biết để nhận diện khi debug tcpdump: thấy traffic tới 224.0.0.x là multicast protocol, không phải attack."
+      },
+      {
+        "term": "Private vs Public IP",
+        "value": "Private: nội bộ, không route internet. Public: toàn cầu, unique.",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1918#section-3\">RFC 1918 §3</a> định nghĩa 3 private address range không routable trên internet: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16. Bất kỳ tổ chức nào cũng có thể dùng các range này mà không cần đăng ký — chúng không unique toàn cầu. Host trong private range muốn ra internet phải qua NAT.",
+        "whyBreaks": "Expose private IP ra internet (firewall rule sai) → không ai ngoài LAN truy cập được vì private IP không route trên internet. Ngược lại, dùng public IP cho internal service → tốn tiền + security risk.",
+        "deploymentUse": "AWS/GCP: EC2/VM có private IP (10.x.x.x) + có thể gắn public IP (Elastic IP). Traffic giữa EC2 trong VPC dùng private IP (free, low latency). Traffic ra internet dùng public IP (có phí, qua NAT Gateway)."
+      },
+      {
+        "term": "NAT (Network Address Translation)",
+        "value": "Đổi IP nguồn từ private → public khi ra internet",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc3022\">RFC 3022</a> định nghĩa NAT (Network Address Translation): router/firewall thay source IP từ private → public trong IP header khi packet ra internet; khi reply về, NAT tra bảng để đổi ngược destination IP về địa chỉ private gốc. Khi curl từ laptop ra internet, server log ghi IP public của NAT gateway — không phải IP private của laptop.",
+        "whyBreaks": "Không hiểu NAT → không debug được 'tại sao server thấy IP khác với IP máy tôi'. Khi bạn curl từ laptop, server log ghi IP của NAT gateway (router nhà/công ty), không phải IP laptop. Kiểm tra bằng ipinfo.io.",
+        "deploymentUse": "AWS NAT Gateway cho private subnet ra internet. Giá ~$0.045/GB data processed. Kubernetes LoadBalancer dùng SNAT để pod reply đúng client. Docker port mapping (-p 80:3000) cũng là dạng NAT (DNAT)."
+      },
+      {
+        "term": "Network address",
+        "value": "Bit host toàn 0",
+        "why": "Như số nhà của cả tòa chung cư — đại diện cho toàn bộ subnet. Router dùng địa chỉ này để tìm đường đi. Không gán cho máy cụ thể.",
+        "whyBreaks": "Gán network address cho 1 host → ARP conflict, routing rối loạn. Tất cả packet gửi đến network address được coi là gửi cho 'cả subnet' theo nghĩa routing, không phải 1 máy cụ thể.",
+        "deploymentUse": "Khi tạo subnet trên AWS VPC hay Docker network, địa chỉ đầu tiên (.0) luôn là network address — không thể gán cho EC2 hay container. AWS còn giữ thêm 4 IP đầu và 1 IP cuối của mỗi subnet."
+      },
+      {
+        "term": "Broadcast address",
+        "value": "Bit host toàn 1",
+        "why": "Như loa phát thanh tòa nhà — gửi tin đến tất cả máy trong subnet cùng lúc. Dùng khi cần hỏi 'ai có MAC này?' (ARP) hoặc 'có DHCP server không?' (DHCP). Không gán cho máy cụ thể.",
+        "whyBreaks": "Broadcast storm: nếu nhiều máy gửi broadcast liên tục → mọi NIC trong subnet phải xử lý → CPU spike đồng loạt. Đây là lý do broadcast domain phải giới hạn, subnet nhỏ giúp khoanh vùng broadcast.",
+        "deploymentUse": "Hiểu broadcast giúp giải thích tại sao Docker/K8s mỗi pod/container cần subnet riêng nhỏ — giảm broadcast traffic. VPC cloud thường disable broadcast hoàn toàn, dùng unicast ARP thay thế."
+      },
+      {
+        "term": "Subnet mask",
+        "value": "Chuỗi bit 1 phần network, 0 phần host",
+        "why": "Như khuôn cắt — che phần network, lộ phần host. Máy dùng mask để biết: 'IP kia có cùng mạng với mình không?' Nếu cùng → gửi trực tiếp. Khác → phải đi qua gateway.",
+        "whyBreaks": "Sai subnet mask trên host → host nghĩ IP đích ở cùng LAN khi thực ra ở mạng khác (gửi ARP thay vì qua gateway) hoặc ngược lại → toàn bộ traffic drop. Đây là lỗi config hay gặp khi setup VPS thủ công.",
+        "deploymentUse": "Khi cấu hình static IP trên VPS: ip addr add 10.0.0.5/24 dev eth0. Số /24 sau là subnet mask. Sai số này = VPS không nói chuyện được với gateway = mất SSH ngay lập tức."
+      },
+      {
+        "term": "Wildcard mask",
+        "value": "Đảo bit của subnet mask",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc4632#section-3\">RFC 4632 §3</a> định nghĩa CIDR (Classless Inter-Domain Routing): địa chỉ viết theo notation address/prefix-length, trong đó prefix-length là số bit dành cho network part. /24 nghĩa là 24 bit đầu là network, 8 bit còn lại là host — thay thế hoàn toàn khái niệm classful A/B/C. CIDR cho phép prefix bất kỳ từ /0 đến /32.",
+        "whyBreaks": "Nhầm subnet mask và wildcard mask trong Cisco ACL → cho phép traffic sai hoặc block traffic đúng. Rất khó debug vì ACL apply tức thì và lỗi này không báo lỗi rõ ràng.",
+        "deploymentUse": "Ít gặp trong cloud modern (AWS/GCP dùng CIDR notation), nhưng vẫn gặp khi cấu hình VPN IPsec hoặc tích hợp với thiết bị Cisco của công ty."
+      },
+      {
+        "term": "CIDR /n",
+        "value": "n bit network ở đầu",
+        "why": "Cách viết gọn của subnet mask. /24 nghĩa là 24 bit đầu dành cho network, 8 bit còn lại cho host. Thay thế Class A/B/C cũ kỹ — cho phép chia mạng linh hoạt theo nhu cầu thực tế.",
+        "whyBreaks": "Không hiểu CIDR → không thể tự thiết kế VPC subnet, luôn phải nhờ người khác. Khi /n sai (ví dụ /25 thay vì /24) → mạng bị chia đôi mà không biết tại sao 2 máy không ping nhau.",
+        "deploymentUse": "Mọi cloud provider dùng CIDR: AWS VPC CIDR, GCP subnet, Azure VNet đều yêu cầu nhập CIDR notation. Cần chọn đúng /n để có đủ IP cho số lượng instance dự kiến, có buffer mở rộng sau."
+      },
+      {
+        "term": "Usable hosts",
+        "value": "2^(32−n) − 2",
+        "why": "Số máy thật sự gán được IP trong subnet. Phải trừ 2: địa chỉ đầu (network) và cuối (broadcast) không gán cho máy. VD: /24 có 256 địa chỉ, usable = 254.",
+        "whyBreaks": "Tính sai usable hosts → chọn subnet quá nhỏ → hết IP khi scale → phải re-IP toàn bộ hệ thống, cực kỳ tốn công. AWS còn trừ thêm 5 IP reserved mỗi subnet, cần tính vào kế hoạch.",
+        "deploymentUse": "Rule of thumb: chọn subnet có ít nhất 2x số host cần thiết hiện tại. Nếu cần 50 server, chọn /25 (126 usable) thay vì /26 (62 usable). Cloud re-subnetting rất đau — phòng từ đầu."
+      },
+      {
+        "term": "Private ranges",
+        "value": "10/8, 172.16/12, 192.168/16",
+        "why": "3 dải IP 'nội bộ' ai cũng được dùng — không cần đăng ký. Dùng trong công ty, nhà, Docker, VPC. Muốn ra internet phải qua NAT (đổi thành IP public).",
+        "whyBreaks": "Dùng private range trùng với VPN hoặc office network → IP conflict → VPN không kết nối được hoặc traffic bị route nhầm. Docker mặc định dùng 172.17/16 — hay conflict với office 172.16/12.",
+        "deploymentUse": "Khi tạo Docker network hoặc VPC, chọn private range ít dùng: 10.0.0.0/8 (16M địa chỉ) là range rộng nhất trong 3 private range của <a href=\"https://datatracker.ietf.org/doc/html/rfc1918#section-3\" target=\"_blank\">RFC 1918 §3</a>. Tránh 192.168.1.0/24 và 172.17.0.0/16 vì hay trùng với office/Docker mặc định."
+      },
+      {
+        "term": "VLSM",
+        "value": "Variable Length Subnet Masking",
+        "why": "Chia subnet không đều theo nhu cầu. VD: phòng 100 người cần /25 (126 IP), phòng 20 người chỉ cần /27 (30 IP). Tiết kiệm IP thay vì chia đều rồi phí.",
+        "whyBreaks": "Không dùng VLSM → phân bổ IP đồng đều → phí IP ở subnet nhu cầu thấp, thiếu IP ở subnet nhu cầu cao. Khi cloud tính phí theo IP allocation, phí IP không cần thiết là tiền thực.",
+        "deploymentUse": "Ví dụ thực tế AWS: Public subnet /24 (web servers, nhiều) + Private subnet /24 (app servers) + DB subnet /27 (chỉ 3-5 RDS). VLSM cho phép mỗi tier có đúng lượng IP cần thiết."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "Xác định số bit cần thêm",
+        "why": "/24 có 8 bit host. Muốn 4 subnet → cần 2 bit từ phần host chuyển sang network (2^2 = 4). Kết quả: /26.",
+        "code": "# Quy tắc: cần N subnet → lấy ceil(log2(N)) bit từ host\n# 4 subnet → 2 bit → /24 + 2 = /26",
+        "whyBreaks": "Tính sai số bit → chọn CIDR sai → hoặc quá ít subnet (không đủ phân chia phòng ban/tier) hoặc subnet quá nhỏ (không đủ IP cho host). Khi deploy cloud, subnetting sai ở bước này phải teardown toàn bộ VPC.",
+        "observeWith": "python3 -c \"import math; n=4; bits=math.ceil(math.log2(n)); print(f'Cần {bits} bit, CIDR mới: /24 + {bits} = /{24+bits}')\" — kiểm tra tính toán."
+      },
+      {
+        "step": 2,
+        "what": "Tính kích thước mỗi subnet /26",
+        "why": "/26 có 32−26 = 6 bit host → 2^6 = 64 địa chỉ/subnet → 62 usable host. Đủ cho ~60 host/phòng ban.",
+        "code": "# Block size = 256 / số subnet = 256 / 4 = 64\n# Hoặc: 2^(32 - CIDR) = 2^6 = 64",
+        "whyBreaks": "Nhầm 64 total addresses với 64 usable → planning thiếu 2 IP → subnet cuối cùng thiếu địa chỉ cho 1 host. Với AWS còn trừ thêm 5 IP reserved = /26 chỉ còn 57 usable thực tế.",
+        "observeWith": "python3 -c \"import ipaddress; n=ipaddress.ip_network('192.168.10.0/26'); print('Total:', n.num_addresses, '| Usable:', n.num_addresses-2, '| First:', next(n.hosts()), '| Last:', list(n.hosts())[-1])\" — xem đầy đủ thông tin subnet."
+      },
+      {
+        "step": 3,
+        "what": "Liệt kê 4 subnet",
+        "why": "Network bắt đầu từ bội số 64 (block size): 0, 64, 128, 192. Quy tắc này giúp nhẩm nhanh không cần giấy bút.",
+        "code": "Subnet 1: 192.168.10.0/26    (hosts .1 → .62,   broadcast .63)\nSubnet 2: 192.168.10.64/26   (hosts .65 → .126, broadcast .127)\nSubnet 3: 192.168.10.128/26  (hosts .129 → .190, broadcast .191)\nSubnet 4: 192.168.10.192/26  (hosts .193 → .254, broadcast .255)",
+        "whyBreaks": "Không nắm quy tắc 'boundary = bội của block size' → tính nhầm network/broadcast của từng subnet → gán IP conflict hoặc thiếu IP. Lỗi này chỉ phát hiện khi 2 máy không ping được nhau.",
+        "observeWith": "python3 -c \"import ipaddress; [print(str(s)) for s in ipaddress.ip_network('192.168.10.0/24').subnets(new_prefix=26)]\" — in ra 4 subnet /26 từ /24.",
+        "failModes": [
+          {
+            "symptom": "2 host trong cùng subnet không ping được nhau dù cùng LAN vật lý",
+            "evidence": "ip neigh show thấy cùng IP xuất hiện với 2 MAC khác nhau (ARP conflict): 192.168.10.65 dev eth0 lladdr aa:bb:cc:dd:ee:ff  và  192.168.10.65 dev eth0 lladdr 11:22:33:44:55:66 — duplicate IP"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Phát hiện IP conflict bằng arping — xem có 2 MAC reply không",
+            "command": "sudo arping -D -I eth0 192.168.10.65"
+          },
+          {
+            "step": "Xem ARP table để tìm duplicate",
+            "command": "ip neigh show | sort"
+          },
+          {
+            "step": "Đổi IP bị conflict sang IP chưa dùng trong subnet",
+            "command": "sudo ip addr del 192.168.10.65/26 dev eth0 && sudo ip addr add 192.168.10.70/26 dev eth0"
+          }
+        ]
+      },
+      {
+        "step": 4,
+        "what": "Kiểm chứng bằng nhị phân",
+        "why": "2 bit thứ 25-26 là 'subnet ID'. 00/01/10/11 chính là 4 subnet. Khi phân vân /27 vs /28, nhìn bit này là thấy ngay.",
+        "code": "              bit 25-26↓\nS1: 192.168.10. 00 000000 = .0\nS2: 192.168.10. 01 000000 = .64\nS3: 192.168.10. 10 000000 = .128\nS4: 192.168.10. 11 000000 = .192",
+        "whyBreaks": "Bỏ qua kiểm tra nhị phân → khi gặp CIDR lạ (/19, /21) không tính được subnet boundary → phụ thuộc tool hoàn toàn → khi tool không có (VPS lúc sự cố) thì bị mù.",
+        "observeWith": "python3 -c \"ip='192.168.10.64'; print(' '.join([format(int(o),'08b') for o in ip.split('.')]))\" — xem representation nhị phân của bất kỳ IP nào."
+      },
+      {
+        "step": 5,
+        "what": "Subnet mask cho /26",
+        "why": "26 bit 1 + 6 bit 0 = 11111111.11111111.11111111.11000000 = 255.255.255.192. Số 192 đến từ 128+64 = 2 bit đầu của octet cuối.",
+        "code": "255.255.255.192\n# Quy tắc nhớ: octet cuối của mask cho các CIDR trong octet cuối:\n#   /25=128, /26=192, /27=224, /28=240, /29=248, /30=252",
+        "whyBreaks": "Nhập sai subnet mask khi config static IP trên server → host gửi traffic sai gateway → mất kết nối ngay. Đây là lỗi #1 khi admin cấu hình server thủ công mà không dùng DHCP.",
+        "observeWith": "python3 -c \"import ipaddress; n=ipaddress.ip_network('192.168.10.0/26'); print('Mask:', n.netmask, '| Wildcard:', n.hostmask)\" — xác nhận subnet mask và wildcard."
+      },
+      {
+        "step": 6,
+        "what": "Gán subnet cho phòng ban + gateway",
+        "why": "Quy ước: gateway thường là .1 của subnet. Đặt fix để dev/admin nhớ được. DHCP pool bắt đầu từ .2.",
+        "code": "Sales    : 192.168.10.0/26   GW 192.168.10.1\nEng      : 192.168.10.64/26  GW 192.168.10.65\nHR       : 192.168.10.128/26 GW 192.168.10.129\nGuest    : 192.168.10.192/26 GW 192.168.10.193",
+        "whyBreaks": "Gán gateway là IP ngoài subnet → host không ping được gateway → không ra được internet dù switch/cable OK. Ví dụ: subnet 192.168.10.64/26 mà gateway là 192.168.10.1 = gateway ở subnet khác.",
+        "observeWith": "ip route show — sau khi config, kiểm tra default route có via địa chỉ gateway đúng không. ping <gateway_ip> — nếu gateway ping được thì routing trong subnet OK."
+      },
+      {
+        "step": 7,
+        "what": "Verify bằng tool",
+        "why": "Tính tay xong phải cross-check. Sai 1 bit = cả subnet hỏng.",
+        "code": "# Dán vào ô input playground trên: 192.168.10.100/26\n# → sẽ thấy Network: 192.168.10.64, Broadcast: 192.168.10.127\n# Đúng: .100 thuộc subnet 2 (64-127)",
+        "whyBreaks": "Không verify → deploy với subnet sai → sự cố production. Verify tool cho kết quả ngay lập tức, không có lý do bỏ qua. Luôn cross-check bằng ít nhất 2 cách (manual + tool).",
+        "observeWith": "ipcalc 192.168.10.100/26 — nếu có cài (apt install ipcalc). Hoặc: python3 -c \"import ipaddress; h=ipaddress.ip_interface('192.168.10.100/26'); print('Network:', h.network, '| Host OK:', h.ip in h.network)\"",
+        "automateScript": {
+          "lang": "bash",
+          "code": "#!/bin/bash\n# subnet-info.sh — In thông tin subnet từ CIDR notation\n# Dùng: ./subnet-info.sh 192.168.10.100/26\n# Không cần cài ipcalc, chỉ cần python3 (có sẵn Ubuntu/Debian)\nCIDR=${1:?\"Usage: $0 <ip/prefix> — e.g. 192.168.10.100/26\"}\npython3 - <<EOF\nimport ipaddress, sys\ntry:\n    iface = ipaddress.ip_interface('$CIDR')\n    net   = iface.network\n    hosts = list(net.hosts())\n    print(f'Input    : $CIDR')\n    print(f'Network  : {net.network_address}/{net.prefixlen}')\n    print(f'Broadcast: {net.broadcast_address}')\n    print(f'Mask     : {net.netmask}')\n    print(f'Usable   : {len(hosts)}  ({hosts[0]} — {hosts[-1]})')\nexcept Exception as e:\n    print(f'Error: {e}'); sys.exit(1)\nEOF",
+          "note": "Dùng khi cần verify nhanh subnet trên server không có ipcalc. Chạy ad-hoc hoặc nhúng vào deploy script để validate CIDR input trước khi ip addr add."
+        }
+      }
+    ],
+    "quiz": [
+      {
+        "q": "192.168.1.130/25 thuộc subnet nào?",
+        "options": [
+          "192.168.1.0/25",
+          "192.168.1.128/25",
+          "192.168.1.64/25",
+          "192.168.1.192/25"
+        ],
+        "correct": 1,
+        "whyCorrect": "/25 → block size 128. Subnet bắt đầu tại 0 và 128. .130 > 128 ⇒ subnet <strong>192.168.1.128/25</strong> (gồm .128 → .255).",
+        "whyOthersWrong": {
+          "0": "Subnet 192.168.1.0/25 chỉ chứa .0 → .127, không chứa .130.",
+          "2": "/25 block size là 128, không phải 64. /26 mới có block 64.",
+          "3": "192.168.1.192 không phải boundary của /25 (bội của 128: chỉ 0 và 128)."
+        }
+      },
+      {
+        "q": "/27 có bao nhiêu usable hosts?",
+        "options": [
+          "32",
+          "30",
+          "14",
+          "62"
+        ],
+        "correct": 1,
+        "whyCorrect": "32 − 27 = 5 bit host → 2^5 = 32 addresses. Trừ network + broadcast = <strong>30</strong> usable.",
+        "whyOthersWrong": {
+          "0": "32 là total addresses, chưa trừ network + broadcast.",
+          "2": "14 là usable của /28 (16 − 2).",
+          "3": "62 là usable của /26 (64 − 2)."
+        }
+      },
+      {
+        "q": "Subnet mask nào tương đương /29?",
+        "options": [
+          "255.255.255.224",
+          "255.255.255.248",
+          "255.255.255.240",
+          "255.255.255.252"
+        ],
+        "correct": 1,
+        "whyCorrect": "/29 = 29 bit 1 = 11111111.11111111.11111111.11111<strong>000</strong>. Octet cuối 11111000 = 128+64+32+16+8 = <strong>248</strong>.",
+        "whyOthersWrong": {
+          "0": "224 là /27 (11100000).",
+          "2": "240 là /28 (11110000).",
+          "3": "252 là /30 (11111100)."
+        }
+      },
+      {
+        "q": "Hai máy 10.0.0.5/28 và 10.0.0.17/28 có cùng subnet không?",
+        "options": [
+          "Có",
+          "Không"
+        ],
+        "correct": 1,
+        "whyCorrect": "/28 block size = 16. .5 thuộc 10.0.0.0/28 (0-15), còn .17 thuộc 10.0.0.16/28 (16-31). Khác subnet → phải đi qua router.",
+        "whyOthersWrong": {
+          "0": "Nếu là /24 thì cùng. Nhưng /28 thì block 16 làm 2 IP này rơi vào 2 subnet khác nhau. Nhớ: ranh giới subnet là bội của block size."
+        }
+      },
+      {
+        "q": "Vì sao /31 lại chỉ có 2 địa chỉ nhưng vẫn dùng được?",
+        "options": [
+          "Vì /31 không cần network/broadcast, chỉ cần 2 endpoint cho point-to-point link",
+          "/31 không dùng được trong thực tế",
+          "Vì /31 cho phép nhiều hơn 2 host",
+          "Vì router tự tạo thêm địa chỉ"
+        ],
+        "correct": 0,
+        "whyCorrect": "<a href=\"https://datatracker.ietf.org/doc/html/rfc3021\" target=\"_blank\">RFC 3021</a> định nghĩa /31 cho link point-to-point (router-to-router). Không cần network/broadcast → 2 địa chỉ đủ 2 đầu link. Tiết kiệm IP công cộng.",
+        "whyOthersWrong": {
+          "1": "Dùng được và rất phổ biến trong ISP/MPLS.",
+          "2": "/31 chỉ có 2 bit 0 cuối → đúng 2 IP, không nhiều hơn.",
+          "3": "Router không 'tạo' địa chỉ — đây là convention."
+        }
+      },
+      {
+        "q": "IP 172.20.0.1 có phải private không?",
+        "options": [
+          "Có",
+          "Không — vì không thuộc 192.168/16",
+          "Không — vì 172.20 khác 172.16",
+          "Không xác định được"
+        ],
+        "correct": 0,
+        "whyCorrect": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1918\" target=\"_blank\">RFC 1918</a> private range của 172 là <strong>172.16.0.0/12</strong> = 172.16.0.0 → 172.31.255.255. 172.20 nằm trong đó.",
+        "whyOthersWrong": {
+          "1": "Private có 3 range: 10/8, 172.16/12, 192.168/16. Không chỉ 192.168.",
+          "2": "Private range 172 là cả block /12 từ 172.16 đến 172.31, không chỉ 172.16.",
+          "3": "Xác định được — kiểm tra membership của range /12."
+        }
+      },
+      {
+        "q": "Cần 1 subnet chứa ít nhất 100 host. CIDR nhỏ nhất phù hợp?",
+        "options": [
+          "/24",
+          "/25",
+          "/26",
+          "/23"
+        ],
+        "correct": 1,
+        "whyCorrect": "/25 = 126 usable (128 − 2), đủ 100. /26 chỉ có 62 < 100. /24 dư thừa.",
+        "whyOthersWrong": {
+          "0": "/24 có 254 usable → dư, không tiết kiệm IP (câu hỏi là 'nhỏ nhất phù hợp').",
+          "2": "/26 chỉ 62 usable → không đủ 100.",
+          "3": "/23 có 510 usable → quá dư."
+        }
+      },
+      {
+        "q": "Trong Docker bridge mặc định 172.17.0.0/16, tối đa bao nhiêu container IP?",
+        "options": [
+          "255",
+          "65534",
+          "254",
+          "65536"
+        ],
+        "correct": 1,
+        "whyCorrect": "/16 = 2^16 = 65536 địa chỉ, trừ network + broadcast = <strong>65534</strong> usable. (Thực tế Docker còn giữ .1 cho bridge gateway.)",
+        "whyOthersWrong": {
+          "0": "255 là usable của /24, không phải /16.",
+          "2": "254 là usable của /24 (256 − 2).",
+          "3": "65536 là total addresses, chưa trừ network/broadcast."
+        }
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "CIDR /n nghĩa là gì?",
+        "back": "n bit đầu của IP là network, 32−n bit sau là host.",
+        "why": "CIDR thay cho class A/B/C cũ cứng nhắc — cho phép chia mạng linh hoạt bất kỳ đâu. Đây là cách internet modern routing."
+      },
+      {
+        "front": "Công thức số usable hosts?",
+        "back": "2^(32−n) − 2. Trừ 2 vì network address (host toàn 0) + broadcast (host toàn 1) không gán được cho host thật.",
+        "why": "Nhớ công thức giúp nhẩm nhanh khi quy hoạch IP. /24 → 254, /26 → 62, /28 → 14, /30 → 2."
+      },
+      {
+        "front": "Subnet mask của /26 là gì?",
+        "back": "255.255.255.192 — vì octet cuối 11000000 = 192.",
+        "why": "Mask octet cuối mẹo nhớ: /25=128, /26=192, /27=224, /28=240, /29=248, /30=252. Mỗi CIDR thêm 1, giá trị cộng lần lượt 64, 32, 16, 8, 4."
+      },
+      {
+        "front": "Block size là gì?",
+        "back": "Kích thước 1 subnet = 2^(32−n). Subnet boundary luôn là bội số của block size.",
+        "why": "Block size giúp tìm network address nhanh: /26 block = 64, .100 ∈ subnet .64 (bội gần nhất ≤ 100)."
+      },
+      {
+        "front": "Địa chỉ network và broadcast là gì?",
+        "back": "Network = bit host toàn 0 (định danh subnet). Broadcast = bit host toàn 1 (gửi tới mọi host trong subnet).",
+        "why": "Gán IP này cho host = conflict. Broadcast dùng cho ARP/DHCP — đó là cách host tìm nhau khi chưa biết MAC."
+      },
+      {
+        "front": "Wildcard mask là gì? Khi nào dùng?",
+        "back": "Đảo bit subnet mask. 255.255.255.0 ↔ 0.0.0.255. Dùng trong Cisco ACL, OSPF.",
+        "why": "Các thiết bị Cisco thiết kế để match 'bit nào được phép khác' → thuận với wildcard hơn subnet mask."
+      },
+      {
+        "front": "VLSM là gì và tại sao cần?",
+        "back": "Variable Length Subnet Masking — chia 1 block thành nhiều subnet kích thước khác nhau (vd /24 → 1 ×/25 + 2 ×/26).",
+        "why": "Phòng ban nhu cầu khác nhau: sales 100 host (/25), IT 50 host (/26), guest 20 host (/27). Chia đều sẽ phí IP."
+      },
+      {
+        "front": "3 dải IP private theo <a href=\"https://datatracker.ietf.org/doc/html/rfc1918\" target=\"_blank\">RFC 1918</a>?",
+        "back": "10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16.",
+        "why": "Private = không route trên internet, cần NAT để ra ngoài. Kubernetes/Docker/VPC AWS thường dùng các dải này."
+      },
+      {
+        "front": "Vì sao /31 dùng được dù chỉ 2 IP?",
+        "back": "<a href=\"https://datatracker.ietf.org/doc/html/rfc3021\" target=\"_blank\">RFC 3021</a> — cho link point-to-point giữa 2 router. Không cần network/broadcast.",
+        "why": "Tiết kiệm IP public cho ISP. 1 link router-to-router trước phải /30 (4 IP, 2 usable) giờ chỉ /31 (2 IP, cả 2 dùng được)."
+      },
+      {
+        "front": "Cách nhẩm nhanh: 192.168.5.130 thuộc subnet nào với /26?",
+        "back": "/26 block size 64. 130 ÷ 64 = 2 dư 2 → network = 128 (2×64). Subnet: 192.168.5.128/26.",
+        "why": "Không cần giấy: mỗi CIDR có block size riêng, chia lấy phần nguyên với block size = ra boundary."
+      },
+      {
+        "front": "Subnet mask vs Wildcard mask?",
+        "back": "Mask: chuỗi bit 1 (network) + 0 (host). Wildcard: ngược lại. /24 = mask 255.255.255.0 / wildcard 0.0.0.255.",
+        "why": "Cùng là mô tả ranh giới network/host — chỉ khác cách biểu diễn. Linux/Juniper dùng mask; Cisco ACL/OSPF dùng wildcard."
+      },
+      {
+        "front": "Vì sao 2 máy cùng IP prefix nhưng khác CIDR không chắc cùng subnet?",
+        "back": "Vì CIDR quyết định ranh giới. 10.0.0.5 và 10.0.0.17 cùng /24 thì chung, nhưng /28 thì khác (block 16 cắt giữa .15 và .16).",
+        "why": "Khi config sai CIDR 2 máy, chúng 'tưởng' khác subnet → gửi qua gateway thay vì ARP trực tiếp → không tới được nhau dù cùng LAN vật lý."
+      },
+      {
+        "front": "Số địa chỉ trong /16 vs /24?",
+        "back": "/16 = 65536 (usable 65534). /24 = 256 (usable 254).",
+        "why": "Mỗi giảm 1 CIDR → gấp đôi địa chỉ. /25 gấp đôi /26. Dùng để ước lượng nhanh khi quy hoạch VPC/subnet cloud."
+      },
+      {
+        "front": "Default gateway thường là IP nào trong subnet?",
+        "back": "Convention: .1 đầu tiên (vd 192.168.1.1). Nhưng là quy ước, không bắt buộc — có thể là .254.",
+        "why": "Dev/admin nhớ được. Nhiều router/firewall mặc định về .1. Khi troubleshoot 'không ra được internet' luôn check gateway trước."
+      }
+    ],
+    "try_at_home": [
+      {
+        "why": "Xem IP + subnet mask hiện tại trên máy Linux — xác định subnet đang dùng",
+        "cmd": "ip -br addr show",
+        "observeWith": "Tìm dòng interface có state UP và địa chỉ IP/CIDR. Format: 'eth0 UP 192.168.1.10/24'. Số /24 là CIDR của subnet hiện tại. Nếu /24 thì subnet range là .0-.255, gateway thường là .1."
+      },
+      {
+        "why": "Xem routing table — thấy subnet nào đi qua gateway nào",
+        "cmd": "ip route",
+        "observeWith": "Tìm dòng 'default via X.X.X.X' = default gateway. Các dòng khác là 'connected route' — subnet nào máy kết nối trực tiếp. Subnet trong routing table = máy có thể gửi packet trực tiếp không qua router."
+      },
+      {
+        "why": "Test 2 IP có cùng subnet không bằng công cụ ipcalc (cần cài: apt install ipcalc)",
+        "cmd": "ipcalc 192.168.1.100/26\nipcalc 192.168.1.200/26\n# So sánh Network của 2 dòng — khác = khác subnet",
+        "observeWith": "So sánh dòng 'Network:' của 2 lệnh. 192.168.1.100/26 → Network 192.168.1.64. 192.168.1.200/26 → Network 192.168.1.192. Khác nhau = 2 máy khác subnet → phải đi qua router."
+      },
+      {
+        "why": "Tạo Docker network custom với CIDR riêng — tránh đụng VPN/office",
+        "cmd": "docker network create --subnet 10.99.0.0/24 mylab\ndocker network inspect mylab | grep Subnet",
+        "observeWith": "docker network inspect mylab | python3 -m json.tool — xem đầy đủ config. IPAM.Config sẽ có Subnet và Gateway. Chạy container trong network này và ping gateway để xác nhận subnet hoạt động."
+      },
+      {
+        "why": "Kiểm chứng broadcast: ping broadcast → thấy nhiều host reply (nếu OS cho phép)",
+        "cmd": "# /24 broadcast\nping -b 192.168.1.255",
+        "observeWith": "Nếu có nhiều máy trong subnet reply thì thấy nhiều 'icmp_seq' từ các IP khác nhau. Nhiều OS hiện đại ignore broadcast ping mặc định. Dùng sudo tcpdump -i any 'icmp' để thấy broadcast ICMP đi/về."
+      },
+      {
+        "why": "Xem bit binary IP bằng Python — hiểu mask AND hoạt động ra sao",
+        "cmd": "python3 -c \"import ipaddress; n=ipaddress.ip_network('192.168.10.100/26', strict=False); print(n.network_address, n.broadcast_address, n.num_addresses)\"",
+        "observeWith": "Output: network_address broadcast_address total_addresses. Thử thay /26 thành /27 và /25 — xem network/broadcast thay đổi thế nào. strict=False cho phép IP bất kỳ trong subnet, không chỉ network address."
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Class C đồng nghĩa với /24 — luôn luôn",
+        "right": "Class C là range địa chỉ (octet đầu 192–223) theo <a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.2\">RFC 791 §3.2</a>; prefix length là khái niệm riêng của CIDR theo <a href=\"https://datatracker.ietf.org/doc/html/rfc4632\">RFC 4632</a>. Một block Class C (192.168.1.0) có thể chia thành /25, /26, /27 bằng VLSM.",
+        "why": "Nhầm lẫn classful với CIDR dẫn đến không thiết kế được subnet tùy ý — cứ nghĩ subnet phải là /8, /16, /24 theo classful boundary, bỏ qua khả năng /22, /26, /28 cho các use case cụ thể."
+      },
+      {
+        "wrong": "Private IP không thể trùng nhau giữa các công ty vì đã được cấp phát riêng",
+        "right": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1918#section-3\">RFC 1918 §3</a> quy định private ranges không routable trên internet và không unique toàn cầu — bất kỳ tổ chức nào cũng dùng cùng range độc lập. IP overlap là vấn đề thực khi kết nối 2 công ty qua VPN site-to-site.",
+        "why": "Thiết kế VPN site-to-site mà không kiểm tra IP overlap trước → tunnel up nhưng routing bị ambiguous → traffic đi sai đích. Phải dùng CIDR notation khác nhau cho mỗi site hoặc dùng NAT-over-VPN để resolve conflict."
+      },
+      {
+        "wrong": "Số host usable trong subnet = 2^(32-n)",
+        "right": "Usable = 2^(32-n) − 2 vì phải trừ network address (host bits all-0) và broadcast address (host bits all-1). Trên AWS VPC, mỗi subnet reserved thêm 5 địa chỉ (network, router, DNS, future, broadcast) → usable thực tế = 2^(32-n) − 5 theo <a href=\"https://docs.aws.amazon.com/vpc/latest/userguide/subnet-sizing.html\">AWS VPC subnet sizing docs</a>.",
+        "why": "Chọn /28 cho production subnet (16 − 5 = 11 usable trên AWS) rồi scale thêm service → hết IP → re-subnetting rất tốn công. Tính đủ trước khi tạo VPC, vì AWS không cho thay đổi CIDR của subnet đã tạo."
+      },
+      {
+        "wrong": "NAT gateway nhìn thấy IP private thật của từng máy trong LAN",
+        "right": "<a href=\"https://datatracker.ietf.org/doc/html/rfc3022\">RFC 3022</a> định nghĩa NAT thay source IP từ private → public — server bên ngoài chỉ thấy IP public của NAT gateway, không biết IP private nào là nguồn gốc. Chỉ NAT gateway mới có bảng mapping port để tra ngược.",
+        "why": "Logging và audit compliance: server log ghi IP của NAT gateway, không phải IP máy thật. Cần enable VPC Flow Logs (AWS) hoặc tương đương để trace ngược IP private khi điều tra security incident."
+      },
+      {
+        "wrong": "127.x.x.x là dải Class A usable bình thường",
+        "right": "127.0.0.0/8 là loopback range theo <a href=\"https://datatracker.ietf.org/doc/html/rfc5735#section-3\">RFC 5735 §3</a> — reserved, không phân bổ cho host hay network thông thường. Class A usable bắt đầu từ 1.0.0.0; 0.0.0.0/8 cũng reserved (RFC 1122 §3.2.1.3), không dùng được.",
+        "why": "Cấu hình bind server lên 127.x.x.x (không phải 127.0.0.1) tưởng là IP LAN → service chỉ accessible từ loopback, không có host nào trong LAN connect được — lỗi khó phát hiện nếu không biết loopback range."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "IPv4Playground"
+    }
+  }
+}

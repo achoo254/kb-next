@@ -1,0 +1,117 @@
+{
+  "exercise": {
+    "slug": "cmdlog-rsyslog",
+    "title": "Command logging tập trung với rsyslog",
+    "topic": "linux",
+    "tags": [
+      "rsyslog",
+      "logging",
+      "cmdlog",
+      "audit",
+      "bash",
+      "logrotate"
+    ],
+    "source": "Hướng dẫn nội bộ: Log CMD",
+    "brief": "Thiết lập <strong>command logging</strong> tập trung trên các node Linux: mọi lệnh shell user chạy được ghi lại kèm <code>user</code>, thời gian, <code>shell_pid</code>, exit code và IP client, sau đó <strong>forward về một syslog server trung tâm</strong>. Cơ chế: biến <a href=\"https://www.gnu.org/software/bash/manual/bash.html#index-PROMPT_005fCOMMAND\" target=\"_blank\" rel=\"noopener\"><code>PROMPT_COMMAND</code> (Bash)</a> chạy <a href=\"https://man7.org/linux/man-pages/man1/logger.1.html\" target=\"_blank\" rel=\"noopener\"><code>logger</code></a> ghi vào facility <code>local6</code> (một trong local0–local7, <a href=\"https://datatracker.ietf.org/doc/html/rfc5424#section-6.2.1\" target=\"_blank\" rel=\"noopener\">RFC 5424 §6.2.1</a>); rsyslog route <code>local6.*</code> ra <code>/var/log/cmdlog.log</code> và đẩy lên server bằng template <a href=\"https://datatracker.ietf.org/doc/html/rfc5424\" target=\"_blank\" rel=\"noopener\">RSYSLOG_SyslogProtocol23Format (RFC 5424)</a>.<br><br><strong>Yêu cầu hoàn thành:</strong><ul><li>Cấu hình client: bật cmdlog cho root + user (hiện có và tương lai) và forward log về server.</li><li>Verify: log của lệnh vừa chạy xuất hiện trong <code>/var/log/cmdlog.log</code> ở client và trên server.</li><li>Xử lý khi log bị ghi trùng (duplicate) mỗi lệnh 2 lần.</li><li>Thêm logrotate cho <code>/var/log/cmdlog.log</code> để giới hạn dung lượng.</li></ul><strong>Tiên quyết:</strong> 2 node Linux (1 làm syslog server nhận log, 1 làm client), quyền sudo, hiểu cơ bản rsyslog. Port syslog mặc định là 514 (<a href=\"https://datatracker.ietf.org/doc/html/rfc5424\" target=\"_blank\" rel=\"noopener\">RFC 5424</a>); hướng dẫn này dùng cổng custom <code>9514</code> trên server.",
+    "estimated_minutes": 60,
+    "content_hash": "d90c45a99f4cca0c190d4b0798a75079b22311c586d07f4a100c7e3192d60bd8",
+    "updated_at": 1782180299,
+    "guide": [
+      {
+        "step": 1,
+        "instruction": "<strong>Forward toàn bộ log về syslog server trung tâm.</strong> Thêm một action rule vào <code>/etc/rsyslog.conf</code> rồi restart. Tiền tố <code>@</code> = gửi qua UDP, <code>@@</code> = TCP (<a href=\"https://www.rsyslog.com/doc/configuration/modules/omfwd.html\" target=\"_blank\" rel=\"noopener\">rsyslog omfwd</a>).",
+        "command": "IP_SERVER='<ADDR-1>:<PORT>'\necho \"*.*  @$IP_SERVER;RSYSLOG_SyslogProtocol23Format\" | sudo tee -a /etc/rsyslog.conf > /dev/null\nsudo systemctl restart rsyslog",
+        "note": "<code>*.*</code> = mọi facility, mọi severity. <code>RSYSLOG_SyslogProtocol23Format</code> đóng gói message theo <a href=\"https://datatracker.ietf.org/doc/html/rfc5424\" target=\"_blank\" rel=\"noopener\">RFC 5424</a> (có structured-data, timestamp ISO 8601)."
+      },
+      {
+        "step": 2,
+        "instruction": "<strong>Bật command logging cho root.</strong> Append khối sau vào <code>/root/.bashrc</code>. <code>PROMPT_COMMAND</code> chạy ngay trước khi shell hiện prompt kế tiếp (<a href=\"https://www.gnu.org/software/bash/manual/bash.html#index-PROMPT_005fCOMMAND\" target=\"_blank\" rel=\"noopener\">Bash manual</a>), nên lệnh vừa nhập được đẩy qua <code>logger</code> vào facility <code>local6</code>, severity <code>debug</code>.",
+        "command": "cat << 'EOF' >> /root/.bashrc\n# Command log\nexport SSH_CLIENT=$(who am i | awk '{print $5}' | sed 's/[()]//g')\nexport PROMPT_COMMAND='RETRN_VAL=$?;logger -p local6.debug \"{\\\"log_type\\\": \\\"cmdlog\\\", \\\"time_cli\\\": \\\"$(echo $(date \"+%d/%m/%y %T\"))\\\", \\\"user\\\": \\\"$(whoami)\\\", \\\"shell_pid\\\": \\\"$$\\\", \\\"command\\\": \\\"$(history 1 | sed \"s/^[ ]*[0-9]\\+[ ]*//\")\\\", \\\"return_value\\\": \\\"$RETRN_VAL\\\", \\\"client_ip\\\": \\\"$(echo $SSH_CLIENT)\\\"}\"'\nEOF",
+        "note": "<code>history 1</code> lấy lệnh vừa chạy; <code>sed</code> cắt số thứ tự history. Payload là JSON một dòng để dễ parse phía server (log_type, time_cli, user, shell_pid, command, return_value, client_ip)."
+      },
+      {
+        "step": 3,
+        "instruction": "<strong>Bật cho user hiện có và user tương lai.</strong> Append cùng khối <code>PROMPT_COMMAND</code> ở Bước 2 vào file bashrc hệ thống theo distro, và vào <code>/etc/skel/.bashrc</code> để user tạo sau này kế thừa.",
+        "command": "# Debian/Ubuntu: /etc/bash.bashrc   |   RHEL/CentOS: /etc/bashrc\n# User tương lai (kế thừa khi tạo account mới):\ncat << 'EOF' >> /etc/skel/.bashrc\n# Command log\nif [ -f /etc/bashrc ]; then\n    . /etc/bashrc\nfi\nEOF",
+        "note": "User đã tồn tại: append khối <code>PROMPT_COMMAND</code> vào <code>/home/&lt;user&gt;/.bashrc</code> của từng user."
+      },
+      {
+        "step": 4,
+        "instruction": "<strong>Route facility <code>local6</code> ra file <code>/var/log/cmdlog.log</code>.</strong> Vị trí file rule khác nhau theo distro (<a href=\"https://www.rsyslog.com/doc/configuration/index.html\" target=\"_blank\" rel=\"noopener\">rsyslog config</a>). Tạo file log và gán quyền cho user <code>syslog</code> trước khi restart.",
+        "command": "# CentOS/RHEL:\necho \"local6.* /var/log/cmdlog.log\" | sudo tee -a /etc/rsyslog.conf > /dev/null\n# Ubuntu/Debian:\necho \"local6.* /var/log/cmdlog.log\" | sudo tee -a /etc/rsyslog.d/50-default.conf > /dev/null\n\nsudo touch /var/log/cmdlog.log\nsudo chown syslog:syslog /var/log/cmdlog.log\nsudo systemctl restart rsyslog",
+        "note": "<strong>Chỉ khai báo rule <code>local6.*</code> tại MỘT nơi.</strong> Khai báo cả ở <code>/etc/rsyslog.conf</code> lẫn <code>/etc/rsyslog.d/50-default.conf</code> là nguyên nhân log bị ghi 2 lần (xem phần Demo)."
+      },
+      {
+        "step": 5,
+        "instruction": "<strong>Thêm timestamp cho <code>history</code>.</strong> Đặt <code>HISTTIMEFORMAT</code> để mỗi dòng history kèm ngày giờ, khớp với <code>time_cli</code> trong cmdlog.",
+        "command": "echo 'export HISTTIMEFORMAT=\"%d/%m/%y %T \"' >> ~/.bashrc        # user hiện tại\necho 'export HISTTIMEFORMAT=\"%d/%m/%y %T \"' >> /etc/bashrc       # RHEL/CentOS\necho 'export HISTTIMEFORMAT=\"%d/%m/%y %T \"' >> /etc/bash.bashrc  # Debian/Ubuntu"
+      },
+      {
+        "step": 6,
+        "instruction": "<strong>Cấu hình logrotate cho <code>/var/log/cmdlog.log</code></strong> (<a href=\"https://man7.org/linux/man-pages/man8/logrotate.8.html\" target=\"_blank\" rel=\"noopener\">logrotate(8)</a>) để giới hạn dung lượng: xoay khi đạt 100M, giữ 4 bản, nén, đặt tên theo ngày.",
+        "command": "cat << 'EOF' | sudo tee /etc/logrotate.d/cmdlog > /dev/null\n/var/log/cmdlog.log {\n    size 100M\n    rotate 4\n    create\n    dateext\n    compress\n}\nEOF",
+        "note": "<code>size 100M</code> xoay theo dung lượng (không theo lịch). <code>create</code> tạo lại file rỗng sau khi xoay để rsyslog ghi tiếp."
+      }
+    ],
+    "demo": [
+      {
+        "step": 1,
+        "what": "<strong>Kiểm tra rsyslog đang chạy</strong> sau khi cấu hình.",
+        "command": "systemctl status rsyslog --no-pager",
+        "output": "● rsyslog.service - System Logging Service\n     Active: <strong>active (running)</strong>\n       ...",
+        "note": "Nếu <code>failed</code>: kiểm tra cú pháp file rule vừa thêm bằng <code>rsyslogd -N1</code>."
+      },
+      {
+        "step": 2,
+        "what": "<strong>Chạy một lệnh bất kỳ rồi đọc file cmdlog</strong> trên client. Mỗi lệnh tạo một dòng JSON.",
+        "command": "ls -la /etc > /dev/null\ntail -n 1 /var/log/cmdlog.log",
+        "output": "{\"log_type\": \"cmdlog\", \"time_cli\": \"23/06/26 14:30:01\", \"user\": \"root\", \"shell_pid\": \"20455\", \"command\": \"ls -la /etc\", \"return_value\": \"0\", \"client_ip\": \"10.0.0.5\"}",
+        "note": "<code>return_value</code> là exit code của lệnh trước; <code>client_ip</code> lấy từ <code>SSH_CLIENT</code> nên rỗng khi thao tác trực tiếp trên console (không qua SSH)."
+      },
+      {
+        "step": 3,
+        "what": "<strong>Verify log đã tới server trung tâm.</strong> Trên syslog server, lọc theo host của client.",
+        "command": "tail -f /var/log/remote/<client-host>/*.log\n# hoặc: journalctl -u rsyslog -f",
+        "output": "<client-host> ... {\"log_type\": \"cmdlog\", \"user\": \"root\", \"command\": \"ls -la /etc\", ...}",
+        "note": "Không thấy log trên server: kiểm tra firewall/port (mặc định 514, hướng dẫn dùng 9514) và rằng server đã bật input module nhận log."
+      },
+      {
+        "step": 4,
+        "what": "<strong>Xử lý log bị ghi trùng (duplicate).</strong> Triệu chứng: mỗi lệnh xuất hiện 2 dòng cho cùng một sự kiện → rule <code>local6</code> bị khai báo nhiều nơi.",
+        "command": "cd /etc/rsyslog.d\ngrep -Rin \"cmd\"",
+        "output": "50-default.conf:7:local6.* /var/log/cmdlog.log\n# (rule này còn xuất hiện ở /etc/rsyslog.conf → trùng)",
+        "note": "Comment hoặc xóa bớt một dòng rule trùng (thường trong <code>50-default.conf</code>), giữ lại đúng một nơi, rồi <code>sudo systemctl restart rsyslog</code>."
+      }
+    ],
+    "references": [
+      {
+        "label": "logger(1) — gửi message vào system log",
+        "url": "https://man7.org/linux/man-pages/man1/logger.1.html"
+      },
+      {
+        "label": "syslog(3) — facilities local0–local7",
+        "url": "https://man7.org/linux/man-pages/man3/syslog.3.html"
+      },
+      {
+        "label": "RFC 5424 — The Syslog Protocol",
+        "url": "https://datatracker.ietf.org/doc/html/rfc5424"
+      },
+      {
+        "label": "rsyslog — Configuration",
+        "url": "https://www.rsyslog.com/doc/configuration/index.html"
+      },
+      {
+        "label": "rsyslog — omfwd (forwarding output module)",
+        "url": "https://www.rsyslog.com/doc/configuration/modules/omfwd.html"
+      },
+      {
+        "label": "logrotate(8)",
+        "url": "https://man7.org/linux/man-pages/man8/logrotate.8.html"
+      },
+      {
+        "label": "Bash manual — PROMPT_COMMAND",
+        "url": "https://www.gnu.org/software/bash/manual/bash.html#index-PROMPT_005fCOMMAND"
+      }
+    ]
+  }
+}

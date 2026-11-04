@@ -1,0 +1,442 @@
+{
+  "lab": {
+    "slug": "tcp-ip-packet-journey",
+    "module": "01-networking",
+    "title": "Lý thuyết OSI TCP/IP",
+    "estimated_minutes": 40,
+    "content_hash": "2026-04-24T03:04:15.692Z",
+    "updated_at": 1776999855,
+    "tldr": [
+      {
+        "layer": "Comparison",
+        "name": "OSI 7 layers vs TCP/IP 4 layers",
+        "pdu": "—",
+        "device": "—",
+        "protocol": "—",
+        "why": "OSI (<a href=\"https://www.iso.org/standard/20269.html\">ISO/IEC 7498-1</a>) định nghĩa 7 tầng reference: Physical → Data Link → Network → Transport → Session → Presentation → Application. TCP/IP (<a href=\"https://datatracker.ietf.org/doc/html/rfc1122#section-1.1.3\">RFC 1122 §1.1.3</a>) gom lại còn 4 tầng implementation thực: Link (L1+L2 OSI) → Internet (L3) → Transport (L4) → Application (L5+L6+L7 OSI).\n\nSự khác nhau không phải \"bỏ bớt 3 tầng\" mà là wire format: TCP/IP không có header riêng cho Session (L5) và Presentation (L6). Chức năng L5 (session control) do app tự làm qua cookie/JWT/WebSocket. Chức năng L6 (encoding, compression) do TLS (<a href=\"https://datatracker.ietf.org/doc/html/rfc8446\">RFC 8446</a>) và Content-Encoding (<a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-8.4\">RFC 9110 §8.4</a>) xử lý bên trong L7. OSI ra đời như chuẩn ISO (1984) sau khi ARPANET đã deploy TCP/IP (1983), dẫn tới TCP/IP thành de-facto stack trong implementation; OSI giữ vai trò reference/pedagogy trong docs + vendor terminology.\n\nHiểu mapping này: khi đọc \"L7 firewall\" (AWS WAF), \"L4 load balancer\" (AWS NLB), \"L3 routing\" (iptables) — vendor dùng OSI numbering. Hiểu sai → map nhầm feature khi so sánh dịch vụ.",
+        "whyBreaks": "Nhầm tầng giữa 2 mô hình gây hiểu sai tài liệu. Vendor nói 'Layer 7 firewall' (OSI) = Application layer. Nhưng TCP/IP gọi Application là L4. Đọc docs Cisco/AWS mà không biết họ dùng OSI sẽ map sai tầng khi debug.",
+        "deploymentUse": "Mapping: OSI L1-2 → TCP/IP Link | OSI L3 → TCP/IP Internet | OSI L4 → TCP/IP Transport | OSI L5-7 → TCP/IP Application. OSI ra đời như chuẩn ISO, TCP/IP ra đời từ ARPANET thực nghiệm. TCP/IP thắng vì đã production trước khi OSI hoàn thiện."
+      },
+      {
+        "layer": "L4",
+        "name": "Application",
+        "pdu": "Message",
+        "device": "Process (nginx, curl, ping...)",
+        "protocol": "HTTP, DNS, SSH, TLS, FTP",
+        "why": "Application layer (<a href=\"https://datatracker.ietf.org/doc/html/rfc1122#section-4\">RFC 1122 §4</a>) là nơi process userspace \"phát biểu\" qua socket API — HTTP request, DNS query, SSH command. Input: byte stream từ Transport (TCP) hoặc datagram (UDP). Output: semantic message theo protocol cụ thể (HTTP/1.1 text, HTTP/2 binary frames, DNS binary — <a href=\"https://datatracker.ietf.org/doc/html/rfc1035#section-4\">RFC 1035 §4</a>).\n\nTầng này che giấu gì cho dev: không che giấu gì khác — mọi thứ dưới L4 đã abstract qua socket API. App không biết packet loss, reorder, fragmentation; TCP stack đã xử lý. Lỗi ở tầng này là semantic: 400 (client format sai), 500 (server logic sai), 502 (upstream không phản hồi đúng) — không phải lỗi mạng.\n\nHiểu điều này: khi curl báo 502, không phải \"mạng hỏng\" — là nginx upstream (another app) fail. Check <code>journalctl -u nginx</code>, <code>docker logs</code>, không phải restart router.",
+        "whyBreaks": "Nhầm lỗi Application thành lỗi mạng → debug sai hướng hàng giờ. Lỗi 502 Bad Gateway là Application layer fail, không phải cáp mạng vấn đề. Nếu thiếu hiểu biết tầng này, sẽ restart server vô ích thay vì check log nginx/app.",
+        "deploymentUse": "Khi VPS deploy xong, check log application trước: journalctl -u nginx, docker logs <container>. Lỗi 502/503 luôn là Application hoặc Transport, không phải Link/Internet."
+      },
+      {
+        "layer": "L3",
+        "name": "Transport",
+        "pdu": "Segment / Datagram",
+        "device": "Kernel OS",
+        "protocol": "TCP, UDP",
+        "why": "Transport layer (<a href=\"https://datatracker.ietf.org/doc/html/rfc1122#section-4\">RFC 1122 §4</a>) nhận IP packet từ Internet layer, demux về socket dựa trên 4-tuple (srcIP, srcPort, dstIP, dstPort) — <a href=\"https://datatracker.ietf.org/doc/html/rfc793#section-2.7\">RFC 793 §2.7</a>. PORT 16-bit là cơ chế duy nhất cho phép 1 host chạy nhiều process cùng local IP; không có port → 1 IP chỉ chạy được 1 service.\n\nTCP (<a href=\"https://datatracker.ietf.org/doc/html/rfc9293\">RFC 9293</a>) thêm 3 đảm bảo mà IP không có: ordering (sequence number + reorder buffer), reliability (cumulative ACK + retransmit theo <a href=\"https://datatracker.ietf.org/doc/html/rfc6298\">RFC 6298</a>), congestion control (<a href=\"https://datatracker.ietf.org/doc/html/rfc5681\">RFC 5681</a> — slow start, AIMD). UDP (<a href=\"https://datatracker.ietf.org/doc/html/rfc768\">RFC 768</a>) bỏ hết — chỉ giữ demux port + checksum 16-bit, latency 0 ms buffering.\n\nTransport che giấu packet loss/reorder cho L4 Application — nginx không viết code retransmit, kernel TCP stack làm. Hiểu điều này → curl timeout: tcpdump xem TCP handshake fail ở SYN (firewall chặn) hay SYN-ACK (server không reply) hay application không <code>accept()</code>.",
+        "whyBreaks": "Nếu không hiểu tầng Transport, khi port bị chặn sẽ không biết tại sao curl fail dù ping OK. Cài nginx nhưng quên mở port 80/443 trong firewall = Transport bị chặn = toàn bộ HTTP traffic chết.",
+        "deploymentUse": "Sau khi start nginx trên VPS, luôn kiểm tra: ss -tlnp | grep 80 (service đang listen?) và nc -vz <ip> 80 từ máy client (port mở từ ngoài?). Hai bước này xác nhận Transport layer OK."
+      },
+      {
+        "layer": "L2",
+        "name": "Internet",
+        "pdu": "Packet",
+        "device": "Router",
+        "protocol": "IP, ICMP",
+        "why": "Internet layer (<a href=\"https://datatracker.ietf.org/doc/html/rfc1122#section-3\">RFC 1122 §3</a>) nhận segment từ Transport, đóng gói thành IP packet với header 20 bytes (<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.1\">RFC 791 §3.1</a>): Source IP, Destination IP, TTL, Protocol number (6=TCP, 17=UDP, 1=ICMP). Gửi cho L1 Link để forward qua router dựa trên Destination IP + routing table.\n\nTầng này che giấu topology mạng cho Transport: L4 không biết packet đi qua bao nhiêu router, WAN/LAN/VPN. TTL (<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.2\">RFC 791 §3.2</a>) giảm 1 tại mỗi router — chống loop vô tận, và là cơ chế traceroute exploit để xem từng hop. Routing layer (BGP ở internet, OSPF trong AS) không thuộc IP spec — là control plane riêng.\n\nInternet layer là nơi \"liên mạng\" xảy ra — tên \"Internet\" = inter-network. Hiểu: khi \"không ra mạng\", check theo thứ tự — <code>ip route</code> (default route có không?) → <code>ping 8.8.8.8</code> (L3 OK?) → <code>ping google.com</code> (DNS OK?). Nếu ping IP được nhưng domain không, là L7 DNS fail, không phải L3.",
+        "whyBreaks": "Sai routing table hoặc sai default gateway → packet không ra được internet dù WiFi 'connected'. Nhiều lần 'mạng không vào được' thực ra là default gateway chết hoặc routing table sai — không phải cáp mạng.",
+        "deploymentUse": "Khi VPS không ra được internet: ip route (có default route chưa?), ping 8.8.8.8 (Internet layer OK?), ping 8.8.4.4 (không phụ thuộc DNS). Nếu ping IP được nhưng domain không được = DNS fail, không phải Internet layer."
+      },
+      {
+        "layer": "L1",
+        "name": "Link",
+        "pdu": "Frame / Bits",
+        "device": "NIC, switch, cáp, WiFi",
+        "protocol": "Ethernet, WiFi 802.11",
+        "why": "Link layer (<a href=\"https://datatracker.ietf.org/doc/html/rfc1122#section-2\">RFC 1122 §2</a>) gom L1 Physical + L2 Data Link của OSI. Input: IP packet từ Internet layer. Output: bit stream ra NIC theo chuẩn vật lý (<a href=\"https://standards.ieee.org/ieee/802.3/\">IEEE 802.3</a> Ethernet, IEEE 802.11 WiFi). Đóng gói thành frame với destination MAC + source MAC + FCS (frame check sequence) trước khi transmit.\n\nTầng này dùng MAC address (48-bit, IEEE 802) — địa chỉ phần cứng duy nhất của NIC. ARP (<a href=\"https://datatracker.ietf.org/doc/html/rfc826\">RFC 826</a>) resolve IP → MAC trong cùng broadcast domain: host broadcast \"Who has 192.168.1.1?\", gateway reply kèm MAC. Chú ý: frame gửi tới server ở xa sẽ dùng MAC của next-hop gateway, không phải MAC server (server ở domain khác, không thể reach trực tiếp L2).\n\nLink layer che giấu medium vật lý cho Internet — IP không biết đang chạy trên copper Ethernet, cáp quang, WiFi, hay 5G. Cáp đứt/WiFi mất sóng → mọi tầng trên không forward được. Trên cloud VM, hypervisor + virtual switch quản tầng này — NIC driver, MTU mismatch (ví dụ AWS Jumbo Frames 9001 vs standard 1500), hoặc AWS security group (iptables-like, tác động L3/L4) vẫn có thể fail. Error surface thường là <code>Network Unreachable</code> (EHOSTUNREACH) hoặc <code>No route to host</code>.",
+        "whyBreaks": "Link fail = mọi thứ trên vô nghĩa. Trên VPS cloud, Link thường do provider quản lý nhưng vẫn có thể fail do NIC driver, MTU mismatch, hoặc cloud security group block ở L2.",
+        "deploymentUse": "ip link show — xem interface có UP không. Nếu state DOWN thì Link chết. Trên AWS/GCP, security group rule chặn ở đây — nhưng error giống như Network Unreachable, không phải Connection Refused."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 0,
+        "what": "Bước 0: DNS — đổi tên miền thành địa chỉ IP",
+        "why": "DNS (<a href=\"https://datatracker.ietf.org/doc/html/rfc1034\">RFC 1034</a>, <a href=\"https://datatracker.ietf.org/doc/html/rfc1035\">RFC 1035</a>) là pre-condition của mọi kết nối dùng hostname. Socket API nhận <code>char* \"example.com\"</code> qua <code>getaddrinfo()</code> — libc resolver đọc <code>/etc/nsswitch.conf</code>, query DNS server (thường UDP :53, fallback TCP :53 cho response >512 byte — <a href=\"https://datatracker.ietf.org/doc/html/rfc1035#section-4.2.1\">RFC 1035 §4.2.1</a>), parse A record (IPv4) hoặc AAAA (IPv6).\n\nCơ chế recursive: stub resolver hỏi local DNS (ISP/router), local DNS hỏi root (13 root servers, <a href=\"https://datatracker.ietf.org/doc/html/rfc7720\">RFC 7720</a>), root trả TLD (.com), TLD trả authoritative (example.com's NS), authoritative trả A record. Kết quả cache theo TTL của record. Response code phân loại lỗi (<a href=\"https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1\">RFC 1035 §4.1.1</a>): NXDOMAIN (rcode=3, tên không tồn tại), SERVFAIL (rcode=2, authoritative fail), timeout (không reach được resolver).\n\nDNS không nằm trong packet journey của ping/curl sau khi resolve xong — nhưng là bước 0 bắt buộc. <code>Could not resolve host</code> LUÔN là DNS fail, không phải mạng. Nếu <code>dig example.com</code> từ VPS fail → <code>/etc/resolv.conf</code> sai hoặc firewall chặn UDP :53.",
+        "code": "# Hỏi DNS thủ công\ndig example.com +short\n\n# Hoặc cách cũ hơn\nnslookup example.com",
+        "whyBreaks": "Bỏ qua DNS lookup khi debug → không phát hiện DNS fail, cứ nghĩ là lỗi mạng. 'Could not resolve host' LUÔN là DNS vấn đề, không phải cáp đứt. Nếu ping IP trực tiếp được nhưng ping domain fail = DNS chết.",
+        "observeWith": "dig example.com +short — xem IP trả về và thời gian query. Nếu chỉ thấy SERVFAIL hoặc không trả về IP thì DNS resolver đang có vấn đề. Thử dig example.com @8.8.8.8 để bypass resolver của ISP.",
+        "failModes": [
+          {
+            "symptom": "curl/ping báo 'could not resolve host example.com'",
+            "evidence": "dig example.com trả về: ;; connection timed out; no servers could be reached  hoặc status: SERVFAIL"
+          },
+          {
+            "symptom": "DNS query trả về IP sai (poisoned/cache stale)",
+            "evidence": "dig example.com +short trả về IP không khớp với dig example.com @8.8.8.8 +short"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Kiểm tra DNS resolver đang dùng",
+            "command": "cat /etc/resolv.conf"
+          },
+          {
+            "step": "Bypass resolver ISP, query thẳng 8.8.8.8",
+            "command": "dig example.com @8.8.8.8 +short"
+          },
+          {
+            "step": "Nếu resolver là systemd-resolved, kiểm tra trạng thái",
+            "command": "systemd-resolve --status | grep 'DNS Servers'"
+          }
+        ]
+      },
+      {
+        "step": 1,
+        "what": "Tầng 4 Application: lệnh ping tạo ICMP echo request",
+        "why": "Lệnh <code>ping</code> là userspace process gọi syscall <code>socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)</code> — khác socket TCP (<code>SOCK_STREAM</code>) hoặc UDP (<code>SOCK_DGRAM</code>). ICMP (<a href=\"https://datatracker.ietf.org/doc/html/rfc792\">RFC 792</a>) là protocol number 1, nằm trực tiếp trên IP — không có port khái niệm.\n\nKernel tạo ICMP echo request (type=8, code=0) với identifier + sequence number để match reply, payload thường là timestamp + pattern bytes (default 56 bytes data + 8 bytes ICMP header = 64 bytes). Gửi xuống Internet layer. Trên Linux, cần <code>CAP_NET_RAW</code> hoặc sysctl <code>net.ipv4.ping_group_range</code> cho user không-root chạy ping.\n\nICMP ở L3 (Internet layer) chứ không phải L4 (Transport). CLI/UI thường xếp <code>ping</code> cạnh <code>nc</code>/<code>curl</code> — là quy ước tool, không phản ánh vị trí trong stack. Hệ quả: ping pass không kéo theo TCP :80 pass — firewall có thể allow ICMP, block TCP (hoặc ngược lại).",
+        "code": "# Ping 4 gói rồi dừng (Linux/Mac)\nping -c 4 example.com\n\n# Windows\nping -n 4 example.com",
+        "whyBreaks": "Nghĩ ping test được toàn bộ stack → bỏ qua việc test TCP port sau khi deploy. Ping ICMP và TCP 80/443 là 2 việc khác nhau. Firewall hay chặn ICMP cho phép TCP hoặc ngược lại.",
+        "observeWith": "ping -c 4 example.com — nhìn time= (RTT) và packet loss %. Nếu 0% loss và time <100ms thì Internet layer hoàn toàn ổn. Nếu time >500ms thì có vấn đề về routing hoặc server bị quá tải."
+      },
+      {
+        "step": 2,
+        "what": "Tầng 2 Internet: OS đóng gói IP header",
+        "why": "Kernel gắn IP header 20 bytes (<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.1\">RFC 791 §3.1</a>) quanh ICMP payload. Các field quan trọng: Source IP (địa chỉ outbound của interface được chọn bởi routing table), Destination IP (93.184.216.34 từ DNS), Protocol=1 (ICMP), TTL=64 (Linux default, <a href=\"https://datatracker.ietf.org/doc/html/rfc1122#section-3.2.1.7\">RFC 1122 §3.2.1.7</a> khuyến nghị 64), Header Checksum (<a href=\"https://datatracker.ietf.org/doc/html/rfc1071\">RFC 1071</a>).\n\nTTL giảm 1 tại mỗi router (<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.2\">RFC 791 §3.2</a>) — khi TTL=0, router drop packet và gửi ICMP Time Exceeded (type=11) về sender. Đây là nguyên lý traceroute khai thác: gửi packet với TTL=1, 2, 3... để nhận Time Exceeded từ từng hop. Packet fragment nếu size > MTU của path (<a href=\"https://datatracker.ietf.org/doc/html/rfc791#section-3.2\">RFC 791 §3.2</a>); Linux kernel enable Path MTU Discovery mặc định (sysctl <code>net.ipv4.ip_no_pmtu_disc=0</code>, <a href=\"https://datatracker.ietf.org/doc/html/rfc1191\">RFC 1191</a>) để set DF bit và avoid fragment.\n\nHiểu IP header → biết debug: trace Source IP bị NAT đổi khi qua router public (router thay Source IP thành IP public của nó, server thấy IP NAT box, không thấy IP private của client). Hiểu sai IP private (<a href=\"https://datatracker.ietf.org/doc/html/rfc1918\">RFC 1918</a>: 10/8, 172.16/12, 192.168/16) vs public → cấu hình firewall sai.",
+        "code": "# Xem IP của máy\nip addr show   # Linux\nifconfig       # Mac\nipconfig       # Windows\n\n# Xem bảng routing — máy sẽ gửi gói đi đâu?\nip route       # Linux\nnetstat -rn    # Mac\nroute print    # Windows",
+        "whyBreaks": "Không biết IP của máy = không biết Source IP trong packet = không debug được 'tại sao server từ chối kết nối'. NAT sẽ đổi Source IP → server thấy IP khác với IP client. Nhầm IP private và public dẫn đến cấu hình firewall sai.",
+        "observeWith": "ip route get 8.8.8.8 — xem Linux chọn interface và gateway nào để gửi packet tới 8.8.8.8. Output 'via X.X.X.X dev ethY src Z.Z.Z.Z' cho biết gateway, NIC card, và source IP cho kết nối này."
+      },
+      {
+        "step": 3,
+        "what": "Tầng 1 Link: đóng thành Ethernet frame + hỏi MAC qua ARP",
+        "why": "Kernel tra routing table (<code>ip route</code>) để quyết định next-hop: server 93.184.216.34 không ở LAN → gửi qua default gateway (ví dụ 192.168.1.1). Cần MAC của gateway để đóng Ethernet frame. Kernel check ARP cache (<code>ip neigh</code>) — nếu miss, trigger ARP request.\n\nARP (<a href=\"https://datatracker.ietf.org/doc/html/rfc826\">RFC 826</a>): host broadcast frame L2 (destination MAC = FF:FF:FF:FF:FF:FF) với query \"Who has 192.168.1.1? Tell 192.168.1.10\". Tất cả host trong broadcast domain nhận, chỉ gateway (192.168.1.1) reply với ARP response kèm MAC của nó. Kernel cache pair (IP, MAC) trong ARP table ~30s-1h tùy OS, sau đó refresh.\n\nEthernet frame (<a href=\"https://standards.ieee.org/ieee/802.3/\">IEEE 802.3</a>): destination MAC = MAC gateway, source MAC = MAC NIC, EtherType = 0x0800 (IPv4), payload = toàn bộ IP packet, FCS (CRC-32) cuối frame. Destination MAC LUÔN là MAC next-hop, không phải MAC server cuối cùng — nhầm điều này dẫn tới đọc sai packet capture trên Wireshark. ARP poisoning là attack class trong LAN: attacker gửi ARP reply giả claim MAC của mình cho IP gateway → host gửi traffic tới MAC attacker = MITM (<a href=\"https://capec.mitre.org/data/definitions/141.html\">CAPEC-141 ARP Spoofing</a>).",
+        "code": "# Xem ARP cache (IP ↔ MAC đã biết trong LAN)\nip neigh show     # Linux\narp -a            # Mac/Windows\n\n# Xem MAC của máy\nip link show\nifconfig | grep ether",
+        "whyBreaks": "ARP poisoning là attack phổ biến trong LAN: kẻ tấn công gửi ARP reply giả → host gửi traffic tới MAC của attacker thay vì gateway → MITM. Trong môi trường cloud, ARP giữa VM thường bị cloud platform quản lý — cần biết điều này khi debug.",
+        "observeWith": "ip neigh show — xem ARP table. Nếu thấy gateway IP với trạng thái REACHABLE thì Link layer tới gateway OK. FAILED hoặc INCOMPLETE = ARP không resolve được = Link layer có vấn đề."
+      },
+      {
+        "step": 4,
+        "what": "Đi qua Internet: router chuyển tiếp theo IP",
+        "why": "Router nhận frame → check destination MAC (đúng của router) → decap Ethernet (bóc L2 header + FCS) → lấy IP packet → check destination IP → tra routing table (longest prefix match, <a href=\"https://datatracker.ietf.org/doc/html/rfc1812#section-5.2\">RFC 1812 §5.2</a>). Route entry trỏ tới outgoing interface + next-hop IP. Router decrement TTL -1, recompute IP header checksum (<a href=\"https://datatracker.ietf.org/doc/html/rfc1071\">RFC 1071</a>).\n\nRouter resolve MAC của next-hop qua ARP (nếu chưa cache), đóng Ethernet frame MỚI với destination MAC = MAC next-hop, source MAC = MAC outgoing interface. Gửi ra NIC. Lặp lại tại mỗi router trên path tới mạng server — số hop verify trực tiếp bằng <code>traceroute</code> hoặc <code>mtr</code> từ client cụ thể.\n\nĐiểm mấu chốt: IP header không đổi qua router (trừ TTL + checksum), Ethernet header bị TẠO LẠI tại mỗi hop — vì MAC chỉ có ý nghĩa trong 1 broadcast domain. Hiểu điều này → traceroute hiển thị IP (L3) không phải MAC (L2), và <code>ping -r</code> record route options hiển thị IP của router, không phải MAC.",
+        "code": "# Xem đường đi thật, từng hop\ntraceroute example.com     # Linux/Mac\ntracert example.com        # Windows\n\n# Nếu traceroute dừng nửa chừng = router trên đường block ICMP/UDP\nsudo traceroute -T -p 443 example.com",
+        "whyBreaks": "Không biết traceroute → khi debug 'tại sao latency cao' hoặc 'packet drop ở đâu' chỉ biết nhìn chứ không tìm được bottleneck. Traceroute tiết lộ đúng router nào đang slow hoặc drop packet.",
+        "observeWith": "traceroute -n example.com (-n không resolve hostname, nhanh hơn) — xem từng hop latency. Nếu 1 hop đột ngột tăng từ 10ms lên 200ms = bottleneck tại đó. * * * = router block ICMP, không có nghĩa là down."
+      },
+      {
+        "step": 5,
+        "what": "Server bóc ngược: Link → Internet → nhận ICMP → reply",
+        "why": "Server example.com nhận frame → check destination MAC (đúng của NIC server) → decap Ethernet → đọc IP header → check destination IP (đúng của server) → đọc Protocol field = 1 (ICMP) → pass lên ICMP handler trong kernel. Không có process userspace nào được invoke.\n\nKernel ICMP handler (<a href=\"https://datatracker.ietf.org/doc/html/rfc792\">RFC 792 §Echo</a>) nhận echo request (type=8), tạo echo reply (type=0) với identical identifier + sequence number + payload, swap source/destination IP, gửi xuống IP layer. Reply đi ngược về client qua routing table của server, có thể KHÁC path đi (asymmetric routing). Firewall stateless không track pair request↔reply → drop reply nếu path reply đi qua interface khác path request — cần stateful firewall (conntrack trên Linux netfilter) để handle.\n\nVì kernel tự reply, không cần app chạy → ping hoạt động ngay cả khi nginx/ssh/mysql đều down, chỉ cần kernel còn sống. Hệ quả debug: ping thành công chỉ chứng minh host + kernel OK, không chứng minh service. Để verify service, phải test L4 (<code>nc -vz host port</code>) và L7 (<code>curl</code>, protocol command).",
+        "code": "# Trên server, xem packet đến bằng tcpdump\nsudo tcpdump -i any -n 'icmp'\n# Output 2 dòng mỗi lần ping:\n# IP <client> > <server>: ICMP echo request\n# IP <server> > <client>: ICMP echo reply",
+        "whyBreaks": "Không dùng tcpdump → không biết packet có tới server không → debug blind. Khi 'curl không được', tcpdump trên server cho biết ngay: packet có tới không? Tới mà không reply = process chết. Không tới = firewall chặn trước server.",
+        "observeWith": "sudo tcpdump -i any -n 'tcp port 80' — chạy khi client curl http://server. Nếu thấy SYN tới nhưng không có SYN-ACK thì không có process listen. Nếu không thấy SYN nào = packet chưa tới, chặn ở đâu đó trước.",
+        "failModes": [
+          {
+            "symptom": "tcpdump chạy nhưng không hiển thị packet nào dù biết traffic đang chạy",
+            "evidence": "tcpdump -i eth0 không capture, nhưng tcpdump -i any có — do sai interface. Kiểm tra: ip link show để xem tên interface đúng"
+          },
+          {
+            "symptom": "sudo tcpdump báo 'eth0: No such device'",
+            "evidence": "ip link show không liệt kê interface tên eth0 — NIC có thể tên ens3, enp0s3, hoặc tên predictable khác theo udev"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Liệt kê interface thực tế trên máy",
+            "command": "ip link show"
+          },
+          {
+            "step": "Dùng -i any để capture trên mọi interface",
+            "command": "sudo tcpdump -i any -n 'icmp' -c 10"
+          }
+        ],
+        "automateScript": {
+          "lang": "bash",
+          "code": "#!/bin/bash\n# Rotate tcpdump capture theo size — tránh đầy disk\n# Dùng khi cần capture dài hạn (debug production)\n# Mỗi file tối đa 100MB, giữ 5 file gần nhất\nINTERFACE=${1:-any}\nOUTDIR=${2:-/tmp/tcpdump-captures}\nmkdir -p \"$OUTDIR\"\nsudo tcpdump -i \"$INTERFACE\" -n \\\n  -C 100 \\\n  -W 5 \\\n  -w \"$OUTDIR/capture.pcap\" \\\n  &\necho \"tcpdump PID=$! | captures in $OUTDIR | max 5x100MB\"",
+          "note": "Chạy thủ công khi debug production traffic. -C 100 = rotate mỗi 100MB, -W 5 = giữ 5 file. Dừng bằng kill $PID. Phân tích sau với: tcpdump -r /tmp/tcpdump-captures/capture.pcap0"
+        }
+      },
+      {
+        "step": 6,
+        "what": "Reply về: ping in ra '64 bytes from ... time=12.3 ms'",
+        "why": "Kernel client nhận ICMP echo reply, match identifier + sequence với request đã gửi, tính RTT = timestamp nhận − timestamp gửi (timestamp nằm trong payload do kernel nhúng khi gửi). Tăng statistics (<code>packets_received++</code>), pass event lên userspace process <code>ping</code> qua <code>recvmsg()</code>.\n\n<code>ping</code> in <code>64 bytes from 93.184.216.34: icmp_seq=1 ttl=54 time=12.3 ms</code>. Các field: <code>64 bytes</code> = ICMP + payload (không tính IP header), <code>ttl=54</code> = TTL còn lại khi tới client (nếu server gửi TTL=64 → đã qua 10 hop), <code>time=12.3 ms</code> = RTT đi + về.\n\nHai metric quan trọng nhất: packet loss % (sau N packet, bao nhiêu không reply — 1-2% loss làm TCP throughput giảm do retransmit window collapse, <a href=\"https://datatracker.ietf.org/doc/html/rfc5681#section-3.1\">RFC 5681 §3.1</a>) và jitter (biến thiên RTT — jitter > 30 ms gây audio/video codec buffer underrun trong realtime app: VoIP, video call, game). Ping IP cùng LAN (<1 ms expected) verify L1-L3 local; ping IP khác AS (<200 ms intercontinental fiber) verify WAN path.",
+        "code": "# Ping dài hạn để thấy jitter / packet loss\nping example.com\n\n# Ping với size lớn để test MTU\nping -s 1472 example.com",
+        "whyBreaks": "Không biết đọc ping output → bỏ qua packet loss và jitter quan trọng. Packet loss 1-2% trên TCP làm tốc độ giảm rất nhiều (TCP retransmit). Jitter cao = không ổn định, ảnh hưởng video call/realtime app.",
+        "observeWith": "ping -c 100 example.com — ping 100 gói để thấy thống kê chính xác. Cuối output có min/avg/max/mdev. mdev lớn = jitter cao = mạng không ổn định. Packet loss > 0% = có vấn đề nghiêm trọng."
+      },
+      {
+        "step": 7,
+        "what": "🆚 Tại sao curl có thể fail dù ping thành công?",
+        "why": "Đây là test case tổng hợp toàn bộ stack: <code>ping</code> test L3 (ICMP echo), <code>curl</code>/browser test L3 + L4 + L7. Ping thành công chứng minh L1→L3 OK, kernel server reply được. Curl cần thêm:\n\nL4 Transport (TCP, <a href=\"https://datatracker.ietf.org/doc/html/rfc9293\">RFC 9293</a>): 3-way handshake tới port 80/443 — SYN, SYN-ACK, ACK. Firewall chặn port → \"connection timeout\" (SYN không nhận SYN-ACK). Host up nhưng không process nào listen port → \"connection refused\" (kernel reply TCP RST). L7 Application (HTTP, <a href=\"https://datatracker.ietf.org/doc/html/rfc9110\">RFC 9110</a>): nginx/app nhận TCP byte stream, parse HTTP request, trả response. Nginx upstream fail → 502; app crash → 500; client format sai → 400.\n\nHiểu separation này đổi workflow debug hoàn toàn: từ \"server không vào được\" (vague) → \"test từng layer\": <code>ping</code> (L3) → <code>nc -vz host 443</code> (L4 + port open?) → <code>curl -v</code> (L7 + HTTP valid?). Biết layer nào fail → biết tool nào để observe (<code>tcpdump</code> cho L3-L4, <code>journalctl</code>/access log cho L7).",
+        "code": "# Test Transport layer riêng (không cần HTTP)\nnc -vz example.com 443    # Linux/Mac\nTest-NetConnection example.com -Port 443   # Windows PowerShell\n\n# Test cả Application\ncurl -v https://example.com",
+        "whyBreaks": "Không biết test từng tầng riêng biệt → khi debug chỉ biết 'không vào được' mà không biết vấn đề ở tầng nào. Tệ hơn, có thể restart toàn bộ hệ thống vô ích trong khi chỉ cần mở port firewall.",
+        "observeWith": "nc -vz <ip_vps> 80 — nếu 'succeeded' = Transport OK, nginx đang listen. Nếu 'refused' = nginx chưa start hoặc sai port. Nếu timeout sau 5-10s = firewall đang chặn port 80."
+      }
+    ],
+    "quiz": [
+      {
+        "q": "Khi gõ <code>ping example.com</code>, tầng nào trong TCP/IP 4 KHÔNG được sử dụng?",
+        "options": [
+          "Link",
+          "Internet",
+          "Transport",
+          "Application"
+        ],
+        "correct": 2,
+        "whyCorrect": "ICMP (protocol của ping) nằm ngay ở tầng Internet, không qua Transport (TCP/UDP). Đó là lý do ping không có khái niệm 'port'.",
+        "whyOthersWrong": {
+          "0": "Link luôn được dùng — không có nó bit không lên được cáp/WiFi.",
+          "1": "Internet là tầng chính của ping — IP header và ICMP đều ở đây.",
+          "3": "Lệnh ping chính là process ở tầng Application gọi xuống kernel."
+        }
+      },
+      {
+        "q": "Deploy app lên VPS. Từ máy client: ping &lt;ip_vps&gt; OK, nhưng <code>curl http://&lt;ip_vps&gt;</code> báo 'connection refused'. Vấn đề ở tầng nào?",
+        "options": [
+          "Link — cáp mạng VPS lỏng",
+          "Internet — routing sai",
+          "Transport — không có process listen port 80",
+          "Application — trả về 500"
+        ],
+        "correct": 2,
+        "whyCorrect": "Ping OK = Link + Internet OK, VPS sống. 'Connection refused' = TCP SYN tới nơi nhưng kernel VPS trả RST vì không có process listen port 80. Có thể nginx chưa chạy / chạy nhầm port.",
+        "whyOthersWrong": {
+          "0": "Link hỏng thì ping cũng fail.",
+          "1": "Routing sai thì ping cũng fail.",
+          "3": "Muốn nhận 500 phải kết nối TCP thành công trước → không ra 'refused'."
+        }
+      },
+      {
+        "q": "TCP/IP 4 layer vs OSI 7 layer khác nhau ở đâu?",
+        "options": [
+          "TCP/IP là lý thuyết, OSI được triển khai thực tế",
+          "TCP/IP gộp L5/L6/L7 của OSI thành Application, và L1+L2 thành Link",
+          "Chúng hoàn toàn giống nhau, chỉ khác tên",
+          "Cả hai đều có 4 tầng"
+        ],
+        "correct": 1,
+        "whyCorrect": "TCP/IP 4 tầng = Application (gộp L5+L6+L7 OSI) + Transport (L4) + Internet (L3) + Link (L1+L2). Đây là mô hình thực tế đang chạy. OSI là mô hình tham chiếu lý thuyết.",
+        "whyOthersWrong": {
+          "0": "Ngược lại — TCP/IP thực tế, OSI lý thuyết.",
+          "2": "Số tầng khác nhau.",
+          "3": "OSI có 7 tầng."
+        }
+      },
+      {
+        "q": "Host gửi frame ra internet. MAC địa chỉ đích trong Ethernet frame là gì?",
+        "options": [
+          "MAC của server đích",
+          "MAC của gateway (router mạng LAN)",
+          "Broadcast FF:FF:FF:FF:FF:FF",
+          "MAC của host gửi"
+        ],
+        "correct": 1,
+        "whyCorrect": "Frame chỉ đi trong 1 mạng LAN. Ra ngoài phải nhờ gateway. ARP chỉ hỏi được MAC trong LAN, nên frame đầu tiên có MAC đích = MAC gateway. Gateway bóc frame, đóng frame mới với MAC hop tiếp theo.",
+        "whyOthersWrong": {
+          "0": "Host không biết MAC server ở mạng khác — ARP không chạy xuyên router.",
+          "2": "Broadcast chỉ dùng cho ARP/DHCP discovery.",
+          "3": "Đó là MAC source, không phải destination."
+        }
+      },
+      {
+        "q": "<code>curl example.com</code> báo 'could not resolve host'. Vấn đề ở tầng nào?",
+        "options": [
+          "Link — cáp lỏng",
+          "Internet — IP routing hỏng",
+          "Application — DNS không trả về IP",
+          "Transport — TCP bắt tay fail"
+        ],
+        "correct": 2,
+        "whyCorrect": "DNS là protocol ở tầng Application. 'Could not resolve host' = curl không lấy được IP → chưa tới Internet/Transport. Thường do DNS server không phản hồi hoặc /etc/resolv.conf sai.",
+        "whyOthersWrong": {
+          "0": "Link hỏng thì error khác, thường 'network unreachable'.",
+          "1": "Chưa tới Internet — chưa có IP để route.",
+          "3": "Chưa đến TCP — chưa có IP đích để bắt tay."
+        }
+      },
+      {
+        "q": "Vì sao TCP/IP tách Transport (port) ra khỏi Internet (IP)?",
+        "options": [
+          "Để bảo mật hơn",
+          "Vì 1 máy có 1 IP nhưng chạy nhiều service — port phân biệt nginx:80, ssh:22, mysql:3306",
+          "Vì router cần cả IP và port để routing",
+          "Vì IPv4 không đủ port"
+        ],
+        "correct": 1,
+        "whyCorrect": "Lý do tồn tại của Transport chính là đa service trên 1 host. IP đưa gói tới đúng máy, port đưa gói tới đúng process.",
+        "whyOthersWrong": {
+          "0": "Port không làm tăng bảo mật — kẻ xấu quét port rất dễ.",
+          "2": "Router thường chỉ đọc IP (trừ NAT nâng cao).",
+          "3": "IP và port là 2 khái niệm khác nhau."
+        }
+      },
+      {
+        "q": "Ping 1 IP, thấy reply có <code>ttl=54</code>. Điều này nói lên gì?",
+        "options": [
+          "Packet còn sống 54 giây nữa",
+          "Packet đã đi qua khoảng 10 router (nếu OS đích đặt TTL mặc định 64)",
+          "Kết nối còn giữ được 54 lần nữa",
+          "Không có ý nghĩa gì"
+        ],
+        "correct": 1,
+        "whyCorrect": "TTL giảm 1 mỗi router. Nhiều OS đặt TTL ban đầu = 64 (Linux/Mac) hoặc 128 (Windows). ttl=54 ở client, đoán server dùng 64 → đã qua 10 hop. Cách đoán kiểu OS + độ xa mà không cần traceroute.",
+        "whyOthersWrong": {
+          "0": "TTL đơn vị là 'số hop', không phải giây (dù tên là Time To Live).",
+          "2": "TTL tính trên từng gói, không phải cả 'kết nối'.",
+          "3": "Có ý nghĩa — chính là số hop đã đi."
+        }
+      },
+      {
+        "q": "Rút cáp mạng / tắt WiFi. Error nào xuất hiện SỚM NHẤT khi gõ curl?",
+        "options": [
+          "Connection timeout",
+          "Could not resolve host (DNS fail)",
+          "TLS handshake failed",
+          "Network is unreachable — báo ngay lập tức"
+        ],
+        "correct": 3,
+        "whyCorrect": "Link layer fail là kernel nhận ra ngay (interface state down). Curl hỏi kernel 'gửi đi' và kernel trả 'không có đường đi' — không phải chờ gì. Các lỗi kia đều cần timeout hoặc phản hồi từ bên ngoài.",
+        "whyOthersWrong": {
+          "0": "Timeout cần chờ vài giây tới vài chục giây.",
+          "1": "DNS fail cũng cần chờ timeout.",
+          "2": "TLS ở tầng Application, xa lắm mới tới."
+        }
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "TCP/IP có mấy tầng? Kể tên từ thấp lên cao.",
+        "back": "4 tầng: Link → Internet → Transport → Application.",
+        "why": "Đây là mô hình THỰC TẾ của internet. Nhớ 4 tầng này là đủ làm việc; OSI 7 chỉ để tham chiếu lý thuyết."
+      },
+      {
+        "front": "Tầng Link làm gì?",
+        "back": "Đẩy bit/frame giữa 2 thiết bị CÙNG LAN. Dùng MAC address. Tương ứng OSI L1 + L2.",
+        "why": "Link fail = mọi thứ trên vô nghĩa. Luôn debug Link trước (đèn NIC, ip link, WiFi)."
+      },
+      {
+        "front": "Tầng Internet làm gì?",
+        "back": "Định tuyến packet XUYÊN nhiều mạng bằng IP address. Protocol: IP, ICMP (ping). Tương ứng OSI L3.",
+        "why": "Tầng tạo ra 'Inter-net' (liên mạng). Không có nó mỗi LAN là 1 ốc đảo."
+      },
+      {
+        "front": "Tầng Transport làm gì?",
+        "back": "Chia data thành segment (TCP) / datagram (UDP), gắn PORT để phân biệt service. Tương ứng OSI L4.",
+        "why": "1 máy nhiều service → port là cách duy nhất phân biệt nginx:80 vs ssh:22 vs mysql:3306."
+      },
+      {
+        "front": "Tầng Application gồm những gì?",
+        "back": "HTTP, DNS, SSH, TLS, FTP, SMTP... Tất cả protocol dev code hằng ngày. Tương ứng OSI L5+L6+L7.",
+        "why": "Dev làm việc 90% ở tầng này. Lỗi 400/500 là Application, KHÔNG phải lỗi mạng."
+      },
+      {
+        "front": "Ping dùng protocol gì? Ở tầng nào?",
+        "back": "ICMP (Internet Control Message Protocol) — ở tầng INTERNET, không qua Transport.",
+        "why": "Vì thế ping không có port. Firewall có thể cho ping qua nhưng chặn TCP — dẫn tới 'ping được, curl không được'."
+      },
+      {
+        "front": "Ping được + curl báo 'connection refused' = ?",
+        "back": "Link + Internet OK. Vấn đề ở Transport: máy đích sống nhưng không có process listen port đó.",
+        "why": "Hay gặp khi deploy VPS: quên start nginx, hoặc nginx nghe port khác. Không phải lỗi mạng."
+      },
+      {
+        "front": "Ping được + curl báo 'connection timeout' = ?",
+        "back": "Link + Internet OK, nhưng TCP SYN không tới được process. Thường do firewall chặn port.",
+        "why": "Phân biệt refused vs timeout là kỹ năng debug cốt lõi: refused = máy sống, timeout = firewall hoặc mạng chặn."
+      },
+      {
+        "front": "DNS nằm ở tầng nào?",
+        "back": "Application. DNS là protocol ở tầng Application, chạy trên UDP port 53.",
+        "why": "Lỗi 'could not resolve host' = DNS fail = chưa tới lượt Internet/Transport. Debug bằng dig/nslookup."
+      },
+      {
+        "front": "Khi frame ra khỏi LAN, MAC đích là gì?",
+        "back": "MAC của GATEWAY, KHÔNG phải MAC của server đích.",
+        "why": "ARP chỉ hỏi được trong LAN. Ra ngoài, gateway bóc frame rồi đóng lại với MAC mới cho hop tiếp theo."
+      },
+      {
+        "front": "TTL trong IP header để làm gì?",
+        "back": "Giới hạn số hop packet đi qua. Mỗi router giảm 1, tới 0 thì drop → tránh loop vô tận.",
+        "why": "Traceroute khai thác TTL: gửi TTL=1,2,3... để 'dụ' từng router báo lỗi Time Exceeded → biết đường đi."
+      },
+      {
+        "front": "Encapsulation là gì?",
+        "back": "Mỗi tầng bọc header riêng của nó vào gói tin của tầng trên. Xuống = thêm header. Lên = bóc header.",
+        "why": "Tách tầng để đổi 1 tầng không ảnh hưởng tầng khác. Đổi WiFi → cáp không cần sửa HTTP."
+      },
+      {
+        "front": "Vì sao TCP/IP 'thắng' OSI trong thực tế?",
+        "back": "TCP/IP có implementation chạy thật (ARPANET → Internet). OSI ra sau, quá chi tiết, chưa kịp phổ biến.",
+        "why": "Hôm nay: code và tool đều chạy trên TCP/IP. OSI còn dùng làm 'ngôn ngữ chung' khi nói 'lỗi ở layer mấy'."
+      },
+      {
+        "front": "Gateway / default route là gì?",
+        "back": "Router mặc định nhận mọi packet có IP đích NGOÀI LAN. Xem bằng <code>ip route</code>.",
+        "why": "Gateway chết = mất hết internet dù WiFi vẫn 'connected'. Thủ phạm số 1 khi host không ra được internet."
+      }
+    ],
+    "try_at_home": [
+      {
+        "why": "Lệnh cơ bản nhất — xem máy đích có sống + đo độ trễ",
+        "cmd": "ping -c 4 example.com",
+        "observeWith": "Nhìn time= (RTT) và packet loss. RTT <50ms = gần, >200ms = xa hoặc chậm. Packet loss > 0% là dấu hiệu đáng lo. Ctrl+C để dừng, ping sẽ in thống kê min/avg/max."
+      },
+      {
+        "why": "Đổi tên miền thành IP — cơ sở cho mọi kết nối",
+        "cmd": "dig example.com +short\n# hoặc\nnslookup example.com",
+        "observeWith": "dig example.com +short chỉ in IP, không thêm. Thử dig example.com (không +short) để xem TTL và server đang dùng. Nếu không có output = DNS fail hoàn toàn."
+      },
+      {
+        "why": "Xem IP + MAC của máy — biết host là ai trong mạng",
+        "cmd": "ip addr show       # Linux\nifconfig           # Mac\nipconfig /all      # Windows",
+        "observeWith": "Tìm interface có state UP và có inet (IPv4). Lưu ý phân biệt IP private (192.168.x.x, 10.x.x.x, 172.16-31.x.x) và public. MAC address hiển thị sau 'ether' (Linux) hoặc 'Physical Address' (Windows)."
+      },
+      {
+        "why": "Xem gateway mặc định — 'cửa ra' internet của host",
+        "cmd": "ip route           # Linux\nnetstat -rn        # Mac\nroute print        # Windows",
+        "observeWith": "Tìm dòng 'default via X.X.X.X' (Linux) hoặc '0.0.0.0' destination (Windows). IP sau 'via' là gateway. Ping gateway đó: nếu không ping được = Link/Internet tới gateway chết = không ra được internet."
+      },
+      {
+        "why": "Xem đường đi thật của packet qua từng router",
+        "cmd": "traceroute example.com     # Linux/Mac\ntracert example.com        # Windows",
+        "observeWith": "Mỗi dòng là 1 router hop với latency. Tìm điểm latency tăng đột ngột — đó là bottleneck. '* * *' không có nghĩa là down, chỉ là router không reply ICMP. Hop cuối = server đích hoặc gần đó."
+      },
+      {
+        "why": "Phân biệt 'connection refused' vs 'timeout' bằng thực nghiệm — debug cốt lõi",
+        "cmd": "# Refused: máy sống, port không ai nghe\nnc -vz 127.0.0.1 65000\n\n# Timeout: IP không tồn tại\nnc -vz -w 3 203.0.113.254 80",
+        "observeWith": "nc -vz 127.0.0.1 65000 sẽ báo 'refused' ngay lập tức (<1s). nc -vz -w 3 <ip-ko-tồn-tại> 80 sẽ chờ 3 giây rồi timeout. Tốc độ phản hồi là dấu hiệu quan trọng để phân biệt."
+      },
+      {
+        "why": "Xem packet đến/đi bằng tcpdump — công cụ debug mạng level devops",
+        "cmd": "sudo tcpdump -i any -n 'icmp' -c 10",
+        "observeWith": "Khi tcpdump đang chạy, mở terminal khác ping example.com. Output sẽ hiển thị 2 dòng mỗi ping: 'echo request' (đi) và 'echo reply' (về). Chỉ thấy request mà không có reply = firewall chặn return traffic."
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "TCP/IP có 4 tầng vì thế giới đã bỏ OSI 7 tầng.",
+        "right": "OSI (<a href=\"https://www.iso.org/standard/20269.html\">ISO/IEC 7498-1</a>) là reference model dùng để phân tích/giảng dạy; TCP/IP (<a href=\"https://datatracker.ietf.org/doc/html/rfc1122#section-1.1.3\">RFC 1122</a>) là implementation thực tế trên internet. Hai mô hình co-exist, không thay thế nhau. Vendor docs (Cisco, AWS, Kubernetes) vẫn dùng OSI terminology: \"L7 firewall\", \"L4 load balancer\", \"L3 routing\".",
+        "why": "OSI Session/Presentation không có header riêng trong wire format TCP/IP — bị Application absorb vào một tầng. Đây là lý do TCP/IP \"gộp 4 tầng\" chứ không phải bỏ bớt. Khi debug AWS ALB (L7) vs NLB (L4), sự phân biệt OSI-based này là điều kiện cần để đọc docs đúng."
+      },
+      {
+        "wrong": "Layering chỉ là khái niệm giảng dạy, thực tế code mạng vẫn phải biết từ cable đến HTTP.",
+        "right": "Layering = separation of concerns ở mức protocol design. HTTP spec (<a href=\"https://datatracker.ietf.org/doc/html/rfc9110\">RFC 9110</a>) không nhắc gì đến Ethernet hay WiFi — vì layering cho phép HTTP chạy trên mọi L2 (Ethernet, WiFi, 5G, Starlink, VPN tunnel) mà không sửa spec. Code ứng dụng chỉ gọi socket API (BSD sockets), kernel TCP/IP stack xử lý L2/L3/L4.",
+        "why": "Giá trị cụ thể: khi đổi cable copper sang cáp quang, nginx không recompile. Khi client chuyển WiFi → 4G, TCP connection có thể giữ (với MPTCP) vì L4 không biết L2 đổi. Đây là invariant, không phải lý thuyết."
+      },
+      {
+        "wrong": "Ping thành công nghĩa là server hoạt động.",
+        "right": "Ping test L3 ICMP (<a href=\"https://datatracker.ietf.org/doc/html/rfc792\">RFC 792</a>) — chỉ xác nhận gói IP đi tới được host và kernel reply được. Service thật chạy ở L7, cần test thêm L4 (TCP handshake tới port đúng) và L7 (HTTP response hợp lệ).",
+        "why": "Firewall có thể allow ICMP mà block TCP :443. Host có thể up, kernel reply ICMP — nhưng nginx đã crash → client vẫn nhận 502 hoặc connection refused. Ping chỉ chứng minh L1-L3 OK, không nói gì về L4-L7."
+      },
+      {
+        "wrong": "Encapsulation order có thể thay đổi tùy protocol (ví dụ HTTPS \"bỏ qua\" TCP).",
+        "right": "Encap order cuối cùng LUÔN kết thúc ở L2 Link vì bit phải ra NIC → cable/WiFi với frame boundary + MAC. HTTPS không \"bỏ qua\" TCP — TLS nằm giữa TCP và HTTP, giữ nguyên L4 port demux. Tunnel (VPN, WireGuard, GRE) chỉ là thêm 1 lớp encap ngoài, không skip tầng nào.",
+        "why": "Constraint vật lý: NIC chỉ biết parse Ethernet frame theo <a href=\"https://standards.ieee.org/ieee/802.3/\">IEEE 802.3</a>, không biết IP. Nếu order biến mất → NIC không biết frame bắt đầu/kết thúc ở đâu. Hiểu invariant này → khi thấy packet capture lạ (VXLAN, GENEVE), biết ngay đó là tunnel overlay, không phải \"giao thức thay thế TCP/IP\"."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "TcpIpJourneyPlayground"
+    }
+  }
+}

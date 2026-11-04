@@ -1,0 +1,157 @@
+{
+  "exercise": {
+    "slug": "linux-login-shell-cmdlog",
+    "title": "SSH login: file khởi động shell & cấu hình Command Logging",
+    "topic": "linux",
+    "tags": [
+      "ssh",
+      "bash",
+      "login-shell",
+      "pam",
+      "rsyslog",
+      "cmdlog",
+      "logging"
+    ],
+    "source": "Bài tập thực hành",
+    "brief": "Bài tập gồm hai phần gắn liền nhau:<ol><li><strong>Cơ chế khởi động:</strong> khi <code>ssh</code> vào một máy Linux, những file nào được thực thi và theo thứ tự nào? Phân biệt <em>login shell</em>, <em>non-login shell</em>, <em>interactive</em> vs <em>non-interactive</em>, và vai trò của <strong>PAM</strong> trước khi shell chạy.</li><li><strong>Command Logging (cmd-log):</strong> cấu hình ghi lại <em>mọi lệnh</em> người dùng gõ ra <code>rsyslog</code> (facility <code>local6</code>) → <code>/var/log/cmdlog.log</code> dưới dạng JSON (thời gian, user, PID, lệnh, exit code, IP client). Đây chính là lý do ta phải hiểu phần 1: đặt cấu hình sai file → shell không nạp → không log được.</li></ol>Server thực hành: <code><ADDR-1></code> (Ubuntu 24.04). Yêu cầu: giải thích được thứ tự file cho từng loại shell, rồi cài cmd-log chạy thật và verify log xuất hiện.",
+    "estimated_minutes": 45,
+    "content_hash": "3507eb7252bc7958cb513b2167bfc83a1cbadf2baa94a5220fc63408fd0965d7",
+    "updated_at": 1782965129,
+    "guide": [
+      {
+        "step": 1,
+        "instruction": "<strong>Phân biệt 4 kiểu shell.</strong> Bash quyết định nạp file nào dựa trên hai trục <em>login/non-login</em> và <em>interactive/non-interactive</em>: <code>ssh <USER>@<HOST></code> (có TTY) = <strong>login + interactive</strong>; <code>bash</code>/tmux/<code>su</code>/subshell = <strong>non-login + interactive</strong>; <code>ssh <USER>@<HOST> \"lệnh\"</code> hoặc chạy script <code>.sh</code> = <strong>non-interactive</strong>.",
+        "command": "shopt login_shell   # on = login shell\necho \"$-\"           # có chữ i = interactive",
+        "note": "Kiểm tra ngay trong phiên của bạn: <code>$-</code> chứa <code>i</code> khi tương tác."
+      },
+      {
+        "step": 2,
+        "instruction": "<strong>Thứ tự file khi SSH login (login shell).</strong> Bash đọc theo thứ tự: <code>/etc/profile</code> → (nếu interactive) <code>/etc/bash.bashrc</code> → <code>/etc/profile.d/*.sh</code> → rồi file cá nhân ĐẦU TIÊN tồn tại trong <code>~/.bash_profile</code> › <code>~/.bash_login</code> › <code>~/.profile</code>. Trên Ubuntu, <code>~/.profile</code> lại <code>source ~/.bashrc</code>.",
+        "command": "grep -n \"bash.bashrc\\|profile.d\" /etc/profile\ngrep -n \"bashrc\" ~/.profile",
+        "note": "Chỉ file cá nhân <em>đầu tiên tồn tại</em> được đọc — có <code>~/.bash_profile</code> thì <code>~/.profile</code> bị bỏ qua. Đây là lỗi cấu hình kinh điển khi PATH/biến \"biến mất\"."
+      },
+      {
+        "step": 3,
+        "instruction": "<strong>Non-login interactive</strong> (mở <code>bash</code> con, tmux, <code>su</code>): chỉ đọc <code>/etc/bash.bashrc</code> + <code>~/.bashrc</code> (đặc thù bản vá Debian/Ubuntu — SYS_BASHRC). <strong>Non-interactive</strong> (<code>ssh host \"cmd\"</code>, script): KHÔNG đọc file khởi động nào, trừ khi biến <code>BASH_ENV</code> trỏ tới một file.",
+        "note": "Hệ quả: lệnh chạy qua <code>ssh host \"cmd\"</code>, cron, hay CI KHÔNG có PATH/alias như phiên đăng nhập — và <strong>PROMPT_COMMAND cmd-log cũng không chạy ở các phiên này</strong>."
+      },
+      {
+        "step": 4,
+        "instruction": "<strong>PAM chạy TRƯỚC shell.</strong> <code>sshd</code> gọi PAM stack (<code>/etc/pam.d/sshd</code>); <code>pam_env</code> nạp <code>/etc/environment</code> và <code>/etc/security/pam_env.conf</code> (biến môi trường, PATH hệ thống), <code>pam_motd</code> in banner. Các biến này áp cho <em>mọi</em> kiểu login (kể cả non-interactive) vì được set trước khi bash đọc profile/bashrc.",
+        "command": "cat /etc/environment\ngrep -R \"pam_env\\|pam_motd\" /etc/pam.d/sshd /etc/pam.d/login",
+        "note": "Vì vậy PATH đặt ở <code>/etc/environment</code> luôn có; PATH đặt ở <code>~/.bashrc</code> chỉ có ở shell tương tác."
+      },
+      {
+        "step": 5,
+        "instruction": "<strong>Kiểm chứng bằng strace</strong> thay vì đoán: liệt kê đúng các file bash mở (<code>openat</code>) khi khởi động — không cần sửa file nào.",
+        "command": "# Login shell (giống lúc SSH đăng nhập):\nstrace -f -e trace=openat bash -il -c true 2>&1 | grep -E \"profile|bashrc\" | grep -v ENOENT\n# Non-login interactive (bash con):\nstrace -f -e trace=openat bash -i  -c true 2>&1 | grep -E \"profile|bashrc\" | grep -v ENOENT",
+        "note": "So sánh hai danh sách để thấy đúng khác biệt login vs non-login."
+      },
+      {
+        "step": 6,
+        "instruction": "<strong>Vì sao cmd-log đặt trong <code>~/.bashrc</code> &amp; <code>/etc/bash.bashrc</code>?</strong> Cơ chế cmd-log dựa trên biến <code>PROMPT_COMMAND</code> — bash chạy nó <em>trước mỗi prompt</em> của shell <strong>interactive</strong>. Nên nó phải nằm ở file mà interactive shell nạp: <code>/etc/bash.bashrc</code> (toàn hệ thống, Debian/Ubuntu), <code>/etc/bashrc</code> (RedHat), <code>/root/.bashrc</code> (root), và <code>/etc/skel/.bashrc</code> (user tạo về sau).",
+        "note": "Đặt ở <code>/etc/profile</code> sẽ chỉ bắt login shell và bỏ sót mọi shell con → dùng <code>bash.bashrc</code>/<code>bashrc</code> để phủ hết phiên tương tác."
+      },
+      {
+        "step": 7,
+        "instruction": "<strong>Định tuyến rsyslog:</strong> đưa facility <code>local6</code> ra file riêng <code>/var/log/cmdlog.log</code>, tạo file và trao quyền cho user mà rsyslog ghi (<code>syslog</code>).",
+        "command": "# --- Ubuntu / Debian ---\n# 1) Route facility local6 sang file riêng\necho \"local6.* /var/log/cmdlog.log\" | sudo tee -a /etc/rsyslog.d/50-default.conf\nsudo touch /var/log/cmdlog.log && sudo chown syslog:syslog /var/log/cmdlog.log\nsudo systemctl restart rsyslog\n\n# 2) Nạp PROMPT_COMMAND cho MỌI shell tương tác toàn hệ thống (/etc/bash.bashrc)\n#    và cho root (/root/.bashrc). User mới: thêm vào /etc/skel/.bashrc.\nsudo tee -a /etc/bash.bashrc >/dev/null <<'EOF'\n# Command log — mỗi lệnh interactive phát 1 dòng JSON qua logger local6.debug\nexport PROMPT_COMMAND='RETRN_VAL=$?;logger -p local6.debug \"{\\\"log_type\\\": \\\"cmdlog\\\", \\\"time_cli\\\": \\\"$(date \"+%d/%m/%y %T\")\\\", \\\"user\\\": \\\"$(whoami)\\\", \\\"shell_pid\\\": \\\"$$\\\", \\\"command\\\": \\\"$(HISTTIMEFORMAT= history 1 | sed \"s/^ *[0-9]* *//\")\\\", \\\"return_value\\\": \\\"$RETRN_VAL\\\", \\\"client_ip\\\": \\\"${SSH_CLIENT%% *}\\\"}\"'\nexport HISTTIMEFORMAT=\"%d/%m/%y %T \"\nEOF",
+        "note": "RedHat/CentOS đặt rule ở <code>/etc/rsyslog.conf</code> thay cho <code>/etc/rsyslog.d/50-default.conf</code> (xem bước 8)."
+      },
+      {
+        "step": 8,
+        "instruction": "<strong>Nạp block PROMPT_COMMAND (cmd-log).</strong> Ghi khối sau vào file bashrc toàn hệ thống. Nó bắt IP client từ <code>who am i</code>, và ở mỗi prompt phát 1 dòng JSON qua <code>logger -p local6.debug</code> (thời gian, user, PID, lệnh lấy từ <code>history 1</code>, exit code, IP).",
+        "command": "RedHat thay /etc/bash.bashrc bằng /etc/bashrc:\n\n# --- RHEL / CentOS / Rocky ---\necho \"local6.* /var/log/cmdlog.log\" | sudo tee -a /etc/rsyslog.conf\nsudo touch /var/log/cmdlog.log && sudo chown syslog:syslog /var/log/cmdlog.log\nsudo systemctl restart rsyslog\n\n# PROMPT_COMMAND toàn hệ thống trên RedHat nằm ở /etc/bashrc (KHÔNG phải bash.bashrc)\nsudo tee -a /etc/bashrc >/dev/null <<'EOF'\n# Command log — mỗi lệnh interactive phát 1 dòng JSON qua logger local6.debug\nexport PROMPT_COMMAND='RETRN_VAL=$?;logger -p local6.debug \"{\\\"log_type\\\": \\\"cmdlog\\\", \\\"time_cli\\\": \\\"$(date \"+%d/%m/%y %T\")\\\", \\\"user\\\": \\\"$(whoami)\\\", \\\"shell_pid\\\": \\\"$$\\\", \\\"command\\\": \\\"$(HISTTIMEFORMAT= history 1 | sed \"s/^ *[0-9]* *//\")\\\", \\\"return_value\\\": \\\"$RETRN_VAL\\\", \\\"client_ip\\\": \\\"${SSH_CLIENT%% *}\\\"}\"'\nexport HISTTIMEFORMAT=\"%d/%m/%y %T \"\nEOF",
+        "note": "Áp ngay cho phiên hiện tại: <code>source /etc/bash.bashrc</code> rồi gõ 1 lệnh bất kỳ. Block ở đây đã <strong>sửa 2 lỗi</strong> của script Notion gốc trên Ubuntu 24.04 (xem Demo bước 6–7). Script tự-nhận-diện-OS đầy đủ (root + user cũ + user mới): xem Notion trong Tham khảo."
+      },
+      {
+        "step": 9,
+        "instruction": "<strong>HISTTIMEFORMAT đã nằm trong block bước 8</strong> (<code>%d/%m/%y %T</code>) để <code>history</code> hiện kèm ngày giờ. Mấu chốt: vì bật nó, phần lấy lệnh trong <code>PROMPT_COMMAND</code> phải dùng <code>HISTTIMEFORMAT= history 1</code> (tắt cục bộ) — nếu không, field <code>command</code> sẽ bị dính timestamp (xem Demo bước 6)."
+      },
+      {
+        "step": 10,
+        "instruction": "<strong>Xoay vòng log</strong> để <code>/var/log/cmdlog.log</code> không phình vô hạn.",
+        "command": "sudo tee /etc/logrotate.d/cmdlog >/dev/null <<'EOF'\n/var/log/cmdlog.log {\n  size 100M\n  rotate 4\n  create\n  dateext\n  compress\n}\nEOF"
+      },
+      {
+        "step": 11,
+        "instruction": "<strong>(Tuỳ chọn) Forward log về server tập trung.</strong> Gửi toàn bộ log qua TCP tới log server dùng chuẩn RFC5424.",
+        "command": "IP_SERVER='<ADDR-2>:<PORT>'\necho \"*.*  @$IP_SERVER;RSYSLOG_SyslogProtocol23Format\" | sudo tee -a /etc/rsyslog.conf\nsudo systemctl restart rsyslog",
+        "note": "Một <code>@</code> = UDP, hai <code>@@</code> = TCP. Ví dụ trên dùng UDP."
+      },
+      {
+        "step": 12,
+        "instruction": "<strong>Xử lý log bị lặp (duplicate).</strong> Nếu mỗi lệnh ghi 2 dòng → có rule <code>local6</code>/<code>cmd</code> trùng trong <code>/etc/rsyslog.d</code>.",
+        "command": "cd /etc/rsyslog.d && grep -Rin \"cmd\\|local6\" .\n# Comment/xoá dòng thừa (thường ở 50-default.conf) rồi:\nsudo systemctl restart rsyslog"
+      }
+    ],
+    "demo": [
+      {
+        "step": 1,
+        "what": "<strong>Non-interactive:</strong> <code>ssh host \"cmd\"</code> KHÔNG login &amp; KHÔNG interactive → không nạp file khởi động nào.",
+        "command": "ssh <USER>@<ADDR-1> 'shopt login_shell; echo \"flags=$-\"; echo \"PS1=${PS1:-unset}\"'",
+        "output": "login_shell    off\nflags=hBc\nPS1=unset",
+        "note": "Thiếu cờ <code>i</code> ⇒ <code>PROMPT_COMMAND</code> cmd-log <strong>không</strong> chạy ở kiểu gọi này."
+      },
+      {
+        "step": 2,
+        "what": "<strong>SSH login tương tác (có TTY) = login shell.</strong> Thứ tự file mở thật (strace <code>openat</code>) — chú ý <code>/etc/bash.bashrc</code> xuất hiện vì phiên interactive.",
+        "command": "strace -f -e trace=openat bash -il -c true 2>&1 | grep -E \"profile|bashrc\" | grep -v ENOENT",
+        "output": "openat(AT_FDCWD, \"/etc/profile\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/bash.bashrc\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/profile.d/01-locale-fix.sh\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/profile.d/apps-bin-path.sh\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/profile.d/bash_completion.sh\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/profile.d/gawk.sh\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/profile.d/Z97-byobu.sh\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/profile.d/Z99-cloudinit-warnings.sh\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/etc/profile.d/Z99-cloud-locale-test.sh\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/home/dattqh-nat/.profile\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/home/dattqh-nat/.bashrc\", O_RDONLY) = 3",
+        "note": "Cùng phiên: <code>login_shell on</code>, <code>$-</code> = <code>himBHc</code> (có <code>i</code>)."
+      },
+      {
+        "step": 3,
+        "what": "<strong>Interactive KHÔNG login</strong> (mở <code>bash</code> con / tmux / <code>su</code>) → chỉ 2 file, bỏ qua toàn bộ <code>/etc/profile*</code> và <code>~/.profile</code>.",
+        "command": "strace -f -e trace=openat bash -i -c true 2>&1 | grep -E \"profile|bashrc\" | grep -v ENOENT",
+        "output": "openat(AT_FDCWD, \"/etc/bash.bashrc\", O_RDONLY) = 3\nopenat(AT_FDCWD, \"/home/dattqh-nat/.bashrc\", O_RDONLY) = 3",
+        "note": "Đây là bản vá Debian/Ubuntu (SYS_BASHRC) — bash gốc không tự đọc <code>/etc/bash.bashrc</code>."
+      },
+      {
+        "step": 4,
+        "what": "<strong>Quy tắc \"file đầu tiên tồn tại\".</strong> Máy này không có <code>~/.bash_profile</code> lẫn <code>~/.bash_login</code> nên bash rơi xuống <code>~/.profile</code>.",
+        "command": "for f in ~/.bash_profile ~/.bash_login ~/.profile; do [ -e \"$f\" ] && echo \"EXISTS: $f\" || echo \"absent: $f\"; done",
+        "output": "absent: /home/dattqh-nat/.bash_profile\nabsent: /home/dattqh-nat/.bash_login\nEXISTS: /home/dattqh-nat/.profile"
+      },
+      {
+        "step": 5,
+        "what": "<strong>Cơ chế nền của cmd-log:</strong> phát thử 1 dòng JSON qua <code>logger</code> vào facility <code>local6</code> rồi đọc lại từ journald — chứng minh đường đi lệnh→syslog trước khi cài PROMPT_COMMAND.",
+        "command": "logger -t CMDLOGTEST -p local6.debug '{\"log_type\":\"cmdlog\",\"user\":\"dattqh-nat\",\"command\":\"echo demo\",\"return_value\":\"0\",\"client_ip\":\"probe\"}'\njournalctl -t CMDLOGTEST --no-pager -n 1 -o short-iso",
+        "output": "2026-07-02T03:15:26+00:00 dattqh-nat CMDLOGTEST[195351]: {\"log_type\": \"cmdlog\", \"user\": \"dattqh-nat\", \"command\": \"echo demo\", \"return_value\": \"0\", \"client_ip\": \"probe\"}",
+        "note": "Trên máy chưa cài, chưa có rule <code>local6</code> riêng nên dòng này rơi vào <code>/var/log/syslog</code>; bước 7 mới tách sang <code>/var/log/cmdlog.log</code>."
+      },
+      {
+        "step": 6,
+        "what": "<strong>Cạm bẫy — script Notion GỐC cho log SAI 2 chỗ trên Ubuntu 24.04.</strong> Khi bật <code>HISTTIMEFORMAT</code>, <code>history 1</code> in kèm ngày giờ nên <code>command</code> bị dính timestamp; và <code>who am i | awk '{print $5}'</code> lấy nhầm cột nên <code>client_ip</code> ra giờ.",
+        "command": "tail -n 1 /var/log/cmdlog.log",
+        "output": "...: {\"log_type\": \"cmdlog\", \"time_cli\": \"02/07/26 03:55:20\", \"user\": \"dattqh-nat\", \"shell_pid\": \"195696\", \"command\": \"02/07/26 03:55:20 echo ai-verify-cmdlog\", \"return_value\": \"0\", \"client_ip\": \"03:55\"}",
+        "note": "Output THẬT trên <ADDR-1> với script gốc — <code>command</code> dính <code>02/07/26 03:55:20</code>, <code>client_ip=03:55</code> (sai)."
+      },
+      {
+        "step": 7,
+        "what": "<strong>Sau khi sửa (bản dùng ở bước 8):</strong> lấy lệnh bằng <code>HISTTIMEFORMAT= history 1</code> (tắt timestamp cục bộ) và <code>client_ip</code> từ <code>${SSH_CLIENT%% *}</code> (biến sshd set sẵn) → log sạch và đúng.",
+        "command": "tail -n 1 /var/log/cmdlog.log",
+        "output": "...: {\"log_type\": \"cmdlog\", \"time_cli\": \"02/07/26 03:59:59\", \"user\": \"dattqh-nat\", \"shell_pid\": \"196053\", \"command\": \"echo fix-verify-OK\", \"return_value\": \"0\", \"client_ip\": \"<ADDR-3>\"}",
+        "note": "Output THẬT trên <ADDR-1> sau sửa — <code>command</code> sạch, <code>client_ip=<ADDR-3></code> (đúng IP client)."
+      }
+    ],
+    "references": [
+      {
+        "label": "Nguồn hướng dẫn — \"Log CMD\" (Notion)",
+        "url": "https://enchanting-trapezoid-339.notion.site/Log-CMD-2261958aaeb080348d21db7dd1437e63"
+      },
+      {
+        "label": "Bash Reference Manual — Invocation & Startup Files",
+        "url": "https://www.gnu.org/software/bash/manual/bash.html#Bash-Startup-Files"
+      },
+      {
+        "label": "man pam_env(8) — /etc/environment & pam_env.conf",
+        "url": "https://man7.org/linux/man-pages/man8/pam_env.8.html"
+      },
+      {
+        "label": "rsyslog — Configuration (facility/severity, actions)",
+        "url": "https://www.rsyslog.com/doc/configuration/index.html"
+      }
+    ]
+  }
+}

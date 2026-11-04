@@ -40,6 +40,7 @@ Tìm kiếm và dữ liệu mẫu khi dev (máy dev không có Docker):
 pnpm meili        # Meilisearch bản ghim ở 127.0.0.1:5322, dữ liệu trong .data/meili/data (Ctrl-C để dừng)
 pnpm seed         # 7 Space của board C09/C10 + tài liệu, rồi dựng chỉ mục nếu có MEILI_URL
 pnpm reindex      # dựng lại kb_public và kb_private từ database (khi chỉ mục lệch hoặc bị xoá)
+pnpm import:hoc-cloud  # nhập lab, bài tập, trang tuần của Học Cloud theo content/hoc-cloud/curation.json
 ```
 
 Lần đầu `pnpm meili` tải binary Meilisearch (khoảng 350 MB) vào `.data/meili/` và chỉ giữ khi sha256 khớp giá trị

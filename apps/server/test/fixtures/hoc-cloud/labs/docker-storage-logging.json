@@ -1,0 +1,513 @@
+{
+  "lab": {
+    "slug": "docker-storage-logging",
+    "module": "03-docker",
+    "title": "Docker · Phần 2 — Lưu trữ dữ liệu & Log tập trung",
+    "estimated_minutes": 50,
+    "content_hash": "5daedb789b9523f08c3f629f4849f15139066e6cab92ebdc619e3d780215726f",
+    "updated_at": 1785644766,
+    "tldr": [
+      {
+        "what": "Ba nơi container ghi dữ liệu",
+        "why": "Writable layer (mặc định, mất khi rm) · volume do Docker quản lý · bind mount trỏ vào thư mục host (<a href=\"https://docs.docker.com/engine/storage/\">Docker: storage</a>). Chọn sai chỗ ghi là nguyên nhân phổ biến nhất của mất dữ liệu khi vận hành container.",
+        "whyBreaks": "Để dữ liệu ở writable layer thì mọi lần thay thế container là mất sạch — mà thay container là việc diễn ra thường xuyên.",
+        "deploymentUse": "Quy ước từ đầu dự án: dữ liệu bền → volume; nội dung/cấu hình cấp từ host → bind mount; phần còn lại chấp nhận mất."
+      },
+      {
+        "what": "Volume: tạo, soi, gắn, dọn",
+        "why": "docker volume create/ls/inspect/rm/prune; inspect cho biết Mountpoint thật trên host (<a href=\"https://docs.docker.com/engine/storage/volumes/\">Docker: volumes</a>). Gắn bằng -v ten-volume:/duong-dan hoặc --mount source=...,target=...; volume tồn tại độc lập với container gắn nó.",
+        "whyBreaks": "Xoá container tưởng là dọn sạch, nhưng volume mồ côi vẫn chiếm chỗ và tích tụ dần trên host.",
+        "deploymentUse": "Đặt tên volume theo dịch vụ, kiểm kê định kỳ bằng docker system df trước khi dọn."
+      },
+      {
+        "what": "Bind mount & chế độ chỉ đọc",
+        "why": "-v /opt/html:/usr/share/nginx/html gắn thư mục host vào container; thêm :ro để container không ghi được (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>). Sửa file trên host có hiệu lực ngay trong container; xoá container không ảnh hưởng nội dung trên host.",
+        "whyBreaks": "Bind mount đè lên nội dung sẵn có của image tại điểm mount — mount nhầm thư mục rỗng làm dịch vụ mất toàn bộ file gốc.",
+        "deploymentUse": "Cấp nội dung tĩnh/cấu hình qua bind mount :ro; giữ đường dẫn host trong tài liệu triển khai vì nó phụ thuộc từng máy."
+      },
+      {
+        "what": "Ổ đĩa của Docker: /var/lib/docker & system df",
+        "why": "docker info cho biết Docker Root Dir (mặc định /var/lib/docker); docker system df thống kê dung lượng images/containers/volumes/build cache kèm cột RECLAIMABLE (<a href=\"https://docs.docker.com/reference/cli/docker/system/df/\">docker system df</a>, <a href=\"https://docs.docker.com/reference/cli/docker/system/info/\">docker info</a>).",
+        "whyBreaks": "Không theo dõi thì phân vùng đầy âm thầm, tới lúc phát hiện thì các container đã dừng hàng loạt.",
+        "deploymentUse": "Giám sát dung lượng phân vùng chứa Docker Root Dir; cân nhắc chuyển data-root sang phân vùng dữ liệu riêng."
+      },
+      {
+        "what": "Log driver & giới hạn kích thước",
+        "why": "Mặc định json-file lưu log tại /var/lib/docker/containers/&lt;id&gt;/&lt;id&gt;-json.log và không giới hạn dung lượng; đặt max-size/max-file trong daemon.json hoặc --log-opt lúc run (<a href=\"https://docs.docker.com/engine/logging/configure/\">Docker: configure logging</a>).",
+        "whyBreaks": "Log không giới hạn là con đường nhanh nhất làm đầy ổ và kéo sập mọi container trên host.",
+        "deploymentUse": "Chuẩn hoá log-opts trong daemon.json cho toàn bộ host ngay khi cài Docker, không đợi sự cố."
+      },
+      {
+        "what": "Thu log tập trung: Vector → VictoriaLogs",
+        "why": "Vector cài trên host Docker dùng source docker_logs đọc log mọi container không cần khai báo path, transform rồi đẩy về hệ thống log tập trung (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>, <a href=\"https://docs.victoriametrics.com/victorialogs/\">VictoriaLogs</a>). Bắt buộc chạy vector validate trước khi start: cấu hình sai thì tiến trình không khởi động.",
+        "whyBreaks": "Thiếu quyền đọc Docker (user không thuộc group docker) khiến agent chạy nhưng không thu được dòng log nào.",
+        "deploymentUse": "Mỗi host có Docker cài một agent; log tập trung một nơi để truy vấn theo tên container khi sự cố."
+      },
+      {
+        "what": "Dữ liệu dùng chung nhiều host (NFS/NAS)",
+        "why": "Khi nhiều host cùng cần một vùng dữ liệu, thư mục dùng chung qua NFS/NAS được mount vào host rồi bind mount tiếp vào container. Mô hình an toàn phổ biến là một tiến trình ghi, các tiến trình còn lại chỉ đọc.",
+        "whyBreaks": "Nhiều container cùng ghi một file trên network share dễ gây tranh chấp và hỏng dữ liệu.",
+        "deploymentUse": "Dùng cho nội dung tĩnh/tài liệu dùng chung; dữ liệu giao dịch nên để hệ quản trị dữ liệu chuyên dụng lo."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "Xác định Docker đang chiếm chỗ ở đâu",
+        "why": "docker info hiển thị Docker Root Dir — thư mục chứa toàn bộ image/container/volume/log (mặc định /var/lib/docker). du -sh cho con số thực tế, docker system df bóc tách theo hạng mục kèm phần có thể thu hồi (<a href=\"https://docs.docker.com/reference/cli/docker/system/df/\">docker system df</a>).",
+        "whyBreaks": "Không biết Docker chiếm chỗ ở đâu thì lúc ổ đầy sẽ đi dọn nhầm chỗ, trong khi container tiếp tục dừng.",
+        "observeWith": "docker info | grep -i \"root dir\" ; du -sh /var/lib/docker ; docker system df",
+        "code": "docker info\ndocker info --format \"{{.DockerRootDir}}\"\ndu -sh /var/lib/docker\ndocker system df\ndocker system df -v",
+        "failModes": [
+          {
+            "symptom": "Container dừng hàng loạt, lệnh docker báo lỗi ghi",
+            "evidence": "df -h cho thấy phân vùng chứa /var/lib/docker ở mức 100% Use%"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Xem hạng mục nào chiếm chỗ và phần thu hồi được",
+            "command": "docker system df -v"
+          },
+          {
+            "step": "Dọn image/container/build cache không dùng (đọc kỹ trước khi chạy)",
+            "command": "docker system prune"
+          }
+        ]
+      },
+      {
+        "step": 2,
+        "what": "Volume sống lâu hơn container tạo ra nó",
+        "why": "Tạo volume, ghi dữ liệu bằng một container dùng --rm (tự xoá khi chạy xong), rồi đọc lại bằng container thứ hai. Volume nằm ngoài vòng đời container nên nội dung còn nguyên (<a href=\"https://docs.docker.com/engine/storage/volumes/\">Docker: volumes</a>).",
+        "whyBreaks": "Nếu ghi vào đường dẫn không được mount, dữ liệu nằm ở writable layer và biến mất cùng container.",
+        "observeWith": "docker volume inspect lab-vol (xem Mountpoint) ; ls trong thư mục Mountpoint trên host",
+        "code": "docker volume create lab-vol\ndocker volume ls\ndocker volume inspect lab-vol\ndocker run --rm -v lab-vol:/data alpine sh -c \"date > /data/created; cat /data/created\"\ndocker ps -a\ndocker run --rm -v lab-vol:/data alpine cat /data/created\nls -l /var/lib/docker/volumes/lab-vol/_data",
+        "note": "Container thứ nhất đã tự xoá nhưng container thứ hai vẫn đọc được đúng nội dung nó ghi — bằng chứng volume độc lập vòng đời container."
+      },
+      {
+        "step": 3,
+        "what": "Bind mount: nội dung do host cấp",
+        "why": "Chuẩn bị thư mục nội dung trên host rồi gắn vào đúng thư mục web root của Nginx. Sửa file trên host có hiệu lực ngay ở lần tải trang kế tiếp, vì container đọc thẳng thư mục đó (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>).",
+        "whyBreaks": "Mount nhầm thư mục rỗng sẽ che toàn bộ nội dung gốc trong image, dịch vụ trả 403/404 dù container vẫn chạy.",
+        "observeWith": "curl http://localhost:8080 trước và sau khi sửa file trên host",
+        "code": "mkdir -p /opt/html\necho \"<h1>Trang do host cap</h1>\" > /opt/html/index.html\ndocker run -d --name lab-web2 -p 8080:80 -v /opt/html:/usr/share/nginx/html:ro nginx\ncurl -s http://localhost:8080\necho \"<h1>Noi dung da sua</h1>\" > /opt/html/index.html\ncurl -s http://localhost:8080",
+        "failModes": [
+          {
+            "symptom": "Trang trả 403 Forbidden dù container Up",
+            "evidence": "docker logs lab-web2 báo directory index of \"/usr/share/nginx/html/\" is forbidden"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Kiểm tra thư mục host có file index.html và quyền đọc",
+            "command": "ls -l /opt/html"
+          }
+        ]
+      },
+      {
+        "step": 4,
+        "what": "Chế độ chỉ đọc và điều gì còn lại sau khi xoá container",
+        "why": "Hậu tố :ro chặn ghi từ phía container trong khi host vẫn sửa được — đúng mô hình cấp nội dung tĩnh. Xoá container rồi kiểm tra lại thư mục host để thấy dữ liệu không đi theo container.",
+        "whyBreaks": "Không đặt :ro thì tiến trình bị chiếm quyền trong container có thể sửa thẳng dữ liệu trên host.",
+        "observeWith": "docker exec thử ghi (bị từ chối) ; ls /opt/html sau khi docker rm",
+        "code": "docker exec lab-web2 sh -c \"echo test > /usr/share/nginx/html/x.html\"\ndocker rm -f lab-web2\nls -l /opt/html\ncat /opt/html/index.html",
+        "failModes": [
+          {
+            "symptom": "Lệnh ghi trong container bị từ chối",
+            "evidence": "sh: can't create /usr/share/nginx/html/x.html: Read-only file system"
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "what": "Dọn volume và cái giá của việc dọn nhầm",
+        "why": "docker volume rm xoá volume chỉ định; docker volume prune xoá mọi volume không được container nào dùng. Không có bước hoàn tác (<a href=\"https://docs.docker.com/engine/manage-resources/pruning/\">Docker: pruning</a>).",
+        "whyBreaks": "Volume vừa mất tham chiếu vì container bị xoá tạm vẫn bị prune coi là không dùng và xoá mất dữ liệu.",
+        "observeWith": "docker volume ls trước/sau ; docker system df theo dõi mục LOCAL VOLUMES",
+        "code": "docker volume ls\ndocker volume rm lab-vol\ndocker volume ls -f dangling=true\ndocker volume prune\ndocker system df",
+        "fixSteps": [
+          {
+            "step": "Liệt kê volume mồ côi và đối chiếu trước khi dọn",
+            "command": "docker volume ls -f dangling=true"
+          }
+        ],
+        "note": "Môi trường CI/CD sinh volume liên tục và không tự dọn — cần lịch dọn có kiểm soát thay vì prune tuỳ hứng."
+      },
+      {
+        "step": 6,
+        "what": "Giới hạn log trước khi log giới hạn hệ thống",
+        "why": "Log driver json-file mặc định ghi không giới hạn. Đặt max-size/max-file ở daemon.json áp cho mọi container mới, hoặc --log-opt cho từng container (<a href=\"https://docs.docker.com/engine/logging/configure/\">Docker: configure logging</a>).",
+        "whyBreaks": "Một container nói nhiều đủ sức làm đầy phân vùng và kéo theo toàn bộ container khác trên host.",
+        "observeWith": "du -sh /var/lib/docker/containers/* | sort -h | tail",
+        "code": "du -sh /var/lib/docker/containers/* | sort -h | tail -5\ndocker run -d --name web-limited -p 8080:80 --log-opt max-size=10m --log-opt max-file=3 nginx\ndocker inspect --format \"{{.HostConfig.LogConfig}}\" web-limited",
+        "automateScript": {
+          "lang": "json",
+          "code": "{\n  \"log-driver\": \"json-file\",\n  \"log-opts\": {\n    \"max-size\": \"10m\",\n    \"max-file\": \"3\"\n  }\n}",
+          "note": "Đặt tại /etc/docker/daemon.json rồi restart Docker; áp dụng cho container tạo sau đó."
+        }
+      },
+      {
+        "step": 7,
+        "what": "Dựng hệ thống log tập trung bằng chính Docker",
+        "why": "VictoriaLogs chạy như một container thường: publish cổng giao diện/API và gắn volume cho phần dữ liệu để log không mất khi container được thay thế (<a href=\"https://docs.victoriametrics.com/victorialogs/\">VictoriaLogs</a>).",
+        "whyBreaks": "Quên gắn volume cho thư mục dữ liệu thì toàn bộ log đã thu bị xoá theo container.",
+        "observeWith": "docker ps ; truy cập giao diện tại cổng đã publish",
+        "code": "docker volume create victoria-logs-data\ndocker run -d --name victoria-logs --restart unless-stopped \\\n  -p 9428:9428 \\\n  -v victoria-logs-data:/victoria-logs-data \\\n  victoriametrics/victoria-logs:latest\ndocker ps\ncurl -s http://localhost:9428/health",
+        "note": "Bài học nối tiếp Phần 1: dịch vụ hạ tầng cũng chỉ là một container — nhưng phần dữ liệu của nó phải nằm trên volume."
+      },
+      {
+        "step": 8,
+        "what": "Vector đọc log mọi container và đẩy về một nơi",
+        "why": "Source docker_logs của Vector nhận log trực tiếp qua Docker, tự bắt cả container tạo sau, kèm nhãn tên/image để lọc (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>). vector validate kiểm tra cấu hình trước khi start — cấu hình sai thì dịch vụ không lên.",
+        "whyBreaks": "User chạy Vector không thuộc group docker thì agent lên nhưng không đọc được log nào, dễ tưởng nhầm là hệ thống log hỏng.",
+        "observeWith": "vector validate ; journalctl -u vector -f ; giao diện VictoriaLogs lọc theo tên container",
+        "code": "usermod -aG docker vector\nvector validate --config /etc/vector/vector.yaml\nsystemctl restart vector\nsystemctl status vector --no-pager\ndocker run -d --name lab-web3 -p 8081:80 nginx\nfor i in $(seq 1 50); do curl -s localhost:8081/req-$i >/dev/null; done",
+        "failModes": [
+          {
+            "symptom": "Vector khởi động thất bại ngay sau khi sửa cấu hình",
+            "evidence": "vector validate trả về lỗi tại đúng khối cấu hình sai, tiến trình không start"
+          },
+          {
+            "symptom": "Vector chạy nhưng không có log container nào về hệ thống tập trung",
+            "evidence": "log dịch vụ báo permission denied khi truy cập Docker socket"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Cấp quyền truy cập Docker cho user chạy agent rồi khởi động lại dịch vụ",
+            "command": "usermod -aG docker vector && systemctl restart vector"
+          },
+          {
+            "step": "Sửa cấu hình tới khi validate sạch mới start",
+            "command": "vector validate --config /etc/vector/vector.yaml"
+          }
+        ],
+        "automateScript": {
+          "lang": "yaml",
+          "code": "sources:\n  docker:\n    type: docker_logs\n\nsinks:\n  victoria:\n    type: elasticsearch\n    inputs: [docker]\n    endpoints: [\"http://127.0.0.1:9428/insert/elasticsearch/\"]\n    mode: bulk\n    api_version: v8\n    healthcheck:\n      enabled: false\n    query:\n      _msg_field: message\n      _time_field: timestamp\n      _stream_fields: container_name",
+          "note": "Khung cấu hình Vector tối thiểu; đổi endpoint sang IP của máy chạy VictoriaLogs khi hai dịch vụ khác host."
+        }
+      }
+    ],
+    "quiz": [
+      {
+        "q": "Container thứ nhất chạy với --rm ghi một file vào volume rồi tự xoá. Container thứ hai mount cùng volume đọc file đó, kết quả ra sao?",
+        "options": [
+          "Không đọc được vì container thứ nhất đã bị xoá",
+          "Đọc được đúng nội dung đã ghi",
+          "Volume tự xoá theo container đầu tiên gắn nó",
+          "Chỉ đọc được nếu hai container chạy đồng thời"
+        ],
+        "correct": 1,
+        "whyCorrect": "Volume nằm ngoài vòng đời container: nội dung ghi vào volume vẫn còn sau khi container tạo ra nó bị xoá, nên container thứ hai đọc lại được. Cờ --rm chỉ xoá container, không chạm tới volume — volume chỉ mất khi có lệnh rm/prune nhắm vào nó (<a href=\"https://docs.docker.com/engine/storage/volumes/\">Docker: volumes</a>)."
+      },
+      {
+        "q": "Sau khi xoá container gắn bind mount /opt/html, dữ liệu trong /opt/html ra sao?",
+        "options": [
+          "Bị xoá theo container",
+          "Còn nguyên trên host",
+          "Chuyển thành volume của Docker",
+          "Chỉ còn nếu mount ở chế độ :ro"
+        ],
+        "correct": 1,
+        "whyCorrect": "Bind mount chỉ ánh xạ một thư mục có sẵn của host vào container; xoá container gỡ ánh xạ, còn thư mục và nội dung thuộc về host nên không đổi. Hậu tố :ro chỉ quyết định container có được ghi hay không, không liên quan tới việc dữ liệu tồn tại sau khi container bị xoá (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>)."
+      },
+      {
+        "q": "Lệnh nào cho biết image, container, volume và build cache đang chiếm bao nhiêu dung lượng, phần nào thu hồi được?",
+        "options": [
+          "docker stats",
+          "docker system df",
+          "docker volume ls",
+          "docker info"
+        ],
+        "correct": 1,
+        "whyCorrect": "docker system df thống kê theo hạng mục kèm cột RECLAIMABLE; thêm -v để xem chi tiết từng image/volume. Khác với docker stats (đo CPU/RAM thời gian thực) và docker info (cấu hình tổng quan gồm Docker Root Dir, không bóc tách dung lượng) (<a href=\"https://docs.docker.com/reference/cli/docker/system/df/\">docker system df</a>)."
+      },
+      {
+        "q": "Log driver mặc định json-file có giới hạn dung lượng không?",
+        "options": [
+          "Có, mặc định 10MB",
+          "Không, phải tự đặt max-size/max-file",
+          "Có, tự xoá sau 7 ngày",
+          "Không ghi ra đĩa nên không cần giới hạn"
+        ],
+        "correct": 1,
+        "whyCorrect": "json-file ghi log ra đĩa và mặc định không giới hạn kích thước; phải khai báo max-size/max-file trong daemon.json hoặc --log-opt lúc chạy container. Ở mức driver mặc định không có cơ chế tự hết hạn theo ngày — log tồn tại tới khi container bị xoá hoặc file bị xoay vòng theo cấu hình (<a href=\"https://docs.docker.com/engine/logging/drivers/json-file/\">Docker: json-file driver</a>)."
+      },
+      {
+        "q": "Vì sao source docker_logs của Vector không cần khai báo đường dẫn log cho từng container?",
+        "options": [
+          "Vì nó đọc file trong /var/log của host",
+          "Vì nó lấy log trực tiếp qua Docker nên tự bắt cả container tạo sau",
+          "Vì mọi container ghi chung vào một file duy nhất",
+          "Vì nó chỉ thu log của container có nhãn đặc biệt"
+        ],
+        "correct": 1,
+        "whyCorrect": "Vector kết nối tới Docker và nhận luồng log kèm nhãn tên/ID/image, nên container tạo sau vẫn được thu mà không sửa cấu hình. Mỗi container có file log riêng theo ID, nên trỏ tay từng file là không khả thi khi container được tạo và xoá liên tục (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>)."
+      },
+      {
+        "q": "Agent thu log chạy được nhưng không có dòng log container nào về hệ thống tập trung. Nguyên nhân cần kiểm tra đầu tiên?",
+        "options": [
+          "Container chưa sinh log",
+          "User chạy agent không có quyền truy cập Docker (chưa thuộc group docker)",
+          "Hệ thống log tập trung chưa tạo index",
+          "Cổng 9428 chưa mở ra Internet"
+        ],
+        "correct": 1,
+        "whyCorrect": "Source docker_logs cần quyền nói chuyện với Docker; user không thuộc group docker sẽ bị từ chối truy cập và agent chạy nhưng thu về rỗng. Cổng ra Internet không liên quan khi agent và hệ thống log nằm cùng host, còn container có sinh log hay không thì kiểm chứng ngay bằng docker logs (<a href=\"https://vector.dev/docs/setup/installation/\">Vector: installation</a>)."
+      },
+      {
+        "q": "docker volume prune xoá những volume nào?",
+        "options": [
+          "Chỉ volume rỗng",
+          "Mọi volume không được container nào đang dùng",
+          "Mọi volume kể cả đang dùng",
+          "Chỉ volume tạo tự động không có tên"
+        ],
+        "correct": 1,
+        "whyCorrect": "prune quét theo tiêu chí \"không được tham chiếu\", không xét volume có dữ liệu hay không — nên volume vừa mất container gắn nó cũng bị xoá. Volume đang được container sử dụng thì được giữ lại; ngược lại volume có dữ liệu quan trọng nhưng đang rảnh vẫn mất (<a href=\"https://docs.docker.com/engine/manage-resources/pruning/\">Docker: pruning</a>)."
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "Ba nơi container ghi dữ liệu?",
+        "back": "Writable layer (mất khi rm) · volume do Docker quản lý · bind mount trỏ vào thư mục host.",
+        "why": "Chọn đúng nơi ghi quyết định dữ liệu sống hay mất khi thay container."
+      },
+      {
+        "front": "Volume có mất khi xoá container không?",
+        "back": "Không. Volume tồn tại độc lập; chỉ mất khi docker volume rm hoặc prune."
+      },
+      {
+        "front": "Mountpoint mặc định của volume?",
+        "back": "/var/lib/docker/volumes/<tên>/_data — xem chính xác bằng docker volume inspect."
+      },
+      {
+        "front": "Bind mount khác volume ở đâu?",
+        "back": "Bind mount gắn thẳng thư mục có sẵn của host (host sở hữu); volume nằm trong khu vực Docker quản lý và có lệnh vòng đời riêng."
+      },
+      {
+        "front": "Hậu tố :ro làm gì?",
+        "back": "Container chỉ đọc được điểm mount đó; host vẫn ghi bình thường."
+      },
+      {
+        "front": "docker system df dùng khi nào?",
+        "back": "Khi cần biết image/container/volume/build cache chiếm bao nhiêu và phần nào thu hồi được; thêm -v để xem chi tiết."
+      },
+      {
+        "front": "Log container mặc định nằm ở đâu?",
+        "back": "/var/lib/docker/containers/<id>/<id>-json.log, do log driver json-file ghi, mặc định không giới hạn dung lượng."
+      },
+      {
+        "front": "Cách chặn log làm đầy ổ?",
+        "back": "Đặt max-size/max-file trong /etc/docker/daemon.json hoặc --log-opt khi chạy container; cân nhắc tách data-root sang phân vùng riêng."
+      },
+      {
+        "front": "Vì sao dùng source docker_logs thay vì đọc file?",
+        "back": "Nó lấy log trực tiếp qua Docker nên tự bắt cả container tạo sau và có sẵn nhãn tên/image để lọc."
+      },
+      {
+        "front": "vector validate để làm gì?",
+        "back": "Kiểm tra cấu hình trước khi start; cấu hình chưa sạch thì dịch vụ không khởi động được."
+      },
+      {
+        "front": "Dữ liệu dùng chung nhiều host thì sao?",
+        "back": "Mount thư mục NFS/NAS vào host rồi bind mount vào container; mô hình an toàn là một nơi ghi, các nơi khác chỉ đọc."
+      }
+    ],
+    "try_at_home": [
+      {
+        "title": "Volume sống lâu hơn container",
+        "phaseType": "core",
+        "estimatedMinutes": 15,
+        "cmd": "docker volume create lab-vol",
+        "why": "Chứng minh volume độc lập vòng đời container: container thứ nhất tự xoá sau khi ghi, container thứ hai vẫn đọc lại được (<a href=\"https://docs.docker.com/engine/storage/volumes/\">Docker: volumes</a>).",
+        "observeWith": "docker volume inspect lab-vol ; ls trong Mountpoint trên host",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Tạo và soi volume: <code>docker volume create lab-vol</code>, <code>docker volume inspect lab-vol</code>.",
+            "expect": "Trường Mountpoint chỉ tới một thư mục dưới /var/lib/docker/volumes/lab-vol/_data."
+          },
+          {
+            "n": 2,
+            "do": "Ghi bằng container tự xoá: <code>docker run --rm -v lab-vol:/data alpine sh -c \"date &gt; /data/created; cat /data/created\"</code>, rồi <code>docker ps -a</code>.",
+            "expect": "Lệnh in ra thời điểm ghi; docker ps -a không còn container đó."
+          },
+          {
+            "n": 3,
+            "do": "Đọc lại bằng container khác: <code>docker run --rm -v lab-vol:/data alpine cat /data/created</code>.",
+            "expect": "In ra đúng nội dung container thứ nhất đã ghi."
+          }
+        ],
+        "analysis": {
+          "observation": "Container tạo ra dữ liệu đã biến mất nhưng dữ liệu vẫn đọc được.",
+          "mechanism": "Volume là vùng lưu trữ do Docker quản lý, gắn vào container lúc chạy chứ không thuộc về container.",
+          "lesson": "Mọi dữ liệu cần sống lâu hơn container phải nằm trên volume hoặc bind mount, không nằm ở writable layer."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Container thứ hai báo không tìm thấy file",
+            "fix": "Kiểm tra target mount có trùng đường dẫn đã ghi ở bước 2 không (cùng /data)."
+          }
+        ]
+      },
+      {
+        "title": "Bind mount và chế độ chỉ đọc",
+        "phaseType": "core",
+        "estimatedMinutes": 15,
+        "cmd": "docker run -d --name lab-web2 -p 8080:80 -v /opt/html:/usr/share/nginx/html:ro nginx",
+        "why": "Cấp nội dung web từ thư mục host, kiểm chứng sửa trên host có hiệu lực ngay và dữ liệu không đi theo container khi bị xoá (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>).",
+        "observeWith": "curl http://localhost:8080 trước/sau khi sửa ; ls /opt/html sau khi xoá container",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Chuẩn bị nội dung: <code>mkdir -p /opt/html</code> rồi tạo <code>/opt/html/index.html</code> với một dòng tiêu đề.",
+            "expect": "Thư mục /opt/html có file index.html."
+          },
+          {
+            "n": 2,
+            "do": "Chạy Nginx với bind mount chỉ đọc, rồi <code>curl -s http://localhost:8080</code>.",
+            "expect": "Trang trả về đúng nội dung file trên host."
+          },
+          {
+            "n": 3,
+            "do": "Sửa lại file trên host rồi curl lần nữa.",
+            "expect": "Nội dung mới hiển thị ngay, không cần khởi động lại container."
+          },
+          {
+            "n": 4,
+            "do": "Thử ghi từ trong container: <code>docker exec lab-web2 sh -c \"echo test &gt; /usr/share/nginx/html/x.html\"</code>.",
+            "expect": "Bị từ chối với thông báo Read-only file system."
+          },
+          {
+            "n": 5,
+            "do": "Xoá container: <code>docker rm -f lab-web2</code> rồi <code>ls -l /opt/html</code>.",
+            "expect": "File trên host còn nguyên."
+          }
+        ],
+        "analysis": {
+          "observation": "Nội dung đổi tức thì khi sửa trên host; container không ghi được; xoá container không mất file.",
+          "mechanism": "Bind mount ánh xạ trực tiếp thư mục host vào container, quyền ghi do hậu tố :ro quyết định.",
+          "lesson": "Bind mount hợp cho nội dung/cấu hình do host cấp; :ro giới hạn thiệt hại nếu tiến trình trong container bị chiếm quyền."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Trang trả 403 Forbidden",
+            "fix": "Thư mục mount thiếu index.html hoặc sai quyền đọc — kiểm tra ls -l /opt/html."
+          },
+          {
+            "symptom": "Cổng 8080 đang bận",
+            "fix": "Xoá container cũ đang chiếm cổng (docker ps rồi docker rm -f) hoặc đổi sang cổng khác."
+          }
+        ]
+      },
+      {
+        "title": "Kiểm kê dung lượng và giới hạn log",
+        "phaseType": "core",
+        "estimatedMinutes": 15,
+        "cmd": "docker system df -v",
+        "why": "Nắm Docker đang chiếm chỗ ở đâu và chặn nguy cơ log làm đầy ổ trước khi sự cố xảy ra (<a href=\"https://docs.docker.com/reference/cli/docker/system/df/\">docker system df</a>, <a href=\"https://docs.docker.com/engine/logging/configure/\">Docker: configure logging</a>).",
+        "observeWith": "du -sh /var/lib/docker ; docker inspect --format \"{{.HostConfig.LogConfig}}\" <container>",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Đo tổng dung lượng: <code>du -sh /var/lib/docker</code> và <code>docker system df</code>.",
+            "expect": "Thấy tổng dung lượng và bảng phân theo IMAGES/CONTAINERS/LOCAL VOLUMES/BUILD CACHE."
+          },
+          {
+            "n": 2,
+            "do": "Tìm container tốn log nhất: <code>du -sh /var/lib/docker/containers/* | sort -h | tail -5</code>.",
+            "expect": "Danh sách 5 thư mục container chiếm nhiều chỗ nhất."
+          },
+          {
+            "n": 3,
+            "do": "Chạy container có giới hạn log: thêm <code>--log-opt max-size=10m --log-opt max-file=3</code> rồi kiểm tra bằng <code>docker inspect --format \"{{.HostConfig.LogConfig}}\"</code>.",
+            "expect": "Cấu hình log hiển thị đúng max-size và max-file vừa đặt."
+          }
+        ],
+        "analysis": {
+          "observation": "Phần lớn dung lượng thường nằm ở image và log container.",
+          "mechanism": "json-file ghi liên tục không giới hạn; mỗi container có thư mục log riêng theo ID.",
+          "lesson": "Đặt log-opts mặc định trong daemon.json ngay khi cài Docker, thay vì xử lý sau khi ổ đầy."
+        }
+      },
+      {
+        "title": "Thu log tập trung bằng Vector và VictoriaLogs",
+        "phaseType": "optional",
+        "estimatedMinutes": 25,
+        "cmd": "docker run -d --name victoria-logs -p 9428:9428 -v victoria-logs-data:/victoria-logs-data victoriametrics/victoria-logs:latest",
+        "why": "Dựng hệ thống log tập trung ngay trên host Docker rồi cho agent đọc log mọi container — mô hình dùng được khi số container tăng lên hàng chục (<a href=\"https://docs.victoriametrics.com/victorialogs/\">VictoriaLogs</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>).",
+        "observeWith": "Giao diện tại cổng 9428, lọc theo tên container ; journalctl -u vector -f",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Chạy VictoriaLogs kèm volume dữ liệu, kiểm tra bằng <code>docker ps</code> và <code>curl -s http://localhost:9428/health</code>.",
+            "expect": "Container Up và endpoint sức khoẻ phản hồi."
+          },
+          {
+            "n": 2,
+            "do": "Cài Vector theo tài liệu chính thức, viết cấu hình với source <code>docker_logs</code> và sink trỏ về VictoriaLogs, rồi <code>vector validate</code>.",
+            "expect": "Validate báo cấu hình hợp lệ; nếu lỗi thì sửa tới khi sạch mới sang bước sau."
+          },
+          {
+            "n": 3,
+            "do": "Cấp quyền và khởi động: <code>usermod -aG docker vector</code>, <code>systemctl restart vector</code>, <code>systemctl status vector</code>.",
+            "expect": "Dịch vụ active (running), không còn lỗi quyền truy cập Docker."
+          },
+          {
+            "n": 4,
+            "do": "Sinh log: chạy thêm một container Nginx ở cổng 8081 rồi gửi 50 request tới nó.",
+            "expect": "Trên giao diện log tập trung lọc theo tên container thấy các dòng truy cập vừa tạo."
+          }
+        ],
+        "analysis": {
+          "observation": "Log của container mới xuất hiện mà không phải sửa cấu hình agent.",
+          "mechanism": "Agent nhận luồng log trực tiếp qua Docker kèm nhãn tên/image, nên container tạo sau vẫn được thu.",
+          "lesson": "Mỗi host chạy Docker cần một agent; đổi lại là truy vấn log tập trung theo tên container khi sự cố."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Dịch vụ agent không start sau khi sửa cấu hình",
+            "fix": "Chạy vector validate để lấy vị trí lỗi chính xác; cấu hình chưa hợp lệ thì tiến trình không lên."
+          },
+          {
+            "symptom": "Agent chạy nhưng không có log container",
+            "fix": "Kiểm tra user chạy agent đã thuộc group docker chưa, rồi khởi động lại dịch vụ."
+          }
+        ]
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Xoá container là xoá luôn dữ liệu của ứng dụng chạy trong đó.",
+        "right": "Chỉ dữ liệu nằm ở writable layer mới mất theo container. Dữ liệu đặt trong volume hoặc bind mount vẫn còn nguyên sau khi container bị xoá.",
+        "why": "Container ghi mặc định vào writable layer — lớp mỏng gắn với chính container đó, bị xoá cùng lệnh rm (<a href=\"https://docs.docker.com/engine/storage/\">Docker: storage</a>). Demo buổi học chứng minh ngược lại cho volume: container thứ nhất chạy với --rm ghi một file vào volume rồi tự xoá; container thứ hai mount đúng volume đó vẫn đọc lại được nội dung file. Hệ quả: mọi thứ cần sống lâu hơn container (database, upload, cấu hình sinh lúc chạy) phải được đặt vào volume hoặc bind mount ngay từ khi thiết kế, không phải sửa chữa sau khi mất dữ liệu."
+      },
+      {
+        "wrong": "docker volume prune chỉ dọn rác, chạy lúc nào cũng an toàn.",
+        "right": "prune xoá vĩnh viễn các volume không được container nào dùng — kể cả volume chứa dữ liệu quan trọng của container vừa bị xoá tạm.",
+        "why": "docker volume prune xoá mọi volume đang ở trạng thái không được tham chiếu, không có bước khôi phục (<a href=\"https://docs.docker.com/engine/manage-resources/pruning/\">Docker: pruning</a>). Một volume vừa mất tham chiếu vì container gắn nó bị rm — dữ liệu vẫn nguyên vẹn nhưng theo tiêu chí của prune thì nó là \"không dùng\". Kinh nghiệm nêu trong buổi học: môi trường CI runner sinh volume liên tục và không tự dọn, nên thao tác dọn thủ công dễ quét nhầm sang volume có dữ liệu thật. Hệ quả: xem trước bằng docker volume ls và docker system df, đặt tên volume theo dịch vụ để nhận diện, và sao lưu trước khi dọn ở môi trường thật."
+      },
+      {
+        "wrong": "Log container không đáng lo vì nó chỉ là vài dòng text.",
+        "right": "Log là thành phần phình nhanh nhất trên host chạy Docker; log không giới hạn có thể lấp đầy phân vùng và làm dừng toàn bộ container trên máy.",
+        "why": "Log driver mặc định json-file ghi liên tục vào /var/lib/docker/containers/&lt;id&gt;/&lt;id&gt;-json.log và mặc định KHÔNG giới hạn kích thước (<a href=\"https://docs.docker.com/engine/logging/drivers/json-file/\">Docker: json-file driver</a>). Một dịch vụ có lưu lượng bình thường sinh hàng chục nghìn dòng mỗi giờ; nhân với số container trên một host thì phân vùng chứa /var/lib/docker đầy rất nhanh — khi ổ đầy, daemon và các container đang chạy đều gặp lỗi ghi. Hệ quả: đặt max-size/max-file cho log driver trong daemon.json hoặc theo từng container, và cân nhắc tách /var/lib/docker sang phân vùng riêng để sự cố log không kéo theo cả hệ điều hành."
+      },
+      {
+        "wrong": "Bind mount và volume chỉ là hai cách viết khác nhau của cùng một thứ.",
+        "right": "Volume do Docker tạo và quản lý trong khu vực riêng; bind mount gắn thẳng một đường dẫn có sẵn trên host vào container. Khác nhau về quyền sở hữu, tính di động và rủi ro.",
+        "why": "Volume nằm dưới quyền quản lý của Docker (mountpoint mặc định trong /var/lib/docker/volumes/), có lệnh vòng đời riêng và di chuyển được giữa các host bằng công cụ hỗ trợ (<a href=\"https://docs.docker.com/engine/storage/volumes/\">Docker: volumes</a>). Bind mount ánh xạ trực tiếp một thư mục host, nội dung do hệ điều hành host sở hữu (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>). Bind mount cho phép sửa file trên host và thấy hiệu lực ngay trong container — rất tiện khi phát triển hoặc đưa nội dung tĩnh vào web server; đổi lại nó phụ thuộc cấu trúc thư mục của đúng máy đó và có thể ghi đè nội dung sẵn có trong image tại điểm mount. Hệ quả: dùng volume cho dữ liệu do ứng dụng sinh ra, dùng bind mount khi cần chia sẻ đúng một thư mục cụ thể của host, và thêm :ro khi container chỉ cần đọc."
+      },
+      {
+        "wrong": "Muốn thu log của 100 container thì phải cấu hình đường dẫn log cho từng container.",
+        "right": "Agent thu log đọc trực tiếp qua Docker (source docker_logs) và tự bắt được mọi container hiện có lẫn container tạo sau — không cần khai báo từng cái.",
+        "why": "Vector với source docker_logs kết nối tới Docker daemon và nhận luồng log của các container đang chạy, kèm nhãn tên/ID/image để lọc về sau (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs source</a>). Cơ chế này thay cho việc trỏ tới từng file json-file, vốn không khả thi khi container được tạo/xoá liên tục và ID thay đổi mỗi lần. Điều kiện tiên quyết là tiến trình agent phải có quyền truy cập Docker — trên Linux nghĩa là user chạy agent thuộc group docker. Hệ quả: mô hình thu log cho host Docker là cài một agent trên mỗi host, đẩy về một hệ thống log tập trung; đổi lại phải chấp nhận cài agent trên mọi máy có Docker."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "DockerStorageLab"
+    }
+  }
+}

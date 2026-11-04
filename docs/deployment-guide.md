@@ -70,6 +70,7 @@ chép thành file env của `apps/server`.
 | `ADMIN_SUBS` | `sub` IdP của các quản trị, cách nhau bằng dấu phẩy (không có đường tự nâng quyền) |
 | `MEILI_URL` | `http://127.0.0.1:5322` |
 | `MEILI_MASTER_KEY` | khoá ngẫu nhiên sinh trên server (≥ 16 ký tự, nên `openssl rand -hex 32`); container `kb-meili` đọc cùng dòng này |
+| `HOC_CLOUD_URL` | không cần đặt: lệnh nhập Học Cloud mặc định đọc `https://hoc-cloud.inetdev.io.vn` (API công khai) |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
 
@@ -117,6 +118,25 @@ Lệnh dựng vào chỉ mục `*_rebuild` rồi đổi chỗ một bước, nê
 có thể không đọc được ở bản mới), chạy lại lệnh `docker run` ở trên, rồi dựng lại chỉ mục.
 
 **RAM:** `docker stats --no-stream kb-meili` (trần 512 MB).
+
+## Nhập nội dung Học Cloud
+
+Lệnh nhập đọc API công khai của Học Cloud (lab, bài tập) và `content/` đi kèm bản release (trang học hàng tuần đã chỉnh,
+bản dịch EN, `content/summaries.json`, cách xếp Space và Collection trong `content/hoc-cloud/curation.json`), ghi qua
+tầng dữ liệu trong một transaction, rồi đẩy các bài đổi sang Meilisearch. Bài nhập vào là "Chính thức", đã duyệt, tác
+giả là tài khoản hệ thống `system:hoc-cloud` (không đăng nhập được). Địa chỉ máy chủ trong bài gốc được thay bằng
+`<ADDR-n>` trước khi ghi. Chạy lại an toàn: bài không đổi thì không ghi, bài đổi (nguồn hay curation) thêm đúng một phiên
+bản; API trả sai định dạng thì dừng trước khi ghi gì.
+
+```sh
+# trên server, sau khi sao lưu database kb
+ssh <alias> 'systemd-run --uid=kb --gid=kb -p EnvironmentFile=/etc/kb/production.env --pipe --wait \
+  /opt/node22/bin/node /var/www/kb/current/apps/server/dist/server/import-hoc-cloud.mjs'
+```
+
+Kết quả in số lab, bài tập, trang tuần, bản dịch đã đọc, số bài tạo, cập nhật, giữ nguyên, và cảnh báo (bài mới trên Học
+Cloud chưa có trong curation, bản dịch cũ hơn bản gốc). Máy dev: `pnpm import:hoc-cloud` (PGlite dev hoặc
+`DATABASE_URL`, cùng `MEILI_*` nếu có).
 
 ## Lần đầu (đã làm 04/11/2026)
 

@@ -1,0 +1,276 @@
+{
+  "lab": {
+    "slug": "cloud-nist-model",
+    "module": "cloud-fundamentals",
+    "title": "Bản chất Cloud — mô hình NIST 5-3-4",
+    "estimated_minutes": 40,
+    "content_hash": "086249268c4517775cb29d0729fea76b4840f9d31acc19299aad7709c5e93c4c",
+    "updated_at": 1783831754,
+    "tldr": [
+      {
+        "what": "Định nghĩa Cloud (NIST SP 800-145)",
+        "why": "Cloud computing là mô hình cho phép truy cập mạng theo nhu cầu, thuận tiện, tới một pool tài nguyên tính toán cấu hình được — mạng, máy chủ, lưu trữ, ứng dụng, dịch vụ (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Pool này cấp phát và thu hồi nhanh với nỗ lực quản lý hoặc tương tác với nhà cung cấp ở mức tối thiểu. Định nghĩa gồm 3 phần: 5 đặc điểm cốt lõi, 3 service model, 4 deployment model. Định nghĩa này là chuẩn tham chiếu để đánh giá một dịch vụ có thật sự là cloud hay chỉ là hosting/ảo hoá truyền thống.",
+        "whyBreaks": "Bỏ tiêu chí \"shared pool\" và \"minimal management effort\" thì mô hình rơi về hosting truyền thống, mất khả năng multi-tenant và tự động hoá.",
+        "deploymentUse": "Dùng bộ 5-3-4 làm checklist khi đánh giá hồ sơ năng lực của một nhà cung cấp cloud."
+      },
+      {
+        "what": "5 đặc điểm — điều kiện đủ",
+        "why": "Năm đặc điểm: on-demand self-service, broad network access, resource pooling, rapid elasticity, measured service (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Đây là quan hệ AND: một dịch vụ phải có đủ cả năm mới xem là cloud. Measured service cung cấp cơ chế đo để tính phí theo mức dùng; rapid elasticity cho co giãn nhanh; resource pooling cho multi-tenant. Hiểu năm đặc điểm giúp chỉ ra chính xác một dịch vụ còn thiếu tiêu chí nào để cải thiện hoặc để phản biện tuyên bố tiếp thị.",
+        "whyBreaks": "Chỉ đạt 3-4/5 đặc điểm (ví dụ thiếu measured service) thì chưa đủ điều kiện gọi là cloud theo chuẩn.",
+        "deploymentUse": "Chấm điểm từng đặc điểm khi thẩm định dịch vụ nội bộ trước khi tuyên bố \"đã lên cloud\"."
+      },
+      {
+        "what": "IaaS — ranh giới hạ tầng",
+        "why": "Infrastructure as a Service: nhà cung cấp quản mạng, lưu trữ, máy chủ và lớp ảo hoá; khách kiểm soát hệ điều hành, lưu trữ triển khai, ứng dụng, và một phần cấu hình mạng (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §3</a>). Ranh giới trách nhiệm nằm ở lớp ảo hoá: mọi thứ từ hệ điều hành trở lên do khách tự vận hành, vá lỗi, cấu hình. Mô hình shared responsibility của vendor minh hoạ rõ đường cắt này (<a href=\"https://www.redhat.com/en/topics/cloud-computing/iaas-vs-paas-vs-saas\">Red Hat: IaaS/PaaS/SaaS</a>). Xác định đúng ranh giới quyết định ai chịu trách nhiệm vá OS, cấu hình firewall, và xử lý sự cố khi có lỗi ở từng lớp.",
+        "whyBreaks": "Nhầm tưởng nhà cung cấp lo cả OS trong IaaS dẫn tới OS không được vá, tạo lỗ hổng do khách bỏ sót trách nhiệm.",
+        "deploymentUse": "Lập ma trận shared responsibility trước khi ký hợp đồng IaaS để chốt ai vá lớp nào."
+      },
+      {
+        "what": "PaaS / SaaS — dịch lên",
+        "why": "PaaS: nhà cung cấp lo tới runtime/middleware/OS, khách chỉ triển khai ứng dụng và dữ liệu. SaaS: nhà cung cấp lo toàn bộ stack, khách dùng ứng dụng qua giao diện (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §3</a>). Càng dịch lên, khách càng ít việc vận hành hạ tầng nhưng càng ít quyền kiểm soát lớp dưới. Điều kiện \"as a Service\" ở cả ba model là tài nguyên phải nằm trong pool dùng chung (multi-tenant), không phải mỗi khách một bản cài riêng. Chọn đúng model theo mức kiểm soát cần thiết: cần tuỳ biến OS thì IaaS; chỉ cần chạy code thì PaaS; chỉ cần dùng tính năng thì SaaS.",
+        "whyBreaks": "Chọn SaaS khi cần tuỳ biến sâu ở tầng OS/runtime dẫn tới bế tắc vì không có quyền truy cập lớp dưới.",
+        "deploymentUse": "Ghi rõ mức kiểm soát yêu cầu (OS? runtime? chỉ tính năng?) để chọn service model phù hợp."
+      },
+      {
+        "what": "Resource pooling & measured service",
+        "why": "Resource pooling gộp tài nguyên phục vụ nhiều khách theo multi-tenant; measured service đo và tối ưu mức dùng bằng cơ chế đo phù hợp tầng dịch vụ (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Hai đặc điểm này là nền cho mô hình kinh doanh cloud: pool cho phép dùng chung phần cứng ở tỉ lệ cao, đo lường cho phép tính phí theo lượng dùng thực (băng thông, dung lượng, số API call) thay vì phí cố định. Hiểu cơ chế đo giúp dự toán chi phí và phát hiện khi vượt quota — phần vượt thường bị tính thêm theo đơn giá.",
+        "whyBreaks": "Đặt tài nguyên biến thiên cao lên hạ tầng đo lường sai đơn vị dẫn tới hoá đơn lệch và khó truy nguyên chi phí.",
+        "deploymentUse": "Bật cảnh báo ngưỡng chi phí (budget alert) dựa trên các đơn vị đo mà dịch vụ tính phí."
+      },
+      {
+        "what": "4 deployment model",
+        "why": "Private (một tổ chức dùng riêng), community (nhóm tổ chức chung mối quan tâm), public (mở cho công chúng), hybrid (kết hợp ≥2 hạ tầng trên) (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §4</a>). Phân loại theo góc nhìn hạ tầng: ai sở hữu, ai dùng, mức cô lập tài nguyên. Public là multi-tenant trên hạ tầng dùng chung; private dành tài nguyên riêng; hybrid ràng buộc các hạ tầng bằng công nghệ chuẩn hoá cho portability. Chọn deployment model theo yêu cầu tuân thủ (dữ liệu phải ở đâu), mức cô lập cần thiết, và ràng buộc pháp lý về biên giới dữ liệu.",
+        "whyBreaks": "Đưa dữ liệu bị ràng buộc pháp lý lên public cloud xuyên biên giới có thể vi phạm quy định lưu trú dữ liệu.",
+        "deploymentUse": "Đối chiếu yêu cầu lưu trú dữ liệu và tuân thủ trước khi chọn public/private/hybrid."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "Định nghĩa Cloud và pool tài nguyên",
+        "why": "Cloud là mô hình truy cập theo nhu cầu tới pool tài nguyên cấu hình được, cấp/thu hồi nhanh với nỗ lực quản lý tối thiểu (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Điểm cốt lõi là \"pool dùng chung\": phần cứng gộp lại, cấp cho khách dưới dạng tài nguyên logic (VM, dung lượng, băng thông) thay vì gán cứng máy vật lý. Đây là nền để xây tất cả đặc điểm và mô hình phía sau.",
+        "whyBreaks": "Không có pool dùng chung thì không có multi-tenant, mất luôn khả năng co giãn và đo lường ở quy mô.",
+        "observeWith": "So sánh cách cấp tài nguyên: gán cứng máy vật lý (truyền thống) vs cấp từ pool (cloud)."
+      },
+      {
+        "step": 2,
+        "what": "5 đặc điểm là điều kiện AND",
+        "why": "On-demand self-service, broad network access, resource pooling, rapid elasticity, measured service — phải đủ cả năm (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Thiếu một đặc điểm là chưa phải cloud: ví dụ có pool và mạng rộng nhưng cấp thủ công qua ticket thì thiếu on-demand self-service; tính phí trọn gói thì thiếu measured service. Chấm điểm từng đặc điểm là cách khách quan để phản biện tuyên bố \"đã có cloud\".",
+        "whyBreaks": "Coi 3-4/5 đặc điểm là \"đủ\" dẫn tới đánh giá sai năng lực nền tảng và kỳ vọng lệch khi vận hành.",
+        "observeWith": "Lập bảng 5 hàng, đánh dấu đạt/chưa đạt cho một dịch vụ cụ thể."
+      },
+      {
+        "step": 3,
+        "what": "IaaS — ranh giới ở lớp ảo hoá",
+        "why": "IaaS: nhà cung cấp lo mạng/lưu trữ/máy chủ/ảo hoá; khách lo từ hệ điều hành trở lên (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §3</a>). Trong một triển khai OpenStack, các thành phần lo hạ tầng gồm Nova (compute/VM), Neutron (network), Cinder (block storage) — khách nhận VM rồi tự cài OS, ứng dụng lên trên. Ranh giới này xác định ai vá OS, ai cấu hình firewall trong VM.",
+        "whyBreaks": "Bỏ trách nhiệm vá OS vì tưởng nhà cung cấp lo dẫn tới VM tồn lỗ hổng đã có bản vá.",
+        "observeWith": "openstack service list  # liệt kê các dịch vụ hạ tầng (compute, network, image…)",
+        "code": "openstack service list\nopenstack server list   # các VM đang chạy (Nova)"
+      },
+      {
+        "step": 4,
+        "what": "PaaS / SaaS — trách nhiệm dịch lên",
+        "why": "PaaS lo tới runtime; SaaS lo toàn bộ, khách chỉ dùng qua giao diện (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §3</a>). Mô hình shared responsibility của vendor minh hoạ đường cắt trượt dần lên khi chuyển IaaS→PaaS→SaaS (<a href=\"https://learn.microsoft.com/azure/security/fundamentals/shared-responsibility\">Microsoft: shared responsibility</a>). Càng lên cao, khách càng ít việc vận hành nhưng càng ít quyền tuỳ biến lớp dưới.",
+        "whyBreaks": "Chọn SaaS khi cần can thiệp OS/runtime dẫn tới không thực hiện được yêu cầu tuỳ biến.",
+        "observeWith": "Đối chiếu tài liệu dịch vụ: khách được cấu hình tới lớp nào (OS? runtime? chỉ tính năng?)."
+      },
+      {
+        "step": 5,
+        "what": "Điều kiện \"as a Service\" thật = shared multi-tenant pool",
+        "why": "Cả ba service model đều dựa trên resource pooling multi-tenant (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Đóng gói mỗi khách một VM riêng chạy cùng phần mềm là đơn-tenant, không phải \"as a Service\" thật: thiếu pool dùng chung, thiếu co giãn và đo lường ở tầng nền tảng. Để nâng lên PaaS/SaaS, kiến trúc phải chuyển sang pool dùng chung có cô lập logic giữa tenant.",
+        "whyBreaks": "Gọi mô hình mỗi khách một VM là PaaS/SaaS gây kỳ vọng sai về co giãn và tính phí theo mức dùng.",
+        "observeWith": "Kiểm tra: nhiều khách có dùng chung một pool tài nguyên với cô lập logic không?"
+      },
+      {
+        "step": 6,
+        "what": "4 deployment model + OpenStack hiện thực hoá nguồn mở",
+        "why": "Private/community/public/hybrid phân loại theo góc nhìn hạ tầng (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §4</a>). OpenStack là bộ phần mềm nguồn mở để dựng hạ tầng cloud (IaaS): Nova (compute), Neutron (network), Swift (object storage), Keystone (identity) — mỗi thành phần là một dự án riêng (<a href=\"https://www.openstack.org/software/\">OpenStack software</a>). Một tổ chức có thể dùng OpenStack dựng private cloud, hoặc nhà cung cấp dùng nó làm public cloud.",
+        "whyBreaks": "Nhầm deployment model (view hạ tầng) với service model (view mức trừu tượng) dẫn tới mô tả kiến trúc sai.",
+        "observeWith": "openstack endpoint list  # các endpoint dịch vụ của một triển khai OpenStack",
+        "code": "openstack endpoint list\nopenstack catalog list   # Keystone service catalog"
+      }
+    ],
+    "quiz": [
+      {
+        "q": "Theo NIST SP 800-145, có bao nhiêu đặc điểm cốt lõi (essential characteristics) của cloud?",
+        "options": [
+          "3",
+          "4",
+          "5",
+          "7"
+        ],
+        "correct": 2,
+        "whyCorrect": "NIST SP 800-145 định nghĩa đúng 5 đặc điểm: on-demand self-service, broad network access, resource pooling, rapid elasticity, measured service (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Con số 3 là service model, 4 là deployment model."
+      },
+      {
+        "q": "Đặc điểm nào cho phép tính phí theo lượng dùng thực (băng thông, dung lượng, số API call)?",
+        "options": [
+          "Rapid elasticity",
+          "Measured service",
+          "Resource pooling",
+          "Broad network access"
+        ],
+        "correct": 1,
+        "whyCorrect": "Measured service cung cấp cơ chế đo và báo cáo mức dùng, làm cơ sở tính phí theo lượng dùng (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Rapid elasticity là co giãn; resource pooling là gộp tài nguyên."
+      },
+      {
+        "q": "Trong IaaS, lớp thấp nhất mà khách hàng tự quản lý là gì?",
+        "options": [
+          "Networking",
+          "Virtualization",
+          "Operating System",
+          "Application"
+        ],
+        "correct": 2,
+        "whyCorrect": "IaaS: nhà cung cấp lo tới lớp ảo hoá (virtualization); khách quản từ hệ điều hành (OS) trở lên (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §3</a>, <a href=\"https://www.redhat.com/en/topics/cloud-computing/iaas-vs-paas-vs-saas\">Red Hat</a>)."
+      },
+      {
+        "q": "Một hạ tầng cloud mở cho công chúng, nhiều khách hàng độc lập dùng chung, thuộc deployment model nào?",
+        "options": [
+          "Private cloud",
+          "Community cloud",
+          "Public cloud",
+          "Hybrid cloud"
+        ],
+        "correct": 2,
+        "whyCorrect": "Public cloud là hạ tầng cấp cho công chúng dùng, multi-tenant trên hạ tầng dùng chung (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §4</a>). Private dành riêng một tổ chức; community cho một nhóm tổ chức."
+      },
+      {
+        "q": "Trong OpenStack, thành phần nào lo compute (tạo và quản lý máy ảo)?",
+        "options": [
+          "Neutron",
+          "Swift",
+          "Nova",
+          "Keystone"
+        ],
+        "correct": 2,
+        "whyCorrect": "Nova là dịch vụ compute (quản lý vòng đời VM). Neutron lo network, Swift lo object storage, Keystone lo identity (<a href=\"https://www.openstack.org/software/\">OpenStack software</a>)."
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "5 đặc điểm cốt lõi của cloud (NIST SP 800-145)?",
+        "back": "On-demand self-service · Broad network access · Resource pooling · Rapid elasticity · Measured service."
+      },
+      {
+        "front": "3 service model?",
+        "back": "IaaS (hạ tầng) · PaaS (nền tảng) · SaaS (phần mềm)."
+      },
+      {
+        "front": "4 deployment model?",
+        "back": "Private · Community · Public · Hybrid."
+      },
+      {
+        "front": "Resource pooling nghĩa là gì?",
+        "back": "Gộp tài nguyên nhà cung cấp phục vụ nhiều khách theo multi-tenant, cấp/thu hồi động — nền cho co giãn và đo lường ở quy mô."
+      },
+      {
+        "front": "Measured service dùng để làm gì?",
+        "back": "Đo và báo cáo mức dùng theo đơn vị phù hợp tầng dịch vụ, làm cơ sở tính phí theo lượng dùng thực."
+      },
+      {
+        "front": "Ranh giới trách nhiệm trong IaaS?",
+        "back": "Nhà cung cấp lo mạng/lưu trữ/máy chủ/ảo hoá; khách lo từ hệ điều hành trở lên."
+      },
+      {
+        "front": "Vì sao \"mỗi khách một VM\" chưa phải PaaS/SaaS?",
+        "back": "Đó là đơn-tenant, thiếu resource pooling multi-tenant — chưa đạt điều kiện \"as a Service\"."
+      },
+      {
+        "front": "OpenStack: Nova / Neutron / Swift lo gì?",
+        "back": "Nova = compute (VM), Neutron = network, Swift = object storage (Keystone = identity)."
+      }
+    ],
+    "try_at_home": [
+      {
+        "title": "Chấm điểm một dịch vụ theo 5 đặc điểm NIST",
+        "phaseType": "core",
+        "estimatedMinutes": 10,
+        "cmd": "curl -s http://169.254.169.254/latest/meta-data/",
+        "why": "Đối chiếu một dịch vụ cloud thực với 5 đặc điểm giúp tách \"cloud thật\" khỏi hosting truyền thống (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Instance metadata service (IMDS) tại địa chỉ link-local <code>169.254.169.254</code> cho thấy tài nguyên được cấp tự động kèm metadata — biểu hiện của on-demand self-service (<a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html\">AWS: instance metadata</a>).",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Lập bảng 5 hàng (5 đặc điểm) cho một dịch vụ đang dùng; đánh dấu đạt/chưa đạt kèm bằng chứng.",
+            "expect": "Bảng 5 hàng; mỗi hàng có kết luận đạt/chưa và một bằng chứng cụ thể (console, tài liệu, hoá đơn)."
+          },
+          {
+            "n": 2,
+            "do": "Trên một VM cloud, truy vấn metadata endpoint để thấy tài nguyên tự cấp kèm thông tin.",
+            "expect": "Trả danh sách khoá metadata (ví dụ <code>instance-id</code>, <code>placement/</code>) — minh chứng self-service + measured."
+          }
+        ],
+        "analysis": {
+          "observation": "Một VM cloud tự cấp kèm metadata truy vấn được ngay, không cần thao tác thủ công của nhà cung cấp.",
+          "mechanism": "On-demand self-service + resource pooling: VM lấy từ pool và gắn metadata tự động khi khởi tạo.",
+          "lesson": "Đủ 5 đặc điểm mới là cloud; thiếu measured/elasticity thì chỉ là máy ảo cho thuê."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "curl metadata bị timeout",
+            "fix": "IMDS chỉ truy cập được từ bên trong instance cloud; chạy lệnh trên chính VM, không phải từ máy ngoài."
+          }
+        ]
+      },
+      {
+        "title": "Quan sát thành phần IaaS trên OpenStack",
+        "phaseType": "core",
+        "estimatedMinutes": 12,
+        "cmd": "openstack service list",
+        "why": "OpenStack là hiện thực hoá nguồn mở của cloud IaaS; liệt kê service cho thấy các thành phần hạ tầng (Nova/Neutron/Swift/Keystone) tương ứng ranh giới trách nhiệm IaaS (<a href=\"https://www.openstack.org/software/\">OpenStack software</a>).",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Trên một môi trường OpenStack (ví dụ DevStack), chạy <code>openstack service list</code> và <code>openstack endpoint list</code>.",
+            "expect": "Danh sách service gồm compute (nova), network (neutron), identity (keystone)… kèm endpoint tương ứng."
+          },
+          {
+            "n": 2,
+            "do": "Tạo thử một VM rồi <code>openstack server list</code>; ghi lại lớp nào do OpenStack lo, lớp nào tự cài.",
+            "expect": "VM xuất hiện ở trạng thái ACTIVE; OS và ứng dụng bên trong do người dùng tự cài (ranh giới IaaS)."
+          }
+        ],
+        "analysis": {
+          "observation": "OpenStack lo tới VM (Nova) và mạng (Neutron); OS bên trong VM do người dùng cài.",
+          "mechanism": "Đúng ranh giới IaaS: nhà cung cấp tới lớp ảo hoá, khách từ OS trở lên.",
+          "lesson": "Xác định ranh giới giúp quy trách nhiệm vá lỗi và cấu hình đúng lớp."
+        }
+      },
+      {
+        "title": "Map một dịch vụ vào mô hình 5-3-4",
+        "phaseType": "optional",
+        "estimatedMinutes": 6,
+        "cmd": "# Viết ra: service model (IaaS/PaaS/SaaS) + deployment model (private/community/public/hybrid)",
+        "why": "Gắn một dịch vụ cụ thể vào 5-3-4 củng cố phân biệt service model (mức trừu tượng) và deployment model (góc nhìn hạ tầng) (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §3-§4</a>).",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Chọn 3 dịch vụ đang dùng; với mỗi dịch vụ, ghi service model + deployment model + lý do.",
+            "expect": "Bảng 3 dòng; mỗi dòng nêu rõ service model, deployment model, và một câu lý do dựa trên tiêu chí NIST."
+          }
+        ]
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Cloud chỉ là thuê một máy chủ ảo (VPS) đặt ở trung tâm dữ liệu từ xa.",
+        "right": "Một VPS đơn lẻ thường thiếu tự phục vụ, co giãn nhanh và đo lường theo mức dùng — chưa đủ 5 đặc điểm mà NIST SP 800-145 yêu cầu để gọi là Cloud.",
+        "why": "NIST SP 800-145 định nghĩa cloud computing bằng 5 đặc điểm bắt buộc: on-demand self-service, broad network access, resource pooling, rapid elasticity, measured service (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Một VPS cấp phát thủ công, cấu hình cố định, tính phí trọn gói theo tháng thiếu measured service (đo và tính theo mức dùng thực) và rapid elasticity (mở/thu quy mô nhanh, thường tự động); việc cấp qua ticket cũng không phải on-demand self-service. Hệ quả khi đánh giá một dịch vụ: đối chiếu đủ 5 đặc điểm thay vì chỉ nhìn \"máy chủ đặt ở xa\" — thiếu bất kỳ đặc điểm nào thì đó là hosting truyền thống, không phải cloud theo chuẩn."
+      },
+      {
+        "wrong": "Đóng gói mỗi khách một máy ảo chạy WordPress/N8N là đã cung cấp PaaS hoặc SaaS.",
+        "right": "Mỗi khách một VM riêng là mô hình đơn-tenant, thiếu resource pooling multi-tenant — chưa đạt điều kiện \"as a Service\" theo NIST.",
+        "why": "Resource pooling yêu cầu gộp tài nguyên của nhà cung cấp để phục vụ nhiều khách theo mô hình multi-tenant, cấp và thu hồi động (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §2</a>). Cấp mỗi khách một VM tách rời chạy cùng phần mềm là kiến trúc đơn-tenant: không chia sẻ pool, không co giãn hay đo lường ở tầng nền tảng, việc mở rộng phải nhân bản thủ công từng VM. Để đạt PaaS/SaaS thật, kiến trúc phải là pool dùng chung có cô lập logic giữa các tenant — điều này quyết định cách thiết kế control plane, cách tính phí theo mức dùng, và cách áp hạn mức tài nguyên."
+      },
+      {
+        "wrong": "Hybrid cloud nghĩa là vừa dùng máy chủ tại chỗ (on-premises) vừa dùng cloud.",
+        "right": "NIST phân loại deployment model theo góc nhìn hạ tầng: hybrid là kết hợp ≥2 hạ tầng cloud riêng biệt (private/community/public) gắn kết bằng công nghệ chuẩn hoá cho phép chuyển dữ liệu và ứng dụng.",
+        "why": "NIST SP 800-145 §4 phân loại 4 deployment model theo ai sở hữu và ai dùng hạ tầng (<a href=\"https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf\">NIST SP 800-145 §4</a>). Hybrid cloud là hai hoặc nhiều hạ tầng cloud vẫn là thực thể tách bạch, nhưng ràng buộc với nhau bằng công nghệ chuẩn hoá hoặc độc quyền cho phép data và application portability. Máy chủ on-premises truyền thống không tự thân là một \"cloud\", nên \"on-prem + public\" chưa chắc là hybrid cloud theo định nghĩa. Phân biệt đúng ảnh hưởng tới cách mô tả kiến trúc trong tài liệu tuân thủ và hợp đồng: tránh gọi nhầm mọi cấu hình \"lai\" là hybrid cloud khi thiếu tiêu chí portability giữa các hạ tầng cloud."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "CloudModelExplorer"
+    }
+  }
+}

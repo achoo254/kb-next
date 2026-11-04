@@ -21,4 +21,15 @@ describe('public repository guard', () => {
   it('ignores placeholders, plain ports and spec sections', () => {
     expect(findPublicInfo('ssh -p <SSH_PORT> <SSH_TARGET>\nlisten 127.0.0.1:5320\nOIDC Core §3.1.3.7', 'x.md')).toEqual([]);
   });
+
+  it('reads a spec section inside a URL as a section, not an address', () => {
+    expect(findPublicInfo('https://datatracker.ietf.org/doc/html/rfc1122#section-3.2.1.7', 'x.md')).toEqual([]);
+  });
+
+  it('lets imported lessons keep the addresses they teach with, and nothing else', () => {
+    const host = [10, 20, 30, 40].join('.');
+    const lesson = `ping 8.8.8.8, pod 10.244.1.7, network 10.0.0.0/8, ${host}/24 and ${host}`;
+    expect(findPublicInfo(lesson, 'content/hoc-cloud/docs/x.md').map((f) => f.match)).toEqual([`${host}/24`, host]);
+    expect(findPublicInfo(lesson, 'docs/x.md').map((f) => f.match)).toEqual(['8.8.8.8', '10.244.1.7', '10.0.0.0/8', `${host}/24`, host]);
+  });
 });

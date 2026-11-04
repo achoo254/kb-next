@@ -3,8 +3,9 @@
 import { build } from 'esbuild';
 
 await build({
-  // index.mjs: the API; reindex.mjs: `pnpm reindex` on the server (same env file).
-  entryPoints: { index: 'src/server.ts', reindex: 'src/cli/reindex.ts' },
+  // index.mjs: the API; reindex.mjs and import-hoc-cloud.mjs: `pnpm reindex` and `pnpm import:hoc-cloud` on the
+  // server (same env file; the importer reads content/ shipped in the release).
+  entryPoints: { index: 'src/server.ts', reindex: 'src/cli/reindex.ts', 'import-hoc-cloud': 'src/cli/import-hoc-cloud.ts' },
   bundle: true,
   platform: 'node',
   format: 'esm',

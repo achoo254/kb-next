@@ -1,0 +1,489 @@
+{
+  "lab": {
+    "slug": "http",
+    "module": "01-networking",
+    "title": "Tìm hiểu HTTP",
+    "estimated_minutes": 50,
+    "content_hash": "561ac68600ba404ea76a484fd882079365e74b78af618388d0b513a3ba0039e2",
+    "updated_at": 1778302320,
+    "tldr": [
+      {
+        "what": "HTTP Request = method + path + headers + body",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-6\">RFC 9110 §6</a> định nghĩa HTTP request gồm method, request target (path), HTTP version, headers, và optional body. <a href=\"https://datatracker.ietf.org/doc/html/rfc9112#section-3\">RFC 9112 §3</a> quy định wire format cho HTTP/1.1: request-line theo sau bởi header fields (CRLF-separated), blank line, rồi body. 4 thành phần này là tất cả những gì server cần để xử lý yêu cầu — thiếu header quan trọng (Content-Type, Authorization) → server trả 400/401, không liên quan network.",
+        "whyBreaks": "Thiếu Content-Type trong POST JSON request → nhiều framework (Express, FastAPI, Spring) từ chối parse body hoặc parse sai → trả 400/422. Thiếu Authorization → 401. Debug bằng curl -v để thấy chính xác bytes gửi đi.",
+        "deploymentUse": "Khi viết reverse proxy (nginx, Caddy) hay API gateway, cần forward đúng headers từ client (đặc biệt Host, X-Forwarded-For, Authorization). Thiếu proxy_set_header trong nginx config → backend nhận header sai → auth fail hoặc rate limit apply nhầm IP."
+      },
+      {
+        "what": "HTTP Response = status line + headers + body",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-15\">RFC 9110 §15</a> định nghĩa đầy đủ ngữ nghĩa của status codes: 1xx informational, 2xx success, 3xx redirection, 4xx client error, 5xx server error. Status code là contract giữa server và client về kết quả xử lý request. Debug API: đọc status trước, rồi mới đọc body error message — body error chỉ có ý nghĩa khi status code xác định được context.",
+        "whyBreaks": "API trả 200 với error trong body → monitoring (Datadog, CloudWatch) không alert được vì chỉ track status code. Kết quả: production lỗi silent hàng giờ trước khi ai phát hiện qua user report.",
+        "deploymentUse": "Health check endpoint (GET /health) phải trả 200 khi healthy, 503 khi unhealthy. Load balancer (ALB, nginx upstream) dựa vào status code này để remove instance bị lỗi. Trả 200 dù service chết → LB không remove → user bị lỗi."
+      },
+      {
+        "what": "1xx Informational — request đang xử lý",
+        "why": "100 Continue: server nói 'ok gửi tiếp body đi' sau khi check header. Tránh upload file lớn mà server reject ngay từ header.",
+        "whyBreaks": "Client gửi Expect: 100-continue nhưng server không hỗ trợ → client timeout chờ 100 → upload fail dù server vẫn sẵn sàng nhận. Một số proxy strip header Expect → hành vi không dự đoán được.",
+        "deploymentUse": "S3/GCS multipart upload dùng 100 Continue để tránh gửi chunk lớn lên rồi mới biết authentication fail. Khi debug upload timeout, kiểm tra xem proxy (nginx, ALB) có pass Expect header không."
+      },
+      {
+        "what": "2xx Success — server xử lý thành công",
+        "why": "200 OK ≠ 201 Created ≠ 204 No Content. API design tốt phân biệt rõ để client biết có cần đọc body không (204 = không có body).",
+        "whyBreaks": "API DELETE trả 200 với body thay vì 204 → client cố parse body → lỗi nếu body rỗng. API POST tạo resource trả 200 thay vì 201 → client không biết resource đã tạo, không check Location header để lấy ID mới.",
+        "deploymentUse": "REST API design convention: POST /resources → 201 + Location header. DELETE /resources/{id} → 204 no body. PUT update → 200 + updated object. Đúng status code giúp client cache, retry logic, và monitoring đúng."
+      },
+      {
+        "what": "3xx Redirect — tài nguyên đã chuyển đi",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-15.4.2\">RFC 9110 §15.4.2</a> quy định 301 Moved Permanently: client và cache được phép cache redirect vĩnh viễn và không cần hỏi lại server. <a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-15.4.3\">RFC 9110 §15.4.3</a> quy định 302 Found: không được cache, mỗi request phải hỏi lại server. Dùng 301 cho redirect permanent (HTTP→HTTPS); dùng 302 khi redirect có thể thay đổi (A/B test, maintenance page).",
+        "whyBreaks": "HTTP → HTTPS redirect dùng 302 thay 301 → browser không cache → mỗi request đến HTTP vẫn có thêm 1 round trip redirect → latency tăng, không bật HSTS được. Ngược lại: 301 redirect sai URL → bị cache vĩnh viễn, khó rollback.",
+        "deploymentUse": "nginx config: return 301 https://$host$request_uri; để redirect HTTP→HTTPS permanent. Kết hợp HSTS header (Strict-Transport-Security: max-age=31536000) để browser không thử HTTP nữa. Kiểm tra redirect chain bằng curl -L -v trước khi deploy."
+      },
+      {
+        "what": "4xx Client Error — lỗi do request",
+        "why": "4xx = lỗi của client, không phải server. 400=sai format, 401=chưa auth, 403=không có quyền, 404=không tồn tại. Debug: sửa request, không restart server.",
+        "whyBreaks": "4xx rate cao trên API → thường là client code bug hoặc docs sai. 401 spike → token expired hoặc secret rotation chưa deploy đều. 404 nhiều trên resource có thật → route config sai hoặc ID format mismatch. Monitor 4xx rate riêng với 5xx.",
+        "deploymentUse": "API gateway (Kong, AWS API GW) có thể trả 429 Too Many Requests khi rate limit. Client phải handle 429 với exponential backoff + jitter, không retry ngay. Thiếu logic này → cascade failure khi service bị stress."
+      },
+      {
+        "what": "5xx Server Error — lỗi do server",
+        "why": "5xx = server fail, không phải client. 500=exception chưa handle, 502=upstream chết, 503=overload. Cần check server log ngay, không phải sửa client.",
+        "whyBreaks": "502 Bad Gateway từ nginx thường nghĩa là app server crash hoặc không lắng nghe đúng port. 503 trong deployment nghĩa là health check fail — new version chưa ready. Debug: check app log, không phải nginx log. nginx error log chỉ nói 'connect() failed', không nói tại sao.",
+        "deploymentUse": "Blue-green deployment: khi switch traffic sang green, LB check health endpoint trả 200 trước khi route traffic. Nếu app khởi động chậm (JVM warm-up, DB connection pool) → trả 503 trong 10-30s → LB giữ blue thêm. Cần config initialDelaySeconds trong Kubernetes readiness probe."
+      },
+      {
+        "what": "HTTP/1.1: text, keep-alive, nhưng head-of-line blocking",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc9112#section-9.3\">RFC 9112 §9.3</a> định nghĩa persistent connections (keep-alive): sau khi response xong, TCP connection giữ lại để reuse cho request tiếp theo. HTTP/1.1 vẫn serialize request theo thứ tự — phải nhận response trước mới gửi request tiếp (head-of-line blocking). Browsers mở nhiều parallel connections per domain (số lượng cụ thể là browser heuristic, không phải giá trị RFC-mandated) để workaround giới hạn này.",
+        "whyBreaks": "Một request chậm (slow DB query) block tất cả request sau trên cùng connection. Browser mở 6 conn/domain là workaround nhưng 6 conn cũng có giới hạn. Kết quả: waterfall dài trên DevTools khi trang nhiều resource.",
+        "deploymentUse": "nginx default keepalive_timeout 75s — đủ tốt cho hầu hết trường hợp. Với upstream app server, cần keepalive directive trong upstream block để reuse connection thay vì tạo mới mỗi request. Thiếu → TCP handshake overhead tăng lên dưới load."
+      },
+      {
+        "what": "HTTP/2: binary frames, multiplexing, HPACK compression",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc9113\">RFC 9113</a> định nghĩa HTTP/2 với binary framing layer: mỗi request/response là một stream, nhiều stream multiplexed trên 1 TCP connection — không có head-of-line blocking ở HTTP layer. <a href=\"https://datatracker.ietf.org/doc/html/rfc7541\">RFC 7541</a> định nghĩa HPACK header compression. Lợi ích tốc độ phụ thuộc vào số lượng asset, latency, và tỷ lệ header reuse — không có con số cố định có thể áp dụng cho mọi workload.",
+        "whyBreaks": "HTTP/2 server push (server chủ động push resource) đôi khi gây negative cache interaction — push resource đã có trong browser cache. HTTP/2 vẫn có TCP-level HOL blocking (khác với stream-level). HTTP/3/QUIC giải quyết điều này.",
+        "deploymentUse": "nginx: thêm http2 vào listen directive — listen 443 ssl http2. Kiểm tra bằng curl -I --http2 https://yourdomain.com | head — thấy HTTP/2 200 là thành công. Cloudflare tự bật H2 cho tất cả traffic qua proxy."
+      },
+      {
+        "what": "HTTPS = HTTP + TLS: encrypt + verify identity",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc8446#section-1\">RFC 8446 §1</a> định nghĩa TLS 1.3 cung cấp 2 đảm bảo độc lập: confidentiality (encrypt payload bằng symmetric key sau handshake) và authentication (xác thực certificate để ngăn MITM). Thiếu certificate validation — ví dụ accept self-signed cert blindly — encrypt vẫn hoạt động nhưng không xác thực được identity, attacker vẫn có thể MITM.",
+        "whyBreaks": "Cert hết hạn → TLS handshake fail → toàn bộ site/API down, không chỉ HTTPS. Nguyên nhân downtime thường gặp có thể phòng tránh được. Thiết lập auto-renewal (Let's Encrypt certbot) và alert 30 ngày trước expiry là bắt buộc.",
+        "deploymentUse": "Let's Encrypt + certbot: certbot renew chạy trong cron hoặc systemd timer. Cloudflare Universal SSL: miễn phí, auto-renew, không cần quản lý cert. Với internal services: dùng cert từ private CA (HashiCorp Vault PKI, AWS Private CA)."
+      },
+      {
+        "what": "TLS handshake: ClientHello → cert verify → key exchange → Finished",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc8446#section-4\">RFC 8446 §4</a> định nghĩa TLS 1.3 handshake: ClientHello → ServerHello + Certificate + CertificateVerify → Finished. ECDHE key exchange tạo shared secret mà không truyền private key qua dây — forward secrecy đảm bảo session key cũ không bị compromise khi private key lộ sau này. Nếu cert expire, mismatch, hoặc CA không được tin → handshake fail ngay tại bước certificate verification, không có data nào được gửi.",
+        "whyBreaks": "SNI mismatch: server host nhiều domain trên 1 IP, client gửi SNI sai hoặc không gửi → server trả cert sai → handshake fail. Hay gặp khi config nginx server_name sai hoặc TLS termination ở LB không pass SNI đúng đến backend.",
+        "deploymentUse": "AWS ALB terminate TLS tại LB, forward HTTP đến EC2/container. EC2 không cần cert — đơn giản hơn. Nhưng internal traffic (ALB→EC2) unencrypted — với compliance requirement cần TLS end-to-end → dùng NLB với TCP passthrough hoặc mTLS."
+      },
+      {
+        "term": "tcpdump + HTTP",
+        "why": "HTTP plaintext → dùng `-A` in ASCII payload, filter `tcp port 80` (hoặc port app); kết hợp `-w` lưu pcap để mở Wireshark phân tích timeline.",
+        "whyBreaks": "HTTPS không readable bằng tcpdump. Filter sai port → mất gói. Capture trên Linux container thường cần `--cap-add NET_ADMIN`."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "Gửi HTTP request — nhìn raw wire format bằng curl -v",
+        "why": "Dev thường chỉ thấy code, không thấy raw request. <code>curl -v</code> hiện chính xác bytes gửi đi. Khi debug 400 Bad Request, đây là cách duy nhất chắc chắn header đã đúng format chưa.",
+        "code": "# Xem toàn bộ request + response headers\ncurl -v https://httpbin.org/get\n\n# Thêm custom header và body POST\ncurl -v -X POST https://httpbin.org/post \\\n  -H 'Content-Type: application/json' \\\n  -H 'Authorization: Bearer mytoken123' \\\n  -d '{\"name\":\"Alice\"}'",
+        "whyBreaks": "Bỏ qua curl -v và chỉ đọc error message từ SDK/framework → không biết header thực sự gửi gì, body có đúng format không. Debug API fail mà không dùng curl -v là debug mù — mất hàng giờ chỉ vì thiếu 1 header.",
+        "observeWith": "curl -v output: dòng '>' là request headers gửi đi, dòng '<' là response headers server trả về. Tìm dòng '< HTTP/1.1 XXX' để thấy status code đầu tiên. Dòng '*' là curl metadata (TLS info, redirect, etc). nghttp -v https://domain.com để xem HTTP/2 frames chi tiết."
+      },
+      {
+        "step": 2,
+        "what": "Đọc và hiểu status code trong response",
+        "why": "curl -v hiện chính xác HTTP request được gửi và response nhận được, bao gồm tất cả headers. Khi debug 400 Bad Request, đây là cách duy nhất chắc chắn header đã đúng format chưa — xem dòng '>' là request headers gửi đi, dòng '<' là response headers server trả về. Bỏ qua curl -v và chỉ đọc error message từ SDK/framework → không biết header thực sự gửi gì.",
+        "code": "# Chỉ lấy status code\ncurl -o /dev/null -s -w '%{http_code}' https://httpbin.org/status/404\n\n# Follow redirect và xem chain\ncurl -v -L https://httpbin.org/redirect/2\n\n# Xem response headers cụ thể\ncurl -I https://httpbin.org/get",
+        "whyBreaks": "Code kiểm tra response.ok (true nếu 200-299) nhưng không check status code cụ thể → bỏ qua sự khác biệt 200 vs 204 vs 201. Hay gặp: fetch() không throw error với 4xx — phải check response.ok hoặc response.status manually.",
+        "observeWith": "curl -o /dev/null -s -w '%{http_code}\\n%{time_total}\\n' URL — in status code và total time. Browser DevTools → Network tab: filter by status (4xx, 5xx), xem Timing tab để thấy TTFB. tcpdump port 80 để thấy raw HTTP/1.1 request/response không encrypt."
+      },
+      {
+        "step": 3,
+        "what": "So sánh HTTP/1.1 vs HTTP/2 thực tế",
+        "why": "HTTP/2 không tự động dùng — server phải hỗ trợ và negotiate qua ALPN trong TLS handshake. Cần biết để config nginx/nginx đúng và debug khi H2 không negotiate được.",
+        "code": "# Xem server dùng HTTP version nào\ncurl -I --http1.1 https://www.google.com 2>&1 | head -5\ncurl -I --http2 https://www.google.com 2>&1 | head -5\n\n# Xem ALPN negotiation trong TLS\nopenssl s_client -connect www.google.com:443 \\\n  -alpn h2,http/1.1 2>&1 | grep 'ALPN\\|Protocol'",
+        "whyBreaks": "nginx không bật http2 trong listen directive → client và server negotiate HTTP/1.1 qua ALPN → mất lợi ích multiplexing → trang load chậm dưới nhiều concurrent request. Dễ check: curl -I --http2 domain.com | head -1 phải thấy 'HTTP/2 200'.",
+        "observeWith": "curl -I --http2 https://yourdomain.com | head -2 — dòng đầu phải là 'HTTP/2 200' nếu H2 active. nghttp -v https://yourdomain.com để xem từng HTTP/2 frame (HEADERS, DATA, SETTINGS). Browser DevTools → Network → Protocol column để thấy h2 hay http/1.1."
+      },
+      {
+        "step": 4,
+        "what": "TLS handshake — dùng openssl để xem cert và handshake",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc7301\">RFC 7301</a> định nghĩa ALPN (Application-Layer Protocol Negotiation): TLS extension cho phép client và server negotiate application protocol trong TLS handshake. HTTP/2 yêu cầu ALPN với value 'h2'; nếu server không advertise 'h2' trong ALPN → client fallback về HTTP/1.1. HTTP/2 không tự động bật khi upgrade nginx — phải thêm http2 vào listen directive và server phải có TLS.",
+        "code": "# Xem chi tiết TLS handshake\nopenssl s_client -connect example.com:443 \\\n  -servername example.com </dev/null 2>&1\n\n# Chỉ xem cert info\nopenssl s_client -connect example.com:443 \\\n  -servername example.com </dev/null 2>&1 | \\\n  openssl x509 -noout -text | grep -E 'Subject:|Not After:|DNS:'",
+        "whyBreaks": "Cert SANs (Subject Alternative Names) không include subdomain đang dùng → TLS verify fail → curl: SSL certificate problem: does not match. Hay gặp khi wildcard cert *.example.com không cover sub.sub.example.com (wildcard chỉ match 1 level).",
+        "observeWith": "echo | openssl s_client -connect domain.com:443 2>/dev/null | openssl x509 -noout -dates — xem Not Before và Not After. grep DNS: để thấy tất cả SAN. Kết quả 'Verify return code: 0 (ok)' nghĩa là cert valid. tcpdump port 443 để capture TLS handshake bytes (thấy ClientHello, ServerHello trong Wireshark).",
+        "failModes": [
+          {
+            "symptom": "Browser hiện ERR_CERT_DATE_INVALID, curl báo lỗi verify",
+            "evidence": "curl -v https://example.com 2>&1 | grep 'error' cho thấy: 'SSL certificate problem: certificate has expired' — hoặc openssl xác nhận: 'Verify return code: 10 (certificate has expired)'"
+          },
+          {
+            "symptom": "TLS handshake fail vì wildcard cert không cover sub-subdomain",
+            "evidence": "curl -v https://api.staging.example.com 2>&1 | grep 'error': 'SSL: no alternative certificate subject name matches target host name api.staging.example.com' — *.example.com không match 2 cấp subdomain"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Xác nhận cert hết hạn và thời điểm expire",
+            "command": "echo | openssl s_client -connect example.com:443 -servername example.com 2>/dev/null | openssl x509 -noout -dates"
+          },
+          {
+            "step": "Renew cert bằng certbot (Let's Encrypt) nếu dùng LE",
+            "command": "sudo certbot renew --cert-name example.com --dry-run && sudo certbot renew --cert-name example.com"
+          },
+          {
+            "step": "Reload nginx sau khi cert mới được deploy",
+            "command": "sudo nginx -t && sudo systemctl reload nginx"
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "what": "Debug 4xx: phân biệt 400 vs 401 vs 403 vs 404",
+        "why": "Khi thấy 'certificate verify failed', cần xác định: cert của CA nào issue, expire lúc nào, SAN có match domain không. openssl s_client -connect domain:443 -servername domain trả về full certificate chain và verify result — không cần browser. <a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-4.3.4\">RFC 9110 §4.3.4</a> quy định certificate validation bao gồm kiểm tra SAN (Subject Alternative Names) match với request target.",
+        "code": "# Simulate các lỗi với httpbin\n# 400 Bad Request\ncurl -v -X POST https://httpbin.org/post \\\n  -H 'Content-Type: application/json' \\\n  -d 'invalid-json-{'\n\n# 401 Unauthorized\ncurl -v https://httpbin.org/basic-auth/user/pass\n\n# 404 Not Found\ncurl -v https://httpbin.org/status/404",
+        "whyBreaks": "Nhận 403 nhưng debug như 401 (kiểm tra token) → mất thời gian. 403 nghĩa là token valid nhưng role/permission không đủ → cần kiểm tra IAM policy, database permission, hoặc RBAC config. 401 vs 403 là 2 action khác nhau hoàn toàn.",
+        "observeWith": "curl -v URL 2>&1 | grep '< HTTP' — xem status code ngay. Browser DevTools → Network → lọc Fetch/XHR, click request, xem Response tab: body thường có error message rõ hơn. Dùng httpie (http GET url) cho output màu dễ đọc hơn curl."
+      },
+      {
+        "step": 6,
+        "what": "Debug 5xx: 502 Bad Gateway thường xảy ra khi nào?",
+        "why": "502 = nginx/load balancer nhận được request nhưng upstream (app server) trả lỗi hoặc không phản hồi. Không phải lỗi nginx — cần check app logs. 503 = upstream không available (quá tải hoặc chết).",
+        "code": "# Check nginx access log: tìm 5xx\nsudo tail -f /var/log/nginx/access.log | grep ' 5[0-9][0-9] '\n\n# Check nginx error log\nsudo tail -f /var/log/nginx/error.log\n\n# Xem upstream status với curl\ncurl -v http://localhost:8080/health  # trực tiếp tới app server\ncurl -v http://localhost:80/health    # qua nginx",
+        "whyBreaks": "502 từ nginx error log: 'connect() failed (111: Connection refused)' → app server không chạy trên port đó. '(110: Connection timed out)' → app server quá tải hoặc firewall block. Phân biệt 2 trường hợp này bằng netstat -tlnp | grep PORT.",
+        "observeWith": "sudo tail -f /var/log/nginx/error.log — xem error message chi tiết của 502/503. curl -v http://localhost:APP_PORT/health — test trực tiếp app server bypass nginx. journalctl -u your-app.service -f — xem app crash log real-time. netstat -tlnp | grep APP_PORT — verify app đang listen.",
+        "failModes": [
+          {
+            "symptom": "Client nhận 502 Bad Gateway, app server đang chạy nhưng tải cao",
+            "evidence": "sudo tail -f /var/log/nginx/error.log cho thấy: '2024/01/15 10:23:45 [error] 1234#0: *567 upstream timed out (110: Connection timed out) while reading response header from upstream, client: 10.0.0.5, upstream: \"http://127.0.0.1:8080/api/data\"'"
+          },
+          {
+            "symptom": "Client nhận 502, app server không chạy trên port đó",
+            "evidence": "sudo tail -f /var/log/nginx/error.log cho thấy: 'connect() failed (111: Connection refused) while connecting to upstream, upstream: \"http://127.0.0.1:8080/\"'"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Phân biệt timeout vs refused: timeout = app alive nhưng quá tải, refused = app không chạy",
+            "command": "sudo ss -tlnp | grep 8080  # nếu không có output → app không chạy trên port 8080"
+          },
+          {
+            "step": "Nếu app không chạy: restart service và verify",
+            "command": "sudo systemctl restart your-app.service && sudo journalctl -u your-app.service -n 30"
+          },
+          {
+            "step": "Nếu timeout do quá tải: tăng nginx proxy_read_timeout tạm thời và check app performance",
+            "command": "curl -w '%{time_total}\\n' -o /dev/null -s http://localhost:8080/health  # đo thực tế latency upstream"
+          }
+        ],
+        "automateScript": {
+          "lang": "bash",
+          "code": "#!/bin/bash\n# Health probe: check HTTP status code + latency, alert nếu fail hoặc chậm\n# Chạy cron mỗi 1 phút\nURL=${1:-\"http://localhost:8080/health\"}\nTHRESHOLD_MS=${2:-2000}  # alert nếu > 2s\nRESULT=$(curl -o /dev/null -s -w '%{http_code} %{time_total}' --max-time 5 \"$URL\")\nCODE=$(echo \"$RESULT\" | awk '{print $1}')\nTIME_S=$(echo \"$RESULT\" | awk '{print $2}')\nTIME_MS=$(echo \"$TIME_S * 1000\" | bc | cut -d. -f1)\nif [ \"$CODE\" != \"200\" ] || [ \"$TIME_MS\" -gt \"$THRESHOLD_MS\" ]; then\n  logger -t http-probe \"ALERT: $URL — HTTP $CODE, ${TIME_MS}ms (threshold ${THRESHOLD_MS}ms)\"\n  echo \"[$(date '+%Y-%m-%d %H:%M:%S')] ALERT: $URL HTTP $CODE ${TIME_MS}ms\"\nfi",
+          "note": "Cron: * * * * * /usr/local/bin/http-health-probe.sh http://localhost:8080/health 2000. Cần bc package."
+        }
+      },
+      {
+        "step": 7,
+        "what": "Dùng Wireshark xem TLS handshake + HTTP/2 frames",
+        "why": "Wireshark + SSLKEYLOGFILE cho phép decrypt HTTPS traffic locally để debug. Đây là kỹ thuật cần thiết khi curl/browser không đủ thông tin — thấy được từng TLS record và HTTP/2 frame.",
+        "code": "# Capture HTTPS traffic với SSLKEYLOGFILE để decrypt\nexport SSLKEYLOGFILE=/tmp/ssl-keys.log\ncurl https://example.com\n\n# Mở Wireshark:\n# Edit → Preferences → Protocols → TLS\n# → (Pre)-Master-Secret log filename: /tmp/ssl-keys.log\n# Sau đó lọc: http2 hoặc tls.handshake",
+        "whyBreaks": "Không có SSLKEYLOGFILE → Wireshark chỉ thấy 'Application Data' (encrypted) thay vì HTTP headers/body. SSLKEYLOGFILE chỉ hoạt động với curl, Firefox, Chrome — không hoạt động với binary không expose key export hook.",
+        "observeWith": "sudo tcpdump -i any -w /tmp/capture.pcap port 443 — capture raw bytes. Mở file trong Wireshark + load SSLKEYLOGFILE → filter 'http2' để thấy HEADERS frame, DATA frame. Wireshark → Statistics → HTTP2 → Requests để xem tất cả HTTP/2 stream summary. Browser DevTools → Security tab để xem TLS version và cipher suite đang dùng."
+      },
+      {
+        "step": "tcpdump-http-1",
+        "what": "Bắt 1 HTTP GET với tcpdump",
+        "why": "Chạy `tcpdump -i any -n -A \"tcp port 80\"` rồi `curl http://example.com`. Mapping: 3-way handshake (SYN, SYN-ACK, ACK) → GET request → 200 OK response → FIN. Đọc cột Flags để phân biệt từng pha.",
+        "observeWith": "Kéo pcap vào tab Upload .pcap (lab `http` SEE section) để xem layer tree từng gói"
+      }
+    ],
+    "quiz": [
+      {
+        "q": "Client gửi request POST với body JSON nhưng quên header Content-Type. Server trả gì?",
+        "options": [
+          "200 OK — server đoán được content type",
+          "400 Bad Request — server không parse được body",
+          "401 Unauthorized — thiếu authentication",
+          "500 Internal Server Error — server bị crash"
+        ],
+        "correct": 1,
+        "whyCorrect": "<strong>400 Bad Request</strong> là đúng: Content-Type header nói server 'đây là JSON, hãy parse theo JSON'. Thiếu header này → nhiều framework từ chối parse body hoặc parse sai → trả 400. Đây là lỗi client (request thiếu thông tin), không phải server.",
+        "whyOthersWrong": {
+          "0": "Server không nên đoán content type — đó là undefined behavior, nguy hiểm bảo mật. RFC yêu cầu Content-Type phải có.",
+          "2": "401 liên quan authentication (token/credentials), không liên quan format body.",
+          "3": "500 chỉ xảy ra nếu server có bug chưa handle exception. Server tốt sẽ validate trước và trả 400."
+        }
+      },
+      {
+        "q": "Sự khác biệt quan trọng nhất giữa 301 và 302?",
+        "options": [
+          "301 nhanh hơn 302 vì ít RTT hơn",
+          "301 là permanent (browser cache), 302 là temporary (không cache)",
+          "301 dùng cho HTTP→HTTPS, 302 không dùng được",
+          "Không có khác biệt thực tế"
+        ],
+        "correct": 1,
+        "whyCorrect": "<strong>301 Moved Permanently</strong>: browser cache redirect này và lần sau đi thẳng tới URL mới mà không hỏi server nữa. <strong>302 Found</strong>: không cache, mỗi lần vẫn hỏi server. Dùng sai 301 khi thật ra là tạm → cache stale, khó rollback.",
+        "whyOthersWrong": {
+          "0": "Cả 2 đều có 1 RTT cho redirect. Tốc độ không phải sự khác biệt.",
+          "2": "HTTP→HTTPS redirect thường dùng 301 (permanent), nhưng 302 cũng được về mặt kỹ thuật. Đây không phải quy định cứng.",
+          "3": "Sự khác biệt cache là rất thực tế, đặc biệt với SEO và backward compatibility."
+        }
+      },
+      {
+        "q": "Nhận được 401 vs 403 — cần làm gì tiếp theo?",
+        "options": [
+          "Cả 2 đều cần restart server",
+          "401: cần gửi/sửa credentials; 403: có credentials nhưng không có quyền — cần kiểm tra permission",
+          "401: server chết; 403: resource không tồn tại",
+          "Cả 2 đều là lỗi server, cần check server log"
+        ],
+        "correct": 1,
+        "whyCorrect": "<strong>401 Unauthorized</strong>: chưa authenticate hoặc token sai/hết hạn → gửi lại với đúng Authorization header. <strong>403 Forbidden</strong>: đã authenticate thành công nhưng user không có quyền → kiểm tra role/permission trong database, không phải sửa token.",
+        "whyOthersWrong": {
+          "0": "4xx là lỗi client, không liên quan server. Restart server không giải quyết được.",
+          "2": "401 không có nghĩa server chết (đó là 5xx). 403 không có nghĩa không tồn tại (đó là 404).",
+          "3": "4xx = lỗi client. Server hoạt động bình thường, chỉ từ chối request vì lý do hợp lệ."
+        }
+      },
+      {
+        "q": "HTTP/2 giải quyết vấn đề gì của HTTP/1.1?",
+        "options": [
+          "HTTP/2 thêm HTTPS support (HTTP/1.1 không có)",
+          "HTTP/2 giải quyết head-of-line blocking bằng multiplexing nhiều request trên 1 connection",
+          "HTTP/2 nhanh hơn vì dùng UDP thay TCP",
+          "HTTP/2 giảm latency bằng cách bỏ TLS handshake"
+        ],
+        "correct": 1,
+        "whyCorrect": "<strong>Multiplexing</strong> là đột phá chính: nhiều HTTP request/response interleave nhau trên 1 TCP connection bằng binary frames. HTTP/1.1 phải chờ response trước mới gửi tiếp (hoặc mở 6 conn/domain). H2 = 1 conn làm việc của 6 conn.",
+        "whyOthersWrong": {
+          "0": "HTTPS hoạt động với HTTP/1.1 từ trước. HTTP/2 không 'thêm' HTTPS — tuy nhiên browser thực tế chỉ hỗ trợ H2 qua TLS.",
+          "2": "HTTP/2 vẫn dùng TCP. HTTP/3 (QUIC) mới dùng UDP. H2 vẫn có TCP-level HOL blocking.",
+          "3": "HTTP/2 không bỏ TLS. TLS handshake vẫn cần thiết và không thể bỏ."
+        }
+      },
+      {
+        "q": "TLS handshake fail ở bước nào nếu cert đã hết hạn?",
+        "options": [
+          "Bước 1 — ClientHello không gửi được",
+          "Bước 2 — Client verify cert và từ chối vì Not After đã qua",
+          "Bước 3 — Key exchange fail vì key cũ",
+          "Bước 4 — Finished message bị reject"
+        ],
+        "correct": 1,
+        "whyCorrect": "Client verify certificate ở <strong>bước 2</strong> khi nhận ServerHello + Certificate. Check bao gồm: CA có tin cậy không, domain khớp SAN không, và <strong>thời gian hiện tại có nằm trong [Not Before, Not After] không</strong>. Cert hết hạn → fail ngay ở đây, không tiếp tục.",
+        "whyOthersWrong": {
+          "0": "ClientHello chỉ gửi capabilities, không liên quan cert. Cert chưa được gửi ở bước 1.",
+          "2": "Key exchange dùng ECDHE ephemeral key, không phải key trong cert. Cert expire không ảnh hưởng key exchange nếu đã qua verify.",
+          "3": "Finished message xác nhận handshake thành công. Nếu cert fail ở bước 2 thì đã abort rồi, không bao giờ tới bước 4."
+        }
+      },
+      {
+        "q": "502 Bad Gateway khác 503 Service Unavailable thế nào?",
+        "options": [
+          "502 = client lỗi; 503 = server lỗi",
+          "502 = gateway nhận response lỗi từ upstream; 503 = upstream không available (quá tải/chết)",
+          "Cả 2 đều có nghĩa giống nhau, chỉ khác cách config",
+          "502 = TLS lỗi; 503 = DNS lỗi"
+        ],
+        "correct": 1,
+        "whyCorrect": "<strong>502</strong>: nginx/LB kết nối được upstream nhưng upstream trả response không hợp lệ hoặc bị crash giữa chừng. <strong>503</strong>: upstream hoàn toàn không available — quá tải (rate limit), chưa sẵn sàng (deployment), hoặc chết. Debug khác nhau: 502 → check app crash log; 503 → check capacity/deployment.",
+        "whyOthersWrong": {
+          "0": "Cả 2 đều là 5xx = server error. Không có 5xx nào là 'client lỗi'.",
+          "2": "502 và 503 có nguyên nhân và debug path khác nhau rõ ràng. Không giống nhau.",
+          "3": "TLS và DNS lỗi không ra 502/503 — chúng fail trước khi HTTP bắt đầu."
+        }
+      },
+      {
+        "q": "Tại sao Wireshark capture HTTPS chỉ thấy 'Application Data' thay vì HTTP headers?",
+        "options": [
+          "HTTPS dùng port khác nên Wireshark không hiểu",
+          "TLS encrypt toàn bộ HTTP payload sau handshake — Wireshark không có session key để decrypt",
+          "HTTP/2 dùng binary nên Wireshark không decode được",
+          "Wireshark cần filter đúng mới thấy"
+        ],
+        "correct": 1,
+        "whyCorrect": "<strong>TLS encrypt</strong> toàn bộ payload L7 sau khi handshake xong. Wireshark thấy bytes nhưng không thể decrypt vì không có session keys (được tạo từ ECDHE — không truyền qua wire). Giải pháp: dùng <code>SSLKEYLOGFILE</code> để export keys từ browser/curl, rồi load vào Wireshark.",
+        "whyOthersWrong": {
+          "0": "Wireshark hoạt động với port 443 bình thường. Vẫn thấy TLS handshake, TCP segments.",
+          "2": "Binary framing của H2 là lý do khác — nhưng ngay cả H2 qua cleartext Wireshark vẫn decode được. Vấn đề ở đây là TLS encryption.",
+          "3": "Filter đúng vẫn không giúp nếu data đã encrypt. Filter chỉ để show/hide packets."
+        }
+      },
+      {
+        "q": "Vì sao tcpdump KHÔNG thấy được HTTP body khi truy cập https://example.com?",
+        "options": [
+          "Vì HTTPS dùng UDP",
+          "Vì payload bị mã hoá bởi TLS",
+          "Vì tcpdump chặn HTTPS",
+          "Vì port 443 không hỗ trợ filter"
+        ],
+        "correct": 1,
+        "whyCorrect": "TLS mã hoá toàn bộ application data sau handshake; tcpdump chỉ thấy TLS records (handshake plaintext + ciphertext bên trong).",
+        "whyWrong": {
+          "0": "HTTPS vẫn dùng TCP",
+          "2": "tcpdump không chặn protocol nào",
+          "3": "Port 443 hoàn toàn capture được, chỉ là payload encrypted"
+        }
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "HTTP request gồm những gì?",
+        "back": "Request line (method + path + version) + Headers (key: value) + blank line + Body (optional). Ví dụ: POST /api/users HTTP/1.1 \\r\\nContent-Type: application/json\\r\\n\\r\\n{\"name\":\"Alice\"}",
+        "why": "Biết cấu trúc để debug 400 Bad Request — server từ chối thường vì thiếu header hoặc body sai format, không phải lỗi mạng."
+      },
+      {
+        "front": "HTTP response gồm những gì?",
+        "back": "Status line (version + code + reason) + Headers + blank line + Body. Ví dụ: HTTP/1.1 201 Created\\r\\nContent-Type: application/json\\r\\n\\r\\n{\"id\":42}",
+        "why": "Status code + headers là tất cả server nói với client. Đọc status trước, rồi đọc body error message — không bao giờ đọc body trước khi check status."
+      },
+      {
+        "front": "GET vs POST — khác gì về kỹ thuật?",
+        "back": "GET: không có body, params trong URL (?key=val). POST: có body, params trong body. GET có thể cache, POST không cache theo mặc định. GET idempotent, POST không.",
+        "why": "API design: GET = read (safe + idempotent), POST = create. Dùng sai → cache sai, bookmark không work, browser cảnh báo 'resubmit form?'"
+      },
+      {
+        "front": "Idempotent là gì? Method nào idempotent?",
+        "back": "Gọi nhiều lần = kết quả giống gọi 1 lần. GET, PUT, DELETE, HEAD, OPTIONS là idempotent. POST, PATCH không idempotent.",
+        "why": "Quan trọng khi retry logic: nếu method idempotent thì retry an toàn. POST không idempotent → retry tạo duplicate record → cần idempotency key."
+      },
+      {
+        "front": "Status 204 No Content — body như thế nào?",
+        "back": "204 = xử lý thành công nhưng KHÔNG có body. Client không được đọc body (spec quy định). Dùng cho: DELETE thành công, PUT update không trả data.",
+        "why": "Client parse body của 204 là bug. Một số framework auto-return 204 khi handler không return gì — cần handle đúng ở phía client."
+      },
+      {
+        "front": "304 Not Modified — hoạt động thế nào?",
+        "back": "Client gửi If-None-Match (với ETag) hoặc If-Modified-Since. Server so sánh: nếu resource chưa đổi → trả 304 không có body. Client dùng lại bản cache.",
+        "why": "304 là cơ chế conditional GET — tiết kiệm bandwidth lớn. Nếu API trả 304 mà client không cache đúng → dữ liệu stale mà không biết."
+      },
+      {
+        "front": "429 Too Many Requests — phải làm gì?",
+        "back": "Server đang rate limit. Check header: Retry-After (thời gian chờ), X-RateLimit-Remaining (còn bao nhiêu quota). Phải implement exponential backoff, không retry ngay.",
+        "why": "Retry ngay sau 429 = bị ban IP hoặc key. Hầu hết API (GitHub, AWS, Stripe) đều có rate limit — phải handle 429 đúng cách trong production code."
+      },
+      {
+        "front": "HTTP/1.1 Keep-Alive làm gì?",
+        "back": "Dùng lại TCP connection cho nhiều request thay vì mở TCP mới mỗi lần. Header Connection: keep-alive. Giảm overhead 3-way handshake.",
+        "why": "Trước keep-alive: mỗi HTTP request = 1 TCP handshake mới = 1.5 RTT overhead. Keep-alive giảm đáng kể số handshake, đặc biệt quan trọng với latency cao."
+      },
+      {
+        "front": "HTTP/2 multiplexing giải quyết vấn đề gì?",
+        "back": "HTTP/1.1: 1 request tại 1 thời điểm trên 1 TCP conn (pipelining broken). H2: nhiều stream song song trên 1 conn bằng binary frames. Browser không cần 6 conn/domain nữa.",
+        "why": "Website nhiều asset (10-50 JS/CSS/image): HTTP/1.1 phải queue → head-of-line blocking. H2 multiplex = tất cả load song song → Page Load Time giảm rõ rệt."
+      },
+      {
+        "front": "HPACK trong HTTP/2 là gì?",
+        "back": "Header compression cho HTTP/2. Dùng: (1) static table (common headers như :method, :path), (2) dynamic table (headers đã gửi trong session), (3) Huffman encoding.",
+        "why": "HTTP headers lặp lại mỗi request (User-Agent, Cookie, Accept...) có thể chiếm 500-1000 bytes. HPACK nén còn vài chục bytes → giảm đáng kể overhead đặc biệt với mobile."
+      },
+      {
+        "front": "SNI (Server Name Indication) là gì?",
+        "back": "Extension trong TLS ClientHello: client gửi kèm hostname đích muốn kết nối. Server dùng SNI để chọn đúng certificate khi host nhiều domain trên cùng 1 IP.",
+        "why": "Không có SNI: 1 IP chỉ serve được 1 cert → không làm virtual hosting HTTPS được. SNI là lý do CDN/cloud có thể host hàng triệu domain trên ít IP."
+      },
+      {
+        "front": "Forward secrecy (PFS) là gì? Tại sao quan trọng?",
+        "back": "Mỗi TLS session dùng ephemeral key (ECDHE) khác nhau. Session key không derive từ server's private key → compromise server key sau này không decrypt được traffic cũ.",
+        "why": "Không có PFS: nếu private key bị lấy cắp sau này, kẻ tấn công có thể decrypt toàn bộ traffic đã record. PFS đảm bảo past sessions vẫn an toàn dù key bị expose."
+      },
+      {
+        "front": "ALPN là gì? Liên quan HTTP/2 thế nào?",
+        "back": "Application-Layer Protocol Negotiation — TLS extension cho phép client + server negotiate protocol (h2 vs http/1.1) trong TLS handshake mà không cần thêm round trip.",
+        "why": "HTTP/2 cần ALPN để negotiate protocol 'h2' với server. Không có ALPN → fallback HTTP/1.1. Cần check nginx config: <code>listen 443 ssl http2</code>."
+      },
+      {
+        "front": "Filter BPF chỉ bắt SYN packet?",
+        "back": "`tcp[tcpflags] & tcp-syn != 0` — kiểm tra bit SYN trong flags byte (offset 13 trong TCP header)."
+      }
+    ],
+    "try_at_home": [
+      {
+        "why": "Thấy raw wire format HTTP request và response — cơ bản nhất để hiểu HTTP hoạt động thế nào",
+        "cmd": "# Xem full request/response headers\ncurl -v https://httpbin.org/get\n\n# Gửi POST với JSON body\ncurl -v -X POST https://httpbin.org/post \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"hello\":\"world\"}'",
+        "observeWith": "Trong curl -v output: dòng '> POST /post HTTP/1.1' xác nhận method và path; dòng '> Content-Type: ...' xác nhận header đã gửi; '< HTTP/2 200' xác nhận version và status. Tìm dòng 'Content-Length' để verify body size. So sánh request thực tế với những gì curl -v hiện ra."
+      },
+      {
+        "why": "Tự tay kiểm tra TLS cert của bất kỳ site nào — debug SSL error không cần browser",
+        "cmd": "# Xem cert chi tiết\nopenssl s_client -connect github.com:443 \\\n  -servername github.com </dev/null 2>&1 | \\\n  openssl x509 -noout -text | \\\n  grep -E 'Subject:|Not After:|DNS:'\n\n# Nhanh hơn: chỉ xem expiry\necho | openssl s_client -connect github.com:443 2>/dev/null | \\\n  openssl x509 -noout -dates",
+        "observeWith": "Xác nhận: 'Subject: CN=github.com' (domain đúng không), 'Not After: ...' (còn bao nhiêu ngày), 'DNS:*.github.com' (wildcard có cover subdomain không). 'Verify return code: 0 (ok)' nghĩa là cert chain valid. Nếu thấy error code khác 0 → cert problem cụ thể."
+      },
+      {
+        "why": "Verify HTTP/2 negotiation — biết server có hỗ trợ H2 không và ALPN trả gì",
+        "cmd": "# Check version đang dùng\ncurl -I --http2 https://www.cloudflare.com 2>&1 | head -3\n\n# Xem ALPN negotiation\nopenssl s_client -connect www.cloudflare.com:443 \\\n  -alpn h2,http/1.1 2>&1 | grep -E 'ALPN|Protocol'\n\n# So sánh thời gian H1 vs H2 (nhiều request)\ntime curl -s --http1.1 https://www.cloudflare.com > /dev/null\ntime curl -s --http2 https://www.cloudflare.com > /dev/null",
+        "observeWith": "curl -I --http2 phải trả 'HTTP/2 200' ở dòng đầu. openssl output phải có 'ALPN protocol: h2' nếu server hỗ trợ H2. time comparison: H2 thường nhanh hơn H1 vài ms do HPACK và connection reuse. Nếu H2 chậm hơn cho single request → overhead handshake, H2 có lợi với nhiều concurrent request."
+      },
+      {
+        "why": "Thực nghiệm với từng status code — hiểu sự khác biệt 4xx vs 5xx bằng tay",
+        "cmd": "# Xem các status code thực tế\nfor code in 200 201 204 301 400 401 403 404 429 500 502 503; do\n  printf \"Status %s: \" $code\n  curl -o /dev/null -s -w '%{http_code}\\n' \\\n    https://httpbin.org/status/$code\ndone",
+        "observeWith": "Mỗi dòng output phải match chính xác status code đã request (ví dụ 'Status 404: 404'). Chú ý 301: curl -o /dev/null -s -w '%{http_code}' sẽ trả 301 (không follow), thêm -L sẽ trả 200 (sau redirect). Thử thêm -w '%{http_code} %{redirect_url}\\n' để thấy URL redirect."
+      },
+      {
+        "why": "Debug redirect chain — biết 301/302 dẫn tới đâu, bao nhiêu hop",
+        "cmd": "# Follow và show toàn bộ redirect chain\ncurl -v -L https://httpbin.org/redirect/3 2>&1 | grep -E '^[<>] |^\\* '\n\n# Chỉ show URLs trong chain\ncurl -L -o /dev/null -s -w '%{url_effective}\\n' \\\n  https://httpbin.org/redirect-to?url=https://example.com",
+        "observeWith": "Trong curl -v -L output: thấy '< HTTP/1.1 302 FOUND' rồi '< Location: ...' cho mỗi hop redirect. Đếm số lần xuất hiện '< HTTP' để biết có bao nhiêu redirect hop. url_effective cuối cùng là URL thật sau khi follow hết chain. Nếu thấy redirect loop (quá 30 hop) → curl báo 'Maximum redirects reached'."
+      },
+      {
+        "why": "Decrypt HTTPS với SSLKEYLOGFILE — debug khi curl không đủ thông tin, cần xem Wireshark",
+        "cmd": "# Export TLS session keys\nexport SSLKEYLOGFILE=/tmp/tls-keys.log\ncurl https://httpbin.org/get > /dev/null\ncat /tmp/tls-keys.log | head -5\n\n# Capture đồng thời để mở Wireshark\nexport SSLKEYLOGFILE=/tmp/tls-keys.log\nsudo tcpdump -i any -w /tmp/capture.pcap 'host httpbin.org' &\ncurl https://httpbin.org/get\nsudo pkill tcpdump\n# Mở Wireshark: Edit→Preferences→TLS→Pre-Master-Secret: /tmp/tls-keys.log",
+        "observeWith": "cat /tmp/tls-keys.log phải có dòng bắt đầu bằng 'CLIENT_RANDOM ...' — đây là session key. Mở Wireshark với capture.pcap và load key file: filter 'http2' phải thấy HEADERS frame thay vì 'Application Data'. Nếu vẫn thấy 'Application Data' → key file path sai hoặc curl version không hỗ trợ SSLKEYLOGFILE."
+      },
+      {
+        "cmd": "tcpdump -i any -n -A 'tcp port 80'",
+        "why": "`-A` in payload ASCII → đọc HTTP request/response thô (chỉ áp dụng cho plaintext)",
+        "observeWith": "`curl http://example.com` ở terminal khác — quan sát GET / HTTP/1.1 và status line 200 OK"
+      },
+      {
+        "cmd": "tcpdump -i any -n -s0 -w /tmp/http.pcap 'tcp port 80'",
+        "why": "`-s0` capture full packet (không truncate), `-w` ghi pcap để mở Wireshark hoặc tải vào playground SEE",
+        "observeWith": "Sau capture: `tcpdump -r /tmp/http.pcap` đọc lại; hoặc kéo file vào tab Upload .pcap ở SEE section"
+      },
+      {
+        "cmd": "tcpdump -i any -n 'tcp[tcpflags] & tcp-syn != 0'",
+        "why": "Filter SYN packet để debug 3-way handshake / connection storm",
+        "observeWith": "Đếm SYN khi browser load 1 trang — mỗi origin host thường 1 SYN/connection"
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "HTTP/2 tự động bật khi cài nginx phiên bản mới",
+        "right": "HTTP/2 yêu cầu thêm tham số http2 vào listen directive và negotiate qua ALPN (<a href=\"https://datatracker.ietf.org/doc/html/rfc7301\">RFC 7301</a>) trong TLS handshake; browsers chỉ hỗ trợ HTTP/2 over TLS trên thực tế — không có TLS thì không có HTTP/2.",
+        "why": "Deploy nginx mới không thấy lợi ích multiplexing vì thiếu config — kiểm tra bằng curl -I --http2 domain.com, dòng đầu phải là HTTP/2 200. Nếu thấy HTTP/1.1 200 → ALPN chưa negotiate được h2."
+      },
+      {
+        "wrong": "301 redirect có thể rollback dễ dàng bằng cách thay đổi config server",
+        "right": "<a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-15.4.2\">RFC 9110 §15.4.2</a> quy định 301 được cache vĩnh viễn bởi browser — một khi đã cache, browser không hỏi lại server cho đến khi user clear cache. Server không thể force-expire 301 đã cache ở phía client.",
+        "why": "Redirect sai path dùng 301 thay vì 302 → user bị stuck ở destination sai kể cả sau khi đã fix server config. Luôn test redirect logic với 302 trước khi chuyển sang 301 sau khi xác nhận đúng."
+      },
+      {
+        "wrong": "4xx error nghĩa là server bị lỗi và cần restart",
+        "right": "<a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-15.5\">RFC 9110 §15.5</a> định nghĩa 4xx là lỗi do client request sai (sai format, thiếu auth, không có quyền, không tìm thấy resource). <a href=\"https://datatracker.ietf.org/doc/html/rfc9110#section-15.6\">RFC 9110 §15.6</a> định nghĩa 5xx mới là lỗi server. Debug 4xx = fix request, không restart server.",
+        "why": "Restart server khi gặp 401/404 là sai hướng hoàn toàn và gây downtime không cần thiết. 401 → kiểm tra token/credentials; 403 → kiểm tra IAM/RBAC; 404 → kiểm tra URL và route config; 400 → kiểm tra body/header format."
+      },
+      {
+        "wrong": "HTTPS chỉ encrypt data, không làm gì khác",
+        "right": "TLS cung cấp 2 đảm bảo độc lập theo <a href=\"https://datatracker.ietf.org/doc/html/rfc8446#section-1\">RFC 8446 §1</a>: (1) confidentiality — encrypt payload; (2) authentication — xác thực certificate chống MITM. Accept self-signed cert blindly → encrypt hoạt động nhưng không xác thực identity → attacker vẫn MITM được.",
+        "why": "Internal service dùng self-signed cert với certificate validation disabled → traffic encrypted nhưng không authenticated. Attacker trong cùng network có thể MITM toàn bộ internal traffic — false sense of security."
+      },
+      {
+        "wrong": "HTTP/1.1 keep-alive và HTTP/2 multiplexing là cùng tính năng",
+        "right": "Keep-alive (<a href=\"https://datatracker.ietf.org/doc/html/rfc9112#section-9.3\">RFC 9112 §9.3</a>) reuse TCP connection nhưng vẫn serialize request — chỉ 1 request/response active tại 1 thời điểm. HTTP/2 multiplexing (<a href=\"https://datatracker.ietf.org/doc/html/rfc9113#section-5\">RFC 9113 §5</a>) cho phép nhiều stream song song trên 1 TCP connection, không blocking lẫn nhau.",
+        "why": "Nhầm lẫn dẫn đến không biết khi nào cần upgrade từ HTTP/1.1 lên HTTP/2: nếu trang có nhiều asset nhỏ (CSS, JS, images), HTTP/2 multiplexing giảm latency đáng kể vì không cần chờ response trước xong mới gửi request tiếp."
+      },
+      {
+        "wrong": "tcpdump thấy được HTTPS plaintext",
+        "right": "HTTPS encrypt với TLS; tcpdump chỉ thấy TLS records (handshake + ciphertext), không thấy GET/POST body",
+        "why": "Cần SSLKEYLOGFILE + Wireshark để decrypt phía dev/test. tcpdump không decrypt traffic."
+      },
+      {
+        "wrong": "`tcp port 80` đủ bắt mọi HTTP",
+        "right": "HTTP có thể trên port 8080, 8000, 3000, 8443… Cần filter port cụ thể của app, hoặc dùng `tcp portrange 8000-8999`",
+        "why": "Port 80 là default chuẩn nhưng app dev thường dùng port khác để tránh sudo bind"
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "HttpPlayground"
+    }
+  }
+}

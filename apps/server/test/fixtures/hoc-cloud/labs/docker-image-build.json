@@ -1,0 +1,561 @@
+{
+  "lab": {
+    "slug": "docker-image-build",
+    "module": "03-docker",
+    "title": "Docker · Phần 2 — Dockerfile, Build image & Registry",
+    "estimated_minutes": 55,
+    "content_hash": "b30ce7b03c3bbc910c8f9ce416667eaed531cfe26f366696d8a407a8642f9bbd",
+    "updated_at": 1786110777,
+    "tldr": [
+      {
+        "what": "Quyền gọi Docker & thư mục làm việc của user",
+        "why": "Docker daemon nghe qua socket thuộc <code>root:docker</code>: user thường phải ở group <code>docker</code> mới gọi được, hoặc thêm <code>sudo</code> vào mọi lệnh (<a href=\"https://docs.docker.com/engine/install/linux-postinstall/\">Docker: post-installation steps</a>). Cùng lý do phân quyền: user thường không ghi được vào <code>/opt</code>, nên thư mục ứng dụng đặt trong <code>$HOME</code> hoặc phải được cấp quyền sở hữu trước.",
+        "whyBreaks": "Trộn hai cách gọi (<code>sudo docker login</code> rồi <code>docker push</code>) làm push bị từ chối vì thông tin đăng nhập lưu theo từng user; tạo file bằng <code>sudo</code> rồi build bằng user thường làm bước sửa nội dung sau đó bị từ chối.",
+        "deploymentUse": "Trên máy chạy CI, cấp cho user chạy pipeline quyền vào group docker (hoặc dùng runner riêng) và đăng nhập registry bằng đúng user đó — không đăng nhập bằng root rồi build bằng user khác."
+      },
+      {
+        "what": "Base image & mức tối giản",
+        "why": "FROM chọn nền để dựng image. Bản đầy đủ có sẵn shell và công cụ; bản slim/alpine cắt bớt; distroless chỉ còn runtime, không shell, không trình quản lý gói (<a href=\"https://github.com/GoogleContainerTools/distroless\">distroless</a>). Nhiều nơi chuẩn hoá sẵn một bộ base image nội bộ để mọi ứng dụng cùng xuất phát từ nền đã được kiểm duyệt.",
+        "whyBreaks": "Base image thừa gói kéo theo lỗ hổng phải vá và dung lượng phải tải mỗi lần deploy.",
+        "deploymentUse": "Chuẩn hoá base image cho toàn tổ chức; môi trường chạy thật ưu tiên bản tối giản, giữ bản có shell cho khâu chẩn đoán."
+      },
+      {
+        "what": "Dockerfile & các chỉ thị dùng thường xuyên",
+        "why": "Tên file mặc định là Dockerfile (đặt tên khác phải chỉ định -f). Dùng nhiều nhất: FROM (nền), COPY (đưa file vào image), RUN (chạy lệnh lúc build), WORKDIR, ENV, ARG, EXPOSE, CMD (<a href=\"https://docs.docker.com/reference/dockerfile/\">Dockerfile reference</a>).",
+        "whyBreaks": "Nhầm lệnh chạy lúc build (RUN) với lệnh chạy khi container khởi động (CMD) làm image build xong nhưng không chạy đúng.",
+        "deploymentUse": "Giữ Dockerfile cạnh mã nguồn và đưa vào quản lý phiên bản — đó là mô tả tái lập được của môi trường chạy."
+      },
+      {
+        "what": "Build context & dấu chấm cuối lệnh",
+        "why": "docker build -t ten:tag . — dấu chấm là build context, thư mục được đóng gói gửi cho quá trình build và cũng là nơi tìm Dockerfile (<a href=\"https://docs.docker.com/build/concepts/context/\">Docker: build context</a>).",
+        "whyBreaks": "Đứng sai thư mục khi build làm COPY không tìm thấy file, hoặc gửi đi cả thư mục khổng lồ không liên quan.",
+        "deploymentUse": "Đặt Dockerfile ở gốc thư mục ứng dụng để context gọn đúng phần cần thiết."
+      },
+      {
+        "what": ".dockerignore",
+        "why": "Loại file khỏi build context: thư mục .git, node_modules, file .env, khoá riêng, sản phẩm build cũ (<a href=\"https://docs.docker.com/build/concepts/context/#dockerignore-files\">Docker: .dockerignore</a>). Vừa giảm dung lượng gửi đi vừa chặn đường file nhạy cảm lọt vào image.",
+        "whyBreaks": "Image được đẩy lên registry công cộng mang theo bí mật là sự cố lộ thông tin, không phải lỗi nhỏ.",
+        "deploymentUse": "Tạo .dockerignore cùng lúc với Dockerfile; bí mật cần lúc build thì dùng cơ chế build secret."
+      },
+      {
+        "what": "Tầng image & cache khi build",
+        "why": "Mỗi chỉ thị tạo một tầng; tầng không đổi thì được tái sử dụng, tầng bị đổi làm mọi tầng phía sau phải dựng lại (<a href=\"https://docs.docker.com/build/cache/\">Docker: build cache</a>). Các tầng dùng chung giữa nhiều image nên kéo image thứ hai cùng nền thì nhanh hơn nhiều.",
+        "whyBreaks": "Đặt bước copy mã nguồn trước bước cài phụ thuộc khiến mỗi lần sửa code là cài lại toàn bộ phụ thuộc.",
+        "deploymentUse": "Sắp xếp Dockerfile theo mức độ ít thay đổi trước, hay thay đổi sau để pipeline CI không phải build lại từ đầu."
+      },
+      {
+        "what": "Kiểm chứng image vừa build",
+        "why": "docker image ls xem kích thước; docker image inspect đọc metadata; docker image history liệt kê các tầng theo thứ tự, thấy rõ phần image gốc và phần vừa thêm (<a href=\"https://docs.docker.com/reference/cli/docker/image/history/\">docker image history</a>).",
+        "whyBreaks": "Không kiểm chứng thì không biết image có thật sự chứa nội dung mình nghĩ hay không.",
+        "deploymentUse": "Đưa bước kiểm chứng image vào pipeline trước khi cho phép đẩy lên registry."
+      },
+      {
+        "what": "Registry: nơi image sống sau khi rời máy build",
+        "why": "docker login → docker tag <code>&lt;image&gt;</code> <code>&lt;registry&gt;/&lt;tai-khoan&gt;/&lt;kho&gt;:&lt;tag&gt;</code> → docker push (<a href=\"https://docs.docker.com/reference/cli/docker/image/push/\">docker push</a>). Lựa chọn phổ biến: Docker Hub, Quay.io, GHCR, hoặc bản tự vận hành như Harbor/Nexus khi cần riêng tư. Docker Hub áp hạn mức số lượt pull theo tài khoản (<a href=\"https://docs.docker.com/docker-hub/usage/\">Docker Hub: usage limits</a>).",
+        "whyBreaks": "Pipeline CI kéo image ẩn danh vượt hạn mức sẽ hỏng build vào đúng lúc bận nhất.",
+        "deploymentUse": "Đăng nhập bằng tài khoản có hạn mức riêng, hoặc dùng registry nội bộ làm bản sao trung gian cho image dùng nhiều."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "Kiểm tra quyền gọi Docker, rồi chuẩn bị ứng dụng và build context",
+        "why": "Trước hết xác nhận user hiện tại gọi được Docker daemon — user ngoài group <code>docker</code> bị từ chối ngay ở lệnh đầu tiên (<a href=\"https://docs.docker.com/engine/install/linux-postinstall/\">Docker: post-installation steps</a>). Sau đó tạo thư mục chứa ứng dụng trong <code>$HOME</code> (user nào cũng ghi được) và đặt Dockerfile ngay tại gốc thư mục đó. Build context là thư mục truyền vào lệnh build — mọi đường dẫn trong COPY đều tính tương đối theo nó (<a href=\"https://docs.docker.com/build/concepts/context/\">Docker: build context</a>).",
+        "whyBreaks": "Context quá rộng làm bước build chậm và mang theo file không liên quan. Đặt thư mục ở <code>/opt</code> mà chưa cấp quyền thì user thường không tạo nổi thư mục, còn tạo bằng <code>sudo</code> lại khiến các bước sửa nội dung sau đó bị từ chối.",
+        "observeWith": "id để xem group ; ls -la trong thư mục ứng dụng ; du -sh . để ước lượng context",
+        "code": "whoami\nid\ndocker version\nmkdir -p ~/inet-web && cd ~/inet-web\necho \"<h1>Image duoc tao bang Dockerfile</h1>\" > index.html\nls -la\npwd\ndu -sh .",
+        "failModes": [
+          {
+            "symptom": "Lệnh docker đầu tiên bị từ chối",
+            "evidence": "permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock"
+          },
+          {
+            "symptom": "Không tạo được thư mục dự định đặt ở /opt",
+            "evidence": "mkdir: cannot create directory ‘/opt/inet-web’: Permission denied"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Thêm user vào group docker rồi áp dụng ngay cho shell hiện tại (hoặc đăng nhập lại)",
+            "command": "sudo usermod -aG docker \"$USER\" && newgrp docker && docker version"
+          },
+          {
+            "step": "Nếu muốn giữ thư mục ở /opt thì cấp quyền sở hữu cho user trước khi làm việc",
+            "command": "sudo mkdir -p /opt/inet-web && sudo chown \"$USER\":\"$USER\" /opt/inet-web && cd /opt/inet-web"
+          }
+        ],
+        "note": "Chọn một cách gọi Docker — có sudo hoặc không — và giữ nguyên đến hết lab, vì thông tin đăng nhập registry ở bước 8 lưu riêng theo từng user."
+      },
+      {
+        "step": 2,
+        "what": "Viết Dockerfile",
+        "why": "Tên file cố định là Dockerfile. FROM chọn nền; LABEL gắn metadata mô tả; COPY đưa nội dung vào image; EXPOSE khai báo cổng ứng dụng lắng nghe (<a href=\"https://docs.docker.com/reference/dockerfile/\">Dockerfile reference</a>).",
+        "whyBreaks": "Đặt tên file khác mà quên -f thì lệnh build báo không tìm thấy Dockerfile.",
+        "observeWith": "cat Dockerfile",
+        "code": "cat > Dockerfile <<'EOF'\nFROM nginx:1.27-alpine\nLABEL maintainer=\"hoc-vien\"\nLABEL description=\"Trang web tinh dong goi bang Dockerfile\"\nCOPY index.html /usr/share/nginx/html/index.html\nEXPOSE 80\nEOF\ncat Dockerfile",
+        "note": "EXPOSE chỉ khai báo trong metadata; publish thật vẫn cần -p lúc chạy container."
+      },
+      {
+        "step": 3,
+        "what": "Viết .dockerignore trước khi build",
+        "why": "Toàn bộ context được gửi cho quá trình build. .dockerignore loại file rác và file nhạy cảm ra khỏi gói đó — quan trọng vì image thường được đẩy lên registry và có thể là public (<a href=\"https://docs.docker.com/build/concepts/context/#dockerignore-files\">Docker: .dockerignore</a>).",
+        "whyBreaks": "Thiếu .dockerignore, một chỉ thị COPY diện rộng kéo theo .env/khoá riêng/thư mục .git vào image.",
+        "observeWith": "cat .dockerignore ; docker build hiển thị dung lượng context gửi đi",
+        "code": "cat > .dockerignore <<'EOF'\n.git\n.env\n*.key\n*.pem\nnode_modules\ndist\nEOF\ncat .dockerignore",
+        "failModes": [
+          {
+            "symptom": "Image public bị phát hiện chứa thông tin nội bộ",
+            "evidence": "Bóc image bằng docker history/inspect thấy file cấu hình lẽ ra không được đóng gói"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Loại file nhạy cảm khỏi context và build lại image",
+            "command": "echo \".env\" >> .dockerignore && docker build -t inet-web:v1 ."
+          },
+          {
+            "step": "Xoay lại bí mật đã lộ, không chỉ xoá khỏi image",
+            "command": "# thu hồi và phát hành lại token/khoá đã bị đóng gói"
+          }
+        ]
+      },
+      {
+        "step": 4,
+        "what": "Build image và đọc output từng bước",
+        "why": "docker build -t ten:tag . dựng image theo từng chỉ thị. Output đánh số theo các bước cần thực thi (kéo nền, sao chép nội dung); phần còn lại là bước ghi metadata (<a href=\"https://docs.docker.com/reference/cli/docker/buildx/build/\">docker build</a>).",
+        "whyBreaks": "Quên dấu chấm cuối lệnh thì Docker không biết build context ở đâu và lệnh thất bại.",
+        "observeWith": "docker image ls trước và sau khi build",
+        "code": "docker image ls | grep inet-web\ndocker build -t inet-web:v1 .\ndocker image ls | grep inet-web",
+        "failModes": [
+          {
+            "symptom": "Build dừng ở bước COPY",
+            "evidence": "failed to compute cache key: \"/index.html\" not found"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Chạy build từ đúng thư mục chứa file cần copy",
+            "command": "cd ~/inet-web && docker build -t inet-web:v1 ."
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "what": "Kiểm chứng image vừa tạo",
+        "why": "history liệt kê các tầng theo thứ tự — tầng phía trên là phần vừa thêm, phía dưới là image nền. inspect đọc metadata đầy đủ gồm cả LABEL và cổng đã khai báo (<a href=\"https://docs.docker.com/reference/cli/docker/image/history/\">docker image history</a>, <a href=\"https://docs.docker.com/reference/cli/docker/image/\">docker image</a>).",
+        "whyBreaks": "Không kiểm chứng thì tưởng đã đóng gói phiên bản mới trong khi build vẫn dùng lại tầng cache cũ.",
+        "observeWith": "docker image history inet-web:v1 ; docker image inspect --format ... inet-web:v1",
+        "code": "docker image history inet-web:v1\ndocker image inspect --format \"{{.Config.Labels}}\" inet-web:v1\ndocker image inspect --format \"{{.Config.ExposedPorts}}\" inet-web:v1\ndocker image inspect --format \"{{.Os}} {{.Architecture}} {{.Size}}\" inet-web:v1"
+      },
+      {
+        "step": 6,
+        "what": "Chạy image tự build và phân biệt hai loại log",
+        "why": "Chạy image vừa tạo như mọi image khác. Log của quá trình build nằm ở output lệnh build; docker logs chỉ cho thấy log lúc container chạy — hai nguồn khác nhau, không thay thế nhau.",
+        "whyBreaks": "Đi tìm nguyên nhân build hỏng trong docker logs sẽ không bao giờ thấy, vì lỗi build không nằm ở đó.",
+        "observeWith": "curl http://localhost:8080 ; docker logs inet-web",
+        "code": "docker run -d --name inet-web -p 8080:80 inet-web:v1\ndocker ps\ncurl -s http://localhost:8080\ndocker logs inet-web",
+        "note": "Nội dung trang là file index.html đã được nhồi vào image — chạy image này ở máy nào cũng ra đúng nội dung đó."
+      },
+      {
+        "step": 7,
+        "what": "Sửa nội dung và build phiên bản mới",
+        "why": "Nối tiếp bài học bất biến ở Phần 1: cách đúng để đổi nội dung lâu dài là sửa nguồn rồi build image mới với tag mới, thay vì sửa nóng trong container đang chạy (<a href=\"https://docs.docker.com/build/cache/\">Docker: build cache</a>).",
+        "whyBreaks": "Dùng lại cùng một tag cho hai nội dung khác nhau làm mất khả năng lần lại phiên bản đang chạy ở môi trường thật.",
+        "observeWith": "docker image ls (thấy hai tag) ; curl để so nội dung hai container",
+        "code": "echo \"<h1>Phien ban 2 — do hoc vien tu build</h1>\" > index.html\ndocker build -t inet-web:v2 .\ndocker image ls | grep inet-web\ndocker run -d --name inet-web-v2 -p 8081:80 inet-web:v2\ncurl -s http://localhost:8081"
+      },
+      {
+        "step": 8,
+        "what": "Tag & push lên registry",
+        "why": "Image chỉ nằm ở máy build cho tới khi được đẩy đi. Tag theo dạng <code>&lt;registry&gt;/&lt;tai-khoan&gt;/&lt;kho&gt;:&lt;tag&gt;</code>, đăng nhập rồi push; nơi khác pull về là chạy được (<a href=\"https://docs.docker.com/reference/cli/docker/image/push/\">docker push</a>, <a href=\"https://docs.docker.com/reference/cli/docker/login/\">docker login</a>). Phần <code>&lt;tai-khoan&gt;</code> là tên tài khoản trên registry, không phải username Linux đang đăng nhập trên máy.",
+        "whyBreaks": "Tag sai tên tài khoản/kho thì push bị từ chối quyền; kéo image ẩn danh vượt hạn mức làm hỏng pipeline. Đăng nhập bằng <code>sudo</code> rồi push bằng user thường cũng bị từ chối, vì hai lệnh đọc hai file thông tin đăng nhập khác nhau.",
+        "observeWith": "docker push in tiến trình từng tầng ; docker info | grep -i username để biết đang đăng nhập bằng tài khoản nào ; thử docker pull từ máy khác",
+        "code": "docker login\ndocker tag inet-web:v2 docker.io/<tai-khoan>/inet-web:v2\ndocker push docker.io/<tai-khoan>/inet-web:v2\ndocker rmi docker.io/<tai-khoan>/inet-web:v2\ndocker pull docker.io/<tai-khoan>/inet-web:v2",
+        "failModes": [
+          {
+            "symptom": "Push bị từ chối",
+            "evidence": "denied: requested access to the resource is denied"
+          },
+          {
+            "symptom": "Vẫn bị từ chối dù tag đã đúng tài khoản",
+            "evidence": "Đăng nhập bằng sudo docker login (lưu vào /root/.docker/config.json) nhưng push bằng user thường — docker info | grep -i username không hiện tài khoản nào"
+          },
+          {
+            "symptom": "Pull thất bại giữa pipeline",
+            "evidence": "toomanyrequests: You have reached your pull rate limit"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Tag lại đúng tên tài khoản và kho đích rồi push lại",
+            "command": "docker tag inet-web:v2 docker.io/<tai-khoan>/inet-web:v2"
+          },
+          {
+            "step": "Đăng nhập lại bằng đúng user sắp chạy lệnh push, rồi đối chiếu tài khoản",
+            "command": "docker login\ndocker info | grep -i username"
+          },
+          {
+            "step": "Đăng nhập bằng access token thay vì kéo ẩn danh",
+            "command": "docker login -u <tai-khoan>"
+          }
+        ],
+        "note": "Dùng access token cho docker login, không dùng mật khẩu tài khoản; token không được commit vào mã nguồn. Login và push phải cùng một user (cùng có sudo hoặc cùng không)."
+      }
+    ],
+    "quiz": [
+      {
+        "q": "EXPOSE 80 trong Dockerfile có tác dụng gì khi chạy container?",
+        "options": [
+          "Tự động mở cổng 80 trên host",
+          "Chỉ ghi khai báo vào metadata image; muốn truy cập từ ngoài vẫn phải -p lúc run",
+          "Chặn mọi cổng khác của container",
+          "Bắt ứng dụng bên trong phải lắng nghe cổng 80"
+        ],
+        "correct": 1,
+        "whyCorrect": "EXPOSE là khai báo tài liệu trong metadata, không tạo chuyển tiếp cổng nào trên host; publish thật do -p lúc docker run quyết định (<a href=\"https://docs.docker.com/reference/dockerfile/\">Dockerfile reference</a>)."
+      },
+      {
+        "q": "Dấu chấm cuối lệnh docker build -t inet-web:v1 . nghĩa là gì?",
+        "options": [
+          "Xoá cache build",
+          "Build context là thư mục hiện tại — nơi đóng gói gửi đi và nơi tìm Dockerfile",
+          "Build ở chế độ im lặng",
+          "Đánh dấu image là bản chạy thật"
+        ],
+        "correct": 1,
+        "whyCorrect": "Tham số cuối lệnh là build context: thư mục được đóng gói gửi cho quá trình build, đồng thời là nơi tìm Dockerfile và gốc tính đường dẫn của COPY (<a href=\"https://docs.docker.com/build/concepts/context/\">Docker: build context</a>)."
+      },
+      {
+        "q": "Vì sao nên đặt bước cài phụ thuộc TRƯỚC bước copy mã nguồn trong Dockerfile?",
+        "options": [
+          "Vì Docker bắt buộc thứ tự đó",
+          "Vì mã nguồn đổi thường xuyên hơn, đặt sau thì bước cài phụ thuộc vẫn dùng lại được cache",
+          "Vì image sẽ nhỏ hơn",
+          "Vì bảo mật hơn"
+        ],
+        "correct": 1,
+        "whyCorrect": "Một tầng bị đổi làm mọi tầng phía sau phải dựng lại; đặt phần ít đổi lên trước giữ được cache cho bước cài phụ thuộc vốn tốn nhiều thời gian nhất (<a href=\"https://docs.docker.com/build/cache/\">Docker: build cache</a>)."
+      },
+      {
+        "q": ".dockerignore giải quyết vấn đề gì?",
+        "options": [
+          "Ẩn container khỏi docker ps",
+          "Loại file rác và file nhạy cảm khỏi build context, tránh lọt vào image sẽ được phát hành",
+          "Bỏ qua lỗi trong quá trình build",
+          "Giới hạn dung lượng image"
+        ],
+        "correct": 1,
+        "whyCorrect": "Toàn bộ context được gửi cho quá trình build và có thể bị copy vào image; .dockerignore quyết định phần nào bị loại — quan trọng vì image thường được đẩy lên registry (<a href=\"https://docs.docker.com/build/concepts/context/#dockerignore-files\">Docker: .dockerignore</a>)."
+      },
+      {
+        "q": "Image distroless đánh đổi điều gì?",
+        "options": [
+          "Chạy chậm hơn",
+          "Bề mặt tấn công nhỏ hơn nhưng không có shell nên không exec vào chẩn đoán được",
+          "Không chạy được trên Linux",
+          "Không đẩy lên registry được"
+        ],
+        "correct": 1,
+        "whyCorrect": "Distroless chỉ giữ phần runtime, bỏ shell và trình quản lý gói — ít lỗ hổng phải vá, đổi lại phải chẩn đoán qua log hoặc bản image debug riêng (<a href=\"https://github.com/GoogleContainerTools/distroless\">GoogleContainerTools/distroless</a>)."
+      },
+      {
+        "q": "Sau khi build xong, làm sao để máy khác dùng được image đó?",
+        "options": [
+          "Máy khác tự thấy image qua mạng nội bộ",
+          "Tag theo <registry>/<user>/<repo>:<tag>, docker login rồi docker push; máy khác pull về",
+          "Copy thư mục /var/lib/docker sang máy khác",
+          "Không cần làm gì nếu cùng phiên bản Docker"
+        ],
+        "correct": 1,
+        "whyCorrect": "docker build chỉ lưu image vào kho cục bộ của máy đó; phân phối cần tag đúng đích, đăng nhập và push lên registry (<a href=\"https://docs.docker.com/reference/cli/docker/image/push/\">docker push</a>)."
+      },
+      {
+        "q": "Lệnh nào cho thấy image gốc và các tầng vừa thêm khi build?",
+        "options": [
+          "docker logs",
+          "docker image history",
+          "docker stats",
+          "docker system df"
+        ],
+        "correct": 1,
+        "whyCorrect": "docker image history liệt kê các tầng theo thứ tự kèm thời điểm và lệnh tạo ra chúng — tầng trên cùng là phần vừa thêm (<a href=\"https://docs.docker.com/reference/cli/docker/image/history/\">docker image history</a>)."
+      },
+      {
+        "q": "Đăng nhập bằng \"sudo docker login\" thành công, nhưng \"docker push\" (không sudo) báo denied dù tag đã đúng tài khoản. Nguyên nhân?",
+        "options": [
+          "Registry chưa kịp cập nhật, chờ vài phút là được",
+          "Thông tin đăng nhập lưu theo từng user: sudo ghi vào /root/.docker/config.json, còn lệnh push đọc $HOME/.docker/config.json của user thường",
+          "Image quá lớn nên bị từ chối",
+          "Phải build lại image bằng sudo"
+        ],
+        "correct": 1,
+        "whyCorrect": "<code>docker login</code> ghi thông tin đăng nhập vào <code>$HOME/.docker/config.json</code> của user chạy lệnh, nên login bằng sudo và push bằng user thường là hai phiên khác nhau — đăng nhập lại bằng đúng user sắp push, hoặc dùng sudo cho cả hai lệnh (<a href=\"https://docs.docker.com/reference/cli/docker/login/\">docker login</a>)."
+      },
+      {
+        "q": "Thêm user vào group docker có ý nghĩa gì về mặt quyền?",
+        "options": [
+          "Cấp quyền hạn chế, an toàn hơn hẳn root",
+          "Cho phép gọi Docker daemon qua socket, nhưng quyền đó tương đương root trên host vì container có thể gắn toàn bộ hệ thống tệp",
+          "Chỉ cho phép chạy container, không build được image",
+          "Không ảnh hưởng gì, chỉ để tiện gõ lệnh"
+        ],
+        "correct": 1,
+        "whyCorrect": "Socket <code>/var/run/docker.sock</code> thuộc <code>root:docker</code>; vào group là gọi được daemon, mà daemon chạy quyền root nên user đó có thể tạo container gắn hệ thống tệp host với quyền root (<a href=\"https://docs.docker.com/engine/install/linux-postinstall/\">Docker: post-installation steps</a>)."
+      },
+      {
+        "q": "Pipeline CI báo lỗi \"toomanyrequests: You have reached your pull rate limit\". Xử lý hợp lý nhất là gì?",
+        "options": [
+          "Build lại nhiều lần cho tới khi qua",
+          "Đăng nhập bằng tài khoản có hạn mức riêng, hoặc dùng registry nội bộ làm bản sao trung gian",
+          "Đổi sang image lớn hơn",
+          "Xoá build cache"
+        ],
+        "correct": 1,
+        "whyCorrect": "Hạn mức tính theo tài khoản kéo image; đăng nhập bằng tài khoản riêng hoặc đặt registry nội bộ làm bản sao trung gian cho image dùng nhiều sẽ cắt phụ thuộc vào hạn mức công cộng (<a href=\"https://docs.docker.com/docker-hub/usage/\">Docker Hub: usage limits</a>)."
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "FROM trong Dockerfile là gì?",
+        "back": "Chỉ thị chọn image nền để dựng image mới; kéo từ registry, có thể ghi rõ đường dẫn registry riêng.",
+        "why": "Base image quyết định dung lượng, bề mặt tấn công và công cụ có sẵn."
+      },
+      {
+        "front": "EXPOSE vs -p?",
+        "back": "EXPOSE chỉ khai báo trong metadata image; -p lúc docker run mới thật sự mở đường từ cổng host vào container."
+      },
+      {
+        "front": "Build context là gì?",
+        "back": "Thư mục truyền cuối lệnh docker build (dấu chấm) — được đóng gói gửi cho quá trình build và là gốc tính đường dẫn của COPY."
+      },
+      {
+        "front": ".dockerignore để làm gì?",
+        "back": "Loại file khỏi build context: .git, node_modules, .env, khoá riêng — giảm dung lượng gửi đi và chặn bí mật lọt vào image."
+      },
+      {
+        "front": "Vì sao thứ tự chỉ thị ảnh hưởng tốc độ build?",
+        "back": "Mỗi chỉ thị là một tầng cache; sửa một tầng làm mọi tầng phía sau phải dựng lại. Đặt phần ít đổi lên trước."
+      },
+      {
+        "front": "docker image history cho biết gì?",
+        "back": "Danh sách tầng theo thứ tự: phần dưới là image nền, phần trên là các tầng vừa thêm khi build."
+      },
+      {
+        "front": "Distroless là gì?",
+        "back": "Image chỉ có runtime, không shell, không trình quản lý gói — bề mặt tấn công nhỏ, đổi lại không exec vào chẩn đoán được."
+      },
+      {
+        "front": "Ba bước đưa image lên registry?",
+        "back": "docker login → docker tag <code>&lt;image&gt;</code> <code>&lt;registry&gt;/&lt;tai-khoan&gt;/&lt;kho&gt;:&lt;tag&gt;</code> → docker push."
+      },
+      {
+        "front": "Lỗi \"denied: requested access to the resource is denied\" nghĩa là gì?",
+        "back": "Tag không khớp tài khoản/kho đích, chưa đăng nhập, hoặc login và push chạy bằng hai user khác nhau — tag lại đúng đích rồi login và push bằng cùng một user."
+      },
+      {
+        "front": "User thường cần gì để gọi được Docker daemon?",
+        "back": "Vào group <code>docker</code> (<code>sudo usermod -aG docker \"$USER\"</code> rồi đăng nhập lại), hoặc thêm <code>sudo</code> vào mọi lệnh docker.",
+        "why": "Socket /var/run/docker.sock thuộc root:docker — ngoài group thì bị permission denied. Lưu ý group docker tương đương quyền root trên host."
+      },
+      {
+        "front": "docker login lưu thông tin đăng nhập ở đâu?",
+        "back": "<code>$HOME/.docker/config.json</code> của user chạy lệnh — <code>sudo docker login</code> lưu vào <code>/root/.docker/config.json</code>.",
+        "why": "Vì vậy login bằng sudo rồi push không sudo sẽ bị từ chối dù tài khoản registry hợp lệ."
+      },
+      {
+        "front": "Hạn mức pull của registry công cộng ảnh hưởng gì?",
+        "back": "Kéo ẩn danh vượt hạn mức làm pipeline CI hỏng; khắc phục bằng tài khoản riêng hoặc registry nội bộ làm bản sao trung gian."
+      },
+      {
+        "front": "Log build vs log container?",
+        "back": "Log quá trình build nằm ở output lệnh docker build; docker logs chỉ hiện log lúc container chạy."
+      }
+    ],
+    "try_at_home": [
+      {
+        "title": "Dockerfile đầu tiên và build image riêng",
+        "phaseType": "core",
+        "estimatedMinutes": 20,
+        "cmd": "docker build -t inet-web:v1 .",
+        "why": "Đóng gói một trang tĩnh thành image của riêng mình — bước chuyển từ \"dùng image người khác\" sang \"tạo image của mình\" (<a href=\"https://docs.docker.com/reference/dockerfile/\">Dockerfile reference</a>).",
+        "observeWith": "docker image ls | grep inet-web ; docker image history inet-web:v1",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Kiểm tra user và quyền gọi Docker: <code>whoami</code>, <code>id</code>, <code>docker version</code>. Nếu báo permission denied thì <code>sudo usermod -aG docker \"$USER\"</code> rồi <code>newgrp docker</code> — hoặc dùng <code>sudo</code> cho mọi lệnh docker và giữ nguyên cách đó.",
+            "expect": "docker version in được cả phần Client lẫn Server."
+          },
+          {
+            "n": 2,
+            "do": "Tạo thư mục ứng dụng trong <code>$HOME</code> (ví dụ <code>~/inet-web</code>) và file <code>index.html</code> với một dòng nội dung riêng.",
+            "expect": "Thư mục chứa đúng một file nội dung, tạo được mà không cần sudo."
+          },
+          {
+            "n": 3,
+            "do": "Viết <code>Dockerfile</code>: FROM một base image nginx, LABEL mô tả, COPY index.html vào web root, EXPOSE 80.",
+            "expect": "File Dockerfile tồn tại, đọc lại thấy đủ 4 chỉ thị."
+          },
+          {
+            "n": 4,
+            "do": "Viết <code>.dockerignore</code> loại <code>.git</code>, <code>.env</code>, <code>*.key</code>, <code>*.pem</code>.",
+            "expect": "File .dockerignore tồn tại trước khi build."
+          },
+          {
+            "n": 5,
+            "do": "Build: <code>docker build -t inet-web:v1 .</code> rồi <code>docker image ls | grep inet-web</code>.",
+            "expect": "Build chạy qua các bước và image inet-web:v1 xuất hiện trong danh sách."
+          }
+        ],
+        "analysis": {
+          "observation": "Output build đánh số theo các chỉ thị cần thực thi; image mới nằm trong kho cục bộ.",
+          "mechanism": "Mỗi chỉ thị dựng một tầng trên nền image gốc; context là thư mục truyền ở cuối lệnh.",
+          "lesson": "Image tự build là cách đúng để thay đổi nội dung lâu dài, thay cho sửa nóng trong container."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Build dừng ở COPY với thông báo not found",
+            "fix": "Đang build từ thư mục khác — cd về đúng thư mục chứa index.html rồi build lại."
+          },
+          {
+            "symptom": "permission denied ... /var/run/docker.sock ngay ở lệnh docker đầu tiên",
+            "fix": "User chưa ở group docker — <code>sudo usermod -aG docker \"$USER\"</code> rồi <code>newgrp docker</code> (hoặc đăng nhập lại), hoặc chạy kèm <code>sudo</code>."
+          },
+          {
+            "symptom": "mkdir: cannot create directory ‘/opt/inet-web’: Permission denied",
+            "fix": "Dùng thư mục trong <code>$HOME</code>, hoặc cấp quyền trước: <code>sudo mkdir -p /opt/inet-web && sudo chown \"$USER\":\"$USER\" /opt/inet-web</code>."
+          },
+          {
+            "symptom": "Sửa index.html báo Permission denied ở lần build thứ hai",
+            "fix": "File được tạo bằng sudo nên thuộc root — <code>sudo chown \"$USER\":\"$USER\" index.html</code> rồi sửa lại bằng user thường."
+          }
+        ]
+      },
+      {
+        "title": "Kiểm chứng và chạy image vừa build",
+        "phaseType": "core",
+        "estimatedMinutes": 15,
+        "cmd": "docker run -d --name inet-web -p 8080:80 inet-web:v1",
+        "why": "Xác nhận image thật sự chứa nội dung đã đóng gói, và phân biệt log build với log container (<a href=\"https://docs.docker.com/reference/cli/docker/image/history/\">docker image history</a>).",
+        "observeWith": "curl http://localhost:8080 ; docker logs inet-web",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Xem các tầng: <code>docker image history inet-web:v1</code>.",
+            "expect": "Tầng trên cùng là phần vừa thêm; phía dưới là các tầng của image nền."
+          },
+          {
+            "n": 2,
+            "do": "Đọc metadata: <code>docker image inspect --format \"{{.Config.Labels}}\" inet-web:v1</code> và <code>{{.Config.ExposedPorts}}</code>.",
+            "expect": "Thấy đúng LABEL và cổng đã khai báo bằng EXPOSE."
+          },
+          {
+            "n": 3,
+            "do": "Chạy container ở cổng 8080 rồi <code>curl -s http://localhost:8080</code>.",
+            "expect": "Trang trả về đúng nội dung đã đóng gói, không phải trang mặc định của image nền."
+          },
+          {
+            "n": 4,
+            "do": "Sửa index.html, build tiếp <code>inet-web:v2</code>, chạy ở cổng 8081 và so nội dung hai cổng.",
+            "expect": "Hai cổng trả hai nội dung khác nhau — mỗi tag là một phiên bản độc lập."
+          }
+        ],
+        "analysis": {
+          "observation": "Nội dung đi theo image chứ không theo container; hai tag cho hai nội dung khác nhau cùng tồn tại.",
+          "mechanism": "COPY nhồi file vào tầng image, nên mọi container tạo từ image đó đều có đúng nội dung ấy.",
+          "lesson": "Gắn phiên bản cho image là cách lần lại được môi trường thật đang chạy bản nào."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Cổng 8080 báo đang bận",
+            "fix": "Container cũ còn chiếm cổng — docker ps rồi docker rm -f, hoặc chạy ở cổng khác."
+          }
+        ]
+      },
+      {
+        "title": "Đưa image lên registry",
+        "phaseType": "core",
+        "estimatedMinutes": 20,
+        "cmd": "docker push docker.io/<tai-khoan>/inet-web:v2",
+        "why": "Image chỉ dùng được ở máy khác sau khi được đẩy lên registry — mắt xích cuối của luồng build và phân phối (<a href=\"https://docs.docker.com/reference/cli/docker/image/push/\">docker push</a>).",
+        "observeWith": "Tiến trình push từng tầng ; thử xoá image cục bộ rồi pull lại",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Đăng ký tài khoản trên một registry (Docker Hub hoặc Quay), tạo access token rồi <code>docker login</code> — chạy bằng <strong>đúng user sẽ dùng để push</strong>. Đối chiếu lại bằng <code>docker info | grep -i username</code>.",
+            "expect": "Đăng nhập thành công và lệnh đối chiếu hiện đúng tài khoản; dùng token, không dùng mật khẩu tài khoản."
+          },
+          {
+            "n": 2,
+            "do": "Tag image theo đích: <code>docker tag inet-web:v2 docker.io/&lt;tai-khoan&gt;/inet-web:v2</code>.",
+            "expect": "docker image ls hiện thêm một tên đầy đủ trỏ tới cùng image ID."
+          },
+          {
+            "n": 3,
+            "do": "Đẩy lên: <code>docker push docker.io/&lt;tai-khoan&gt;/inet-web:v2</code>.",
+            "expect": "Từng tầng được đẩy lên; kho hiện image trên giao diện web của registry."
+          },
+          {
+            "n": 4,
+            "do": "Xoá bản cục bộ rồi kéo lại: <code>docker rmi ...</code> và <code>docker pull ...</code>.",
+            "expect": "Kéo về thành công và chạy lại ra đúng nội dung — image đã sống độc lập với máy build."
+          }
+        ],
+        "analysis": {
+          "observation": "Sau khi push, image tồn tại ở nơi khác và kéo về được từ máy bất kỳ.",
+          "mechanism": "Registry lưu các tầng theo digest; tag là nhãn trỏ tới bản cụ thể.",
+          "lesson": "Quy ước đặt tên và gắn phiên bản là thứ môi trường thật dựa vào để kéo đúng bản cần chạy."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "denied: requested access to the resource is denied",
+            "fix": "Tag chưa khớp tài khoản/kho đích hoặc chưa login — tag lại đúng đích rồi login và push lại."
+          },
+          {
+            "symptom": "Vẫn denied dù tag đúng, và <code>docker info | grep -i username</code> không hiện tài khoản nào",
+            "fix": "Đã <code>sudo docker login</code> (credential nằm ở <code>/root/.docker/config.json</code>) nhưng push bằng user thường — đăng nhập lại bằng đúng user sắp push, hoặc dùng <code>sudo</code> cho cả login lẫn push."
+          },
+          {
+            "symptom": "toomanyrequests khi pull",
+            "fix": "Đăng nhập bằng tài khoản có hạn mức riêng, hoặc dùng registry nội bộ làm bản sao trung gian."
+          }
+        ]
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Muốn build và push image thì phải đăng nhập máy bằng root.",
+        "right": "User thường gọi được Docker sau khi vào group docker. Nhưng quyền đó tương đương root trên host, và thông tin đăng nhập registry lưu riêng theo từng user — nên phải chốt một cách gọi Docker rồi giữ nguyên.",
+        "why": "Docker daemon lắng nghe qua socket <code>/var/run/docker.sock</code> thuộc <code>root:docker</code>, chỉ chủ sở hữu và thành viên group đọc/ghi được; user ngoài group nhận <code>permission denied</code> ngay ở lệnh đầu tiên (<a href=\"https://docs.docker.com/engine/install/linux-postinstall/\">Docker: post-installation steps for Linux</a>). Thêm user vào group docker mở quyền đó, nhưng cũng đồng nghĩa user ấy chạy được container gắn toàn bộ hệ thống tệp của host với quyền root — tài liệu Docker nói thẳng đây là quyền tương đương root, không phải một mức quyền thấp hơn. Đi kèm là chi tiết dễ vấp: <code>docker login</code> ghi thông tin đăng nhập vào <code>$HOME/.docker/config.json</code> của <em>user chạy lệnh</em>, nên <code>sudo docker login</code> lưu vào <code>/root/.docker/config.json</code> (<a href=\"https://docs.docker.com/reference/cli/docker/login/\">docker login</a>). Hệ quả: đăng nhập bằng sudo rồi push không sudo (hoặc ngược lại) sẽ báo từ chối quyền dù tài khoản registry hoàn toàn hợp lệ — chọn một cách gọi Docker cho cả login lẫn push."
+      },
+      {
+        "wrong": "EXPOSE trong Dockerfile mở cổng cho ứng dụng truy cập được từ ngoài.",
+        "right": "EXPOSE chỉ là khai báo mang tính tài liệu trong metadata của image. Muốn truy cập từ host hay máy khác vẫn phải publish bằng -p lúc chạy container.",
+        "why": "EXPOSE ghi vào metadata image thông tin \"ứng dụng bên trong lắng nghe cổng nào\", phục vụ người đọc và một số công cụ tự động (<a href=\"https://docs.docker.com/reference/dockerfile/\">Dockerfile reference</a>). Nó không tạo bất kỳ luật chuyển tiếp nào trên host. Việc mở đường từ cổng host vào cổng container do -p (publish) lúc docker run quyết định; không có -p thì dịch vụ chỉ tồn tại trong mạng nội bộ của Docker. Hệ quả: khi ứng dụng \"chạy mà không truy cập được\", kiểm tra cột PORTS của docker ps trước, chứ không phải sửa EXPOSE trong Dockerfile rồi build lại."
+      },
+      {
+        "wrong": "Đặt thứ tự các chỉ thị trong Dockerfile thế nào cũng được, kết quả image như nhau.",
+        "right": "Kết quả chạy thì giống nhau nhưng thời gian build khác hẳn: mỗi chỉ thị là một tầng cache, sửa một tầng làm mọi tầng phía sau phải build lại.",
+        "why": "Docker dựng image theo từng chỉ thị và tái sử dụng tầng cũ khi phần đầu vào của tầng đó không đổi; một tầng bị vô hiệu thì mọi tầng sau nó cũng bị vô hiệu (<a href=\"https://docs.docker.com/build/cache/\">Docker: build cache</a>). Vì mã nguồn thay đổi thường xuyên hơn danh sách phụ thuộc, đặt COPY mã nguồn sau bước cài phụ thuộc giữ được cache của bước cài — vốn là bước tốn thời gian nhất. Làm ngược lại thì mỗi lần sửa một dòng code là cài lại toàn bộ phụ thuộc. Hệ quả: thứ tự chỉ thị là quyết định về tốc độ vòng lặp phát triển và thời lượng pipeline CI, không phải chuyện thẩm mỹ."
+      },
+      {
+        "wrong": "File nhạy cảm không được COPY vào image thì không lọt vào image.",
+        "right": "Toàn bộ build context được gửi cho quá trình build; thiếu .dockerignore thì file thừa và file nhạy cảm vẫn đi vào quy trình, và dễ lọt vào image qua các lệnh copy diện rộng.",
+        "why": "Lệnh build đóng gói thư mục context (dấu chấm trong docker build -t ten .) rồi gửi đi; .dockerignore quyết định phần nào bị loại khỏi gói đó (<a href=\"https://docs.docker.com/build/concepts/context/#dockerignore-files\">Docker: .dockerignore</a>). Một chỉ thị COPY . . sẽ mang theo mọi thứ còn lại trong context — kể cả .env, khoá riêng, thư mục .git chứa lịch sử. Image sau đó thường được đẩy lên registry và có thể là public, nghĩa là bất kỳ ai pull về đều bóc được các file này. Hệ quả: viết .dockerignore ngay khi tạo Dockerfile, và với bí mật cần cho lúc build thì dùng cơ chế secret của build thay vì copy vào image (<a href=\"https://docs.docker.com/build/building/secrets/\">Docker: build secrets</a>)."
+      },
+      {
+        "wrong": "Image càng đầy đủ công cụ càng tốt vì dễ vào trong debug.",
+        "right": "Mỗi gói thừa là một phần bề mặt tấn công và dung lượng phải kéo về mỗi lần deploy. Xu hướng là image tối thiểu; distroless còn bỏ cả shell.",
+        "why": "Image tối thiểu (slim/alpine) và distroless chỉ giữ phần runtime cần cho ứng dụng, bỏ shell và trình quản lý gói (<a href=\"https://github.com/GoogleContainerTools/distroless\">GoogleContainerTools/distroless</a>). Ít gói đồng nghĩa ít lỗ hổng phải theo dõi và vá. Đổi lại, không có shell thì không docker exec vào chạy lệnh chẩn đoán được — phải chẩn đoán qua log, qua container phụ trợ hoặc bản image debug riêng. Cùng triết lý với hệ điều hành bất biến dùng cho hạ tầng container: cài xong thì không sửa ở mức hệ thống. Hệ quả: chọn base image là một đánh đổi có ý thức giữa dễ chẩn đoán và bề mặt tấn công, nên quyết định theo môi trường (phát triển hay chạy thật) chứ không chọn theo thói quen."
+      },
+      {
+        "wrong": "Build image xong là dùng được ở mọi máy vì image đã \"đóng gói tất cả\".",
+        "right": "Image chỉ nằm trên máy vừa build cho tới khi được đẩy lên registry. Máy khác chỉ dùng được sau khi tag đúng và push, rồi pull về.",
+        "why": "docker build lưu image vào kho cục bộ của máy đó; phân phối đi nơi khác cần tag theo dạng <code>&lt;registry&gt;/&lt;tai-khoan&gt;/&lt;kho&gt;:&lt;tag&gt;</code> rồi docker login và docker push (<a href=\"https://docs.docker.com/reference/cli/docker/image/push/\">docker push</a>, <a href=\"https://docs.docker.com/reference/cli/docker/login/\">docker login</a>). Đây chính là mắt xích trong luồng CI/CD: mã nguồn được kiểm thử, build thành image, gắn phiên bản, đẩy lên registry, rồi môi trường đích kéo về đúng phiên bản đó. Registry có thể là dịch vụ công cộng hoặc bản tự vận hành khi cần riêng tư. Hệ quả: quy ước đặt tên và gắn phiên bản cho image cần thống nhất từ đầu, vì đó là thứ môi trường thật dựa vào để kéo đúng bản cần chạy."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "DockerBuildLab"
+    }
+  }
+}

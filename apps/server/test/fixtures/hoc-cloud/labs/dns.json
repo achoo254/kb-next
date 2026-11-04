@@ -1,0 +1,443 @@
+{
+  "lab": {
+    "slug": "dns",
+    "module": "01-networking",
+    "title": "Tìm hiểu giao thức DNS",
+    "estimated_minutes": 45,
+    "content_hash": "2026-04-24T06:13:24.515Z",
+    "updated_at": 1776912183,
+    "tldr": [
+      {
+        "what": "Stub resolver (client)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-5.3.1\">RFC 1034 §5.3.1</a> định nghĩa stub resolver là thành phần DNS client đơn giản nhất, nằm trong OS — không tự thực hiện recursive resolution mà chỉ forward query tới recursive resolver được cấu hình (thường qua /etc/resolv.conf). Stub resolver nhận response cuối cùng và trả về ứng dụng. Nếu stub resolver hỏng hoặc resolv.conf sai → mọi domain đều fail dù mạng IP vẫn thông.",
+        "whyBreaks": "Nếu /etc/resolv.conf trỏ sai IP resolver (ví dụ sau khi đổi network) → mọi DNS query timeout, toàn bộ service phụ thuộc hostname đều down dù network ping IP vẫn thông.",
+        "deploymentUse": "Trên VPS Ubuntu, sau khi cài đặt cần kiểm tra /etc/resolv.conf hoặc /etc/systemd/resolved.conf để đảm bảo stub resolver trỏ đúng upstream (8.8.8.8 hoặc resolver của cloud provider)."
+      },
+      {
+        "what": "Recursive resolver (8.8.8.8, ISP)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2\">RFC 1034 §4.3.2</a> định nghĩa recursive resolution: recursive resolver nhận query từ stub, tự thực hiện toàn bộ chuỗi Root → TLD → Authoritative thay cho client. Resolver gửi iterative query từng bước, tổng hợp kết quả rồi trả về cho stub kèm TTL. Google 8.8.8.8 và Cloudflare 1.1.1.1 là public recursive resolver; ISP thường cấp resolver riêng nhưng một số inject response cho NXDOMAIN.",
+        "whyBreaks": "Nếu dùng resolver ISP mà ISP redirect NXDOMAIN → trang quảng cáo, code backend nhận HTML thay vì lỗi DNS → bug khó debug. Hoặc nếu resolver bị block port 53 outbound thì mọi DNS query fail.",
+        "deploymentUse": "Khi deploy VPS, cấu hình resolver uy tín (1.1.1.1 hoặc 8.8.8.8) thay vì dùng mặc định ISP. Đặc biệt quan trọng khi app gọi external API theo hostname."
+      },
+      {
+        "what": "Root server (.)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-3.6\">RFC 1034 §3.6</a> định nghĩa root server là đỉnh của DNS hierarchy — chỉ biết NS record của từng TLD, không biết IP của domain cụ thể. Có 13 địa chỉ IP root (a–m.root-servers.net), mỗi địa chỉ dùng IP anycast với nhiều physical instance; tổng số instance >1800 trên toàn cầu theo dữ liệu từ <a href=\"https://root-servers.org\">root-servers.org</a>.",
+        "whyBreaks": "Nếu root server unreachable (hiếm nhưng xảy ra do firewall corporate chặn outbound UDP 53 tới anycast IPs) → mọi cold DNS lookup fail, chỉ cache hit vẫn hoạt động.",
+        "deploymentUse": "Không cần cấu hình trực tiếp — nhưng hiểu root server giúp giải thích tại sao DNS phân tán và tại sao không có 'central DNS database' để query."
+      },
+      {
+        "what": "TLD server (.com, .net, .vn)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-3.6\">RFC 1034 §3.6</a> định nghĩa TLD server quản lý zone delegation: biết NS record của từng domain trong TLD đó và trả về referral cho recursive resolver. .com TLD server biết ns1.example.com là authoritative cho example.com nhưng không biết IP của example.com. Khi mua domain mới và set nameserver, TLD cần 24–48h để propagate NS record.",
+        "whyBreaks": "Khi mua domain mới và trỏ nameserver → TLD cần 24-48h để propagate NS record mới. Trong thời gian này domain không resolve được — không phải bug code.",
+        "deploymentUse": "Khi đổi nhà đăng ký domain hoặc chuyển sang Cloudflare DNS, NS record được thay đổi tại registrar → TLD cập nhật → mọi resolver trên thế giới dần học NS mới theo TTL."
+      },
+      {
+        "what": "Authoritative server (ns1.example.com)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1\">RFC 1035 §4.1.1</a> định nghĩa bit AA (Authoritative Answer) trong DNS message header: khi set = 1, response đến trực tiếp từ zone's authoritative server — không phải từ cache của resolver. Authoritative server là nơi duy nhất lưu trữ record thật; mọi resolver chỉ cache bản sao theo TTL. Response từ cache của resolver có AA=0.",
+        "whyBreaks": "Nếu authoritative server down hoặc không có record → recursive resolver nhận SERVFAIL hoặc NXDOMAIN → toàn bộ domain unreachable kể cả web, email, API.",
+        "deploymentUse": "Khi dùng Cloudflare/Route53 làm DNS provider, đây chính là authoritative server. Mọi A record, CNAME, TXT tạo trong dashboard đều nằm trên authoritative server này."
+      },
+      {
+        "what": "TTL (Time To Live)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-3.5\">RFC 1034 §3.5</a> định nghĩa TTL là thời gian tính bằng giây mà resolver được phép cache record trước khi hỏi lại authoritative. TTL cao giảm query load nhưng làm chậm propagation khi thay đổi. Trước migration IP: hạ TTL về 300s ít nhất 1 TTL cycle (bằng TTL hiện tại) để tất cả resolver flush cache, sau đó thay đổi A record.",
+        "whyBreaks": "Đổi IP server khi TTL=86400 mà không hạ TTL trước → user bị stuck ở IP cũ tối đa 24h → downtime hoặc split-brain (một số user thấy server mới, số khác server cũ).",
+        "deploymentUse": "Quy trình migration VPS: (1) Hạ TTL về 300s, chờ 24h. (2) Chuyển traffic sang server mới. (3) Sau khi ổn định, tăng TTL lại 3600-86400. Bước 1 bắt buộc, không được bỏ qua."
+      },
+      {
+        "what": "Record A / AAAA",
+        "why": "A ánh xạ domain → IPv4 (<a href=\"https://datatracker.ietf.org/doc/html/rfc1035\" target=\"_blank\">RFC 1035</a>), AAAA → IPv6. Mọi web request đều cần ít nhất một trong hai record này. Browser ưu tiên hỏi AAAA trước (Happy Eyeballs), nếu không có thì fall back sang A.",
+        "whyBreaks": "Nếu thêm AAAA record trỏ sai IP IPv6 (ví dụ server chưa enable IPv6) → khoảng 30-40% user IPv6 bị timeout 2-3 giây trước khi fallback A record — UX tệ khó trace.",
+        "deploymentUse": "Khi thuê VPS, lấy IPv4 public IP → tạo A record. Nếu VPS có IPv6 → thêm AAAA. Cả hai đều trỏ về cùng server. Cloudflare proxy tự động handle dual-stack."
+      },
+      {
+        "what": "Record CNAME",
+        "why": "Alias: trỏ một tên về tên khác. www.example.com CNAME example.com. Không dùng CNAME ở root zone vì CNAME không được đặt cùng record khác — vi phạm <a href=\"https://datatracker.ietf.org/doc/html/rfc2181\" target=\"_blank\">RFC 2181</a>.",
+        "whyBreaks": "Đặt CNAME ở apex domain (example.com thay vì www.example.com) → vi phạm <a href=\"https://datatracker.ietf.org/doc/html/rfc2181\" target=\"_blank\">RFC 2181</a>, nhiều DNS provider từ chối hoặc hành vi không xác định → website down hoặc email fail.",
+        "deploymentUse": "Dùng CNAME cho: www.yourdomain.com → yourdomain.com, hoặc subdomain trỏ về Heroku/Vercel/CDN hostname. Không dùng CNAME cho apex — dùng A record hoặc ALIAS record (Cloudflare hỗ trợ)."
+      },
+      {
+        "what": "Record MX",
+        "why": "Chỉ mail server nhận email cho domain. Thiếu MX thì email gửi đến domain sẽ fail hoặc bị bounce. MX có priority (số nhỏ = ưu tiên cao hơn).",
+        "whyBreaks": "Thiếu MX hoặc MX trỏ sai hostname → email gửi đến @yourdomain.com bị bounce ngay. Priority sai (ví dụ backup server priority thấp hơn primary) → email luôn đi qua backup dù primary ổn.",
+        "deploymentUse": "Khi dùng Google Workspace hay Zoho Mail cho email doanh nghiệp, họ cấp sẵn MX record cần tạo. Ví dụ Gmail: ASPMX.L.GOOGLE.COM priority 1, ALT1... priority 5."
+      },
+      {
+        "what": "Record TXT (SPF/DKIM/DMARC)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc7208\">RFC 7208</a> định nghĩa SPF: TXT record liệt kê IP/domain được phép gửi email thay cho domain. <a href=\"https://datatracker.ietf.org/doc/html/rfc6376\">RFC 6376</a> định nghĩa DKIM: chữ ký số dùng private key trên mail server, public key publish qua DNS TXT record. <a href=\"https://datatracker.ietf.org/doc/html/rfc7489\">RFC 7489</a> định nghĩa DMARC: policy xử lý email fail SPF/DKIM (none/quarantine/reject). Thiếu cả 3 → email vào spam hoặc bị reject bởi Gmail/Outlook.",
+        "whyBreaks": "Thiếu SPF → Gmail/Outlook mark email là suspected spam. SPF quá tight (hardFail -all) mà quên list server → email từ server hợp lệ bị reject. Thiếu DMARC → domain dễ bị spoof.",
+        "deploymentUse": "Mỗi lần thêm email provider mới (SendGrid, SES, Mailchimp) → phải cập nhật SPF TXT record thêm include. Khi dựng VPS gửi email → thêm IP VPS vào SPF, cấu hình DKIM key pair."
+      },
+      {
+        "what": "Negative cache (NXDOMAIN)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc2308#section-3\">RFC 2308 §3</a> định nghĩa negative caching: khi domain không tồn tại (NXDOMAIN), resolver cache kết quả theo giá trị minimum TTL trong SOA record của zone cha. NXDOMAIN cache ngăn resolver hỏi lại authoritative liên tục cho domain không tồn tại. Sau khi tạo DNS record mới, phải chờ negative TTL của SOA hết trước khi record được resolve.",
+        "whyBreaks": "Tạo subdomain mới (api.yourdomain.com) nhưng trước đó đã query một lần khi chưa có record → resolver cache NXDOMAIN → sau khi tạo record vẫn báo lỗi vài phút → dev tưởng cấu hình sai.",
+        "deploymentUse": "Khi deploy feature mới cần subdomain mới, tạo DNS record TRƯỚC khi deploy code. Nếu đã bị negative cache, dùng dig +trace hoặc flush DNS để bypass, hoặc chờ SOA minimum TTL hết."
+      },
+      {
+        "what": "DoH (DNS over HTTPS)",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc8484\">RFC 8484</a> định nghĩa DNS over HTTPS (DoH): DNS query được encode theo DNS wire format, gửi qua HTTPS POST/GET tới endpoint cụ thể (ví dụ https://cloudflare-dns.com/dns-query). Query được encrypt bởi TLS — ISP không thấy hostname đang được query. Firefox bật DoH mặc định từ v83 (Mỹ). DoH tập trung traffic DNS về một số provider lớn, có thể bypass corporate DNS filter.",
+        "whyBreaks": "App dùng DoH hardcode Cloudflare trong môi trường corporate → bypass DNS filter → bị firewall chặn kết nối outbound port 443 tới 1.1.1.1 → app không resolve được domain nào.",
+        "deploymentUse": "Trên VPS production không cần DoH — resolver 1.1.1.1 qua UDP 53 là đủ. DoH hữu ích cho dev machine khi muốn bypass ISP hoặc kiểm tra DNS record từ góc nhìn Cloudflare."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "dig cơ bản — xem A record",
+        "why": "dig là công cụ debug DNS số 1. Hiểu output của dig = hiểu được DNS response thật, biết TTL còn bao nhiêu, ai là authoritative server. Không có dig thì debug DNS chỉ là đoán mò.",
+        "code": "# Query A record mặc định\ndig example.com\n\n# Output quan trọng:\n# QUESTION SECTION: domain đang hỏi\n# ANSWER SECTION: kết quả (IP)\n# Query time: latency\n# SERVER: resolver đang dùng",
+        "whyBreaks": "Nếu bỏ qua dig và chỉ dùng ping/curl để debug DNS → không thấy được TTL, không biết resolver nào đang dùng, không phân biệt được cache hit vs authoritative response → debug blind.",
+        "observeWith": "dig example.com — nhìn cột TTL trong ANSWER SECTION và dòng SERVER để xác định resolver đang dùng. So sánh Query time: <5ms là cache hit, >50ms là fresh lookup.",
+        "failModes": [
+          {
+            "symptom": "DNS trả NXDOMAIN dù domain vừa được tạo, hoặc app không resolve được domain nội bộ",
+            "evidence": "dig api.internal.example.com cho thấy: 'status: NXDOMAIN' — và dig api.internal.example.com +search cũng không thấy, do /etc/resolv.conf thiếu 'search internal.example.com' nên query không append domain suffix"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Kiểm tra /etc/resolv.conf có search domain không",
+            "command": "cat /etc/resolv.conf | grep -E 'nameserver|search|domain'"
+          },
+          {
+            "step": "Thêm search domain tạm thời để test (không persistent qua reboot)",
+            "command": "echo 'search internal.example.com' | sudo tee -a /etc/resolv.conf && dig api.internal.example.com"
+          }
+        ]
+      },
+      {
+        "step": 2,
+        "what": "dig +trace — xem toàn bộ recursive path",
+        "why": "dig là DNS client cho phép query trực tiếp DNS server và xem raw response. Output gồm QUESTION SECTION (domain query), ANSWER SECTION (record + TTL), và SERVER (resolver đang dùng). TTL trong ANSWER SECTION là số giây còn lại trong cache của resolver. Query time trong output là RTT tới resolver — latency thấp (<5ms) thường là cache hit, cao hơn là fresh lookup từ authoritative, nhưng ngưỡng cụ thể phụ thuộc vào vị trí địa lý và resolver.",
+        "code": "# Trace từng hop: Root → TLD → Authoritative\ndig example.com +trace\n\n# Kết quả mẫu:\n# .       518400  IN  NS  a.root-servers.net.\n# com.    172800  IN  NS  a.gtld-servers.net.\n# example.com. 86400 IN NS ns1.example.com.\n# example.com. 3600  IN A  93.184.216.34",
+        "whyBreaks": "Không dùng +trace khi debug propagation → không phân biệt được 'authoritative đã cập nhật chưa' vs 'resolver còn cache cũ' → mất hàng giờ chờ vô ích hoặc rollback nhầm.",
+        "observeWith": "dig example.com +trace — đọc từng dòng NS delegation từ root xuống. Nếu thấy IP mới ở authoritative nhưng dig example.com (không +trace) vẫn trả IP cũ → xác nhận là cache issue, không phải config lỗi."
+      },
+      {
+        "step": 3,
+        "what": "Xem các record type khác",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-4.3.2\">RFC 1034 §4.3.2</a> mô tả recursive resolution chain: Root → TLD → Authoritative. +trace buộc dig bypass cache của resolver và tự thực hiện toàn bộ chain bằng iterative query từ root. Nếu +trace trả record mới nhưng dig thông thường vẫn trả record cũ → xác nhận là cache issue tại resolver, không phải authoritative chưa cập nhật.",
+        "code": "# MX record — mail server\ndig example.com MX\n\n# TXT record — SPF/DKIM\ndig example.com TXT\n\n# NS record — nameservers\ndig example.com NS\n\n# AAAA record — IPv6\ndig example.com AAAA",
+        "whyBreaks": "Chỉ biết query A record → mù về email (MX/TXT), mù về nameserver delegation (NS), mù về IPv6 (AAAA). Khi email vào spam mà không check TXT SPF/DKIM → debug sai hướng.",
+        "observeWith": "dig example.com TXT | grep -i spf — xem SPF value. dig example.com MX +short — liệt kê mail servers và priority. dig example.com NS +short — xác nhận nameserver đang active."
+      },
+      {
+        "step": 4,
+        "what": "TTL và cache — kiểm chứng thực tế",
+        "why": "TTL giảm mỗi lần hỏi (vì resolver cache đã có). Query lần 1 TTL=3600, query lần 2 vài phút sau TTL=3540. Khi TTL về 0 thì resolver hỏi lại authoritative. Hiểu điều này để tránh nhầm 'tại sao đổi IP mà vẫn không thấy'.",
+        "code": "# Hỏi 2 lần, nhìn TTL giảm dần\ndig example.com | grep -A2 'ANSWER'\n# Chờ 5 giây\nsleep 5\ndig example.com | grep -A2 'ANSWER'\n# TTL sẽ giảm ~5",
+        "whyBreaks": "Không kiểm tra TTL trước migration → đổi A record khi TTL còn 86400 → user stuck IP cũ 24h → perceived downtime dù server mới hoàn toàn ổn.",
+        "observeWith": "watch -n 5 'dig example.com +short' — chạy liên tục mỗi 5s để xem thời điểm cache expire và IP mới xuất hiện. Hoặc dig example.com | grep -i ttl để xem TTL hiện tại.",
+        "failModes": [
+          {
+            "symptom": "Sau migration IP, user vẫn bị redirect về server cũ dù đã đổi A record hàng giờ trước",
+            "evidence": "dig example.com cho thấy TTL còn lớn (ví dụ: 'example.com. 82800 IN A 1.1.1.1') — TTL lúc đổi record còn 86400s, resolver đang cache IP cũ cho đến khi TTL hết"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Kiểm tra TTL hiện tại của record đang được cache",
+            "command": "dig example.com | awk '/ANSWER SECTION/{getline; print \"TTL remaining:\", $2, \"seconds\"}'"
+          },
+          {
+            "step": "Bypass cache bằng +trace để xác nhận authoritative đã cập nhật",
+            "command": "dig example.com +trace +short | tail -5"
+          },
+          {
+            "step": "Cho lần migration tiếp theo: hạ TTL xuống 300s ít nhất 24h trước khi đổi IP",
+            "command": "dig example.com | grep -E 'IN\\s+A' | awk '{print \"Current TTL:\", $2, \"seconds — wait this long for full propagation\"}'"
+          }
+        ],
+        "automateScript": {
+          "lang": "bash",
+          "code": "#!/bin/bash\n# Batch check nhiều DNS records, alert nếu IP khác expected hoặc TTL thấp\n# Dùng sau migration để monitor propagation\nRESOLVER=${1:-8.8.8.8}\nINPUT_FILE=${2:-/etc/dns-check.conf}  # format: domain expected_ip\necho \"=== DNS Batch Check $(date '+%Y-%m-%d %H:%M:%S') ===\"\nwhile IFS=' ' read -r DOMAIN EXPECTED; do\n  [ -z \"$DOMAIN\" ] || [[ \"$DOMAIN\" == \\#* ]] && continue\n  RESULT=$(dig \"$DOMAIN\" A @\"$RESOLVER\" +short | head -1)\n  TTL=$(dig \"$DOMAIN\" A @\"$RESOLVER\" | awk '/ANSWER SECTION/{getline; print $2}')\n  STATUS=\"OK\"\n  [ \"$RESULT\" != \"$EXPECTED\" ] && STATUS=\"MISMATCH (got $RESULT)\"\n  [ -z \"$TTL\" ] && TTL=\"N/A\"\n  echo \"[$STATUS] $DOMAIN → $RESULT (TTL:${TTL}s expected:$EXPECTED)\"\ndone < \"$INPUT_FILE\"",
+          "note": "Tạo /etc/dns-check.conf với mỗi dòng: 'example.com 93.184.216.34'. Chạy sau migration để theo dõi propagation. Cron: */5 * * * * /usr/local/bin/dns-batch-check.sh 8.8.8.8"
+        }
+      },
+      {
+        "step": 5,
+        "what": "Hỏi trực tiếp authoritative — bypass cache",
+        "why": "<a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-3.5\">RFC 1034 §3.5</a> quy định resolver decrement TTL mỗi giây trong cache — TTL trong response không phải giá trị gốc mà là số giây còn lại. Query lần 1 TTL=3600, query lần 2 sau 60s TTL=3540. Khi TTL về 0, resolver hỏi lại authoritative và reset TTL về giá trị gốc. Hiểu cơ chế này để tính đúng thời gian chờ khi migration.",
+        "code": "# Tìm authoritative server\ndig example.com NS +short\n\n# Hỏi thẳng authoritative (không qua cache)\ndig example.com @ns1.example.com A\n\n# So sánh với resolver thông thường:\ndig example.com @8.8.8.8 A",
+        "whyBreaks": "Chỉ query qua resolver thông thường → không biết authoritative đã cập nhật chưa → có thể chờ vô ích hoặc nghĩ DNS provider có vấn đề trong khi thực ra chỉ là cache chưa hết.",
+        "observeWith": "diff <(dig example.com @ns1.example.com A +short) <(dig example.com @8.8.8.8 A +short) — nếu output khác nhau thì resolver 8.8.8.8 đang cache record cũ."
+      },
+      {
+        "step": 6,
+        "what": "Reverse DNS lookup (PTR record)",
+        "why": "Reverse DNS ánh xạ IP → domain. Mail server hay check PTR để anti-spam: nếu IP không có PTR hoặc PTR không match → email bị reject. Hosting server thường phải cấu hình PTR (rDNS) trong control panel VPS.",
+        "code": "# Reverse lookup cho IP\ndig -x 93.184.216.34\n# Hoặc\nnslookup 93.184.216.34\n\n# Output:\n# <ADDR-1>.in-addr.arpa. PTR example.com.",
+        "whyBreaks": "VPS gửi email mà không cấu hình PTR record (rDNS) → Outlook, Gmail check PTR fail → email bị reject hoặc spam. Nhiều email provider từ chối nhận từ IP không có PTR.",
+        "observeWith": "dig -x $(curl -s https://ipinfo.io/ip) — kiểm tra PTR record của IP VPS hiện tại. Nếu trả về NXDOMAIN hoặc địa chỉ generic của hosting → cần vào control panel VPS để cấu hình rDNS."
+      },
+      {
+        "step": 7,
+        "what": "DoH — DNS over HTTPS kiểm tra",
+        "why": "Kiểm tra DoH giúp xác nhận record trực tiếp từ Cloudflare/Google mà không qua OS resolver. Hữu ích khi nghi ngờ ISP đang tamper DNS hoặc khi đang debug từ corporate network có DNS filtering.",
+        "code": "# Query Cloudflare DoH bằng curl\ncurl -s -H 'accept: application/dns-json' \\\n  'https://cloudflare-dns.com/dns-query?name=example.com&type=A' \\\n  | python3 -m json.tool\n\n# Query Google DoH\ncurl -s 'https://dns.google/resolve?name=example.com&type=A' \\\n  | python3 -m json.tool",
+        "whyBreaks": "App hardcode DoH endpoint (1.1.1.1:443) trong môi trường có firewall restrictive → connection blocked → DNS fail hoàn toàn dù UDP 53 vẫn hoạt động. Khó debug vì error message thường là generic timeout.",
+        "observeWith": "curl -s 'https://dns.google/resolve?name=example.com&type=A' | python3 -m json.tool | grep -E 'data|TTL' — so sánh kết quả DoH với dig example.com @8.8.8.8 để xác nhận ISP có tamper không."
+      }
+    ],
+    "quiz": [
+      {
+        "q": "Browser gõ 'example.com' — bước đầu tiên là gì?",
+        "options": [
+          "Kết nối TCP tới 93.184.216.34 port 80",
+          "Stub resolver hỏi recursive resolver để lấy IP",
+          "Browser hỏi thẳng root server",
+          "OS lookup trong /etc/hosts rồi mới hỏi DNS"
+        ],
+        "correct": 3,
+        "whyCorrect": "OS kiểm tra <code>/etc/hosts</code> (hoặc <code>C:\\Windows\\System32\\drivers\\etc\\hosts</code>) trước khi hỏi DNS. Nếu có entry trong hosts file → dùng ngay, không cần DNS. Đây là cơ chế override thường dùng để test local.",
+        "whyOthersWrong": {
+          "0": "Muốn kết nối TCP thì phải có IP trước đã — IP đến từ DNS.",
+          "1": "Đúng về bản chất nhưng không phải bước đầu tiên — /etc/hosts được kiểm tra trước DNS.",
+          "2": "Browser không hỏi root server trực tiếp — đó là việc của recursive resolver."
+        }
+      },
+      {
+        "q": "Recursive resolver khác stub resolver ở điểm nào?",
+        "options": [
+          "Recursive resolver có IP tĩnh, stub resolver dùng DHCP",
+          "Stub resolver chỉ forward query, recursive resolver tự đi hỏi Root → TLD → Authoritative",
+          "Recursive resolver lưu toàn bộ DNS database",
+          "Stub resolver nhanh hơn vì không cần internet"
+        ],
+        "correct": 1,
+        "whyCorrect": "Stub resolver (trong OS) không biết recursive — nó chỉ forward câu hỏi tới 1 địa chỉ được cấu hình (thường là gateway hoặc 8.8.8.8). Recursive resolver mới là người thực sự đi hỏi từng tầng của cây DNS.",
+        "whyOthersWrong": {
+          "0": "IP tĩnh/DHCP không liên quan đến loại resolver.",
+          "2": "Không resolver nào lưu toàn bộ database — DNS phân tán, không ai có full copy.",
+          "3": "Stub resolver vẫn cần network để forward query, không 'nhanh hơn' theo nghĩa đó."
+        }
+      },
+      {
+        "q": "Website đang chạy, A record được đổi từ 1.1.1.1 sang <ADDR-2>. Người dùng vẫn thấy 1.1.1.1 sau 1 giờ. Nguyên nhân khả năng cao nhất?",
+        "options": [
+          "Authoritative server chưa cập nhật record mới",
+          "DNS over HTTPS bị tắt",
+          "TTL của record cũ còn cao (ví dụ 86400s), resolver đang cache",
+          "Browser cache IP của website"
+        ],
+        "correct": 2,
+        "whyCorrect": "Resolver cache record theo TTL. Nếu TTL là 86400s (24h, giá trị ví dụ theo <a href=\"https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.1\" target=\"_blank\">RFC 1035 §3.2.1</a>) và record vừa được đổi, resolver tiếp tục dùng cache cho đến khi TTL hết. Fix: trước khi đổi IP, hạ TTL xuống 300s và chờ ít nhất 24h cho cache cũ hết hiệu lực.",
+        "whyOthersWrong": {
+          "0": "Nếu authoritative chưa cập nhật thì +trace sẽ thấy IP cũ — kiểm tra được. Nhưng cache resolver là nguyên nhân phổ biến hơn.",
+          "1": "DoH không liên quan đến việc cache IP cũ.",
+          "3": "Browser cache HTML/CSS, không cache DNS record theo cách đó."
+        }
+      },
+      {
+        "q": "Lệnh nào cho thấy toàn bộ đường đi từ Root → TLD → Authoritative?",
+        "options": [
+          "dig example.com @8.8.8.8",
+          "nslookup example.com",
+          "dig example.com +trace",
+          "curl -v https://example.com"
+        ],
+        "correct": 2,
+        "whyCorrect": "<code>dig +trace</code> tắt cache của recursive resolver và tự thực hiện từng bước: hỏi root → nhận NS của TLD → hỏi TLD → nhận NS của domain → hỏi authoritative → nhận record. Đây là lệnh must-have khi debug DNS propagation.",
+        "whyOthersWrong": {
+          "0": "dig @8.8.8.8 hỏi Google resolver — Google có thể trả từ cache, không thấy từng hop.",
+          "1": "nslookup trả kết quả cuối cùng, không trace từng bước.",
+          "3": "curl là HTTP request, không trace DNS path."
+        }
+      },
+      {
+        "q": "Email gửi từ server hay vào spam. Record DNS nào cần kiểm tra đầu tiên?",
+        "options": [
+          "A record — IP của mail server",
+          "CNAME record — alias cho mail",
+          "TXT record — SPF, DKIM, DMARC",
+          "NS record — nameserver"
+        ],
+        "correct": 2,
+        "whyCorrect": "SPF (TXT record) xác nhận server nào được phép gửi email cho domain. DKIM (TXT record) thêm chữ ký số vào email. DMARC (TXT record) chỉ định xử lý email fail. Thiếu hoặc sai bất kỳ cái nào → spam filter chặn.",
+        "whyOthersWrong": {
+          "0": "A record cho biết IP, không liên quan đến xác thực email.",
+          "1": "CNAME cho mail.example.com có thể cần nhưng không phải nguyên nhân spam.",
+          "3": "NS record chỉ liên quan nameserver, không ảnh hưởng email authentication."
+        }
+      },
+      {
+        "q": "DNS dùng giao thức vận chuyển nào theo mặc định và khi nào chuyển sang TCP?",
+        "options": [
+          "TCP luôn — vì cần reliable delivery",
+          "UDP port 53 mặc định; chuyển TCP khi response > 512 bytes hoặc zone transfer",
+          "UDP port 53 luôn, không bao giờ TCP",
+          "HTTP port 80 vì DNS over HTTPS"
+        ],
+        "correct": 1,
+        "whyCorrect": "UDP 53 cho query thông thường vì nhanh (không handshake). Khi response bị truncate (TC=1) — ví dụ nhiều MX record — client reconnect bằng TCP 53. Zone transfer (AXFR) luôn dùng TCP vì data lớn.",
+        "whyOthersWrong": {
+          "0": "TCP tốn thêm round-trip cho handshake — quá đắt cho query nhỏ.",
+          "2": "Không đúng — <a href=\"https://datatracker.ietf.org/doc/html/rfc7766\" target=\"_blank\">RFC 7766</a> yêu cầu DNS implementation phải hỗ trợ TCP.",
+          "3": "DoH là một variant khác, không phải giao thức mặc định."
+        }
+      },
+      {
+        "q": "CNAME record không được đặt ở apex domain (root domain). Tại sao?",
+        "options": [
+          "CNAME chậm hơn A record",
+          "CNAME ở apex vi phạm RFC vì không được coexist với SOA/NS record cùng tên",
+          "Root domain cần IPv6 nên phải dùng AAAA",
+          "CNAME chỉ hoạt động với subdomain bắt đầu bằng www"
+        ],
+        "correct": 1,
+        "whyCorrect": "<a href=\"https://datatracker.ietf.org/doc/html/rfc2181\" target=\"_blank\">RFC 2181</a>: CNAME không được đặt cùng record khác cùng tên. Apex domain bắt buộc phải có SOA và NS record → không thể đặt CNAME. Đây là lý do các CDN như Cloudflare tạo ra 'CNAME flattening' hay 'ALIAS record' để workaround.",
+        "whyOthersWrong": {
+          "0": "Tốc độ không phải lý do — còn thêm 1 hop lookup CNAME nhưng đó không phải lý do cấm.",
+          "2": "IPv6/AAAA không liên quan đến lý do không dùng CNAME ở apex.",
+          "3": "CNAME hoạt động với bất kỳ subdomain nào, không giới hạn 'www'."
+        }
+      },
+      {
+        "q": "Negative cache là gì và khi nào nó gây vấn đề?",
+        "options": [
+          "Cache lưu IP lỗi — luôn gây vấn đề",
+          "Cache lưu kết quả NXDOMAIN — gây vấn đề khi record mới vừa được tạo nhưng vẫn bị 'domain not found'",
+          "Cache bị xóa khi có lỗi mạng",
+          "Cache ở browser, không phải DNS"
+        ],
+        "correct": 1,
+        "whyCorrect": "Khi domain không tồn tại, resolver cache kết quả NXDOMAIN theo TTL của SOA minimum field. Nếu record A mới được tạo, resolver đang cache NXDOMAIN sẽ không thấy record mới cho đến khi cache hết. Fix: <code>dig +trace</code> để bypass cache và xem authoritative response.",
+        "whyOthersWrong": {
+          "0": "Negative cache không lưu 'IP lỗi' — nó lưu 'domain này không tồn tại'. Không phải luôn gây vấn đề.",
+          "2": "Negative cache không bị xóa bởi lỗi mạng — nó hết hạn theo TTL.",
+          "3": "Browser có DNS cache riêng nhưng negative cache trong DNS là khái niệm resolver-level."
+        }
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "Stub resolver là gì?",
+        "back": "DNS client đơn giản trong OS. Không tự recursive — chỉ forward query tới recursive resolver được cấu hình (/etc/resolv.conf).",
+        "why": "Nếu /etc/resolv.conf sai → mọi DNS query fail. Đây là nơi đầu tiên cần check khi debug 'không resolve được domain'."
+      },
+      {
+        "front": "Recursive resolver làm gì?",
+        "back": "Tự đi hỏi Root → TLD → Authoritative thay client. Cache kết quả theo TTL. Google 8.8.8.8, Cloudflare 1.1.1.1 là recursive resolvers.",
+        "why": "Phần lớn độ trễ DNS xảy ra ở đây khi cache miss. Cache hit thường < 1ms."
+      },
+      {
+        "front": "Root server là gì? Có bao nhiêu?",
+        "back": "13 cụm (a–m.root-servers.net) nhưng hàng trăm anycast instances khắp thế giới. Chỉ biết NS của mỗi TLD.",
+        "why": "Root server không 'biết' record của domain cụ thể — chỉ nói 'hỏi .com TLD đi'. Thiết kế phân tán để không có single point of failure."
+      },
+      {
+        "front": "A record vs AAAA record?",
+        "back": "A → IPv4 (32 bit). AAAA → IPv6 (128 bit). Browser dùng Happy Eyeballs: thử AAAA trước, fallback sang A nếu cần.",
+        "why": "Thêm AAAA record để hỗ trợ IPv6. Nếu chỉ có A, IPv6-only client không kết nối được."
+      },
+      {
+        "front": "CNAME record làm gì? Hạn chế?",
+        "back": "Alias: trỏ một tên về tên khác. Hạn chế: không đặt ở apex domain (phải đồng tồn với SOA/NS).",
+        "why": "www.example.com CNAME example.com giúp quản lý 1 chỗ. Nhưng apex domain phải dùng A record hoặc ALIAS/CNAME flattening."
+      },
+      {
+        "front": "MX record cần gì? Priority để làm gì?",
+        "back": "MX record chỉ mail server nhận email. Priority: số nhỏ hơn = ưu tiên cao hơn. Có thể có nhiều MX để failover.",
+        "why": "Thiếu MX → email bounce. Nhiều MX với priority khác nhau → failover: nếu server chính down, email tự chuyển sang backup."
+      },
+      {
+        "front": "TXT record SPF, DKIM, DMARC là gì?",
+        "back": "SPF: liệt kê IP/domain được phép gửi email. DKIM: chữ ký số trên email. DMARC: policy xử lý email fail SPF/DKIM.",
+        "why": "Thiếu 3 cái này → email spam. DMARC với p=reject là bảo vệ mạnh nhất chống email spoofing."
+      },
+      {
+        "front": "TTL là gì? Hệ quả khi đổi IP?",
+        "back": "Số giây resolver cache record trước khi hỏi lại. Đổi IP mà TTL=86400: user thấy IP cũ tối đa 24h.",
+        "why": "Best practice migration: giảm TTL về 300s ít nhất 24h TRƯỚC khi đổi IP. Sau migration ổn, tăng TTL lại."
+      },
+      {
+        "front": "PTR record dùng để làm gì?",
+        "back": "Reverse DNS: ánh xạ IP → domain. Ví dụ: <ADDR-1>.in-addr.arpa. → example.com.",
+        "why": "Mail server check PTR để anti-spam. VPS cần cấu hình PTR (rDNS) trong control panel nếu muốn gửi email không bị reject."
+      },
+      {
+        "front": "DNS dùng UDP hay TCP?",
+        "back": "UDP 53 mặc định. TCP 53 khi: response >512 bytes (TC=1), zone transfer (AXFR). DoH dùng TCP 443.",
+        "why": "UDP không cần handshake → nhanh cho query nhỏ. Khi data lớn, UDP bị truncate → fallback TCP để đảm bảo nhận đủ data."
+      },
+      {
+        "front": "DoH (DNS over HTTPS) là gì?",
+        "back": "Encrypt DNS query qua HTTPS port 443. ISP không thấy domain đang được hỏi.",
+        "why": "Privacy: ISP truyền thống thấy mọi DNS query → biết người dùng lên trang nào. DoH chặn điều này. Nhược điểm: bypass corporate DNS → IT admin không thể filter."
+      },
+      {
+        "front": "Negative cache là gì?",
+        "back": "Cache kết quả NXDOMAIN (domain không tồn tại). Hết hạn theo TTL của SOA minimum field.",
+        "why": "Tạo DNS record mới → resolver đang cache NXDOMAIN vẫn trả 'không tồn tại'. Dùng dig +trace để bypass cache xem authoritative response."
+      },
+      {
+        "front": "NS record là gì?",
+        "back": "Nameserver: khai báo server nào là authoritative cho zone. Ví dụ: example.com. NS ns1.example.com.",
+        "why": "NS record là cầu nối delegation trong cây DNS. TLD biết domain dựa vào NS record — khi đổi nhà đăng ký domain, NS record được cập nhật tại registrar."
+      },
+      {
+        "front": "Zone transfer (AXFR) là gì?",
+        "back": "Mechanism nameserver phụ dùng để copy toàn bộ zone data từ nameserver chính. Dùng TCP 53.",
+        "why": "Cần nhiều nameserver để redundancy. AXFR phải restricted — cho phép tất cả thì attacker enumerate toàn bộ subdomain."
+      },
+      {
+        "front": "Lệnh dig +trace để làm gì?",
+        "back": "Bypass cache, tự recursive từ root. Thấy từng hop: Root → TLD → Authoritative → answer.",
+        "why": "Khi nghi ngờ DNS propagation: +trace cho thấy authoritative đã có record mới chưa, tách biệt với cache resolver. Must-have debugging tool."
+      }
+    ],
+    "try_at_home": [
+      {
+        "why": "Xem toàn bộ recursive path từ Root → TLD → Authoritative — hiểu tại sao DNS tìm được IP",
+        "cmd": "dig example.com +trace",
+        "observeWith": "Đọc từng block output: dòng đầu là root servers, tiếp theo là TLD NS, tiếp là NS của domain, cuối là A record. Chú ý TTL ở cột thứ 2 — mỗi tầng có TTL riêng."
+      },
+      {
+        "why": "Kiểm tra TTL của record — xem còn bao lâu nữa cache hết, hỏi lại 2 lần xem TTL giảm",
+        "cmd": "dig example.com | grep -A5 'ANSWER SECTION'\n# Chờ 10 giây\nsleep 10\ndig example.com | grep -A5 'ANSWER SECTION'",
+        "observeWith": "So sánh số TTL giữa 2 lần query — lần 2 phải nhỏ hơn lần 1 khoảng 10 giây. Nếu TTL reset về giá trị gốc → resolver mới hỏi lại authoritative."
+      },
+      {
+        "why": "Xem SPF/DKIM/DMARC — kiểm tra tại sao email của domain hay vào spam",
+        "cmd": "# SPF\ndig example.com TXT | grep spf\n\n# DMARC\ndig _dmarc.example.com TXT\n\n# DKIM (cần biết selector, thường là 'google' hay 'default')\ndig google._domainkey.gmail.com TXT",
+        "observeWith": "SPF hợp lệ phải có v=spf1 và kết thúc -all hoặc ~all. DMARC phải có v=DMARC1 và trường p= (none/quarantine/reject). Thiếu một trong hai → email dễ vào spam."
+      },
+      {
+        "why": "Hỏi thẳng authoritative server — bypass resolver cache để xem record thật sự hiện tại",
+        "cmd": "# Lấy NS của domain\ndig example.com NS +short\n\n# Hỏi thẳng authoritative\ndig example.com A @ns1.example.com\n\n# So sánh với Google resolver\ndig example.com A @8.8.8.8",
+        "observeWith": "Nếu IP từ authoritative khác IP từ @8.8.8.8 → resolver Google đang cache cũ, chờ TTL hết. Nếu authoritative trả SERVFAIL → problem ở DNS config, không phải cache."
+      },
+      {
+        "why": "Query DoH bằng curl — xem DNS response không qua OS resolver, kiểm tra khi nghi ngờ ISP tamper DNS",
+        "cmd": "curl -s -H 'accept: application/dns-json' \\\n  'https://cloudflare-dns.com/dns-query?name=example.com&type=A' \\\n  | python3 -m json.tool | grep -E 'name|data|TTL'",
+        "observeWith": "So sánh trường data (IP) từ DoH response với output của dig example.com +short. Nếu khác nhau → ISP đang redirect DNS. TTL trong JSON response là TTL thật từ authoritative."
+      },
+      {
+        "why": "Reverse lookup — xem PTR record của IP, quan trọng để debug email deliverability",
+        "cmd": "# PTR của IP\ndig -x 8.8.8.8\n\n# Xem PTR của IP server\nMY_IP=$(curl -s https://ipinfo.io/ip)\ndig -x $MY_IP",
+        "observeWith": "PTR record hợp lệ sẽ trả về hostname trong ANSWER SECTION. Nếu thấy NXDOMAIN hoặc hostname generic của hosting (ví dụ compute.amazonaws.com) → cần cấu hình rDNS trong control panel VPS để email không bị reject."
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Stub resolver tự đi hỏi Root, TLD, rồi Authoritative server",
+        "right": "Stub resolver chỉ forward query tới recursive resolver đã cấu hình trong /etc/resolv.conf — không tự thực hiện recursive lookup. Chỉ recursive resolver mới tự đi hỏi toàn bộ chain Root → TLD → Authoritative theo <a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-5.3.1\">RFC 1034 §5.3.1</a>.",
+        "why": "Khi debug DNS failure, nhầm vai trò dẫn đến kiểm tra sai chỗ: nếu stub resolver gửi query đến recursive resolver nhưng recursive resolver fail, lỗi xuất hiện ở stub — phải kiểm tra recursive resolver, không phải authoritative server."
+      },
+      {
+        "wrong": "Đổi A record là DNS thay đổi ngay lập tức trên toàn cầu",
+        "right": "Resolver cache record theo TTL của record tại thời điểm query; nếu TTL=86400 khi đổi, resolver giữ cache tới 24h theo <a href=\"https://datatracker.ietf.org/doc/html/rfc1034#section-3.5\">RFC 1034 §3.5</a>. Chỉ dig +trace thấy record mới ngay vì bypass cache.",
+        "why": "Không hạ TTL trước migration → user bị split-brain: một số thấy server mới (cache expired), số khác server cũ (cache còn hiệu lực). Quy trình đúng: hạ TTL về 300s, chờ đủ 1 TTL cycle cũ, rồi mới đổi A record."
+      },
+      {
+        "wrong": "CNAME có thể đặt ở apex domain (example.com trực tiếp)",
+        "right": "<a href=\"https://datatracker.ietf.org/doc/html/rfc2181#section-10.1\">RFC 2181 §10.1</a> cấm CNAME coexist với bất kỳ record nào khác tại cùng owner name; apex domain (zone root) bắt buộc có SOA và NS record → CNAME ở apex vi phạm RFC. Dùng ALIAS/ANAME nếu cần apex trỏ về hostname.",
+        "why": "Một số DNS provider allow CNAME apex nhưng hành vi undefined trên provider khác — đổi provider sẽ break domain. Nguy hiểm hơn: CNAME ở apex thường xung đột với MX record → email toàn bộ domain fail."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "DnsPlayground"
+    }
+  }
+}

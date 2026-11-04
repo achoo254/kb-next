@@ -1,0 +1,712 @@
+{
+  "lab": {
+    "slug": "docker-compose-observability",
+    "module": "03-docker",
+    "title": "Docker · Phần 3 — Compose stack thu log: VictoriaLogs, Vector & rsyslog",
+    "estimated_minutes": 50,
+    "content_hash": "43d489b7eda27dc485673c2337112067611cb76e32baf5924ccfaf9e7d149911",
+    "updated_at": 1786193663,
+    "tldr": [
+      {
+        "what": "Compose hoá cả một stack hạ tầng",
+        "why": "Cùng hệ thống thu log của buổi trước, nhưng viết thành một compose file: VictoriaLogs và Vector là hai service, cùng một network, khai bằng cấu hình thay vì hai quy trình cài khác nhau (<a href=\"https://docs.docker.com/reference/compose-file/\">Compose file reference</a>). Bản trước dựng VictoriaLogs bằng docker run và cài Vector bằng systemd — hai cách quản lý cho một hệ thống.",
+        "whyBreaks": "Nửa hệ thống quản bằng docker run, nửa quản bằng systemd thì không ai dựng lại được nguyên trạng, và mỗi lần sửa phải nhớ sửa ở hai chỗ.",
+        "deploymentUse": "Một stack, một compose file, một thư mục project trong Git — kể cả với hạ tầng nội bộ, không riêng ứng dụng."
+      },
+      {
+        "what": "Gọi nhau bằng tên service, không bằng IP",
+        "why": "Sink của Vector trỏ tới http://victorialogs:9428/insert/jsonline?... — victorialogs là tên service, phân giải qua DNS nội bộ của network project (<a href=\"https://docs.docker.com/compose/how-tos/networking/\">Compose: networking</a>).",
+        "whyBreaks": "Đặt 127.0.0.1 là trỏ vào chính container Vector: dịch vụ chạy bình thường, không lỗi rõ ràng, mà VictoriaLogs rỗng.",
+        "deploymentUse": "Mọi địa chỉ nội bộ trong cấu hình container viết theo tên service; IP container đổi sau mỗi lần tạo lại nên không dùng làm điểm neo."
+      },
+      {
+        "what": "Ba nguồn log của một Vector",
+        "why": "http_server ở 9000 nhận JSON từ ứng dụng; syslog ở 9514/udp nhận log từ máy chủ khác; docker_logs thu log mọi container trên host (<a href=\"https://vector.dev/docs/reference/configuration/sources/http_server/\">http_server</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/syslog/\">syslog</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">docker_logs</a>). Một sink gộp cả ba đường về VictoriaLogs.",
+        "whyBreaks": "Kết luận \"log không về\" cho cả stack khi thực ra chỉ một nguồn hỏng — mỗi nguồn hỏng theo cách riêng và phải nghiệm thu riêng.",
+        "deploymentUse": "Nghiệm thu từng nguồn bằng một lệnh bơm thử riêng, ghi lại lệnh đó vào tài liệu vận hành để dùng lại khi sự cố."
+      },
+      {
+        "what": "Mount cần có cho nguồn docker_logs",
+        "why": "Vector trong container cần /var/run/docker.sock để nói chuyện với Docker, và /var/lib/docker để đọc file log container (<a href=\"https://vector.dev/docs/setup/installation/platforms/docker/\">Vector: install on Docker</a>).",
+        "whyBreaks": "Thiếu mount thì nguồn docker_logs im lặng: dịch vụ lên, cấu hình hợp lệ, không có log container nào tới.",
+        "deploymentUse": "Mount docker.sock tương đương cấp quyền điều khiển Docker của host — chỉ cho agent tin cậy, và không phơi cổng quản trị của agent."
+      },
+      {
+        "what": "Validate hai lớp trước khi up",
+        "why": "docker compose config bắt lỗi cú pháp compose (<a href=\"https://docs.docker.com/reference/cli/docker/compose/config/\">docker compose config</a>); một container tạm chạy vector validate bắt lỗi cấu hình Vector khi chưa có service nào được tạo.",
+        "whyBreaks": "Cấu hình Vector sai thì service không lên và thông báo lỗi lẫn trong log của cả project — mất thời gian hơn nhiều so với kiểm trước.",
+        "deploymentUse": "Đưa cả hai lệnh validate vào bước kiểm tra của CI: cấu hình không sạch thì không tới được máy chủ."
+      },
+      {
+        "what": "Log sống sót qua down/up nhờ bind mount",
+        "why": "Tham số -storageDataPath trỏ vào điểm mount, thư mục thật là ./victoria-logs-data trên host — nằm ngoài vòng đời container (<a href=\"https://docs.victoriametrics.com/victorialogs/quickstart/\">VictoriaLogs quickstart</a>).",
+        "whyBreaks": "Quên gắn thư mục dữ liệu ra ngoài thì mọi log đã thu mất theo container ở lần tạo lại đầu tiên.",
+        "deploymentUse": "Đặt retention tường minh (-retentionPeriod), giám sát dung lượng thư mục dữ liệu, và có kế hoạch sao lưu trước khi tăng lưu lượng log."
+      },
+      {
+        "what": "Đẩy syslog từ máy không có Docker",
+        "why": "Máy client chỉ cần thêm một dòng vào /etc/rsyslog.conf rồi restart dịch vụ: một dấu @ là UDP, hai dấu @@ là TCP (<a href=\"https://www.rsyslog.com/doc/configuration/actions.html\">rsyslog: actions</a>). Vector đóng vai máy nhận syslog.",
+        "whyBreaks": "Protocol khai lệch giữa rsyslog, vector.yaml và cách publish cổng trong compose thì kết nối không thành mà thông báo lỗi rất mờ.",
+        "deploymentUse": "Chuẩn hoá một protocol cho toàn hệ thống và ghi rõ trong tài liệu; UDP mất gói im lặng, TCP có phản hồi nhưng tốn kết nối."
+      },
+      {
+        "what": "Timezone và NTP là điều kiện tiên quyết",
+        "why": "Log gắn với mốc thời gian; lệch timezone hoặc chưa đồng bộ NTP làm bản tin tới nhưng nằm ngoài khung thời gian đang xem (<a href=\"https://man7.org/linux/man-pages/man1/timedatectl.1.html\">timedatectl</a>).",
+        "whyBreaks": "Nhìn ra như là log không về, dẫn tới đi sửa firewall và cấu hình agent trong khi đường thu vốn đã thông.",
+        "deploymentUse": "Đặt timezone và bật đồng bộ NTP ngay khi tạo máy, trước khi cài bất cứ dịch vụ nào — coi như một bước của quy trình dựng máy."
+      },
+      {
+        "what": "Truy vấn LogsQL và nhãn Docker có sẵn",
+        "why": "Giao diện vmui nằm sẵn trong VictoriaLogs. Lọc theo nội dung bằng _msg:, theo log stream bằng {host=\"...\"}, và theo container_name hoặc image nhờ nhãn mà nguồn docker_logs tự gắn (<a href=\"https://docs.victoriametrics.com/victorialogs/logsql/\">LogsQL</a>).",
+        "whyBreaks": "Query rỗng vì khung thời gian quá hẹp thường bị hiểu thành log chưa về — nới khung trước khi kết luận.",
+        "deploymentUse": "Xem phân bố theo image/container trước để khoanh vùng, rồi mới lọc chi tiết — cách tra khi host có hàng chục container."
+      },
+      {
+        "what": "Trần của Compose và đường sang Kubernetes",
+        "why": "Compose điều phối trên một host. Thang định vị: Docker mức 1, Compose mức 3, Swarm mức 4, Kubernetes mức 9 (<a href=\"https://kubernetes.io/docs/concepts/overview/components/\">Kubernetes: components</a>, <a href=\"https://docs.docker.com/engine/swarm/\">Docker: Swarm mode</a>). Ngưỡng thực dụng nêu tại lớp: dưới 10 máy chủ và ứng dụng không quá lớn thì Compose là đủ.",
+        "whyBreaks": "Lên cụm sớm là gánh thêm một hệ thống phải vận hành, trong khi bài toán ban đầu chỉ cần kiểm soát tốt volume và network.",
+        "deploymentUse": "Khi thật sự phải bước sang: manifest nằm trong Git kèm CI/CD ngay từ đầu, không sửa tay trên máy chủ."
+      }
+    ],
+    "walkthrough": [
+      {
+        "step": 1,
+        "what": "Dựng cấu trúc thư mục cho stack",
+        "why": "Ba thành phần trong một thư mục project: compose.yaml, vector.yaml và thư mục dữ liệu. Mọi đường dẫn ./... trong compose file được tính theo vị trí của chính file đó (<a href=\"https://docs.docker.com/reference/compose-file/\">Compose file reference</a>).",
+        "whyBreaks": "Đặt file rải rác thì bind mount trỏ sai chỗ: Vector nhận file cấu hình rỗng hoặc VictoriaLogs ghi dữ liệu vào thư mục ngoài ý muốn.",
+        "observeWith": "pwd ; ls -la ; tree -L 2 (nếu có)",
+        "code": "mkdir -p ~/docker-practice/observability-lab/victoria-logs-data\ncd ~/docker-practice/observability-lab\nls -la",
+        "note": "Thư mục victoria-logs-data phải tồn tại và cho phép ghi trước khi khởi động, nếu không container VictoriaLogs sẽ restart liên tục."
+      },
+      {
+        "step": 2,
+        "what": "Viết vector.yaml với ba nguồn log",
+        "why": "http_server nhận JSON của ứng dụng, syslog nhận log từ máy chủ khác, docker_logs thu log mọi container trên host. Transform remap chỉ áp cho nguồn HTTP; hai nguồn còn lại vào sink nguyên trạng (<a href=\"https://vector.dev/docs/reference/configuration/sources/http_server/\">http_server</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/syslog/\">syslog</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">docker_logs</a>).",
+        "whyBreaks": "Khoá cũ encoding của http_server đã được thay bằng decoding.codec — copy tài liệu cũ làm Vector không khởi động được.",
+        "observeWith": "cat vector.yaml ; đối chiếu tên input trong sink với tên source đã khai",
+        "code": "cat > vector.yaml <<'EOF'\napi:\n  enabled: true\n  address: 0.0.0.0:8686\n\nsources:\n  http_input:\n    type: http_server\n    address: 0.0.0.0:9000\n    decoding:\n      codec: json\n\n  source_syslogudp:\n    type: syslog\n    address: 0.0.0.0:9514\n    mode: udp\n\n  source_docker:\n    type: docker_logs\n\ntransforms:\n  normalize:\n    type: remap\n    inputs:\n      - http_input\n    source: |\n      .timestamp = now()\n      .host = \"docker-lab\"\n      .source = \"vector-http\"\n      if !exists(.message) {\n        .message = encode_json(.)\n      }\n\nsinks:\n  victorialogs:\n    type: http\n    inputs:\n      - normalize\n      - source_syslogudp\n      - source_docker\n    uri: http://victorialogs:9428/insert/jsonline?_stream_fields=host,source&_msg_field=message&_time_field=timestamp\n    compression: gzip\n    encoding:\n      codec: json\n    framing:\n      method: newline_delimited\n    healthcheck:\n      enabled: false\nEOF\n\ncat vector.yaml",
+        "note": "Ba tham số trên uri nói cho VictoriaLogs biết trường nào là nội dung, trường nào là thời gian và cặp trường nào định danh log stream. Lưu ý .timestamp = now() ghi đè timestamp gốc của ứng dụng — chỉ hợp trong lab."
+      },
+      {
+        "step": 3,
+        "what": "Hiểu vì sao sink trỏ tới tên service, không phải IP",
+        "why": "Hai service cùng network observability-net phân giải nhau qua DNS nội bộ theo tên service. Bên trong container Vector, 127.0.0.1 là chính nó — không phải VictoriaLogs (<a href=\"https://docs.victoriametrics.com/victorialogs/data-ingestion/vector/\">VictoriaLogs: nhận log từ Vector</a>).",
+        "whyBreaks": "Đặt loopback ở đây làm Vector chạy bình thường, không lỗi kết nối rõ ràng, mà VictoriaLogs rỗng — dạng lỗi khó tìm nhất của bài.",
+        "observeWith": "grep uri vector.yaml ; docker compose exec vector getent hosts victorialogs (sau khi up)",
+        "code": "grep -n \"uri:\" vector.yaml\ndocker compose exec vector getent hosts victorialogs",
+        "failModes": [
+          {
+            "symptom": "Vector chạy, không lỗi, nhưng query VictoriaLogs không ra gì",
+            "evidence": "uri trong vector.yaml trỏ http://127.0.0.1:9428 thay vì http://victorialogs:9428"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Sửa uri sang tên service rồi tạo lại service vector",
+            "command": "sed -i \"s#http://127.0.0.1:9428#http://victorialogs:9428#\" vector.yaml && docker compose up -d"
+          }
+        ],
+        "note": "Container VictoriaLogs dùng base image distroless nên không có shell — lệnh exec vào nó luôn thất bại. Đó là thiết kế của image. Việc Vector gửi log thành công đã là bằng chứng DNS nội bộ hoạt động."
+      },
+      {
+        "step": 4,
+        "what": "Viết compose.yaml cho hai service của stack",
+        "why": "VictoriaLogs nhận tham số qua command và gắn thư mục dữ liệu ra host; Vector phụ thuộc VictoriaLogs qua depends_on, publish ba cổng và mount ba thứ: file cấu hình, Docker socket, thư mục log của Docker (<a href=\"https://docs.docker.com/reference/compose-file/\">Compose file reference</a>, <a href=\"https://docs.docker.com/reference/compose-file/services/#depends_on\">Compose: depends_on</a>).",
+        "whyBreaks": "Thiếu mount /var/run/docker.sock thì nguồn docker_logs im lặng; thiếu bind mount thư mục dữ liệu thì log mất ở lần tạo lại container đầu tiên.",
+        "observeWith": "docker compose config ; docker inspect vector-lab --format \"{{json .Mounts}}\" (sau khi up)",
+        "code": "cat > compose.yaml <<'EOF'\nservices:\n  victorialogs:\n    image: docker.io/victoriametrics/victoria-logs:v1.52.0\n    container_name: victorialogs-lab\n    restart: unless-stopped\n    command:\n      - -storageDataPath=/victoria-logs-data\n      - -retentionPeriod=7d\n    ports:\n      - \"9428:9428\"\n    volumes:\n      - ./victoria-logs-data:/victoria-logs-data\n    networks:\n      - observability-net\n\n  vector:\n    image: timberio/vector:0.57.0-debian\n    container_name: vector-lab\n    restart: unless-stopped\n    depends_on:\n      - victorialogs\n    ports:\n      - \"8686:8686\"\n      - \"9000:9000\"\n      - \"9514:9514/udp\"\n    volumes:\n      - ./vector.yaml:/etc/vector/vector.yaml:ro\n      - type: bind\n        source: /var/run/docker.sock\n        target: /var/run/docker.sock\n      - type: bind\n        source: /var/lib/docker\n        target: /var/lib/docker\n    networks:\n      - observability-net\n\nnetworks:\n  observability-net:\n    driver: bridge\nEOF\n\ndocker compose config",
+        "note": "Tag image được ghim để bài lab tái lập được. depends_on chỉ bảo đảm thứ tự khởi động, không bảo đảm VictoriaLogs đã sẵn sàng nhận kết nối — Vector tự thử lại nên trong bài này là đủ."
+      },
+      {
+        "step": 5,
+        "what": "Validate hai lớp trước khi tạo container nào",
+        "why": "Lớp một là docker compose config cho cú pháp compose. Lớp hai là một container tạm chạy vector validate trên đúng file cấu hình sẽ dùng — bắt lỗi khi chưa có service nào được tạo (<a href=\"https://docs.docker.com/reference/cli/docker/compose/config/\">docker compose config</a>).",
+        "whyBreaks": "Bỏ qua lớp hai thì lỗi cấu hình Vector chỉ lộ ra khi stack đã chạy nửa vời, và thông báo lỗi lẫn trong log gộp của cả project.",
+        "observeWith": "Output của compose config ; dòng Validated ở cuối output của vector validate",
+        "code": "docker compose config\n\ndocker run --rm \\\n  -v \"$PWD/vector.yaml:/etc/vector/vector.yaml:ro\" \\\n  timberio/vector:0.57.0-debian \\\n  validate /etc/vector/vector.yaml",
+        "failModes": [
+          {
+            "symptom": "vector validate báo lỗi tại đúng khối cấu hình sai",
+            "evidence": "Vector in tên component và dòng lỗi, tiến trình thoát với mã khác 0"
+          },
+          {
+            "symptom": "validate báo không tìm thấy file cấu hình",
+            "evidence": "source not found — thường vì vector.yaml là symlink hoặc đường dẫn $PWD sai"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Kiểm file cấu hình là file thật, không phải liên kết tượng trưng",
+            "command": "ls -l vector.yaml ; readlink -f vector.yaml"
+          },
+          {
+            "step": "Sửa cấu hình tới khi validate sạch mới chạy up",
+            "command": "docker run --rm -v \"$PWD/vector.yaml:/etc/vector/vector.yaml:ro\" timberio/vector:0.57.0-debian validate /etc/vector/vector.yaml"
+          }
+        ]
+      },
+      {
+        "step": 6,
+        "what": "Khởi động stack và kiểm từng cổng",
+        "why": "up -d kéo image rồi tạo hai container theo thứ tự depends_on. Kiểm cổng bằng ss trước khi curl để phân biệt \"dịch vụ chưa nghe\" với \"dịch vụ nghe nhưng trả lỗi\" (<a href=\"https://docs.victoriametrics.com/victorialogs/quickstart/\">VictoriaLogs quickstart</a>).",
+        "whyBreaks": "Nhảy thẳng vào giao diện web mà không kiểm cổng thì không biết lỗi nằm ở tầng nào khi trang không mở được.",
+        "observeWith": "docker compose ps ; ss -lntp lọc 9428/8686/9000 ; curl endpoint sức khoẻ",
+        "code": "docker compose up -d\ndocker compose ps\nss -lntp | grep -E \":(9428|8686|9000) \"\nss -lnup | grep -E \":9514 \"\ncurl -s http://127.0.0.1:9428/ | head -5\ncurl -s http://127.0.0.1:8686/health",
+        "failModes": [
+          {
+            "symptom": "Container victorialogs-lab restart liên tục",
+            "evidence": "docker compose logs victorialogs báo permission denied khi ghi vào /victoria-logs-data"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Cấp quyền ghi cho thư mục bind mount trên host rồi khởi động lại",
+            "command": "sudo chown -R \"$(id -u):$(id -g)\" ./victoria-logs-data && chmod 755 ./victoria-logs-data && docker compose up -d"
+          }
+        ],
+        "note": "Giao diện truy vấn mở tại http://<IP_DOCKER_HOST>:9428/select/vmui — nằm sẵn trong VictoriaLogs, không cần cài thêm."
+      },
+      {
+        "step": 7,
+        "what": "Bơm log qua nguồn HTTP và kiểm chứng",
+        "why": "Nguồn đơn giản nhất, dùng để xác nhận đường thu Vector đến VictoriaLogs đã thông trước khi thử hai nguồn còn lại (<a href=\"https://vector.dev/docs/reference/configuration/sources/http_server/\">Vector: http_server</a>).",
+        "whyBreaks": "Thử ba nguồn cùng lúc rồi thấy rỗng thì không biết mắc ở đâu — nghiệm thu tuần tự để khoanh vùng.",
+        "observeWith": "docker compose logs --tail 50 vector ; truy vấn LogsQL theo _msg",
+        "code": "curl --fail --show-error \\\n  -X POST -H 'Content-Type: application/json' \\\n  -d '{\"message\":\"hello from docker vector lab\",\"level\":\"info\",\"app\":\"demo-web\"}' \\\n  http://127.0.0.1:9000/\n\nfor i in 1 2 3 4 5; do\n  curl --silent --show-error \\\n    -X POST -H 'Content-Type: application/json' \\\n    -d \"{\\\"message\\\":\\\"docker lab event $i\\\",\\\"level\\\":\\\"info\\\",\\\"app\\\":\\\"demo-web\\\"}\" \\\n    http://127.0.0.1:9000/\ndone\n\ndocker compose logs --tail 50 vector\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"docker lab\"' \\\n  --data-urlencode 'limit=20'",
+        "note": "Nháy kép lồng nhau trong vòng lặp phải escape thành \\\" vì cần khai triển biến $i — nháy đơn ngoài sẽ không khai triển được."
+      },
+      {
+        "step": 8,
+        "what": "Thu log mọi container qua nguồn docker_logs",
+        "why": "Nguồn docker_logs nhận log trực tiếp qua Docker và tự gắn nhãn tên container, ID, image — nên container tạo sau vẫn được thu mà không sửa cấu hình (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>).",
+        "whyBreaks": "Thiếu mount Docker socket thì nguồn này im lặng hoàn toàn: dịch vụ lên, cấu hình hợp lệ, không có log container nào tới.",
+        "observeWith": "docker inspect vector-lab --format \"{{json .Mounts}}\" ; vmui lọc theo container_name",
+        "code": "docker inspect vector-lab --format '{{json .Mounts}}'\n\ndocker run --rm hello-world\n\ncurl -s http://127.0.0.1:8080/khong-ton-tai >/dev/null 2>&1 || true\n\ndocker compose logs --tail 30 vector\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=container_name:*' \\\n  --data-urlencode 'limit=20'",
+        "failModes": [
+          {
+            "symptom": "Không có log container nào trong VictoriaLogs dù nguồn HTTP vẫn về",
+            "evidence": "Danh sách Mounts của vector-lab thiếu /var/run/docker.sock"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Thêm bind mount Docker socket vào service vector rồi tạo lại",
+            "command": "docker compose up -d --force-recreate vector"
+          }
+        ],
+        "note": "Nhãn container_name và image do Vector parse sẵn theo kiểu Docker, không phải cấu hình thêm — đây là lợi thế của việc thu qua Docker so với đọc file log."
+      },
+      {
+        "step": 9,
+        "what": "Đẩy syslog từ máy client về Vector",
+        "why": "Máy client không cần cài Docker: thêm một dòng vào /etc/rsyslog.conf trỏ về cổng 9514 của host chạy stack. Một dấu @ là UDP, hai dấu @@ là TCP (<a href=\"https://www.rsyslog.com/doc/configuration/actions.html\">rsyslog: actions</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/syslog/\">Vector: syslog</a>).",
+        "whyBreaks": "Protocol khai lệch ở ba chỗ — rsyslog, mode trong vector.yaml, và cách publish cổng trong compose — làm kết nối không thành với thông báo rất mờ.",
+        "observeWith": "timedatectl trên cả hai máy ; ss -lnup | grep 9514 trên host ; vmui lọc theo host của client",
+        "code": "timedatectl\n\ntimedatectl set-timezone Asia/Ho_Chi_Minh\ntimedatectl set-ntp true\ntimedatectl\n\nhostnamectl set-hostname client-01\n\ncat >> /etc/rsyslog.conf <<'EOF'\n*.* @<IP_DOCKER_HOST>:9514\nEOF\n\nsystemctl restart rsyslog\nsystemctl status rsyslog --no-pager\n\nlogger \"ban tin thu nghiem tu client-01\"",
+        "failModes": [
+          {
+            "symptom": "Log của client không xuất hiện trên giao diện dù rsyslog chạy bình thường",
+            "evidence": "timedatectl hai máy khác timezone hoặc NTP synchronized báo no — bản tin tới nhưng nằm ngoài khung thời gian đang xem"
+          },
+          {
+            "symptom": "Thử telnet vào cổng 9514 không kết nối được",
+            "evidence": "vector.yaml khai mode udp trong khi telnet dùng TCP — đúng thiết kế, không phải sự cố. Lưu ý Ubuntu 24.04 minimal không có sẵn telnet; dùng nc -zv cho TCP và nc -u cho UDP"
+          }
+        ],
+        "fixSteps": [
+          {
+            "step": "Đặt timezone và bật đồng bộ NTP trên cả hai máy rồi thử lại",
+            "command": "timedatectl set-timezone Asia/Ho_Chi_Minh && timedatectl set-ntp true && timedatectl"
+          },
+          {
+            "step": "Đối chiếu protocol ở ba chỗ: rsyslog (@ hay @@), mode trong vector.yaml, và protocol khi publish cổng",
+            "command": "grep -n \"9514\" /etc/rsyslog.conf vector.yaml compose.yaml"
+          },
+          {
+            "step": "Muốn dùng TCP thì đổi cả ba chỗ: @@ ở rsyslog, mode tcp ở vector, và publish cổng TCP",
+            "command": "docker compose up -d --force-recreate vector"
+          }
+        ],
+        "note": "Đặt hostname và timezone ngay khi tạo máy là một bước của quy trình dựng máy, không phải việc sửa sau — hostname là nhãn dùng để lọc log về sau."
+      },
+      {
+        "step": 10,
+        "what": "Truy vấn LogsQL trên vmui",
+        "why": "Bắt đầu bằng query rộng để xác nhận có log, rồi thu hẹp: theo nội dung bằng _msg:, theo log stream bằng {host=\"...\"}, theo container bằng container_name (<a href=\"https://docs.victoriametrics.com/victorialogs/logsql/\">LogsQL</a>).",
+        "whyBreaks": "Query rỗng vì khung thời gian quá hẹp thường bị hiểu thành log chưa về, dẫn tới đi sửa cấu hình đang đúng.",
+        "observeWith": "Giao diện vmui tại :9428/select/vmui — tab query và tab overview để xem phân bố",
+        "code": "curl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=*' \\\n  --data-urlencode 'limit=20'\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query={host=\"docker-lab\"}' \\\n  --data-urlencode 'limit=20'\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"404\"' \\\n  --data-urlencode 'limit=20'",
+        "note": "Trên giao diện, tăng số dòng hiển thị và nới khung thời gian từ 5 phút lên 15 phút trước khi kết luận là không có log. Tab overview cho phân bố theo image và container để khoanh vùng nhanh."
+      },
+      {
+        "step": 11,
+        "what": "Nghiệm thu persistence qua down rồi up",
+        "why": "Dữ liệu nằm trên bind mount ./victoria-logs-data nên vòng đời container không ảnh hưởng. Phép thử: gửi bản tin nhận dạng được, down, up -d, rồi query lại đúng bản tin đó (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>).",
+        "whyBreaks": "Không kiểm bước này thì sự cố mất log chỉ lộ ra lúc thay thế container trong môi trường thật, khi đã cần tới log để điều tra.",
+        "observeWith": "du -sh ./victoria-logs-data trước/sau ; query lại message đã gửi",
+        "code": "curl --fail --show-error \\\n  -X POST -H 'Content-Type: application/json' \\\n  -d '{\"message\":\"persistent-log-before-recreate\",\"level\":\"info\"}' \\\n  http://127.0.0.1:9000/\n\ndu -sh ./victoria-logs-data\n\ndocker compose down\ndocker compose up -d\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"persistent-log-before-recreate\"' \\\n  --data-urlencode 'limit=20'\n\ndocker compose logs --tail 30\ndocker stats --no-stream victorialogs-lab vector-lab",
+        "note": "down không xoá thư mục bind mount. Muốn xoá dữ liệu lab phải rm thủ công thư mục đó, và đó là hành động không hoàn tác được."
+      },
+      {
+        "step": 12,
+        "what": "Định vị Compose trên thang quy mô và chuẩn bị đường sang Kubernetes",
+        "why": "Compose điều phối trên một host: host chết là mọi service trên host đó chết, và không có cơ chế chuyển service sang máy khác. Lớp trên là điều phối cụm với tách lớp control-plane và worker (<a href=\"https://kubernetes.io/docs/concepts/overview/components/\">Kubernetes: components</a>, <a href=\"https://docs.docker.com/engine/swarm/\">Docker: Swarm mode</a>).",
+        "whyBreaks": "Lên cụm sớm là gánh thêm một hệ thống phải vận hành, trong khi bài toán ban đầu chỉ cần kiểm soát tốt volume và network.",
+        "observeWith": "docker info xem số node ; đối chiếu số máy chủ và số service thực tế của hệ thống đang vận hành",
+        "code": "docker info --format \"Server version: {{.ServerVersion}}\"\ndocker compose ls\ndocker ps --format \"table {{.Names}}\\t{{.Image}}\\t{{.Status}}\"",
+        "note": "Ngưỡng thực dụng nêu tại lớp: dưới 10 máy chủ và ứng dụng không quá lớn thì Docker cùng Compose là đủ. Khi thật sự phải bước sang cụm thì từ vựng đổi — service thành pod/deployment, volume thành PersistentVolumeClaim, network thành một plugin CNI phải tự chọn, thêm Ingress/Egress — và manifest phải nằm trong Git kèm CI/CD ngay từ đầu."
+      }
+    ],
+    "quiz": [
+      {
+        "q": "Trong vector.yaml chạy bằng container, sink nên trỏ tới địa chỉ nào của VictoriaLogs?",
+        "options": [
+          "http://127.0.0.1:9428 vì hai container cùng host",
+          "http://victorialogs:9428 — tên service, phân giải qua DNS nội bộ của network project",
+          "http://localhost:9428 vì Compose tự ánh xạ localhost giữa các service",
+          "IP container của VictoriaLogs lấy bằng docker inspect"
+        ],
+        "correct": 1,
+        "whyCorrect": "Mỗi container có network namespace riêng nên loopback của nó là chính nó. Service cùng network phân giải nhau theo tên service (<a href=\"https://docs.docker.com/compose/how-tos/networking/\">Compose: networking</a>, <a href=\"https://docs.victoriametrics.com/victorialogs/data-ingestion/vector/\">VictoriaLogs: Vector setup</a>).",
+        "whyOthersWrong": "127.0.0.1 và localhost trong container Vector đều trỏ vào chính Vector. Dùng IP container thì hỏng sau mỗi lần tạo lại vì IP đổi."
+      },
+      {
+        "q": "Vector chạy trong container, cấu hình hợp lệ, nguồn HTTP hoạt động nhưng không có log container nào về. Nguyên nhân khả năng cao nhất là gì?",
+        "options": [
+          "Thiếu bind mount /var/run/docker.sock cho service vector",
+          "Chưa cấp quyền group docker cho user trong container",
+          "VictoriaLogs chưa bật retention",
+          "Docker chưa đổi log driver sang json-file"
+        ],
+        "correct": 0,
+        "whyCorrect": "Nguồn docker_logs cần Vector nói chuyện được với Docker. Khi Vector chạy trong container, đường đó là Docker socket của host nên phải mount tường minh (<a href=\"https://vector.dev/docs/setup/installation/platforms/docker/\">Vector: install on Docker</a>).",
+        "whyOthersWrong": "Cách cấp quyền bằng group docker áp cho bản cài systemd trên host, không áp cho bản container. Retention và log driver không liên quan tới việc nguồn có thu được hay không."
+      },
+      {
+        "q": "Trong /etc/rsyslog.conf, dòng \"*.* @192.0.2.10:9514\" nghĩa là gì?",
+        "options": [
+          "Đẩy toàn bộ log qua TCP tới 192.0.2.10 cổng 9514",
+          "Đẩy toàn bộ log qua UDP tới 192.0.2.10 cổng 9514",
+          "Nhận log từ 192.0.2.10 trên cổng 9514",
+          "Ghi log vào file trên máy 192.0.2.10"
+        ],
+        "correct": 1,
+        "whyCorrect": "Một dấu @ là UDP, hai dấu @@ là TCP (<a href=\"https://www.rsyslog.com/doc/configuration/actions.html\">rsyslog: actions</a>). Protocol này phải khớp với mode khai trong source syslog của Vector và với cách publish cổng trong compose.",
+        "whyOthersWrong": "TCP cần @@. Dòng này là hành động gửi đi, không phải cấu hình nhận. Và nó không ghi file."
+      },
+      {
+        "q": "Log của máy client không xuất hiện trên giao diện dù rsyslog đã restart và không báo lỗi. Nên kiểm gì TRƯỚC khi mở firewall?",
+        "options": [
+          "Tăng retention của VictoriaLogs",
+          "Đổi log driver của Docker",
+          "timedatectl trên cả hai máy: timezone khớp và NTP đã đồng bộ",
+          "Khởi động lại toàn bộ stack bằng down rồi up"
+        ],
+        "correct": 2,
+        "whyCorrect": "Log gắn với mốc thời gian: lệch timezone hoặc chưa đồng bộ NTP làm bản tin tới nhưng nằm ngoài khung thời gian đang xem, nhìn ra như là không có log (<a href=\"https://man7.org/linux/man-pages/man1/timedatectl.1.html\">timedatectl</a>). Đây là nguyên nhân im lặng nhất, kiểm rất nhanh.",
+        "whyOthersWrong": "Retention và log driver không liên quan. Khởi động lại stack không sửa được sai lệch thời gian ở máy gửi."
+      },
+      {
+        "q": "Vì sao nên chạy vector validate bằng một container tạm trước khi docker compose up?",
+        "options": [
+          "Để tải image Vector về trước cho nhanh",
+          "Để bắt lỗi cấu hình Vector khi chưa có service nào được tạo",
+          "Vì compose config không đọc được file vector.yaml",
+          "Vì Vector không tự kiểm cấu hình lúc khởi động"
+        ],
+        "correct": 1,
+        "whyCorrect": "Cấu hình sai thì service không lên và thông báo lỗi lẫn trong log gộp của cả project. Kiểm trước bằng container tạm cho thông báo lỗi sạch, trỏ đúng khối cấu hình sai, và chưa tạo container nào phải dọn.",
+        "whyOthersWrong": "Việc tải image chỉ là tác dụng phụ. compose config có đọc phần khai mount nhưng không hiểu nội dung vector.yaml — đó là hai lớp validate khác nhau. Vector có tự kiểm lúc khởi động, nhưng lúc đó đã muộn hơn."
+      },
+      {
+        "q": "Sau docker compose down rồi up -d, log cũ có còn query được không, và vì sao?",
+        "options": [
+          "Không, vì down xoá container nên dữ liệu trong đó mất theo",
+          "Có, vì dữ liệu nằm trên bind mount ./victoria-logs-data của host",
+          "Có, vì VictoriaLogs tự sao lưu vào bộ nhớ đệm",
+          "Chỉ còn nếu trước đó đã chạy docker compose stop thay vì down"
+        ],
+        "correct": 1,
+        "whyCorrect": "Tham số -storageDataPath trỏ vào điểm mount, và điểm mount đó là thư mục thật trên host. Dữ liệu nằm ngoài vòng đời container nên down rồi up -d vẫn query lại được (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>).",
+        "whyOthersWrong": "Chỉ dữ liệu ở lớp ghi của container mới mất theo container. Không có cơ chế tự sao lưu, và down hay stop đều không xoá bind mount."
+      },
+      {
+        "q": "Nhãn container_name và image xuất hiện trong log trên VictoriaLogs từ đâu?",
+        "options": [
+          "Do khai thêm trong transform remap của vector.yaml",
+          "Do nguồn docker_logs tự gắn khi thu log qua Docker",
+          "Do VictoriaLogs suy ra từ nội dung log",
+          "Do phải đặt _stream_fields=container_name,image trên uri"
+        ],
+        "correct": 1,
+        "whyCorrect": "Nguồn docker_logs nhận log trực tiếp qua Docker kèm siêu dữ liệu của container: tên, ID, image (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>). Không phải cấu hình thêm — đó là lợi thế so với đọc file log.",
+        "whyOthersWrong": "Transform trong bài chỉ áp cho nguồn HTTP. VictoriaLogs không suy ra siêu dữ liệu từ nội dung. _stream_fields chỉ chọn trường nào định danh stream, không sinh ra trường mới."
+      },
+      {
+        "q": "Theo lời khuyên tại buổi học, quy mô nào thì chưa cần tới Kubernetes?",
+        "options": [
+          "Dưới 3 máy chủ",
+          "Dưới khoảng 10 máy chủ và ứng dụng không quá lớn — Docker cùng Compose là đủ",
+          "Chỉ khi có đúng một máy chủ",
+          "Khi chưa có nhu cầu về log tập trung"
+        ],
+        "correct": 1,
+        "whyCorrect": "Compose điều phối trên một host nhưng vận hành tốt volume và network đã giải quyết được phần lớn bài toán ở quy mô này, mà lại gọn và dễ bảo trì hơn một cụm (<a href=\"https://kubernetes.io/docs/concepts/overview/components/\">Kubernetes: components</a>).",
+        "whyOthersWrong": "Ngưỡng không nằm ở 3 máy hay 1 máy. Nhu cầu log tập trung không phải tiêu chí chọn lớp điều phối — chính bài này dựng log tập trung bằng Compose."
+      },
+      {
+        "q": "Vì sao lệnh docker compose exec victorialogs sh luôn thất bại?",
+        "options": [
+          "Vì service đó chưa được khai vào network",
+          "Vì image VictoriaLogs là distroless, không có shell bên trong",
+          "Vì thiếu quyền trên Docker socket",
+          "Vì phải dùng docker exec thay cho docker compose exec"
+        ],
+        "correct": 1,
+        "whyCorrect": "Image dùng base distroless — chỉ có tiến trình cần thiết, không đóng gói shell. Đó là thiết kế của image, không phải sự cố. Việc Vector gửi log thành công đã là bằng chứng DNS và network nội bộ hoạt động.",
+        "whyOthersWrong": "Network và quyền socket không liên quan. Đổi sang docker exec cũng vẫn thất bại vì bên trong không có shell để chạy."
+      }
+    ],
+    "flashcards": [
+      {
+        "front": "Sink của Vector trong container trỏ tới đâu?",
+        "back": "http://victorialogs:9428/insert/jsonline?... — tên service, không phải IP hay 127.0.0.1.",
+        "why": "Trong container Vector, loopback là chính nó; service cùng network phân giải nhau theo tên."
+      },
+      {
+        "front": "Ba nguồn log của Vector trong bài này?",
+        "back": "http_server ở 9000 (JSON từ ứng dụng) · syslog ở 9514/udp (máy chủ khác) · docker_logs (mọi container trên host)."
+      },
+      {
+        "front": "Nguồn docker_logs cần mount gì khi Vector chạy trong container?",
+        "back": "/var/run/docker.sock để nói chuyện với Docker, và /var/lib/docker để đọc file log container."
+      },
+      {
+        "front": "Mount Docker socket vào container có rủi ro gì?",
+        "back": "Tương đương cấp quyền điều khiển Docker của cả host cho container đó — chỉ làm với agent tin cậy."
+      },
+      {
+        "front": "Ba tham số trên uri của sink nghĩa là gì?",
+        "back": "_msg_field=message chọn trường nội dung, _time_field=timestamp chọn trường thời gian, _stream_fields=host,source chọn cặp trường định danh log stream."
+      },
+      {
+        "front": "Validate hai lớp trước khi up là gì?",
+        "back": "docker compose config cho cú pháp compose, và một container tạm chạy vector validate cho cấu hình Vector."
+      },
+      {
+        "front": "Vì sao log sống sót qua docker compose down?",
+        "back": "Vì -storageDataPath trỏ vào điểm mount, và thư mục thật là ./victoria-logs-data trên host — nằm ngoài vòng đời container."
+      },
+      {
+        "front": "rsyslog: một dấu @ và hai dấu @@ khác gì?",
+        "back": "Một @ là UDP, hai @@ là TCP. Phải khớp với mode trong vector.yaml và cách publish cổng trong compose."
+      },
+      {
+        "front": "Log không về, kiểm gì trước khi mở firewall?",
+        "back": "timedatectl trên cả hai máy: timezone khớp và NTP đã đồng bộ. Lệch giờ làm log tới nhưng nằm ngoài khung thời gian đang xem."
+      },
+      {
+        "front": "Nhãn container_name/image trong log từ đâu?",
+        "back": "Do nguồn docker_logs tự gắn khi thu qua Docker — không phải cấu hình thêm."
+      },
+      {
+        "front": "Vì sao exec vào container VictoriaLogs luôn lỗi?",
+        "back": "Image dùng base distroless, không có shell bên trong. Đó là thiết kế, không phải sự cố."
+      },
+      {
+        "front": "Query LogsQL rỗng thì kiểm gì trước?",
+        "back": "Nới khung thời gian và tăng số dòng hiển thị, trước khi kết luận là log chưa về."
+      },
+      {
+        "front": "Trần của Docker Compose là gì?",
+        "back": "Chỉ điều phối trên MỘT host: host chết là mọi service trên host đó chết, và không tự chuyển service sang máy khác."
+      },
+      {
+        "front": "Ngưỡng thực dụng khi nào chưa cần Kubernetes?",
+        "back": "Dưới khoảng 10 máy chủ và ứng dụng không quá lớn — Docker cùng Compose là đủ, gọn và dễ bảo trì hơn."
+      },
+      {
+        "front": "Từ vựng đổi gì khi sang Kubernetes?",
+        "back": "service → pod/deployment · volume → PersistentVolume/PersistentVolumeClaim · network bridge → một plugin CNI phải tự chọn · thêm Ingress/Egress."
+      },
+      {
+        "front": "Điều kiện tiên quyết khi bước sang cụm?",
+        "back": "Manifest nằm trong Git kèm CI/CD ngay từ đầu — không sửa tay trên máy chủ, vì file cấu hình cụm dài hàng trăm dòng và nhiều người cùng bảo trì."
+      }
+    ],
+    "try_at_home": [
+      {
+        "title": "Dựng stack thu log bằng Compose",
+        "phaseType": "core",
+        "estimatedMinutes": 30,
+        "vmTarget": "server",
+        "cmd": "docker compose config && docker compose up -d",
+        "why": "Viết lại hệ thống thu log của buổi trước thành một compose file, validate hai lớp rồi khởi động — nghiệm thu bằng nguồn HTTP là đường đơn giản nhất (<a href=\"https://docs.victoriametrics.com/victorialogs/quickstart/\">VictoriaLogs quickstart</a>).",
+        "observeWith": "docker compose ps ; ss lọc 9428/8686/9000 ; curl /health của Vector ; vmui tại :9428/select/vmui",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Tạo <code>~/docker-practice/observability-lab/victoria-logs-data</code> rồi <code>cd</code> vào thư mục project.",
+            "expect": "Thư mục dữ liệu tồn tại và cho phép ghi."
+          },
+          {
+            "n": 2,
+            "do": "Viết <code>vector.yaml</code> với ba nguồn (<code>http_server</code> :9000, <code>syslog</code> :9514 mode udp, <code>docker_logs</code>), transform <code>remap</code> chỉ áp cho nguồn HTTP, và một sink gộp cả ba trỏ tới <code>http://victorialogs:9428/insert/jsonline?...</code>.",
+            "expect": "File đọc lại đúng nội dung; tên input trong sink khớp tên source đã khai."
+          },
+          {
+            "n": 3,
+            "do": "Viết <code>compose.yaml</code>: service <code>victorialogs</code> (command <code>-storageDataPath</code> và <code>-retentionPeriod=7d</code>, port 9428, bind mount <code>./victoria-logs-data</code>) và service <code>vector</code> (<code>depends_on</code>, ports 8686/9000/9514 udp, mount <code>vector.yaml:ro</code> + <code>/var/run/docker.sock</code> + <code>/var/lib/docker</code>), network <code>observability-net</code>.",
+            "expect": "File tồn tại đúng cấu trúc ba thành phần trong thư mục project."
+          },
+          {
+            "n": 4,
+            "do": "Validate lớp một: <code>docker compose config</code>. Validate lớp hai: <code>docker run --rm -v \"$PWD/vector.yaml:/etc/vector/vector.yaml:ro\" timberio/vector:0.57.0-debian validate /etc/vector/vector.yaml</code>.",
+            "expect": "Cả hai lệnh sạch. Nếu lỗi thì sửa tới khi sạch mới sang bước sau."
+          },
+          {
+            "n": 5,
+            "do": "<code>docker compose up -d</code> rồi <code>docker compose ps</code>, <code>ss -lntp | grep -E \":(9428|8686|9000) \"</code> và <code>curl -s http://127.0.0.1:8686/health</code>.",
+            "expect": "Hai service Up; ba cổng TCP listen; endpoint sức khoẻ của Vector phản hồi."
+          },
+          {
+            "n": 6,
+            "do": "Bơm một bản tin JSON vào :9000, rồi vòng lặp 5 bản tin, sau đó query <code>_msg:\"docker lab\"</code>.",
+            "expect": "Query trả về đúng các bản tin vừa gửi; log của Vector không có dòng ERROR liên quan tới sink."
+          }
+        ],
+        "analysis": {
+          "observation": "Cả stack lên bằng một lệnh, và bước validate bắt lỗi trước khi có container nào được tạo.",
+          "mechanism": "Compose tạo network rồi tạo hai container theo thứ tự depends_on; Vector gọi VictoriaLogs qua DNS nội bộ theo tên service.",
+          "lesson": "Hạ tầng nội bộ cũng nên được mô tả bằng cấu hình trong Git, không phải bằng hai quy trình cài khác nhau."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Container victorialogs-lab restart liên tục",
+            "fix": "Thư mục ./victoria-logs-data thiếu quyền ghi. Chạy chown/chmod cho thư mục rồi up -d lại."
+          },
+          {
+            "symptom": "Vector chạy nhưng query VictoriaLogs rỗng",
+            "fix": "Kiểm uri trong vector.yaml phải là http://victorialogs:9428, không phải 127.0.0.1."
+          },
+          {
+            "symptom": "vector validate báo source not found",
+            "fix": "Kiểm vector.yaml là file thật, không phải liên kết tượng trưng, và $PWD đúng thư mục project."
+          }
+        ]
+      },
+      {
+        "title": "Thu log mọi container và tra bằng LogsQL",
+        "phaseType": "core",
+        "estimatedMinutes": 25,
+        "vmTarget": "server",
+        "cmd": "docker inspect vector-lab --format '{{json .Mounts}}'",
+        "why": "Nghiệm thu nguồn docker_logs: container tạo SAU khi agent đã chạy vẫn được thu, và nhãn tên/image có sẵn để lọc mà không cấu hình thêm (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>, <a href=\"https://docs.victoriametrics.com/victorialogs/logsql/\">LogsQL</a>).",
+        "observeWith": "Danh sách Mounts của vector-lab ; vmui tab query và tab overview",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Kiểm mount: <code>docker inspect vector-lab --format '{{json .Mounts}}'</code>.",
+            "expect": "Thấy cả ba mount: vector.yaml, /var/run/docker.sock và /var/lib/docker."
+          },
+          {
+            "n": 2,
+            "do": "Chạy một container mới: <code>docker run --rm hello-world</code>.",
+            "expect": "Log của container đó xuất hiện trên vmui — container tạo sau agent vẫn được thu."
+          },
+          {
+            "n": 3,
+            "do": "Tạo tải cho một web container đang chạy, gồm cả một đường dẫn không tồn tại để sinh mã 404.",
+            "expect": "Access log của web xuất hiện trong log tập trung."
+          },
+          {
+            "n": 4,
+            "do": "Trên vmui, query <code>container_name:*</code> rồi mở tab overview, tăng số dòng hiển thị và nới khung thời gian lên 15 phút.",
+            "expect": "Thấy phân bố log theo container_name và image, parse sẵn theo kiểu Docker."
+          },
+          {
+            "n": 5,
+            "do": "Lọc dần: <code>_msg:\"404\"</code>, rồi <code>{host=\"docker-lab\"}</code>, rồi <code>container_name:\"&lt;ten-container&gt;\"</code>.",
+            "expect": "Mỗi câu thu hẹp đúng tập log mong đợi."
+          },
+          {
+            "n": 6,
+            "do": "Gửi một bản tin nhận dạng được, chạy <code>docker compose down</code> rồi <code>up -d</code>, sau đó query lại chính bản tin đó.",
+            "expect": "Log cũ vẫn truy vấn được — bằng chứng dữ liệu nằm trên bind mount của host."
+          }
+        ],
+        "analysis": {
+          "observation": "Log của container mới xuất hiện mà không sửa cấu hình agent; nhãn tên và image có sẵn để lọc.",
+          "mechanism": "Nguồn docker_logs nhận luồng log trực tiếp qua Docker socket kèm siêu dữ liệu container, nên container tạo sau vẫn vào phạm vi thu.",
+          "lesson": "Thu qua Docker thay vì đọc file log là chọn đúng: ID container đổi mỗi lần tạo lại, còn nhãn thì luôn có."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Nguồn HTTP về nhưng không có log container nào",
+            "fix": "Thiếu mount /var/run/docker.sock. Thêm vào service vector rồi docker compose up -d --force-recreate vector."
+          },
+          {
+            "symptom": "Query rỗng dù vừa sinh log",
+            "fix": "Nới khung thời gian và tăng số dòng hiển thị trước khi kết luận. Kiểm thêm docker compose logs --tail 50 vector."
+          }
+        ]
+      },
+      {
+        "title": "Đẩy syslog từ máy client và xử lý hai bẫy kinh điển",
+        "phaseType": "core",
+        "estimatedMinutes": 30,
+        "vmTarget": "client1",
+        "cmd": "timedatectl && systemctl restart rsyslog",
+        "why": "Máy không có Docker cũng đẩy được log về: rsyslog trỏ tới cổng syslog của Vector. Bài này rèn hai bẫy im lặng nhất — lệch thời gian và lệch protocol (<a href=\"https://www.rsyslog.com/doc/configuration/actions.html\">rsyslog: actions</a>, <a href=\"https://man7.org/linux/man-pages/man1/timedatectl.1.html\">timedatectl</a>).",
+        "observeWith": "timedatectl trên cả hai máy ; ss -lnup | grep 9514 trên host ; vmui lọc theo hostname của client",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Trên máy client, đặt hostname và timezone rồi bật NTP: <code>hostnamectl set-hostname client-01</code>, <code>timedatectl set-timezone Asia/Ho_Chi_Minh</code>, <code>timedatectl set-ntp true</code>.",
+            "expect": "timedatectl báo đúng timezone và NTP synchronized là yes."
+          },
+          {
+            "n": 2,
+            "do": "Đối chiếu <code>timedatectl</code> trên máy chạy stack với máy client.",
+            "expect": "Hai máy cùng timezone và cùng giờ, lệch không quá vài giây."
+          },
+          {
+            "n": 3,
+            "do": "Thêm vào <code>/etc/rsyslog.conf</code> dòng <code>*.* @&lt;IP_DOCKER_HOST&gt;:9514</code> rồi <code>systemctl restart rsyslog</code> và kiểm <code>systemctl status rsyslog</code>.",
+            "expect": "Dịch vụ active (running), không có lỗi cấu hình."
+          },
+          {
+            "n": 4,
+            "do": "Sinh một bản tin: <code>logger \"ban tin thu nghiem tu client-01\"</code>, rồi tìm nó trên vmui.",
+            "expect": "Bản tin xuất hiện, timestamp khớp giờ thực."
+          },
+          {
+            "n": 5,
+            "do": "Thử <code>nc -zv &lt;IP_DOCKER_HOST&gt; 9514</code> (hoặc <code>telnet</code> nếu máy đã cài — Ubuntu 24.04 minimal không có sẵn).",
+            "expect": "Không kết nối được — đúng kỳ vọng, vì cấu hình đang là UDP. Đây là bẫy protocol đã gặp tại lớp."
+          },
+          {
+            "n": 6,
+            "do": "Đổi sang TCP ở cả ba chỗ: <code>@@</code> trong rsyslog, <code>mode: tcp</code> trong vector.yaml, và publish cổng TCP trong compose. Chạy lại validate rồi <code>up -d</code>.",
+            "expect": "telnet kết nối được và log vẫn về — chứng minh ba chỗ phải khớp nhau."
+          }
+        ],
+        "analysis": {
+          "observation": "Log về hay không phụ thuộc hai điều kiện nằm ngoài phần cấu hình agent: thời gian đúng và protocol khớp.",
+          "mechanism": "Log gắn với mốc thời gian nên lệch giờ đẩy bản tin ra ngoài khung đang xem; protocol khai ở ba nơi và chỉ khớp cả ba thì kết nối mới thành.",
+          "lesson": "Thứ tự chẩn đoán: kiểm giờ và protocol trước, mở firewall sau. Đặt hostname và timezone ngay khi tạo máy là một bước của quy trình dựng máy."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "rsyslog chạy bình thường nhưng log không xuất hiện",
+            "fix": "Kiểm timedatectl hai máy. Lệch timezone hoặc NTP chưa đồng bộ là nguyên nhân im lặng nhất."
+          },
+          {
+            "symptom": "telnet vào 9514 không kết nối được",
+            "fix": "Nếu cấu hình là UDP thì đúng như vậy. Muốn kiểm UDP dùng nc -u, hoặc đổi sang TCP ở cả ba chỗ."
+          },
+          {
+            "symptom": "Đã đổi vector.yaml nhưng không có hiệu lực",
+            "fix": "Cấu hình được bind mount nhưng Vector đọc lúc khởi động — chạy docker compose up -d --force-recreate vector."
+          }
+        ]
+      },
+      {
+        "title": "Chuẩn bị lab Kubernetes cho buổi sau",
+        "phaseType": "optional",
+        "estimatedMinutes": 40,
+        "vmTarget": "host",
+        "cmd": "hostnamectl set-hostname k8s-master && timedatectl set-ntp true && swapoff -a",
+        "why": "Buổi sau bắt đầu module Kubernetes. Dựng sẵn ba node và xử lý xong phần nền (hostname, timezone, swap, snapshot) để không mất thời gian lúc thực hành (<a href=\"https://kubernetes.io/docs/concepts/overview/components/\">Kubernetes: components</a>).",
+        "observeWith": "hostnamectl ; timedatectl ; swapon --show (phải rỗng) ; ping giữa ba node",
+        "steps": [
+          {
+            "n": 1,
+            "do": "Tạo ba máy ảo, mỗi máy <strong>một card mạng</strong>, cấu hình tối thiểu khoảng 2 vCPU và 4-8 GB RAM. Vai trò: một control-plane, hai worker.",
+            "expect": "Ba máy thông nhau bằng ping trên cùng dải mạng."
+          },
+          {
+            "n": 2,
+            "do": "Trên từng máy, đặt hostname theo vai trò và IP tĩnh theo quy hoạch: <code>hostnamectl set-hostname k8s-master</code> (rồi k8s-worker1, k8s-worker2).",
+            "expect": "hostnamectl trả về đúng tên; tên không trùng nhau."
+          },
+          {
+            "n": 3,
+            "do": "Đặt timezone và bật đồng bộ NTP trên cả ba máy.",
+            "expect": "timedatectl báo đúng timezone và NTP synchronized là yes trên cả ba."
+          },
+          {
+            "n": 4,
+            "do": "Tắt swap: <code>swapoff -a</code> và gỡ dòng swap trong <code>/etc/fstab</code> để không bật lại sau khi khởi động.",
+            "expect": "<code>swapon --show</code> không in ra gì, kể cả sau khi reboot."
+          },
+          {
+            "n": 5,
+            "do": "Tắt máy rồi <strong>snapshot</strong> cả ba với nhãn \"base\" — bản đã có IP, hostname, timezone.",
+            "expect": "Có thể quay về bản base bất cứ lúc nào mà không phải cấu hình lại từ đầu."
+          },
+          {
+            "n": 6,
+            "do": "Tuỳ chọn: dựng thêm một node log tập trung chạy đúng stack VictoriaLogs + Vector của lab này, hoặc dùng chính node control-plane cho vai trò đó.",
+            "expect": "Cả ba node đẩy được syslog về node log — dùng lại đúng cấu hình đã làm ở phase trước."
+          },
+          {
+            "n": 7,
+            "do": "Vẽ lại mô hình lab kèm IP từng node và gửi cho giảng viên.",
+            "expect": "Sơ đồ thể hiện rõ vai trò từng node, dải mạng và IP — để hỗ trợ được khi có sự cố."
+          }
+        ],
+        "analysis": {
+          "observation": "Phần lớn thời gian mất trong buổi thực hành cụm là ở việc dựng máy, không phải ở kiến thức cụm.",
+          "mechanism": "Cụm yêu cầu hostname duy nhất, thời gian đồng bộ và swap tắt; thiếu một trong ba thì bước khởi tạo cụm thất bại với lỗi khó đọc.",
+          "lesson": "Xử lý xong phần nền rồi snapshot: mọi lần thử lại đều bắt đầu từ một trạng thái sạch đã biết."
+        },
+        "troubleshooting": [
+          {
+            "symptom": "Swap bật lại sau khi khởi động",
+            "fix": "Chỉ chạy swapoff -a là tạm thời. Phải chú thích hoặc gỡ dòng swap trong /etc/fstab."
+          },
+          {
+            "symptom": "Hai node trùng hostname",
+            "fix": "Do nhân bản máy ảo mà chưa đổi tên. Đặt lại bằng hostnamectl rồi kiểm /etc/hosts trên từng máy."
+          },
+          {
+            "symptom": "Các node không ping được nhau",
+            "fix": "Kiểm cùng dải mạng và kiểm firewall. Mỗi node chỉ nên có một card mạng để tránh nhầm đường đi."
+          }
+        ]
+      }
+    ],
+    "misconceptions": [
+      {
+        "wrong": "Trong container Vector, trỏ sink tới 127.0.0.1:9428 là tới được VictoriaLogs vì hai container nằm cùng host.",
+        "right": "Bên trong container Vector, 127.0.0.1 chính là container Vector. Phải gọi VictoriaLogs bằng TÊN service: http://victorialogs:9428/...",
+        "why": "Mỗi container có network namespace riêng, nên loopback của nó không dẫn tới container khác dù cùng host. Các service cùng một network của project Compose phân giải nhau qua DNS nội bộ theo tên service (<a href=\"https://docs.docker.com/compose/how-tos/networking/\">Compose: networking</a>, <a href=\"https://docs.victoriametrics.com/victorialogs/data-ingestion/vector/\">VictoriaLogs: nhận log từ Vector</a>). Đây là điểm khác biệt lớn nhất khi chuyển stack từ docker run sang Compose: bản docker run trước đó chạy Vector bằng systemd trên host nên 127.0.0.1:9428 đúng; bản container thì địa chỉ đó trỏ vào chính nó. Triệu chứng đặc trưng là Vector chạy bình thường, không có log lỗi kết nối rõ ràng, mà VictoriaLogs thì rỗng. Hệ quả: mọi địa chỉ trong cấu hình của container phải viết theo tên service, không dùng IP hay loopback. Đổi lại, IP container thay đổi sau mỗi lần tạo lại cũng không ảnh hưởng gì."
+      },
+      {
+        "wrong": "Bind mount file vector.yaml vào container là đủ để Vector thu được log của mọi container trên host.",
+        "right": "Nguồn docker_logs cần Vector nói chuyện được với Docker: phải mount /var/run/docker.sock, và mount /var/lib/docker để đọc file log. Thiếu mount thì nguồn đó im lặng.",
+        "why": "Source docker_logs kết nối tới Docker để nhận luồng log của các container đang chạy kèm nhãn tên/ID/image (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>). Khi Vector chạy trong container, đường tới Docker là socket của host — nên bản container phải mount tường minh (<a href=\"https://vector.dev/docs/setup/installation/platforms/docker/\">Vector: install on Docker</a>). Hai cách cấp quyền cho cùng một mục đích: bản cài bằng systemd chỉ cần user chạy Vector thuộc group docker; bản container cần mount socket. Cả hai đều hỏng theo kiểu im lặng — dịch vụ lên, cấu hình hợp lệ, chỉ là không có log nào tới. Hệ quả về an ninh: mount /var/run/docker.sock tương đương cấp quyền điều khiển Docker của cả host cho container đó. Chỉ làm với agent tin cậy, và không phơi cổng quản trị của agent ra mạng không tin cậy (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>)."
+      },
+      {
+        "wrong": "Log không về thì nguyên nhân là Vector lỗi hoặc firewall chặn.",
+        "right": "Hai nguyên nhân im lặng nhất lại nằm ngoài hai chỗ đó: timezone/NTP giữa hai máy lệch, và protocol khai không khớp giữa compose, vector.yaml và rsyslog.",
+        "why": "Log gắn với mốc thời gian; nếu máy gửi lệch timezone hoặc chưa đồng bộ NTP thì bản tin vẫn tới nhưng nằm ngoài khung thời gian đang xem trên giao diện, nhìn ra như là \"không có log\" (<a href=\"https://man7.org/linux/man-pages/man1/timedatectl.1.html\">timedatectl</a>). Bẫy thứ hai là protocol: rsyslog dùng một dấu @ cho UDP và hai dấu @@ cho TCP (<a href=\"https://www.rsyslog.com/doc/configuration/actions.html\">rsyslog: actions</a>), trong khi source syslog của Vector khai mode tường minh (<a href=\"https://vector.dev/docs/reference/configuration/sources/syslog/\">Vector: syslog</a>) và compose lại publish cổng theo protocol riêng. Ba chỗ này phải khớp. Tình huống gặp tại lớp: cổng được publish theo TCP mặc định trong khi vector.yaml khai mode udp, nên telnet vào cổng đó không kết nối được — đúng ra là phải như vậy, không phải sự cố. Hệ quả về thứ tự chẩn đoán: kiểm timedatectl trên cả hai máy và đối chiếu protocol ở ba chỗ TRƯỚC khi đi mở firewall hay đọc log của Vector."
+      },
+      {
+        "wrong": "docker compose down là mất toàn bộ log đã thu, nên chỉ được dùng stop.",
+        "right": "Dữ liệu VictoriaLogs nằm trên bind mount ./victoria-logs-data của host nên down rồi up -d vẫn query lại được log cũ.",
+        "why": "Container ghi mặc định vào lớp ghi của chính nó, mất theo container. Nhưng stack này gắn thư mục dữ liệu ra ngoài bằng bind mount và truyền -storageDataPath trỏ vào đúng điểm mount, nên phần lưu trữ sống độc lập vòng đời container (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>, <a href=\"https://docs.victoriametrics.com/victorialogs/quickstart/\">VictoriaLogs quickstart</a>). Phép thử nghiệm thu chính là: gửi một bản tin có nội dung nhận dạng được, chạy down rồi up -d, query lại đúng bản tin đó. Nếu mất thì lỗi nằm ở chỗ mount hoặc ở tham số storageDataPath, không phải ở lệnh down. Hệ quả: down được dùng thoải mái để trả lại cổng và dọn container. Muốn xoá dữ liệu thật thì phải xoá thủ công thư mục trên host — và đó là hành động không hoàn tác được."
+      },
+      {
+        "wrong": "Đã dùng được Compose thì cứ mở rộng bằng Compose, không cần Kubernetes.",
+        "right": "Compose chỉ điều phối trên MỘT host: host chết là toàn bộ service trên host đó chết, và Compose không tự chuyển service sang máy khác. Ngưỡng thực dụng là khoảng 10 máy chủ.",
+        "why": "Compose là công cụ một host; muốn nhiều host phải sang lớp điều phối cụm, nơi có tách lớp control-plane và worker cùng bộ lập lịch (<a href=\"https://kubernetes.io/docs/concepts/overview/components/\">Kubernetes: components</a>). Docker Swarm từng là lối đi trung gian nhưng hệ sinh thái quanh nó mỏng dần (<a href=\"https://docs.docker.com/engine/swarm/\">Docker: Swarm mode</a>). Lời khuyên tại lớp nói thẳng theo hướng ngược lại với kỳ vọng thông thường: quy mô dưới 10 máy chủ và ứng dụng không quá lớn thì Docker cùng Compose là đủ — kiểm soát tốt volume và network đã giải quyết được bài toán, mà lại gọn và dễ bảo trì hơn nhiều. Dựng một cụm chỉ để chạy một hệ thống thu log là chi phí vận hành không đáng. Hệ quả khi thật sự phải bước sang: đổi cả từ vựng và cách nghĩ — service thành pod/deployment, volume thành PersistentVolumeClaim, network thành một plugin CNI phải tự chọn, thêm Ingress/Egress. Và điều kiện tiên quyết là manifest phải nằm trong Git kèm CI/CD ngay từ đầu, không sửa tay trên máy chủ."
+      }
+    ],
+    "diagram": {
+      "type": "custom",
+      "component": "DockerComposeStackLab"
+    }
+  }
+}

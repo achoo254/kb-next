@@ -84,8 +84,8 @@ release() {
 	id="$(date -u +%Y%m%d-%H%M%S)-$(git rev-parse --short=12 HEAD)"
 	sync_infra
 	ssh_run "mkdir -p $remote/ci-incoming/$id" </dev/null
-	# The server bundle needs only Node and the migrations: no install on the server.
-	tar czf - --exclude '._*' --exclude .DS_Store apps/web/dist apps/server/dist apps/server/drizzle |
+	# The server bundle needs only Node, the migrations and content/ (read by the importer): no install on the server.
+	tar czf - --exclude '._*' --exclude .DS_Store apps/web/dist apps/server/dist apps/server/drizzle content |
 		ssh_run "tar xzf - --no-same-owner -C $remote/ci-incoming/$id"
 	# The same switch CI runs (checks, restart, healthz + origin, previous release back on failure).
 	ssh_run "/usr/local/sbin/kb-activate-incoming $id" </dev/null

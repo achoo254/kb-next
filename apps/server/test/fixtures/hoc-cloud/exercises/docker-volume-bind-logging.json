@@ -1,0 +1,171 @@
+{
+  "exercise": {
+    "slug": "docker-volume-bind-logging",
+    "title": "Docker — Volume, Bind mount & Thu log tập trung (Phần 2)",
+    "topic": "docker",
+    "tags": [
+      "docker",
+      "volume",
+      "bind-mount",
+      "storage",
+      "logging",
+      "vector",
+      "victorialogs"
+    ],
+    "source": "Bài tập thực hành — buổi Docker Phần 2",
+    "brief": "Trên host Linux đã cài Docker (ví dụ <strong>Ubuntu 24.04</strong>), thực hành đầy đủ hai kỹ thuật giữ dữ liệu — <strong>volume</strong> và <strong>bind mount</strong> — rồi dựng đường thu <strong>log tập trung</strong> cho toàn bộ container trên máy. <br><strong>Nghiệm thu:</strong> (1) container thứ hai đọc lại được file do container thứ nhất (đã bị xoá) ghi vào volume; (2) sửa file trên host thấy web đổi ngay, xoá container xong file trên host vẫn còn, chế độ <code>:ro</code> chặn được ghi từ trong container; (3) <code>docker system df</code> phản ánh đúng phần đang chiếm chỗ và container mới chạy có giới hạn log; (4) log của một container vừa tạo tải xuất hiện trên giao diện log tập trung, lọc được theo tên container.",
+    "estimated_minutes": 50,
+    "content_hash": "aac88810b92f1a58a16700e99a444048b68e1ca810c82f33eec5519642b65531",
+    "updated_at": 1785644774,
+    "guide": [
+      {
+        "step": 1,
+        "instruction": "<strong>Xác định Docker đang chiếm chỗ ở đâu</strong> — trước khi tạo thêm dữ liệu, ghi lại mốc ban đầu để so sánh về sau. Chú ý phân vùng chứa Docker Root Dir, không chỉ nhìn tổng ổ.",
+        "command": "docker info --format \"{{.DockerRootDir}}\"\ndu -sh /var/lib/docker\ndocker system df\ndf -h /var/lib/docker",
+        "note": "Khi phân vùng chứa Docker Root Dir đầy, daemon và các container đang chạy đều gặp lỗi ghi (<a href=\"https://docs.docker.com/reference/cli/docker/system/df/\">docker system df</a>)."
+      },
+      {
+        "step": 2,
+        "instruction": "<strong>Tạo volume và ghi dữ liệu bằng container tự xoá</strong> — dùng <code>--rm</code> để container biến mất ngay sau khi chạy xong, chứng minh dữ liệu không phụ thuộc container tạo ra nó.",
+        "command": "docker volume create lab-vol\ndocker volume ls\ndocker volume inspect lab-vol\ndocker run --rm -v lab-vol:/data alpine sh -c \"date > /data/created; cat /data/created\"\ndocker ps -a",
+        "note": "Trường <code>Mountpoint</code> trong <code>inspect</code> chỉ tới thư mục thật trên host (<a href=\"https://docs.docker.com/engine/storage/volumes/\">Docker: volumes</a>)."
+      },
+      {
+        "step": 3,
+        "instruction": "<strong>Đọc lại bằng container khác</strong> — đây là bước nghiệm thu quan trọng nhất của phần volume. Container thứ nhất đã không còn, nhưng nội dung vẫn nguyên.",
+        "command": "docker run --rm -v lab-vol:/data alpine cat /data/created\nls -l /var/lib/docker/volumes/lab-vol/_data",
+        "note": "Nội dung in ra phải trùng đúng thời điểm mà container ở bước 2 đã ghi."
+      },
+      {
+        "step": 4,
+        "instruction": "<strong>Bind mount cho web tĩnh</strong> — chuẩn bị nội dung trên host rồi gắn vào web root của Nginx ở chế độ chỉ đọc. Kiểm chứng bằng cách sửa file trên host và tải lại trang.",
+        "command": "mkdir -p /opt/html\necho \"<h1>Trang do host cap</h1>\" > /opt/html/index.html\ndocker run -d --name lab-web2 -p 8080:80 -v /opt/html:/usr/share/nginx/html:ro nginx\ncurl -s http://localhost:8080\necho \"<h1>Noi dung da sua</h1>\" > /opt/html/index.html\ncurl -s http://localhost:8080",
+        "note": "Nội dung mới hiển thị ngay, không cần khởi động lại container — container đọc thẳng thư mục host (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>)."
+      },
+      {
+        "step": 5,
+        "instruction": "<strong>Kiểm chứng chế độ chỉ đọc và dữ liệu sau khi xoá container</strong> — thử ghi từ trong container (phải bị từ chối), rồi xoá container và kiểm tra lại thư mục trên host.",
+        "command": "docker exec lab-web2 sh -c \"echo test > /usr/share/nginx/html/x.html\"\ndocker rm -f lab-web2\nls -l /opt/html\ncat /opt/html/index.html",
+        "note": "Lệnh ghi bị từ chối vì hậu tố <code>:ro</code>; sau khi xoá container, file trên host còn nguyên vì nó thuộc quyền sở hữu của host."
+      },
+      {
+        "step": 6,
+        "instruction": "<strong>Dọn volume có kiểm soát</strong> — liệt kê volume mồ côi trước, đối chiếu rồi mới dọn. <code>prune</code> xoá vĩnh viễn, không có bước hoàn tác.",
+        "command": "docker volume ls\ndocker volume ls -f dangling=true\ndocker volume rm lab-vol\ndocker system df",
+        "note": "Volume vừa mất container gắn nó vẫn bị <code>prune</code> coi là không dùng — môi trường CI sinh volume liên tục cần lịch dọn có kiểm soát (<a href=\"https://docs.docker.com/engine/manage-resources/pruning/\">Docker: pruning</a>)."
+      },
+      {
+        "step": 7,
+        "instruction": "<strong>Giới hạn log trước khi log làm đầy ổ</strong> — tìm container tốn log nhất, rồi chạy container mới có giới hạn kích thước và số file log.",
+        "command": "du -sh /var/lib/docker/containers/* | sort -h | tail -5\ndocker run -d --name web-limited -p 8080:80 --log-opt max-size=10m --log-opt max-file=3 nginx\ndocker inspect --format \"{{.HostConfig.LogConfig}}\" web-limited",
+        "note": "Để áp cho mọi container mới trên host, đặt <code>log-driver</code> và <code>log-opts</code> trong <code>/etc/docker/daemon.json</code> rồi khởi động lại Docker (<a href=\"https://docs.docker.com/engine/logging/configure/\">Docker: configure logging</a>)."
+      },
+      {
+        "step": 8,
+        "instruction": "<strong>Dựng hệ thống log tập trung bằng chính Docker</strong> — chạy VictoriaLogs kèm volume cho phần dữ liệu, để log đã thu không mất khi container được thay thế.",
+        "command": "docker volume create victoria-logs-data\ndocker run -d --name victoria-logs --restart unless-stopped -p 9428:9428 -v victoria-logs-data:/victoria-logs-data victoriametrics/victoria-logs:latest\ndocker ps\ncurl -s http://localhost:9428/health",
+        "note": "Giao diện truy vấn ở cổng 9428 (<a href=\"https://docs.victoriametrics.com/victorialogs/\">VictoriaLogs</a>)."
+      },
+      {
+        "step": 9,
+        "instruction": "<strong>Cài agent thu log và cấp quyền</strong> — Vector với source <code>docker_logs</code> đọc log mọi container mà không cần khai báo đường dẫn. Bắt buộc <code>validate</code> sạch trước khi start.",
+        "command": "usermod -aG docker vector\nvector validate --config /etc/vector/vector.yaml\nsystemctl restart vector\nsystemctl status vector --no-pager",
+        "note": "Cấu hình chưa hợp lệ thì dịch vụ không khởi động; user chạy agent không thuộc group docker thì agent lên nhưng thu về rỗng (<a href=\"https://vector.dev/docs/setup/installation/\">Vector: installation</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>)."
+      },
+      {
+        "step": 10,
+        "instruction": "<strong>Sinh log và nghiệm thu</strong> — chạy thêm một container, tạo tải rồi tìm đúng log của nó trên giao diện log tập trung bằng bộ lọc theo tên container.",
+        "command": "docker run -d --name lab-web3 -p 8081:80 nginx\nfor i in $(seq 1 50); do curl -s localhost:8081/req-$i >/dev/null; done\ndocker logs --tail 5 lab-web3",
+        "note": "Container này được tạo SAU khi agent đã chạy — log của nó vẫn về được là bằng chứng agent tự bắt container mới."
+      }
+    ],
+    "demo": [
+      {
+        "step": 1,
+        "what": "<strong>docker system df</strong> — đọc phần đang chiếm chỗ và phần thu hồi được.",
+        "command": "docker system df",
+        "output": "TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE\nImages          12        4         3.8GB     2.6GB (68%)\nContainers      9         3         1.2GB     900MB (75%)\nLocal Volumes   7         2         5.4GB     4.1GB (76%)\nBuild Cache     31        0         2.1GB     2.1GB",
+        "note": "Cột RECLAIMABLE là phần dọn được; riêng Local Volumes cần đối chiếu kỹ vì thường chứa dữ liệu thật."
+      },
+      {
+        "step": 2,
+        "what": "<strong>Volume sống lâu hơn container</strong> — container thứ nhất đã tự xoá, container thứ hai vẫn đọc được.",
+        "command": "docker run --rm -v lab-vol:/data alpine sh -c \"date > /data/created; cat /data/created\"\ndocker ps -a\ndocker run --rm -v lab-vol:/data alpine cat /data/created",
+        "output": "Sat Aug  2 03:14:07 UTC 2026\nCONTAINER ID   IMAGE   STATUS    NAMES\nSat Aug  2 03:14:07 UTC 2026",
+        "note": "Danh sách container rỗng ở giữa hai lần đọc — dữ liệu thuộc về volume, không thuộc về container."
+      },
+      {
+        "step": 3,
+        "what": "<strong>docker volume inspect</strong> — vị trí thật của volume trên host.",
+        "command": "docker volume inspect lab-vol",
+        "output": "[\n    {\n        \"Driver\": \"local\",\n        \"Mountpoint\": \"/var/lib/docker/volumes/lab-vol/_data\",\n        \"Name\": \"lab-vol\",\n        \"Scope\": \"local\"\n    }\n]",
+        "note": "Mountpoint là thư mục thật — vào đó bằng ls sẽ thấy đúng file mà container đã ghi."
+      },
+      {
+        "step": 4,
+        "what": "<strong>Bind mount chỉ đọc</strong> — container không ghi được, host vẫn sửa bình thường.",
+        "command": "docker run -d --name lab-web2 -p 8080:80 -v /opt/html:/usr/share/nginx/html:ro nginx\ndocker exec lab-web2 sh -c \"echo test > /usr/share/nginx/html/x.html\"",
+        "output": "sh: can't create /usr/share/nginx/html/x.html: Read-only file system",
+        "note": "Hậu tố <code>:ro</code> giới hạn thiệt hại nếu tiến trình trong container bị chiếm quyền."
+      },
+      {
+        "step": 5,
+        "what": "<strong>Xoá container, dữ liệu host còn nguyên</strong>.",
+        "command": "docker rm -f lab-web2\nls -l /opt/html",
+        "output": "lab-web2\ntotal 4\n-rw-r--r-- 1 root root 34 Aug  2 03:20 index.html",
+        "note": "Bind mount ánh xạ thư mục của host; xoá container chỉ gỡ ánh xạ."
+      },
+      {
+        "step": 6,
+        "what": "<strong>Giới hạn log cho container</strong> — xác nhận cấu hình đã áp.",
+        "command": "docker inspect --format \"{{.HostConfig.LogConfig}}\" web-limited",
+        "output": "{json-file map[max-file:3 max-size:10m]}",
+        "note": "Không đặt giới hạn thì file log lớn dần vô hạn cho tới khi container bị xoá."
+      },
+      {
+        "step": 7,
+        "what": "<strong>Cấu hình Vector tối thiểu</strong> — một source đọc Docker, một sink đẩy về VictoriaLogs.",
+        "command": "cat /etc/vector/vector.yaml",
+        "output": "sources:\n  docker:\n    type: docker_logs\n\nsinks:\n  victoria:\n    type: elasticsearch\n    inputs: [docker]\n    endpoints: [\"http://127.0.0.1:9428/insert/elasticsearch/\"]\n    mode: bulk\n    api_version: v8\n    healthcheck:\n      enabled: false\n    query:\n      _msg_field: message\n      _time_field: timestamp\n      _stream_fields: container_name",
+        "note": "Đổi endpoint sang IP máy chạy VictoriaLogs khi hai dịch vụ nằm khác host."
+      },
+      {
+        "step": 8,
+        "what": "<strong>vector validate</strong> — cấu hình phải sạch mới start được.",
+        "command": "vector validate --config /etc/vector/vector.yaml",
+        "output": "√ Loaded [\"/etc/vector/vector.yaml\"]\n√ Component configuration\n√ Health check \"victoria\"\n-------------------------------------\n                Validated",
+        "note": "Nếu bước này báo lỗi, sửa tới khi sạch rồi mới <code>systemctl restart vector</code>."
+      }
+    ],
+    "references": [
+      {
+        "label": "Docker — volumes",
+        "url": "https://docs.docker.com/engine/storage/volumes/"
+      },
+      {
+        "label": "Docker — bind mounts",
+        "url": "https://docs.docker.com/engine/storage/bind-mounts/"
+      },
+      {
+        "label": "Docker — pruning (dọn tài nguyên)",
+        "url": "https://docs.docker.com/engine/manage-resources/pruning/"
+      },
+      {
+        "label": "Docker — docker system df",
+        "url": "https://docs.docker.com/reference/cli/docker/system/df/"
+      },
+      {
+        "label": "Docker — configure logging drivers",
+        "url": "https://docs.docker.com/engine/logging/configure/"
+      },
+      {
+        "label": "Vector — source docker_logs",
+        "url": "https://vector.dev/docs/reference/configuration/sources/docker_logs/"
+      },
+      {
+        "label": "VictoriaLogs — tài liệu",
+        "url": "https://docs.victoriametrics.com/victorialogs/"
+      }
+    ]
+  }
+}

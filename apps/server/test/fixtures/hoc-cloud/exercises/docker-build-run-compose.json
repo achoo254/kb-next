@@ -1,0 +1,115 @@
+{
+  "exercise": {
+    "slug": "docker-build-run-compose",
+    "title": "Docker — Đóng gói app và dựng stack web + database bằng Compose",
+    "topic": "docker",
+    "tags": [
+      "docker",
+      "dockerfile",
+      "compose",
+      "volume",
+      "network"
+    ],
+    "source": "Bài tập thực hành",
+    "brief": "Đóng gói một API nhỏ thành Docker image bằng <strong>Dockerfile</strong>, chạy container với port mapping, sau đó ghép <strong>web (nginx) + app (Node) + database (PostgreSQL)</strong> thành một stack bằng <strong>Docker Compose</strong>. Yêu cầu: dùng <strong>named volume</strong> để dữ liệu database tồn tại qua recreate; các service gọi nhau bằng <strong>tên service</strong> trên mạng Compose (service discovery); <strong>publish cổng</strong> để truy cập từ host. Nghiệm thu: <code>curl</code> tới web trả kết quả có <code>db_time</code> từ database; dữ liệu trong database còn nguyên sau khi xóa và tạo lại container.",
+    "estimated_minutes": 45,
+    "content_hash": "72712de9a48a1416b33336d153a6e50bba331d4da3b9c889a74663e8bf865747",
+    "updated_at": 1784297513,
+    "guide": [
+      {
+        "step": 1,
+        "instruction": "<strong>Cài Docker Engine và kiểm tra</strong> — dùng một host Linux (ví dụ Ubuntu 24.04). Xác nhận Docker chạy được bằng image kiểm thử <code>hello-world</code>.",
+        "command": "docker version\ndocker run --rm hello-world",
+        "note": "Nếu gặp <code>permission denied</code> khi gọi Docker daemon: thêm user vào group docker (<code>sudo usermod -aG docker $USER</code>) rồi đăng nhập lại, hoặc chạy với <code>sudo</code>."
+      },
+      {
+        "step": 2,
+        "instruction": "<strong>Tạo mã nguồn app tối giản</strong> — thư mục dự án gồm <code>server.js</code> (API Node thuần dùng thư viện <code>pg</code>, tự đọc credential từ biến môi trường <code>PG*</code>) và <code>package.json</code>. App trả <code>db_time</code> nếu kết nối được database, ngược lại trả <code>db: unreachable</code> — không crash.",
+        "command": "# server.js\n// server.js — API tối giản: trả thời gian từ Postgres nếu kết nối được.\n// Thư viện pg tự đọc PGHOST / PGUSER / PGPASSWORD / PGDATABASE từ biến môi trường.\nconst http = require('http');\nconst { Client } = require('pg');\n\nhttp.createServer(async (_req, res) => {\n  const host = process.env.PGHOST || 'localhost';\n  const client = new Client({ connectionTimeoutMillis: 1500 });\n  res.setHeader('Content-Type', 'application/json');\n  try {\n    await client.connect();\n    const r = await client.query('SELECT NOW() AS now');\n    await client.end();\n    res.end(JSON.stringify({ status: 'ok', db_host: host, db_time: r.rows[0].now }));\n  } catch (e) {\n    res.end(JSON.stringify({ status: 'app-up', db_host: host, db: 'unreachable' }));\n  }\n}).listen(3000, () => console.log('app listening on :3000'));\n\n# package.json\n{\n  \"name\": \"docker-demo-app\",\n  \"version\": \"1.0.0\",\n  \"main\": \"server.js\",\n  \"dependencies\": { \"pg\": \"^8.13.0\" }\n}"
+      },
+      {
+        "step": 3,
+        "instruction": "<strong>Viết Dockerfile và build image</strong> — đặt <code>COPY package*.json</code> + cài dependencies TRƯỚC <code>COPY . .</code> để sửa source không phải cài lại dependencies (giữ cache). Build với tag rõ ràng (không dựa vào <code>latest</code>).",
+        "command": "# Dockerfile\nFROM node:20-alpine\nWORKDIR /app\n# Copy manifest + cài dependencies TRƯỚC khi copy source → giữ cache khi chỉ sửa code\nCOPY package*.json ./\nRUN npm install --omit=dev\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]\n\n# build\ndocker build -t demo-app:1.0 .\ndocker images demo-app",
+        "note": "Với app cần biên dịch (TypeScript, frontend), tách stage build và stage runtime bằng <a href=\"https://docs.docker.com/build/building/multi-stage/\">multi-stage build</a> để image cuối không chứa toolchain."
+      },
+      {
+        "step": 4,
+        "instruction": "<strong>Chạy container và verify</strong> — chạy nền, publish cổng 3000. Ở bước này chưa có database nên app trả <code>db: unreachable</code> (vẫn 200) — chứng minh app sống độc lập. <code>EXPOSE</code> trong Dockerfile chỉ là tài liệu; cổng truy cập được là nhờ <code>-p</code>.",
+        "command": "docker run -d --name app -p 3000:3000 demo-app:1.0\ndocker ps\ndocker logs app\ncurl -s localhost:3000",
+        "note": "<code>EXPOSE</code> không tự publish cổng (<a href=\"https://docs.docker.com/reference/dockerfile/\">Dockerfile ref §EXPOSE</a>); bắt buộc <code>-p HOST:CONTAINER</code> khi run."
+      },
+      {
+        "step": 5,
+        "instruction": "<strong>Database + named volume (bền dữ liệu)</strong> — chạy Postgres gắn named volume, tạo bảng và ghi dữ liệu, xóa container, chạy lại container mới gắn cùng volume, rồi đọc lại. Dữ liệu phải còn nguyên vì volume tồn tại độc lập vòng đời container.",
+        "command": "docker volume create pgdata\ndocker run -d --name db -e POSTGRES_PASSWORD=changeme -v pgdata:/var/lib/postgresql/data postgres:16-alpine\nsleep 8   # chờ Postgres khởi động\ndocker exec db psql -U postgres -c \"CREATE TABLE t(x int); INSERT INTO t VALUES (42);\"\ndocker rm -f db\ndocker run -d --name db -e POSTGRES_PASSWORD=changeme -v pgdata:/var/lib/postgresql/data postgres:16-alpine\nsleep 8\ndocker exec db psql -U postgres -c \"SELECT * FROM t;\"",
+        "note": "Writable layer bị xóa khi <code>docker rm</code>; chỉ volume/bind mount mới giữ dữ liệu (<a href=\"https://docs.docker.com/engine/storage/volumes/\">Docker: volumes</a>). Dọn trước bước 6: <code>docker rm -f app db</code>."
+      },
+      {
+        "step": 6,
+        "instruction": "<strong>Dựng stack bằng Docker Compose</strong> — viết <code>nginx.conf</code> (reverse proxy tới <code>app:3000</code>) và <code>compose.yaml</code> (web + app + db + named volume). Compose tạo mạng riêng cho project nên service gọi nhau theo tên. Truy cập từ host qua cổng 8080 của web; web proxy sang app; app truy vấn db theo tên <code>db</code>.",
+        "command": "# nginx.conf\nserver {\n  listen 80;\n  location / {\n    proxy_pass http://app:3000;   # phân giải \"app\" theo tên trên mạng Compose\n  }\n}\n\n# compose.yaml\nservices:\n  web:\n    image: nginx:alpine\n    ports:\n      - \"8080:80\"\n    volumes:\n      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro\n    depends_on:\n      - app\n  app:\n    build: .\n    environment:\n      PGHOST: db          # gọi database theo TÊN service\n      PGUSER: app\n      PGPASSWORD: changeme\n      PGDATABASE: appdb\n    depends_on:\n      - db\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_USER: app\n      POSTGRES_PASSWORD: changeme   # đổi giá trị này khi dùng thật\n      POSTGRES_DB: appdb\n    volumes:\n      - db-data:/var/lib/postgresql/data\n\nvolumes:\n  db-data:\n\n# dựng và kiểm tra\ndocker compose up -d --build\ndocker compose ps\ndocker compose exec app nslookup db\ncurl -s localhost:8080",
+        "note": "<code>depends_on</code> chỉ đảm bảo thứ tự khởi động, không chờ database sẵn sàng — thêm healthcheck + <code>depends_on: condition: service_healthy</code> khi cần (<a href=\"https://docs.docker.com/reference/compose-file/services/\">Compose file: services</a>). Dọn dẹp: <code>docker compose down -v</code>."
+      }
+    ],
+    "demo": [
+      {
+        "step": 1,
+        "what": "<strong>Build image</strong> — layer cài dependencies được cache ở lần build sau nếu chỉ sửa source.",
+        "command": "docker build -t demo-app:1.0 .\ndocker images demo-app",
+        "output": "=&gt; [1/5] FROM node:20-alpine\n=&gt; [2/5] WORKDIR /app\n=&gt; [3/5] COPY package*.json ./\n=&gt; [4/5] RUN npm install --omit=dev\n=&gt; [5/5] COPY . .\nSuccessfully tagged demo-app:1.0\n\nREPOSITORY   TAG   IMAGE ID       SIZE\ndemo-app     1.0   a1b2c3d4e5f6   142MB",
+        "note": "Sửa <code>server.js</code> rồi build lại: các bước tới <code>npm install</code> hiện <code>CACHED</code>, chỉ <code>COPY . .</code> chạy lại."
+      },
+      {
+        "step": 2,
+        "what": "<strong>Chạy container (chưa có DB)</strong> — app sống, database chưa kết nối được.",
+        "command": "docker run -d --name app -p 3000:3000 demo-app:1.0\ndocker ps\ncurl -s localhost:3000",
+        "output": "CONTAINER ID   IMAGE          PORTS                    NAMES\nf3a9c1d2e4b5   demo-app:1.0   0.0.0.0:3000-&gt;3000/tcp   app\n\n{\"status\":\"app-up\",\"db_host\":\"localhost\",\"db\":\"unreachable\"}",
+        "note": "Cột PORTS có <code>0.0.0.0:3000-&gt;3000/tcp</code> nghĩa là cổng đã publish nhờ <code>-p</code>."
+      },
+      {
+        "step": 3,
+        "what": "<strong>Named volume giữ dữ liệu qua recreate</strong> — ghi 42, xóa container, chạy lại, đọc vẫn 42.",
+        "command": "docker exec db psql -U postgres -c \"INSERT INTO t VALUES (42);\"\ndocker rm -f db\ndocker run -d --name db -v pgdata:/var/lib/postgresql/data -e POSTGRES_PASSWORD=changeme postgres:16-alpine\ndocker exec db psql -U postgres -c \"SELECT * FROM t;\"",
+        "output": " x\n----\n 42\n(1 row)",
+        "note": "Container bị xóa và tạo lại nhưng dữ liệu còn — vì nằm ở volume <code>pgdata</code>, không phải writable layer."
+      },
+      {
+        "step": 4,
+        "what": "<strong>Service discovery theo tên trên mạng Compose</strong> — app phân giải <code>db</code> ra IP nội bộ.",
+        "command": "docker compose exec app nslookup db",
+        "output": "Name:      db\nAddress 1: 172.19.0.2 db.demo_default",
+        "note": "Trên default bridge, gọi theo tên sẽ thất bại (chỉ IP); mạng Compose/custom bridge có DNS nội bộ (<a href=\"https://docs.docker.com/engine/network/drivers/bridge/\">Docker: bridge network</a>)."
+      },
+      {
+        "step": 5,
+        "what": "<strong>Stack chạy end-to-end</strong> — host gọi web (8080) → web proxy sang app → app truy vấn db → trả db_time.",
+        "command": "docker compose ps\ncurl -s localhost:8080",
+        "output": "NAME           IMAGE            STATUS         PORTS\ndemo-web-1     nginx:alpine     Up             0.0.0.0:8080-&gt;80/tcp\ndemo-app-1     demo-app         Up\ndemo-db-1      postgres:16-alpine Up\n\n{\"status\":\"ok\",\"db_host\":\"db\",\"db_time\":\"2026-07-18T09:12:44.512Z\"}",
+        "note": "Kết quả có <code>db_time</code> chứng minh chuỗi web → app → db hoạt động qua service discovery + volume."
+      }
+    ],
+    "references": [
+      {
+        "label": "Docker — Dockerfile reference",
+        "url": "https://docs.docker.com/reference/dockerfile/"
+      },
+      {
+        "label": "Docker — Multi-stage builds",
+        "url": "https://docs.docker.com/build/building/multi-stage/"
+      },
+      {
+        "label": "Docker — Volumes",
+        "url": "https://docs.docker.com/engine/storage/volumes/"
+      },
+      {
+        "label": "Docker — Bridge network (service discovery)",
+        "url": "https://docs.docker.com/engine/network/drivers/bridge/"
+      },
+      {
+        "label": "Docker — Compose",
+        "url": "https://docs.docker.com/compose/"
+      }
+    ]
+  }
+}

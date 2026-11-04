@@ -1,0 +1,228 @@
+{
+  "exercise": {
+    "slug": "docker-compose-log-stack",
+    "title": "Docker — Compose stack thu log: VictoriaLogs, Vector & rsyslog (Phần 3)",
+    "topic": "docker",
+    "tags": [
+      "docker",
+      "docker-compose",
+      "logging",
+      "vector",
+      "victorialogs",
+      "rsyslog",
+      "logsql",
+      "syslog"
+    ],
+    "source": "Bài tập thực hành — buổi Docker Phần 3",
+    "brief": "Buổi trước hệ thống thu log được dựng bằng <code>docker run</code> cho VictoriaLogs và <strong>systemd</strong> cho Vector — hai cách quản lý cho một hệ thống. Bài này <strong>viết lại toàn bộ stack bằng một file <code>compose.yaml</code></strong>, và mở rộng Vector lên <strong>ba nguồn log</strong>: HTTP JSON, syslog từ máy chủ khác, và log của mọi container trên host. Cần <strong>hai máy</strong>: một máy chạy Docker (host stack) và một máy client chỉ cần rsyslog. <br><strong>Nghiệm thu:</strong> (1) cả <code>docker compose config</code> và <code>vector validate</code> đều sạch <em>trước khi</em> <code>up</code>; (2) ba cổng 9428 / 8686 / 9000 listen, <code>curl :8686/health</code> phản hồi, vmui mở được; (3) bơm log qua HTTP rồi query lại thấy bằng <code>_msg:</code> và <code>{host=\"...\"}</code>; (4) container mới tạo được thu tự động, facet được theo <code>container_name</code> và <code>image</code> mà không sửa cấu hình; (5) log của máy client về qua cổng 9514 sau khi đã đồng bộ timezone/NTP; (6) <code>down</code> rồi <code>up -d</code> vẫn query lại được log cũ.",
+    "estimated_minutes": 60,
+    "content_hash": "98ed0c9ea7fde484020eaa840d6e6c2b15015270e9e0998195fcd4e872e9d728",
+    "updated_at": 1786191819,
+    "guide": [
+      {
+        "step": 1,
+        "instruction": "<strong>Dựng cấu trúc thư mục project</strong> — ba thành phần trong một thư mục: <code>compose.yaml</code>, <code>vector.yaml</code> và thư mục dữ liệu. Mọi đường dẫn <code>./...</code> trong compose file được tính theo vị trí của chính file đó.",
+        "command": "mkdir -p ~/docker-practice/observability-lab/victoria-logs-data\ncd ~/docker-practice/observability-lab\nls -la\nid -u; id -g",
+        "note": "Thư mục <code>victoria-logs-data</code> phải tồn tại và cho phép ghi trước khi khởi động, nếu không container VictoriaLogs sẽ restart liên tục (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>)."
+      },
+      {
+        "step": 2,
+        "instruction": "<strong>Viết vector.yaml với ba nguồn log</strong> — <code>http_server</code> ở 9000 nhận JSON của ứng dụng, <code>syslog</code> ở 9514 nhận log từ máy chủ khác, <code>docker_logs</code> thu log mọi container. Transform <code>remap</code> <strong>chỉ áp cho nguồn HTTP</strong>; hai nguồn còn lại vào sink nguyên trạng.",
+        "command": "cat > vector.yaml <<'EOF'\napi:\n  enabled: true\n  address: 0.0.0.0:8686\n\nsources:\n  http_input:\n    type: http_server\n    address: 0.0.0.0:9000\n    decoding:\n      codec: json\n\n  source_syslogudp:\n    type: syslog\n    address: 0.0.0.0:9514\n    mode: udp\n\n  source_docker:\n    type: docker_logs\n\ntransforms:\n  normalize:\n    type: remap\n    inputs:\n      - http_input\n    source: |\n      .timestamp = now()\n      .host = \"docker-lab\"\n      .source = \"vector-http\"\n      if !exists(.message) {\n        .message = encode_json(.)\n      }\n\nsinks:\n  victorialogs:\n    type: http\n    inputs:\n      - normalize\n      - source_syslogudp\n      - source_docker\n    uri: http://victorialogs:9428/insert/jsonline?_stream_fields=host,source&_msg_field=message&_time_field=timestamp\n    compression: gzip\n    encoding:\n      codec: json\n    framing:\n      method: newline_delimited\n    healthcheck:\n      enabled: false\nEOF\n\ncat vector.yaml",
+        "note": "Ba tham số trên <code>uri</code>: <code>_msg_field=message</code> chọn trường nội dung, <code>_time_field=timestamp</code> chọn trường thời gian, <code>_stream_fields=host,source</code> chọn cặp trường định danh log stream (<a href=\"https://docs.victoriametrics.com/victorialogs/data-ingestion/vector/\">VictoriaLogs: Vector setup</a>). Khoá cũ <code>encoding</code> của <code>http_server</code> đã được thay bằng <code>decoding.codec</code> — copy tài liệu cũ sẽ làm Vector không khởi động được (<a href=\"https://vector.dev/docs/reference/configuration/sources/http_server/\">Vector: http_server</a>)."
+      },
+      {
+        "step": 3,
+        "instruction": "<strong>Chú ý điểm quan trọng nhất của bài: sink trỏ tới TÊN service</strong> — <code>http://victorialogs:9428/...</code>, không phải IP hay <code>127.0.0.1</code>. Bên trong container Vector, loopback là chính Vector. Bản buổi trước chạy Vector bằng systemd trên host nên <code>127.0.0.1:9428</code> đúng; bản container thì sai.",
+        "command": "grep -n \"uri:\" vector.yaml",
+        "note": "Triệu chứng khi trỏ sai: Vector chạy bình thường, không có log lỗi kết nối rõ ràng, mà VictoriaLogs rỗng — dạng lỗi khó tìm nhất. Service cùng network của project phân giải nhau theo tên (<a href=\"https://docs.docker.com/compose/how-tos/networking/\">Compose: networking</a>)."
+      },
+      {
+        "step": 4,
+        "instruction": "<strong>Viết compose.yaml cho hai service</strong> — VictoriaLogs nhận tham số qua <code>command</code> và gắn thư mục dữ liệu ra host; Vector phụ thuộc VictoriaLogs qua <code>depends_on</code>, publish ba cổng và mount <strong>ba thứ</strong>: file cấu hình, Docker socket, thư mục log của Docker.",
+        "command": "cat > compose.yaml <<'EOF'\nservices:\n  victorialogs:\n    image: docker.io/victoriametrics/victoria-logs:v1.52.0\n    container_name: victorialogs-lab\n    restart: unless-stopped\n    command:\n      - -storageDataPath=/victoria-logs-data\n      - -retentionPeriod=7d\n    ports:\n      - \"9428:9428\"\n    volumes:\n      - ./victoria-logs-data:/victoria-logs-data\n    networks:\n      - observability-net\n\n  vector:\n    image: timberio/vector:0.57.0-debian\n    container_name: vector-lab\n    restart: unless-stopped\n    depends_on:\n      - victorialogs\n    ports:\n      - \"8686:8686\"\n      - \"9000:9000\"\n      - \"9514:9514/udp\"\n    volumes:\n      - ./vector.yaml:/etc/vector/vector.yaml:ro\n      - type: bind\n        source: /var/run/docker.sock\n        target: /var/run/docker.sock\n      - type: bind\n        source: /var/lib/docker\n        target: /var/lib/docker\n    networks:\n      - observability-net\n\nnetworks:\n  observability-net:\n    driver: bridge\nEOF\n\ncat compose.yaml",
+        "note": "Mount <code>/var/run/docker.sock</code> tương đương <strong>cấp quyền điều khiển Docker của cả host</strong> cho container đó — chỉ làm với agent tin cậy. Tag image được ghim để bài lab tái lập được (<a href=\"https://docs.docker.com/reference/compose-file/\">Compose file reference</a>, <a href=\"https://vector.dev/docs/setup/installation/platforms/docker/\">Vector: install on Docker</a>)."
+      },
+      {
+        "step": 5,
+        "instruction": "<strong>Validate HAI LỚP trước khi tạo container nào</strong> — lớp một cho cú pháp compose, lớp hai chạy <code>vector validate</code> bằng một container tạm trên đúng file cấu hình sẽ dùng. Cấu hình chưa sạch thì không sang bước sau.",
+        "command": "docker compose config\n\ndocker run --rm \\\n  -v \"$PWD/vector.yaml:/etc/vector/vector.yaml:ro\" \\\n  timberio/vector:0.57.0-debian \\\n  validate /etc/vector/vector.yaml",
+        "note": "Bỏ qua lớp hai thì lỗi cấu hình Vector chỉ lộ ra khi stack đã chạy nửa vời, và thông báo lỗi lẫn trong log gộp của cả project (<a href=\"https://docs.docker.com/reference/cli/docker/compose/config/\">docker compose config</a>). Nếu validate báo <code>source not found</code>, kiểm <code>vector.yaml</code> là file thật chứ không phải liên kết tượng trưng."
+      },
+      {
+        "step": 6,
+        "instruction": "<strong>Khởi động và kiểm từng cổng</strong> — kiểm cổng bằng <code>ss</code> <em>trước khi</em> curl, để phân biệt \"dịch vụ chưa nghe\" với \"dịch vụ nghe nhưng trả lỗi\". Lưu ý 9514 là UDP nên phải dùng <code>ss -lnup</code>.",
+        "command": "docker compose up -d\ndocker compose ps\nss -lntp | grep -E \":(9428|8686|9000) \"\nss -lnup | grep -E \":9514 \"\ncurl -s http://127.0.0.1:9428/ | head -5\ncurl -s http://127.0.0.1:8686/health",
+        "note": "Giao diện truy vấn mở tại <code>http://&lt;IP_DOCKER_HOST&gt;:9428/select/vmui</code> — nằm sẵn trong VictoriaLogs, không cần cài thêm (<a href=\"https://docs.victoriametrics.com/victorialogs/quickstart/\">VictoriaLogs quickstart</a>). API Vector ở 8686 <strong>không có xác thực</strong> — chỉ publish trong mạng lab."
+      },
+      {
+        "step": 7,
+        "instruction": "<strong>Nguồn 1 — bơm log qua HTTP và nghiệm thu</strong>. Đây là đường đơn giản nhất, dùng để xác nhận trục Vector đến VictoriaLogs đã thông trước khi thử hai nguồn còn lại.",
+        "command": "curl --fail --show-error \\\n  -X POST -H 'Content-Type: application/json' \\\n  -d '{\"message\":\"hello from docker vector lab\",\"level\":\"info\",\"app\":\"demo-web\"}' \\\n  http://127.0.0.1:9000/\n\nfor i in 1 2 3 4 5; do\n  curl --silent --show-error \\\n    -X POST -H 'Content-Type: application/json' \\\n    -d \"{\\\"message\\\":\\\"docker lab event $i\\\",\\\"level\\\":\\\"info\\\",\\\"app\\\":\\\"demo-web\\\"}\" \\\n    http://127.0.0.1:9000/\ndone\n\ndocker compose logs --tail 50 vector\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"docker lab\"' \\\n  --data-urlencode 'limit=20'",
+        "note": "Nháy kép lồng nhau trong vòng lặp phải escape thành <code>\\\"</code> vì cần khai triển biến <code>$i</code> — nháy đơn ngoài sẽ không khai triển được. Log của Vector không được có dòng <code>ERROR</code> liên quan tới sink."
+      },
+      {
+        "step": 8,
+        "instruction": "<strong>Nguồn 2 — thu log mọi container</strong>. Kiểm mount trước, rồi chạy một container MỚI để chứng minh agent tự bắt container tạo sau mà không sửa cấu hình.",
+        "command": "docker inspect vector-lab --format '{{json .Mounts}}'\n\ndocker run --rm hello-world\n\ndocker compose logs --tail 30 vector\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=container_name:*' \\\n  --data-urlencode 'limit=20'",
+        "note": "Nếu nguồn HTTP về mà không có log container nào: danh sách <code>Mounts</code> thiếu <code>/var/run/docker.sock</code>. Thêm vào service rồi <code>docker compose up -d --force-recreate vector</code>. Nhãn <code>container_name</code> và <code>image</code> do nguồn <code>docker_logs</code> tự gắn (<a href=\"https://vector.dev/docs/reference/configuration/sources/docker_logs/\">Vector: docker_logs</a>)."
+      },
+      {
+        "step": 9,
+        "instruction": "<strong>Nguồn 3 — chuẩn bị máy client: timezone và NTP TRƯỚC</strong>. Đây là bẫy im lặng nhất của bài: lệch giờ thì log vẫn tới nhưng nằm ngoài khung thời gian đang xem, nhìn ra như là log không về. Làm bước này trước khi cấu hình rsyslog.",
+        "command": "timedatectl\ntimedatectl set-timezone Asia/Ho_Chi_Minh\ntimedatectl set-ntp true\nhostnamectl set-hostname client-01\ntimedatectl\nhostnamectl",
+        "note": "Chạy trên <strong>cả hai máy</strong> và đối chiếu: cùng timezone, NTP synchronized là <code>yes</code>, giờ lệch không quá vài giây (<a href=\"https://man7.org/linux/man-pages/man1/timedatectl.1.html\">timedatectl</a>). Hostname là nhãn dùng để lọc log về sau nên đặt trước, không đặt sau."
+      },
+      {
+        "step": 10,
+        "instruction": "<strong>Cấu hình rsyslog trên máy client đẩy về Vector</strong> — máy này không cần cài Docker. Một dấu <code>@</code> là UDP, hai dấu <code>@@</code> là TCP. Thay <code>&lt;IP_DOCKER_HOST&gt;</code> bằng IP thật của máy chạy stack.",
+        "command": "cat >> /etc/rsyslog.conf <<'EOF'\n*.* @<IP_DOCKER_HOST>:9514\nEOF\n\nsystemctl restart rsyslog\nsystemctl status rsyslog --no-pager\n\nlogger \"ban tin thu nghiem tu client-01\"",
+        "note": "Protocol phải khớp ở <strong>ba chỗ</strong>: rsyslog (<code>@</code> hay <code>@@</code>), <code>mode</code> trong <code>vector.yaml</code>, và protocol khi publish cổng trong compose (<a href=\"https://www.rsyslog.com/doc/configuration/actions.html\">rsyslog: actions</a>, <a href=\"https://vector.dev/docs/reference/configuration/sources/syslog/\">Vector: syslog</a>)."
+      },
+      {
+        "step": 11,
+        "instruction": "<strong>Kiểm chứng bẫy protocol</strong> — thử <code>telnet</code> vào cổng 9514. Với cấu hình UDP thì <strong>không kết nối được là đúng</strong>. Muốn dùng TCP thì đổi cả ba chỗ rồi tạo lại service vector.",
+        "command": "command -v telnet || apt-get install -y telnet\ntelnet <IP_DOCKER_HOST> 9514\n\nnc -zv <IP_DOCKER_HOST> 9514\nprintf \"test udp syslog\\n\" | nc -u -w 2 <IP_DOCKER_HOST> 9514\n\ngrep -n \"9514\" /etc/rsyslog.conf\ngrep -n -A 2 \"source_syslogudp\" vector.yaml\ngrep -n \"9514\" compose.yaml",
+        "note": "Đây đúng tình huống gặp tại lớp: cổng publish theo TCP mặc định trong khi <code>vector.yaml</code> khai <code>mode: udp</code>, nên telnet không vào được — không phải sự cố. <strong>Ubuntu 24.04 bản minimal không có sẵn <code>telnet</code></strong>; nếu báo command not found thì cài, hoặc dùng <code>nc -zv</code> cho TCP và <code>nc -u</code> cho UDP. Sửa <code>vector.yaml</code> rồi phải <code>docker compose up -d --force-recreate vector</code> vì Vector đọc cấu hình lúc khởi động."
+      },
+      {
+        "step": 12,
+        "instruction": "<strong>Truy vấn LogsQL</strong> — bắt đầu bằng query rộng để xác nhận có log, rồi thu hẹp dần. Trên vmui, nới khung thời gian và tăng số dòng hiển thị trước khi kết luận là log chưa về.",
+        "command": "curl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=*' \\\n  --data-urlencode 'limit=20'\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query={host=\"docker-lab\"}' \\\n  --data-urlencode 'limit=20'\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"client-01\"' \\\n  --data-urlencode 'limit=20'",
+        "note": "Trên giao diện, tab overview cho phân bố theo <code>image</code> và <code>container_name</code> — cách khoanh vùng nhanh khi host có hàng chục container (<a href=\"https://docs.victoriametrics.com/victorialogs/logsql/\">LogsQL</a>)."
+      },
+      {
+        "step": 13,
+        "instruction": "<strong>Nghiệm thu persistence</strong> — gửi một bản tin nhận dạng được, chạy <code>down</code> rồi <code>up -d</code>, sau đó query lại chính bản tin đó. Đây là bước chứng minh dữ liệu nằm ngoài vòng đời container.",
+        "command": "curl --fail --show-error \\\n  -X POST -H 'Content-Type: application/json' \\\n  -d '{\"message\":\"persistent-log-before-recreate\",\"level\":\"info\"}' \\\n  http://127.0.0.1:9000/\n\ndu -sh ./victoria-logs-data\n\ndocker compose down\ndocker compose up -d\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"persistent-log-before-recreate\"' \\\n  --data-urlencode 'limit=20'\n\ndocker stats --no-stream victorialogs-lab vector-lab",
+        "note": "Log cũ vẫn query được vì <code>-storageDataPath</code> trỏ vào điểm mount, và thư mục thật là <code>./victoria-logs-data</code> trên host. <code>down</code> không xoá thư mục đó — muốn xoá dữ liệu lab phải <code>rm</code> thủ công, và đó là hành động không hoàn tác được (<a href=\"https://docs.docker.com/engine/storage/bind-mounts/\">Docker: bind mounts</a>)."
+      }
+    ],
+    "demo": [
+      {
+        "step": 1,
+        "what": "<strong>Cấu trúc thư mục project</strong> — ba thành phần cần có.",
+        "command": "ls -la",
+        "output": "total 20\ndrwxr-xr-x 3 root root 4096 Aug  8 09:12 .\n-rw-r--r-- 1 root root  912 Aug  8 09:11 compose.yaml\n-rw-r--r-- 1 root root  742 Aug  8 09:10 vector.yaml\ndrwxr-xr-x 4 root root 4096 Aug  8 09:14 victoria-logs-data",
+        "note": "Thiếu thư mục <code>victoria-logs-data</code> hoặc thiếu quyền ghi thì container VictoriaLogs restart liên tục."
+      },
+      {
+        "step": 2,
+        "what": "<strong>vector validate</strong> — cấu hình phải sạch trước khi up.",
+        "command": "docker run --rm \\\n  -v \"$PWD/vector.yaml:/etc/vector/vector.yaml:ro\" \\\n  timberio/vector:0.57.0-debian \\\n  validate /etc/vector/vector.yaml",
+        "output": "√ Loaded [\"/etc/vector/vector.yaml\"]\n√ Component configuration\n-------------------------------------\n                Validated",
+        "note": "Nếu bước này báo lỗi, Vector in đúng tên component và dòng cấu hình sai — sửa tới khi sạch mới <code>up</code>."
+      },
+      {
+        "step": 3,
+        "what": "<strong>docker compose ps</strong> — hai service Up, Vector khởi động sau VictoriaLogs.",
+        "command": "docker compose up -d\ndocker compose ps",
+        "output": "NAME                IMAGE                                              SERVICE        STATUS         PORTS\nvictorialogs-lab    victoriametrics/victoria-logs:v1.52.0              victorialogs   Up 18 seconds  0.0.0.0:9428-&gt;9428/tcp\nvector-lab          timberio/vector:0.57.0-debian                      vector         Up 16 seconds  0.0.0.0:8686-&gt;8686/tcp, 0.0.0.0:9000-&gt;9000/tcp, 0.0.0.0:9514-&gt;9514/udp",
+        "note": "<code>depends_on</code> chỉ bảo đảm thứ tự khởi động, không bảo đảm VictoriaLogs đã sẵn sàng nhận kết nối — Vector tự thử lại nên trong bài này là đủ."
+      },
+      {
+        "step": 4,
+        "what": "<strong>Kiểm cổng</strong> — ba cổng TCP và một cổng UDP.",
+        "command": "ss -lntp | grep -E \":(9428|8686|9000) \"\nss -lnup | grep -E \":9514 \"",
+        "output": "LISTEN 0  4096  0.0.0.0:9428  0.0.0.0:*  users:((\"docker-proxy\",pid=4412,fd=7))\nLISTEN 0  4096  0.0.0.0:8686  0.0.0.0:*  users:((\"docker-proxy\",pid=4519,fd=7))\nLISTEN 0  4096  0.0.0.0:9000  0.0.0.0:*  users:((\"docker-proxy\",pid=4531,fd=7))\nUNCONN 0  0     0.0.0.0:9514  0.0.0.0:*  users:((\"docker-proxy\",pid=4544,fd=7))",
+        "note": "Cổng syslog hiện ở dạng <code>UNCONN</code> vì là UDP — dùng <code>ss -lnup</code> mới thấy, <code>ss -lntp</code> sẽ không liệt kê nó."
+      },
+      {
+        "step": 5,
+        "what": "<strong>Mount của service vector</strong> — ba mount phải có đủ.",
+        "command": "docker inspect vector-lab --format '{{json .Mounts}}'",
+        "output": "[\n  {\"Type\":\"bind\",\"Source\":\"/root/docker-practice/observability-lab/vector.yaml\",\n   \"Destination\":\"/etc/vector/vector.yaml\",\"Mode\":\"ro\",\"RW\":false},\n  {\"Type\":\"bind\",\"Source\":\"/var/run/docker.sock\",\n   \"Destination\":\"/var/run/docker.sock\",\"RW\":true},\n  {\"Type\":\"bind\",\"Source\":\"/var/lib/docker\",\n   \"Destination\":\"/var/lib/docker\",\"RW\":true}\n]",
+        "note": "Thiếu <code>/var/run/docker.sock</code> thì nguồn <code>docker_logs</code> im lặng hoàn toàn: dịch vụ lên, cấu hình hợp lệ, không có log container nào tới."
+      },
+      {
+        "step": 6,
+        "what": "<strong>Query LogsQL sau khi bơm log HTTP</strong> — trục Vector đến VictoriaLogs đã thông.",
+        "command": "curl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"docker lab\"' \\\n  --data-urlencode 'limit=5'",
+        "output": "{\"_time\":\"2026-08-08T02:41:07.512Z\",\"_stream\":\"{host=\\\"docker-lab\\\",source=\\\"vector-http\\\"}\",\"_msg\":\"docker lab event 1\",\"app\":\"demo-web\",\"level\":\"info\"}\n{\"_time\":\"2026-08-08T02:41:07.688Z\",\"_stream\":\"{host=\\\"docker-lab\\\",source=\\\"vector-http\\\"}\",\"_msg\":\"docker lab event 2\",\"app\":\"demo-web\",\"level\":\"info\"}\n{\"_time\":\"2026-08-08T02:41:07.845Z\",\"_stream\":\"{host=\\\"docker-lab\\\",source=\\\"vector-http\\\"}\",\"_msg\":\"docker lab event 3\",\"app\":\"demo-web\",\"level\":\"info\"}",
+        "note": "Trường <code>_msg</code> và <code>_time</code> đúng như <code>_msg_field</code> và <code>_time_field</code> đã khai trên uri; <code>_stream</code> ghép từ cặp <code>_stream_fields=host,source</code>."
+      },
+      {
+        "step": 7,
+        "what": "<strong>Nhãn Docker có sẵn</strong> — thu qua <code>docker_logs</code> nên không phải cấu hình thêm.",
+        "command": "docker run --rm hello-world\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=container_name:*' \\\n  --data-urlencode 'limit=3'",
+        "output": "{\"_time\":\"2026-08-08T02:44:19.204Z\",\"_msg\":\"Hello from Docker!\",\"container_name\":\"quirky_hopper\",\"container_id\":\"9f21ab4c7e0d\",\"image\":\"hello-world\",\"stream\":\"stdout\"}\n{\"_time\":\"2026-08-08T02:44:19.204Z\",\"_msg\":\"This message shows that your installation appears to be working correctly.\",\"container_name\":\"quirky_hopper\",\"image\":\"hello-world\",\"stream\":\"stdout\"}",
+        "note": "Container này được tạo <strong>sau</strong> khi agent đã chạy — log của nó vẫn về là bằng chứng nguồn <code>docker_logs</code> tự bắt container mới."
+      },
+      {
+        "step": 8,
+        "what": "<strong>timedatectl</strong> — điều kiện tiên quyết cho log từ máy client.",
+        "command": "timedatectl",
+        "output": "               Local time: Sat 2026-08-08 09:52:31 +07\n           Universal time: Sat 2026-08-08 02:52:31 UTC\n                Time zone: Asia/Ho_Chi_Minh (+07, +0700)\nSystem clock synchronized: yes\n              NTP service: active",
+        "note": "Chạy trên cả hai máy và đối chiếu. <code>System clock synchronized: no</code> hoặc timezone khác nhau là nguyên nhân im lặng nhất khiến log \"không về\"."
+      },
+      {
+        "step": 9,
+        "what": "<strong>Bẫy protocol</strong> — telnet vào cổng UDP không kết nối được, và đó là đúng.",
+        "command": "telnet 192.0.2.10 9514",
+        "output": "Trying 192.0.2.10...\ntelnet: Unable to connect to remote host: Connection refused",
+        "note": "<code>vector.yaml</code> khai <code>mode: udp</code> nên không có ai nghe TCP ở cổng đó. Kiểm UDP bằng <code>nc -u</code>, hoặc đổi sang TCP ở cả ba chỗ: <code>@@</code> trong rsyslog, <code>mode: tcp</code> trong vector, và protocol khi publish cổng."
+      },
+      {
+        "step": 10,
+        "what": "<strong>Persistence qua down/up</strong> — log cũ vẫn query được.",
+        "command": "docker compose down\ndocker compose up -d\n\ncurl --get --fail --show-error \\\n  http://127.0.0.1:9428/select/logsql/query \\\n  --data-urlencode 'query=_msg:\"persistent-log-before-recreate\"' \\\n  --data-urlencode 'limit=5'",
+        "output": "[+] Running 3/3\n ✔ Container vector-lab        Removed\n ✔ Container victorialogs-lab  Removed\n ✔ Network observability-lab_observability-net  Removed\n{\"_time\":\"2026-08-08T02:58:02.117Z\",\"_stream\":\"{host=\\\"docker-lab\\\",source=\\\"vector-http\\\"}\",\"_msg\":\"persistent-log-before-recreate\",\"level\":\"info\"}",
+        "note": "Container và network bị xoá nhưng dữ liệu vẫn còn: nó nằm trong <code>./victoria-logs-data</code> trên host, ngoài vòng đời container."
+      }
+    ],
+    "references": [
+      {
+        "label": "Docker — Compose file reference",
+        "url": "https://docs.docker.com/reference/compose-file/"
+      },
+      {
+        "label": "Docker — docker compose config",
+        "url": "https://docs.docker.com/reference/cli/docker/compose/config/"
+      },
+      {
+        "label": "Docker — Compose networking",
+        "url": "https://docs.docker.com/compose/how-tos/networking/"
+      },
+      {
+        "label": "Docker — bind mounts",
+        "url": "https://docs.docker.com/engine/storage/bind-mounts/"
+      },
+      {
+        "label": "VictoriaLogs — quick start",
+        "url": "https://docs.victoriametrics.com/victorialogs/quickstart/"
+      },
+      {
+        "label": "VictoriaLogs — nhận log từ Vector",
+        "url": "https://docs.victoriametrics.com/victorialogs/data-ingestion/vector/"
+      },
+      {
+        "label": "VictoriaLogs — LogsQL",
+        "url": "https://docs.victoriametrics.com/victorialogs/logsql/"
+      },
+      {
+        "label": "Vector — source http_server",
+        "url": "https://vector.dev/docs/reference/configuration/sources/http_server/"
+      },
+      {
+        "label": "Vector — source syslog",
+        "url": "https://vector.dev/docs/reference/configuration/sources/syslog/"
+      },
+      {
+        "label": "Vector — source docker_logs",
+        "url": "https://vector.dev/docs/reference/configuration/sources/docker_logs/"
+      },
+      {
+        "label": "Vector — install on Docker",
+        "url": "https://vector.dev/docs/setup/installation/platforms/docker/"
+      },
+      {
+        "label": "rsyslog — actions (@ = UDP, @@ = TCP)",
+        "url": "https://www.rsyslog.com/doc/configuration/actions.html"
+      },
+      {
+        "label": "timedatectl — man page",
+        "url": "https://man7.org/linux/man-pages/man1/timedatectl.1.html"
+      }
+    ]
+  }
+}
