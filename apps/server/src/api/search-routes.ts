@@ -13,28 +13,18 @@
 import express, { type Router } from 'express';
 import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
-import { type ChunkRow, type DocumentRow, type SpaceRow, listSpaces } from '../access/content';
+import { type SpaceRow, listSpaces } from '../access/content';
 import { progressOf } from '../access/participation';
 import { findDocumentsByIds, listCollectionsOf, listTranslationsOf, userNames } from '../access/reading';
-import {
-  type DocumentOrigin,
-  type DocumentSearchFilter,
-  MAX_QUERY_LENGTH,
-  type SearchHit,
-  firstPassages,
-  listSearchableDocuments,
-  passagesOf,
-  searchChunks,
-} from '../access/search';
+import { type DocumentOrigin, type DocumentSearchFilter, MAX_QUERY_LENGTH } from '../access/search';
 import { type Viewer, viewerFor } from '../access/viewer';
 import { findUserId } from '../auth/require-user';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
 import { documentOrigin, documentType } from '../db/schema';
 import type { JevJudge } from '../jev/jev-client';
-import { safeErrorText } from '../log-error';
-import { type BilingualSummary, excerpt } from '../search/document-summaries';
-import { type MeaningCandidate, searchByMeaning } from '../search/meaning-search';
+import type { BilingualSummary } from '../search/document-summaries';
+import { type Found, type SourceState, keywordSearch, layeredSearch, textKey } from '../search/layered-search';
 import type { MeiliClient } from '../search/meili-client';
 import { type SnippetPart, foldVietnamese, snippet, variantWords } from '../search/snippet';
 import { hasDiacritics } from '../search/telex';
@@ -43,8 +33,6 @@ import { parseQuery } from './validate';
 
 /** Results answered at most (one per text). */
 export const MAX_RESULTS = 30;
-/** Keyword hits read (chunks; several may belong to one text). */
-const KEYWORD_HITS = 50;
 /** Query suggestions ("Có phải bạn muốn"). */
 const MAX_SUGGESTIONS = 2;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -52,8 +40,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_TITLE_CHARS = 1_000;
 
 export type SearchMode = 'all' | 'keyword' | 'meaning';
-/** `ok`: ran; `off`: not configured (no MEILI_URL, no TYPESAFE_API_KEY); `failed`: errored or timed out; `skipped`: not asked by `mode`. */
-export type SourceState = 'ok' | 'off' | 'failed' | 'skipped';
+export type { SourceState };
 
 export interface SearchResult extends DocumentSummary {
   collection: CollectionBrief | null;
@@ -127,37 +114,6 @@ export interface SearchRoutesOptions {
   summaries: ReadonlyMap<string, BilingualSummary>;
 }
 
-const textKey = (doc: Pick<DocumentRow, 'id' | 'translationGroupId'>): string => doc.translationGroupId ?? doc.id;
-
-interface Found {
-  doc: DocumentRow;
-  chunk: Pick<ChunkRow, 'id' | 'anchor' | 'heading' | 'text'>;
-  match: 'keyword' | 'meaning';
-  relevance: number | null;
-}
-
-/**
- * The candidates Jev chooses among: one document per text (the one keyword search found, else the original), texts
- * keyword search found first, then the other texts of their Spaces, then the rest, so the first 255 are the likeliest.
- */
-export function orderCandidates(docs: readonly DocumentRow[], keywordDocIds: readonly string[]): DocumentRow[] {
-  const keywordRank = new Map(keywordDocIds.map((id, i) => [id, i]));
-  const groups = new Map<string, DocumentRow>();
-  for (const doc of docs) {
-    const key = textKey(doc);
-    const current = groups.get(key);
-    const better = !current || (keywordRank.has(doc.id) && !keywordRank.has(current.id)) || (!keywordRank.has(current.id) && current.aiTranslated && !doc.aiTranslated);
-    if (better) groups.set(key, doc);
-  }
-  const texts = [...groups.values()];
-  const hitSpaces = new Set(texts.filter((d) => keywordRank.has(d.id)).map((d) => d.spaceId));
-  const tier = (d: DocumentRow): number => (keywordRank.has(d.id) ? 0 : hitSpaces.has(d.spaceId) ? 1 : 2);
-  return texts
-    .map((doc, order) => ({ doc, order }))
-    .sort((a, b) => tier(a.doc) - tier(b.doc) || (keywordRank.get(a.doc.id) ?? 0) - (keywordRank.get(b.doc.id) ?? 0) || a.order - b.order)
-    .map(({ doc }) => doc);
-}
-
 /** A passage Jev rated at least this well (it "directly answers") ranks above texts only keyword search found. */
 export const STRONG_RELEVANCE = 0.9;
 
@@ -207,15 +163,6 @@ export function suggestionsOf(found: readonly Found[], query: string): string[] 
   return out;
 }
 
-function candidateOf(doc: DocumentRow, summaries: ReadonlyMap<string, BilingualSummary>, first: ReadonlyMap<string, ChunkRow>): MeaningCandidate {
-  const curated = doc.translationGroupId ? summaries.get(doc.translationGroupId) : undefined;
-  if (curated) {
-    return { documentId: doc.id, title: { vi: curated.vi.title, en: curated.en.title }, summary: { vi: curated.vi.summary, en: curated.en.summary } };
-  }
-  const passage = first.get(doc.id);
-  return { documentId: doc.id, title: { [doc.lang]: doc.title }, summary: passage ? { [doc.lang]: excerpt(passage.text) } : {} };
-}
-
 export function searchRoutes({ config, db, now, meili, jev, summaries }: SearchRoutesOptions): Router {
   const router = express.Router();
 
@@ -235,16 +182,7 @@ export function searchRoutes({ config, db, now, meili, jev, summaries }: SearchR
     },
   });
 
-  /** Keyword hits as found texts (documents checked readable again), and the state of the keyword source. */
-  async function keywordSearch(viewer: Viewer, q: string, filter: DocumentSearchFilter, allVariants: boolean): Promise<{ hits: SearchHit[]; state: SourceState }> {
-    if (!meili) return { hits: [], state: 'off' };
-    try {
-      return { hits: await searchChunks(db, meili, viewer, q, { ...filter, allVariants, limit: KEYWORD_HITS }), state: 'ok' };
-    } catch (error) {
-      console.error('search: keyword search failed', safeErrorText(error));
-      return { hits: [], state: 'failed' };
-    }
-  }
+  const deps = { db, meili, jev, summaries };
 
   router.get('/api/search', searchLimit, async (req, res) => {
     const query = parseQuery(SearchQuery, req.query);
@@ -276,71 +214,19 @@ export function searchRoutes({ config, db, now, meili, jev, summaries }: SearchR
       return;
     }
 
-    // Keyword search runs in every mode: its hits also order the candidates Jev chooses among.
-    const keyword = await keywordSearch(viewer, q, filter, allVariants);
+    const { keyword, keywordFound, meaningFound, meaning: meaningState } = await layeredSearch(deps, viewer, q, filter, {
+      allVariants,
+      meaning: query.mode !== 'keyword',
+    });
     const keywordDocIds = [...new Set(keyword.hits.map((h) => h.documentId))];
-
-    let meaningState: SourceState = 'skipped';
-    let meaningFound: Found[] = [];
-    if (query.mode !== 'keyword') {
-      if (!jev) meaningState = 'off';
-      else {
-        const candidates = orderCandidates(await listSearchableDocuments(db, viewer, filter), keywordDocIds);
-        const uncurated = candidates.filter((d) => !(d.translationGroupId && summaries.has(d.translationGroupId))).map((d) => d.id);
-        const loaded = new Map<string, ChunkRow>();
-        try {
-          const first = await firstPassages(db, viewer, uncurated);
-          const outcome = await searchByMeaning(
-            jev,
-            q,
-            candidates.map((d) => candidateOf(d, summaries, first)),
-            async (ids, perDocument) => {
-              const rows = await passagesOf(db, viewer, ids, perDocument);
-              for (const row of rows) loaded.set(row.id, row);
-              return rows;
-            },
-          );
-          const byId = new Map(candidates.map((d) => [d.id, d]));
-          meaningFound = outcome.hits.flatMap((hit): Found[] => {
-            const doc = byId.get(hit.documentId);
-            const chunk = loaded.get(hit.chunkId);
-            return doc && chunk ? [{ doc, chunk, match: 'meaning', relevance: hit.relevance }] : [];
-          });
-          meaningState = 'ok';
-        } catch (error) {
-          console.error('search: Jev unavailable, keyword results only', safeErrorText(error));
-          meaningState = 'failed';
-        }
-      }
-    }
-
-    // Every document named by a hit is read again through src/access/ for this viewer before it is answered.
-    const docs = new Map(
-      (
-        await findDocumentsByIds(db, viewer, [...keywordDocIds, ...meaningFound.map((f) => f.doc.id)])
-      ).map((d) => [d.id, d]),
-    );
-    const keywordFound: Found[] =
-      query.mode === 'meaning'
-        ? []
-        : keyword.hits.flatMap((hit): Found[] => {
-            const doc = docs.get(hit.documentId);
-            return doc ? [{ doc, chunk: { id: hit.chunkId, anchor: hit.anchor, heading: hit.heading, text: hit.text }, match: 'keyword', relevance: null }] : [];
-          });
-    const merged = mergeResults(
-      keywordFound,
-      meaningFound.flatMap((f) => {
-        const doc = docs.get(f.doc.id);
-        return doc ? [{ ...f, doc }] : [];
-      }),
-    );
+    const merged = mergeResults(query.mode === 'meaning' ? [] : keywordFound, meaningFound);
     const origins: Record<DocumentOrigin, number> = { official: 0, community: 0, own: 0 };
     for (const f of merged) origins[f.doc.origin] += 1;
     const found = merged.filter((f) => !query.origin || query.origin.includes(f.doc.origin)).slice(0, MAX_RESULTS);
 
     let variants: SearchResponse['variants'] = null;
     if (exact && keyword.state === 'ok' && query.mode !== 'meaning') {
-      const folded = await keywordSearch(viewer, q, filter, true);
+      const folded = await keywordSearch(deps, viewer, q, filter, true);
       const shown = new Set(found.map((f) => textKey(f.doc)));
       const extra = folded.hits.filter((h) => !keywordDocIds.includes(h.documentId));
       const extraDocs = await findDocumentsByIds(

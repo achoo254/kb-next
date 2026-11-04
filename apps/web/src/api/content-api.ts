@@ -11,7 +11,7 @@
  * `rate-limited` (429); `network` when the request got no answer (offline).
  */
 import * as z from 'zod/mini';
-import { ApiError, BAD_RESPONSE, apiFetch } from './api-client';
+import { ApiError, getJson } from './api-client';
 
 export const LANGS = ['vi', 'en'] as const;
 export const THEMES = ['dark', 'light', 'system'] as const;
@@ -219,14 +219,6 @@ const CommentsSchema = z.object({
   comments: z.array(CommentSchema),
 });
 export type DocumentComments = z.infer<typeof CommentsSchema>;
-
-/** The answer of `path` checked against `schema`. */
-async function getJson<T>(schema: z.ZodMiniType<T>, path: string, init?: RequestInit): Promise<T> {
-  const res = await apiFetch(path, init);
-  const parsed = schema.safeParse(await res.json().catch(() => undefined));
-  if (!parsed.success) throw new ApiError(res.status, BAD_RESPONSE);
-  return parsed.data;
-}
 
 const withLang = (path: string, lang: Lang | undefined): string => (lang ? `${path}?lang=${lang}` : path);
 

@@ -21,7 +21,8 @@ export function importId(name: string): string {
 export const SYSTEM_SUB = 'system:hoc-cloud';
 export const SYSTEM_NAME = 'Học Cloud';
 
-const OVERVIEW_ANCHOR = { vi: 'tong-quan', en: 'overview' } as const;
+/** Anchor of the passage before a document's first heading, per language (also used by AI translations). */
+export const OVERVIEW_ANCHOR = { vi: 'tong-quan', en: 'overview' } as const;
 const RELATED_HEADING = { vi: 'Bài liên quan', en: 'Related' } as const;
 const WIKILINK = /\[\[([^\]\n|]+)(?:\|[^\]\n]*)?\]\]/g;
 

@@ -403,9 +403,15 @@ export const comments = pgTable(
 );
 
 export const aiProvider = pgEnum('ai_provider', ['openai', 'gemini', 'anthropic']);
+/**
+ * `ok`: the provider accepted it at the last check or use; `invalid`: rejected (wrong, revoked, missing permission);
+ * `quota`: the account behind it has no credit left; `unreadable`: it no longer decrypts (the secret file changed).
+ */
+export const userKeyStatus = pgEnum('user_key_status', ['ok', 'invalid', 'quota', 'unreadable']);
 
 /**
- * A user's own AI key: AES-256-GCM (AAD = userId + provider), base64 parts; only `last4` is ever shown back.
+ * A user's own AI key ("Key riêng", src/user-keys/): AES-256-GCM with a fresh random 96-bit `nonce` (base64) per
+ * save and AAD = userId + provider; `ciphertext` (base64) carries the GCM tag at its end. Only `last4` is ever shown.
  */
 export const userKeys = pgTable(
   'user_keys',
@@ -416,13 +422,65 @@ export const userKeys = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     provider: aiProvider('provider').notNull(),
     ciphertext: text('ciphertext').notNull(),
-    iv: text('iv').notNull(),
-    authTag: text('auth_tag').notNull(),
+    nonce: text('nonce').notNull(),
     last4: text('last4').notNull(),
+    status: userKeyStatus('status').notNull().default('ok'),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    lastCheckedAt: timestamp('last_checked_at', { withTimezone: true }),
   },
   (table) => [unique('user_keys_user_provider_unique').on(table.userId, table.provider)],
+);
+
+/** Which of its keys an account wants the Copilot to use, and the model; null fields never happen (row or none). */
+export const userKeyPrefs = pgTable('user_key_prefs', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  provider: aiProvider('provider').notNull(),
+  model: text('model').notNull(),
+});
+
+export const copilotTask = pgEnum('copilot_task', ['answer', 'explain', 'summarize']);
+export type CopilotScopeKind = 'universe' | 'space' | 'collection' | 'document';
+
+/** A cited passage as the `sources` event of POST /api/ask sent it. */
+export interface CopilotSourceRecord {
+  n: number;
+  documentId: string;
+  anchor: string;
+  title: string;
+  section: string | null;
+  spaceName: string;
+  collectionName: string | null;
+  origin: (typeof documentOrigin.enumValues)[number];
+  status: (typeof documentStatus.enumValues)[number];
+}
+
+/**
+ * A question answered by the Copilot (C14 history): what was asked, in which scope, the answer as streamed, the
+ * passages it cited (`sources`, as the `sources` event sent them) and Jev's check of each citation (null when Jev
+ * did not check). Only answered questions are kept; only the asker reads them.
+ */
+export const copilotQuestions = pgTable(
+  'copilot_questions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    task: copilotTask('task').notNull().default('answer'),
+    question: text('question').notNull(),
+    selection: text('selection'),
+    scope: jsonb('scope').$type<{ kind: CopilotScopeKind; id: string | null }>().notNull(),
+    answer: text('answer').notNull(),
+    sources: jsonb('sources').$type<CopilotSourceRecord[]>().notNull(),
+    citations: jsonb('citations').$type<Array<{ n: number; supported: boolean }>>(),
+    provider: aiProvider('provider').notNull(),
+    model: text('model').notNull(),
+    createdAt: createdAt(),
+  },
+  (table) => [index('copilot_questions_user_id_created_at_idx').on(table.userId, table.createdAt)],
 );
 
 /** Admin API tokens (A03): only the sha256 is stored; shown once at creation; revocable. */

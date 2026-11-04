@@ -27,6 +27,11 @@ const Env = z.object({
   MEILI_MASTER_KEY: z.preprocess(emptyIsUnset, z.string().min(16).optional()),
   /** TypeSafe key for Jev (server-side judgments such as the crystal captions). Unset: those fall back to plain text. */
   TYPESAFE_API_KEY: z.preprocess(emptyIsUnset, z.string().min(8).optional()),
+  /**
+   * File holding the 32-byte secret that encrypts the users' own AI keys (mode 600 or stricter). Unset, unreadable,
+   * the wrong size or too open: own keys are off (the Copilot answers 503) and the server still runs.
+   */
+  USER_KEYS_SECRET_PATH: z.preprocess(emptyIsUnset, z.string().min(1).optional()),
   /** `mock`: load the dev seed (the mock's Spaces and documents) at startup, for E2E. Refused in production. */
   KB_SEED: z.preprocess(emptyIsUnset, z.enum(['mock']).optional()),
   /** IdP sub that owns the seed's personal Space and private documents (KB_SEED and `pnpm seed`). */
@@ -75,6 +80,12 @@ export interface ServerConfig {
   searchLimitPerMinute: number;
   /** TypeSafe API key for Jev; null when unset (Jev-made choices use their plain fallback). */
   typesafeApiKey: string | null;
+  /** Secret file of the users' own AI keys (USER_KEYS_SECRET_PATH); null when unset (own keys off). */
+  userKeysSecretPath: string | null;
+  /** Copilot questions and translations per minute per account (each is a call billed to the user's own key). */
+  askLimitPerMinute: number;
+  /** Own-key saves per minute per account: each save calls the provider to check the key. */
+  keySaveLimitPerMinute: number;
   /** Load the dev seed at startup as this owner (KB_SEED=mock); null otherwise. Never set in production. */
   startupSeed: { ownerSub: string } | null;
 }
@@ -135,6 +146,9 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     backchannelLimitPer15Min: 300,
     searchLimitPerMinute: 120,
     typesafeApiKey: e.TYPESAFE_API_KEY ?? null,
+    userKeysSecretPath: e.USER_KEYS_SECRET_PATH ?? null,
+    askLimitPerMinute: 20,
+    keySaveLimitPerMinute: 5,
     startupSeed: e.KB_SEED === 'mock' ? { ownerSub: e.SEED_OWNER_SUB ?? DEFAULT_SEED_OWNER_SUB } : null,
   };
 }

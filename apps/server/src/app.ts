@@ -1,6 +1,7 @@
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import helmet from 'helmet';
 import { sql } from 'drizzle-orm';
+import { perAccountLimit } from './api/account-limit';
 import { activityRoutes } from './api/activity-routes';
 import { contentRoutes } from './api/content-routes';
 import { meRoutes } from './api/me-routes';
@@ -11,13 +12,19 @@ import { requireSameOrigin } from './auth/origin-check';
 import type { ServerConfig } from './config';
 import type { Db } from './db/client';
 import { SpaceCaptions } from './captions/space-captions';
+import { askRoutes } from './copilot/ask-routes';
+import { translateRoutes } from './copilot/translate-routes';
 import { HttpError } from './http-error';
 import { JevClient, type JevJudge, type JevUsageLog } from './jev/jev-client';
 import { JevUsageStore } from './jev/jev-usage';
+import { LIVE_BASES, type ProviderBases } from './llm/providers';
 import { safeErrorText } from './log-error';
 import { searchRoutes } from './api/search-routes';
 import { type BilingualSummary, loadImportedSummaries } from './search/document-summaries';
 import type { SearchService } from './search/search-service';
+import { readUserKeysSecret } from './user-keys/crypto';
+import { keyRoutes } from './user-keys/key-routes';
+import { UserKeyStore } from './user-keys/key-store';
 
 export interface AppDeps {
   config: ServerConfig;
@@ -34,6 +41,10 @@ export interface AppDeps {
   jev?: JevJudge | null;
   /** Bilingual summaries of the imported texts (default: content/summaries.json, bundled). */
   summaries?: ReadonlyMap<string, BilingualSummary>;
+  /** Secret of the users' own AI keys (default: read from USER_KEYS_SECRET_PATH; null: own keys and the Copilot off). */
+  userKeysSecret?: Buffer | null;
+  /** API origins of the AI providers (default: the real ones; tests use local fakes). */
+  aiBases?: ProviderBases;
 }
 
 /** The real Jev client, each call logged and added to the day's totals. */
@@ -47,7 +58,8 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
 
 /**
  * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
- * (/api/me), the reading API (Spaces, documents, recent) and search. The web app is static (nginx in production, Vite in dev).
+ * (/api/me), the reading API (Spaces, documents, recent), search, the account's own AI keys, the Copilot and AI
+ * translation (both on those keys). The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
@@ -57,6 +69,8 @@ export function createApp({
   search = null,
   jev = config.typesafeApiKey ? jevWithUsage(config.typesafeApiKey, db, now) : null,
   summaries = loadImportedSummaries(),
+  userKeysSecret = readUserKeysSecret(config.userKeysSecretPath).secret,
+  aiBases = LIVE_BASES,
 }: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
@@ -79,6 +93,12 @@ export function createApp({
   app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
   app.use(activityRoutes({ config, db, now }));
   app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));
+  // Own AI keys and what runs on them; nothing here has a server AI key (Jev aside).
+  const keys = new UserKeyStore(db, userKeysSecret, now);
+  const aiLimit = perAccountLimit(config.askLimitPerMinute);
+  app.use(keyRoutes({ config, db, now, keys, bases: aiBases }));
+  app.use(askRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries, keys, bases: aiBases, aiLimit }));
+  app.use(translateRoutes({ config, db, now, keys, bases: aiBases, sync: search?.sync ?? null, aiLimit }));
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'not-found')));
 

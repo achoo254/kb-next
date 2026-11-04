@@ -6,6 +6,7 @@ import { seedMockCaptions } from './captions/seed-captions';
 import { seedDatabase } from './db/seed-database';
 import { safeErrorText } from './log-error';
 import { startSearch } from './search/search-service';
+import { readUserKeysSecret } from './user-keys/crypto';
 
 const config = loadConfig();
 const database = await openConfiguredDatabase(config);
@@ -21,6 +22,10 @@ if (config.startupSeed) {
 }
 const search = config.meili ? startSearch(database.db, config.meili) : null;
 console.log(`search: ${search ? 'Meilisearch (MEILI_URL)' : 'off (MEILI_URL unset)'}`);
+// Never fatal: without a readable secret the Copilot and own keys answer 503 and everything else runs.
+const userKeys = readUserKeysSecret(config.userKeysSecretPath);
+if (config.userKeysSecretPath && !userKeys.secret) console.error(`own AI keys: ${userKeys.status}`);
+else console.log(`own AI keys: ${userKeys.status}`);
 
 /** Expired sessions are deleted at start and every hour (a session is otherwise only deleted when used again). */
 const HOUSEKEEPING_INTERVAL_MS = 60 * 60 * 1000;
@@ -38,7 +43,7 @@ const housekeepingTimer = setInterval(() => void housekeeping(), HOUSEKEEPING_IN
 housekeepingTimer.unref();
 
 // Loopback only: nginx (production) and the web dev server proxy to it.
-const server = createApp({ config, db: database.db, search }).listen(config.port, '127.0.0.1', () => {
+const server = createApp({ config, db: database.db, search, userKeysSecret: userKeys.secret }).listen(config.port, '127.0.0.1', () => {
   console.log(`kb server listening on 127.0.0.1:${config.port} (${config.nodeEnv})`);
 });
 // A taken port must stop the process (systemd restarts it), not leave it running without a listener.

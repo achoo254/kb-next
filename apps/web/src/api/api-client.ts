@@ -1,4 +1,6 @@
 /** JSON calls to the app's own API (same origin; the session cookie goes along). */
+import type * as z from 'zod/mini';
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -35,4 +37,12 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   }
   if (!res.ok) throw new ApiError(res.status, await errorCode(res));
   return res;
+}
+
+/** The answer of `path` checked against `schema`; a mismatch throws ApiError(BAD_RESPONSE). */
+export async function getJson<T>(schema: z.ZodMiniType<T>, path: string, init?: RequestInit): Promise<T> {
+  const res = await apiFetch(path, init);
+  const parsed = schema.safeParse(await res.json().catch(() => undefined));
+  if (!parsed.success) throw new ApiError(res.status, BAD_RESPONSE);
+  return parsed.data;
 }

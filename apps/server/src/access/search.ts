@@ -28,6 +28,10 @@ export type DocumentOrigin = (typeof documentOrigin.enumValues)[number];
 /** Which documents a search looks at (C12's filters); every field left out means "any". */
 export interface DocumentSearchFilter {
   spaceIds?: readonly string[];
+  /** Only documents of these Collections (the Copilot's Collection scope). */
+  collectionIds?: readonly string[];
+  /** Only these documents (the Copilot's document scope). */
+  documentIds?: readonly string[];
   lang?: 'vi' | 'en';
   types?: readonly DocumentType[];
   origins?: readonly DocumentOrigin[];
@@ -75,6 +79,8 @@ function allOf(...filters: Array<string | undefined>): string | undefined {
 function documentFilter(filter: DocumentSearchFilter): SQL | undefined {
   return and(
     filter.spaceIds ? inArray(documents.spaceId, [...filter.spaceIds]) : undefined,
+    filter.collectionIds ? inArray(documents.collectionId, [...filter.collectionIds]) : undefined,
+    filter.documentIds ? inArray(documents.id, [...filter.documentIds]) : undefined,
     filter.lang ? eq(documents.lang, filter.lang) : undefined,
     filter.types ? inArray(documents.type, [...filter.types]) : undefined,
     filter.origins ? inArray(documents.origin, [...filter.origins]) : undefined,
@@ -82,9 +88,11 @@ function documentFilter(filter: DocumentSearchFilter): SQL | undefined {
   );
 }
 
-/** A filter that can match nothing: an empty list, or a Space id that is not one. */
+const noneOrMalformed = (ids: readonly string[] | undefined): boolean => ids !== undefined && (ids.length === 0 || !ids.every(isUuid));
+
+/** A filter that can match nothing: an empty list, or an id that is not one. */
 function matchesNothing(filter: DocumentSearchFilter): boolean {
-  if (filter.spaceIds && (filter.spaceIds.length === 0 || !filter.spaceIds.every(isUuid))) return true;
+  if (noneOrMalformed(filter.spaceIds) || noneOrMalformed(filter.collectionIds) || noneOrMalformed(filter.documentIds)) return true;
   return filter.types?.length === 0 || filter.origins?.length === 0;
 }
 
@@ -102,10 +110,11 @@ export async function searchChunks(db: Db, meili: MeiliClient, viewer: Viewer, q
   const spaceIds = [...(options.spaceId ? [options.spaceId] : []), ...(options.spaceIds ?? [])];
   const inSpace = spaceIds.length > 0 ? `spaceId IN [${spaceIds.map(filterValue).join(', ')}]` : undefined;
   const inLang = options.lang ? `lang = ${filterValue(options.lang)}` : undefined;
-  const queries: FederatedQuery[] = [{ ...base, indexUid: meili.uid(PUBLIC_INDEX), filter: allOf(inSpace, inLang) }];
+  const inDocuments = options.documentIds ? `documentId IN [${options.documentIds.map(filterValue).join(', ')}]` : undefined;
+  const queries: FederatedQuery[] = [{ ...base, indexUid: meili.uid(PUBLIC_INDEX), filter: allOf(inSpace, inLang, inDocuments) }];
   if (viewer.kind === 'user') {
     const own = viewer.isAdmin ? undefined : `authorId = ${filterValue(viewer.userId)}`;
-    queries.push({ ...base, indexUid: meili.uid(PRIVATE_INDEX), filter: allOf(own, inSpace, inLang) });
+    queries.push({ ...base, indexUid: meili.uid(PRIVATE_INDEX), filter: allOf(own, inSpace, inLang, inDocuments) });
   }
 
   const raw = await meili.federatedSearch(queries, limit);

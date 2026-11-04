@@ -17,6 +17,7 @@ afterAll(async () => {
   if (firstOnly) await rm(firstOnly, { recursive: true, force: true });
   if (upToTwo) await rm(upToTwo, { recursive: true, force: true });
   if (upToFive) await rm(upToFive, { recursive: true, force: true });
+  if (upToSeven) await rm(upToSeven, { recursive: true, force: true });
 });
 
 /** A copy of the migrations folder with only the first `count` journal entries, as production had it then. */
@@ -30,6 +31,7 @@ async function migrationsUpTo(count: number): Promise<string> {
 }
 let upToTwo: string | null = null;
 let upToFive: string | null = null;
+let upToSeven: string | null = null;
 
 describe('migrations', () => {
   it('keep the users and sessions of the first schema, with defaults for the new settings', async () => {
@@ -93,6 +95,25 @@ describe('migrations', () => {
       await migrate(db, { migrationsFolder: MIGRATIONS });
       const rows = await db.select({ slug: schema.spaces.slug, nameEn: schema.spaces.nameEn, descriptionVi: schema.spaces.descriptionVi, descriptionEn: schema.spaces.descriptionEn }).from(schema.spaces);
       expect(rows).toEqual([{ slug: 'net', nameEn: 'Networking', descriptionVi: null, descriptionEn: null }]);
+    } finally {
+      await client.close();
+    }
+  });
+
+  it('clear the never-written old own-key rows and keep the accounts when keys gain a nonce and a status', async () => {
+    // Up to 0007, when user_keys still had iv/auth_tag columns (no release ever wrote to it).
+    upToSeven = await migrationsUpTo(8);
+    const client = new PGlite();
+    const db = drizzle(client, { schema });
+    try {
+      await migrate(db, { migrationsFolder: upToSeven });
+      await db.execute(sql`insert into users (sub, created_at) values ('key-owner', now())`);
+      await db.execute(sql`insert into user_keys (user_id, provider, ciphertext, iv, auth_tag, last4)
+        select id, 'openai', 'x', 'y', 'z', 'abcd' from users`);
+
+      await migrate(db, { migrationsFolder: MIGRATIONS });
+      expect(await db.select().from(schema.userKeys)).toEqual([]);
+      expect(await db.select({ sub: schema.users.sub }).from(schema.users)).toEqual([{ sub: 'key-owner' }]);
     } finally {
       await client.close();
     }

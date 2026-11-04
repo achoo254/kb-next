@@ -66,6 +66,17 @@ export async function listCollectionsOf(db: Db, spaceIds: readonly string[]): Pr
     .orderBy(asc(collections.sortOrder), asc(collections.createdAt));
 }
 
+/** A Collection in a Space the viewer sees; null otherwise (or for an id that is not one). */
+export async function findCollection(db: Db, viewer: Viewer, id: string): Promise<CollectionRow | null> {
+  if (!isUuid(id)) return null;
+  const [row] = await db
+    .select({ collection: collections })
+    .from(collections)
+    .innerJoin(spaces, eq(spaces.id, collections.spaceId))
+    .where(and(eq(collections.id, id), spacesOf(viewer)));
+  return row?.collection ?? null;
+}
+
 /** The Spaces of documents the viewer can read: naming a readable document's Space reveals nothing more. */
 export async function spacesById(db: Db, ids: readonly string[]): Promise<SpaceRow[]> {
   const valid = ids.filter(isUuid);

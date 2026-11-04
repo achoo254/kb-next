@@ -72,6 +72,7 @@ chép thành file env của `apps/server`.
 | `MEILI_MASTER_KEY` | khoá ngẫu nhiên sinh trên server (≥ 16 ký tự, nên `openssl rand -hex 32`); container `kb-meili` đọc cùng dòng này |
 | `HOC_CLOUD_URL` | không cần đặt: lệnh nhập Học Cloud mặc định đọc `https://hoc-cloud.inetdev.io.vn` (API công khai) |
 | `TYPESAFE_API_KEY` | không bắt buộc: key TypeSafe cho Jev (chọn chú thích dưới pha lê ở Universe). Không đặt thì chú thích là "<số> bài" |
+| `USER_KEYS_SECRET_PATH` | `/etc/kb/user-keys-secret` (mục Key riêng). Không bắt buộc: không đặt, thiếu tệp hay tệp sai thì Key riêng, Copilot và dịch bằng AI tắt (503), phần còn lại vẫn chạy |
 | `KB_SEED` | không đặt: chỉ dùng khi dev/E2E (`mock` nạp dữ liệu mẫu lúc khởi động); production từ chối khởi động nếu có |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
@@ -120,6 +121,43 @@ Lệnh dựng vào chỉ mục `*_rebuild` rồi đổi chỗ một bước, nê
 có thể không đọc được ở bản mới), chạy lại lệnh `docker run` ở trên, rồi dựng lại chỉ mục.
 
 **RAM:** `docker stats --no-stream kb-meili` (trần 512 MB).
+
+## Key riêng
+
+Người dùng tự lưu key AI của mình (OpenAI, Gemini, Claude) ở trang Key riêng; Copilot (`POST /api/ask`) và dịch bằng
+AI (`POST /api/documents/:id/translate`) chỉ chạy bằng key đó, gọi thẳng từ server ra API của nhà cung cấp (HTTPS đi
+ra). Server không có biến môi trường key AI nào; Jev (`TYPESAFE_API_KEY`) là ngoại lệ duy nhất. Key được mã hoá
+AES-256-GCM bằng một bí mật 32 byte nằm trong tệp riêng, ngoài database: lộ riêng database hay bản sao lưu database
+không lộ key. API chỉ trả 4 ký tự cuối; key không vào log. Câu trả lời stream bằng `text/event-stream`, server gửi
+`X-Accel-Buffering: no` nên nginx không cần sửa.
+
+Server đọc tệp lúc khởi động. Thiếu tệp, khác 32 byte hay quyền rộng hơn 600 thì tính năng tắt (API trả 503
+`USER_KEYS_DISABLED`) và server vẫn chạy; log khởi động ghi `own AI keys: on` hoặc lý do tắt. Service chạy bằng user
+`kb` nên tệp thuộc `kb:kb`, quyền 600 (không dùng `root:kb` 640 như `production.env`: server từ chối mọi quyền của
+nhóm hay người khác).
+
+**Lần đầu** (không ghi đè tệp đã có: tạo lại là mọi key đã lưu không giải mã được nữa):
+
+```sh
+# trên server, quyền root
+if [ -e /etc/kb/user-keys-secret ]; then
+  echo "đã có tệp bí mật: giữ nguyên"
+else
+  (umask 077 && head -c 32 /dev/urandom > /etc/kb/user-keys-secret)
+  chown kb:kb /etc/kb/user-keys-secret
+  chmod 600 /etc/kb/user-keys-secret
+fi
+stat -c '%U:%G %a %s' /etc/kb/user-keys-secret   # kb:kb 600 32
+grep -q '^USER_KEYS_SECRET_PATH=' /etc/kb/production.env || echo 'USER_KEYS_SECRET_PATH=/etc/kb/user-keys-secret' >>/etc/kb/production.env
+systemctl restart kb-server
+journalctl -u kb-server -n 30 --no-pager | grep 'own AI keys'
+```
+
+**Sao lưu:** chép tệp bí mật ra nơi riêng, tách khỏi bản sao lưu database (thư mục env trên iCloud,
+`ENV production/kb-next/`). Không in nội dung tệp ra màn hình hay log. Mất hoặc đổi tệp thì các key đã lưu thành
+`unreadable` và người dùng phải nhập lại; không có cách khôi phục từ database.
+
+**Kiểm sau deploy:** đăng nhập rồi mở `/api/me/keys`: `available` là `true`.
 
 ## Nhập nội dung Học Cloud
 

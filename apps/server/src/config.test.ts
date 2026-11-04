@@ -96,4 +96,14 @@ describe('server config', () => {
     expect(loadConfig({ PGLITE_DIR: 'memory' }).pgliteDir).toBeNull();
     expect(loadConfig({ PGLITE_DIR: '/tmp/x' }).pgliteDir).toBe('/tmp/x');
   });
+
+  it('reads the own-keys secret path, optional everywhere, with no AI key of the server', () => {
+    expect(loadConfig({}).userKeysSecretPath).toBeNull();
+    expect(loadConfig({ USER_KEYS_SECRET_PATH: '' }).userKeysSecretPath).toBeNull();
+    expect(loadConfig({ USER_KEYS_SECRET_PATH: '/etc/kb/user-keys-secret' })).toMatchObject({
+      userKeysSecretPath: '/etc/kb/user-keys-secret',
+      askLimitPerMinute: 20,
+      keySaveLimitPerMinute: 5,
+    });
+  });
 });
