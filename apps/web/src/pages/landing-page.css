@@ -137,3 +137,144 @@
 .landing-stage .kf-stage-sub {
   line-height: 1.55;
 }
+
+/* Windows narrower than the board (no mock: the boards stop at 1440×900): the board's absolute places would cut the
+   hero off at the right, so the page stacks instead: the hero, the Universe preview scaled to the width, the three
+   feature cards in a column, the footer. From 1180px up (the width of the tablet boards, T01) the board layout above applies as is. */
+@media (max-width: 1179px) {
+  .landing .brand-logo {
+    left: 16px;
+    top: 20px;
+  }
+
+  .landing .screen-page-actions {
+    right: 16px;
+  }
+
+  .landing .screen-board {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .landing-hero {
+    order: -1;
+    position: relative;
+    left: auto;
+    top: auto;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 600px;
+    margin-inline: auto;
+    padding: 96px 16px 0;
+  }
+
+  /* the title is sized inline (GradientTitle); shrink it with the window so the longest line fits */
+  .landing-title.kf-gradient-title {
+    font-size: clamp(32px, 9vw, 44px) !important;
+  }
+
+  .kf-btn.landing-cta[data-variant] {
+    align-self: stretch;
+    justify-content: center;
+    height: auto;
+    min-height: 54px;
+    padding: 12px 20px;
+    white-space: normal;
+  }
+
+  /* The preview keeps the scene's own 1440×900 places and shows the part that holds the orbits and crystals
+     (x 220–1180, y 20–640 of the board), scaled to the width: tan(atan2(a, b)) is a / b as a plain number. */
+  .landing-scene {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-width: 960px;
+    margin: 8px auto 0;
+    aspect-ratio: 960 / 620;
+    container-type: inline-size;
+    overflow: clip;
+  }
+
+  .landing-scene .kf-scene {
+    transform-origin: 0 0;
+    /* a phone-sized scale first, for browsers without container units or tan(atan2()) */
+    transform: scale(0.375) translate(-220px, -20px);
+    transform: scale(tan(atan2(100cqw, 960px))) translate(-220px, -20px);
+  }
+
+  /* the scale shrinks the 2px focus rings of the orb and crystals with the scene; keep them visible */
+  .landing-scene :focus-visible {
+    outline-width: 5px;
+    outline-width: calc(2px / tan(atan2(100cqw, 960px)));
+  }
+
+  .landing-stage.kf-stage {
+    position: relative;
+    left: auto;
+    top: auto;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    margin-inline: auto;
+    padding: 0 16px;
+  }
+
+  .landing-stage .kf-stage-glass,
+  .landing-stage .kf-stage-arc,
+  .landing-stage .kf-stage-platform {
+    display: none;
+  }
+
+  .landing-stage .kf-stage-cards {
+    position: static;
+    width: auto;
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .landing-stage .kf-stage-card,
+  .landing-stage .kf-stage-card[data-highlight],
+  .landing-stage .kf-stage-card:last-child {
+    width: auto;
+    height: auto;
+    transform: none !important;
+    margin-top: 0 !important;
+  }
+
+  .landing-footer {
+    position: static;
+    padding: 24px 16px 16px;
+  }
+}
+
+/* Signed in, the top "Enter the Universe" does not fit beside the logo below 480px; the hero's button right under it
+   says the same, so the top one goes. */
+@media (max-width: 479px) {
+  .landing [data-id="landing-enter-top"] {
+    display: none;
+  }
+}
+
+/* Phones: the brand name, the language button and the sign-in link share one row. */
+@media (max-width: 420px) {
+  .landing .brand-logo-name {
+    font-size: 20px;
+  }
+
+  .landing .screen-page-actions {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .landing .brand-logo-name {
+    font-size: 18px;
+  }
+
+  .landing-lang {
+    min-width: 48px;
+  }
+}

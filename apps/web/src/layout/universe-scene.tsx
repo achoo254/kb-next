@@ -101,7 +101,7 @@ function orbitAngle(x: number, y: number): number {
  * clockwise from the top: the order of the keyboard (Tab) and of the screen reader. Spaces beyond the free slots are
  * left off the scene (the caller lists them elsewhere).
  */
-export function placeSpaces(spaces: readonly SceneSpace[]): PlacedSpace[] {
+export function placeSpaces(spaces: readonly SceneSpace[], slots: Record<SpaceKind, { x: number; y: number }> = SCENE_SLOTS): PlacedSpace[] {
   const taken = new Set<SpaceKind>();
   const extras = [...EXTRA_SLOTS];
   const placed: PlacedSpace[] = [];
@@ -109,7 +109,7 @@ export function placeSpaces(spaces: readonly SceneSpace[]): PlacedSpace[] {
     let slot: { x: number; y: number } | undefined;
     if (space.kind && !taken.has(space.kind)) {
       taken.add(space.kind);
-      slot = SCENE_SLOTS[space.kind];
+      slot = slots[space.kind];
     } else {
       slot = extras.shift();
     }
@@ -134,6 +134,8 @@ interface UniverseSceneProps {
   orb: SceneOrb;
   /** A crystal was picked (before the browser follows its link): e.g. to play the warp into the Space. */
   onOpen?: (space: SceneSpace, event: MouseEvent<HTMLElement>) => void;
+  /** The crystal slot of each kind, when a screen needs another place than the board's (`SCENE_SLOTS`). */
+  slots?: Record<SpaceKind, { x: number; y: number }>;
   className?: string;
 }
 
@@ -141,8 +143,8 @@ interface UniverseSceneProps {
  * The orbits, the orb and the Space crystals. Lays itself out in the 1440×900 board space from the top-left of its
  * positioned parent; the crystals and the orb are links, in orbit order for the keyboard.
  */
-export function UniverseScene({ spaces, orb, onOpen, className }: UniverseSceneProps): ReactNode {
-  const placed = placeSpaces(spaces);
+export function UniverseScene({ spaces, orb, onOpen, slots, className }: UniverseSceneProps): ReactNode {
+  const placed = placeSpaces(spaces, slots);
   const tints: OrbitTint[] = placed.map(({ space, x, y }) => {
     const kind = space.kind ?? 'networking';
     const color = space.kind && TOKEN_TINTS.has(space.kind) ? undefined : space.glow;

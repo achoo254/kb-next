@@ -6,13 +6,20 @@ import { brand } from '../brand';
 import { type Locale, type Translate, useI18n } from '../i18n/i18n';
 import { BRAND_WORDS } from '../layout/brand-words';
 import { ScreenPage } from '../layout/screen-page';
-import { type SceneSpace, UniverseScene } from '../layout/universe-scene';
+import { SCENE_SLOTS, type SceneSpace, UniverseScene } from '../layout/universe-scene';
 import { Button } from '../ui/button';
 import { GradientTitle } from '../ui/gradient-title';
 import { type StageCard, StageCards } from '../ui/stage-cards';
 import { gateHref } from './login-page';
 import { sceneSpaces } from './universe-spaces';
 import './landing-page.css';
+
+/**
+ * The crystal slots of the landing: the board's, but Cloud (no slot on the board) goes right of "Vũ trụ của bạn",
+ * at the end of the wide orbit. Its Universe slot, under the hero text of C09, sits on the landing's taller hero (the
+ * description and the sign-in button); the landing has no assistant panel on the right, so the place is free.
+ */
+const LANDING_SLOTS = { ...SCENE_SLOTS, cloud: { x: 1010, y: 410 } };
 
 /** Where a visitor lands after signing in from the landing page. */
 const AFTER_SIGN_IN = '/u';
@@ -92,6 +99,7 @@ export function LandingPage({ session }: { session: SessionState }): ReactNode {
       <section className="landing-scene" aria-label={t('landing.preview')}>
         <UniverseScene
           spaces={spaces}
+          slots={LANDING_SLOTS}
           orb={{
             title: t('landing.orbTitle'),
             chips: [t('landing.orbSpaces', { count: spaces.length }), 'VI · EN'],
