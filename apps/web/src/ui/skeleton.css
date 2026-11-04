@@ -1,0 +1,42 @@
+.kf-skeleton {
+  display: block;
+  flex: none;
+  border-radius: 5px;
+  background-image: linear-gradient(90deg, var(--c-bg2) 0, var(--c-border) 50%, var(--c-bg2) 100%);
+  background-size: 400px 100%;
+  animation: kf-shimmer-slide 1.4s linear infinite;
+}
+
+.kf-skeleton[data-tone="glow"] {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--violet-600) 18%, transparent) 0%,
+    color-mix(in srgb, var(--violet-300) 35%, transparent) 50%,
+    color-mix(in srgb, var(--violet-600) 18%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--violet-500) 25%, transparent);
+  animation-name: kf-shimmer;
+}
+
+.kf-skeleton[data-tone="soft"] {
+  border-radius: 8px;
+  background-image: linear-gradient(90deg, var(--c-border) 0%, var(--c-surface) 50%, var(--c-border) 100%);
+  background-size: 200% 100%;
+  animation-name: kf-shimmer;
+}
+
+@keyframes kf-shimmer-slide {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+
+@keyframes kf-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

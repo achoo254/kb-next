@@ -1,0 +1,56 @@
+/* The segmented view nav (KIT §4); the active pill shares the rim look of the primary button. */
+
+.kf-view-nav {
+  box-sizing: border-box;
+  display: flex;
+  height: 52px;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 26px;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 6%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.kf-view-nav-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  border-radius: 22px;
+  color: var(--c-text-muted);
+  font: 600 14px var(--font-sans);
+  text-decoration: none;
+  transition: background var(--motion-feedback);
+}
+
+.kf-view-nav-item:hover {
+  background: color-mix(in srgb, var(--violet-600) 25%, transparent);
+}
+
+.kf-view-nav-item[aria-current="page"] {
+  padding: 0 22px;
+  background: var(--rim-active-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+.kf-view-nav[data-size="mini"] {
+  height: 44px;
+  padding: 3px;
+  gap: 3px;
+  border-radius: 22px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.kf-view-nav[data-size="mini"] .kf-view-nav-item {
+  gap: 5px;
+  padding: 0 10px;
+  border-radius: 19px;
+  font-size: 12px;
+}

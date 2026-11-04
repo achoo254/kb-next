@@ -1,0 +1,35 @@
+.kf-icon-btn {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--c-text);
+  cursor: pointer;
+  transition: transform var(--motion-feedback);
+}
+
+.kf-icon-btn:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.kf-icon-btn[data-variant="glass"] {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--c-glass);
+  border: 1px solid var(--c-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.kf-icon-btn[data-variant="soft"] {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 12%, transparent);
+}

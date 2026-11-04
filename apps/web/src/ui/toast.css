@@ -1,0 +1,175 @@
+/* Toasts (X01, DesignSystem). Feedback motion: slide in 450 ms, pop 350 ms. */
+
+.kf-toast {
+  --tone: var(--emerald-500);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--c-text);
+}
+
+.kf-toast[data-tone="info"] {
+  --tone: var(--cyan-400);
+}
+.kf-toast[data-tone="warn"] {
+  --tone: var(--amber-500);
+}
+.kf-toast[data-tone="error"] {
+  --tone: var(--red-400);
+}
+.kf-toast[data-tone="undo"] {
+  --tone: var(--violet-400);
+}
+
+.kf-toast-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--tone);
+  color: var(--ink);
+}
+
+.kf-toast-message {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.kf-toast-undo {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--c-accent);
+  font: 700 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.kf-toast-undo:focus-visible,
+.kf-toast-close:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.kf-toast-close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--c-track);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+/* a sample row on a well */
+.kf-toast[data-variant="row"] {
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+  border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+}
+
+/* the floating rim toast */
+.kf-toast[data-variant="floating"] {
+  width: 380px;
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    light-dark(color-mix(in srgb, var(--white) 96%, transparent), color-mix(in srgb, var(--night-rim-top) 94%, transparent)) 0%,
+    light-dark(color-mix(in srgb, var(--white) 96%, transparent), color-mix(in srgb, var(--night-rim-bottom) 96%, transparent)) 100%
+  );
+  border: 1.5px solid color-mix(in srgb, var(--tone) 60%, transparent);
+  box-shadow:
+    inset 0 0 18px color-mix(in srgb, var(--violet-500) 30%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 18%, transparent),
+    0 0 26px color-mix(in srgb, var(--tone) 60%, transparent),
+    0 10px 40px color-mix(in srgb, var(--ink) 50%, transparent);
+  animation: kf-slide-in 0.45s var(--ease-out-back) both;
+}
+
+.kf-toast[data-variant="floating"] .kf-toast-icon {
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 0 16px var(--tone);
+}
+
+.kf-toast[data-variant="floating"] .kf-toast-message {
+  font-size: 14px;
+}
+
+.kf-toast[data-variant="floating"] .kf-toast-undo {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 18px;
+  border: 1px solid var(--cyan-400);
+}
+
+/* the solid toast of DesignSystem */
+.kf-toast[data-variant="card"] {
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--c-surface-solid);
+  border: 1px solid var(--c-success);
+  animation: kf-pop-up 0.35s ease-out both;
+}
+
+.kf-toast[data-variant="card"] .kf-toast-icon {
+  width: auto;
+  height: auto;
+  background: none;
+  color: var(--c-success-text);
+}
+
+.kf-toast[data-variant="card"][data-tone="warn"] {
+  border-color: var(--c-warn);
+}
+.kf-toast[data-variant="card"][data-tone="warn"] .kf-toast-icon {
+  color: var(--c-warn-text);
+}
+.kf-toast[data-variant="card"][data-tone="error"] {
+  border-color: var(--c-danger);
+}
+.kf-toast[data-variant="card"][data-tone="error"] .kf-toast-icon {
+  color: var(--c-danger-text);
+}
+
+.kf-toast[data-variant="card"] .kf-toast-undo {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 15px;
+  background: var(--c-bg2);
+  color: var(--c-text);
+}
+
+@keyframes kf-slide-in {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes kf-pop-up {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

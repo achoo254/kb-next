@@ -1,0 +1,49 @@
+.kf-planet {
+  --planet-hi: var(--violet-300);
+  --planet-base: var(--violet-600);
+  --planet-deep: var(--violet-deep);
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, var(--planet-hi), var(--planet-base) 45%, var(--planet-deep));
+  color: var(--white);
+  font: 700 13px var(--font-display);
+}
+
+.kf-planet[data-tone="cyan"] {
+  --planet-hi: var(--cyan-200);
+  --planet-base: var(--cyan-500);
+}
+.kf-planet[data-tone="blue"] {
+  --planet-hi: var(--blue-400);
+  --planet-base: var(--glow-k8s);
+}
+.kf-planet[data-tone="emerald"] {
+  --planet-hi: var(--emerald-200);
+  --planet-base: var(--emerald-500);
+}
+.kf-planet[data-tone="amber"] {
+  --planet-hi: var(--amber-200);
+  --planet-base: var(--amber-500);
+}
+.kf-planet[data-tone="moon"] {
+  --planet-hi: var(--purple-200);
+  --planet-base: var(--violet-400);
+  background: radial-gradient(circle at 35% 30%, var(--planet-hi), var(--planet-base));
+}
+
+.kf-planet[data-glow="soft"] {
+  box-shadow: 0 0 20px var(--planet-base);
+}
+
+.kf-planet[data-glow="bright"] {
+  box-shadow:
+    0 0 26px var(--planet-base),
+    inset -10px -10px 20px color-mix(in srgb, var(--night-shadow) 60%, transparent);
+}
+
+.kf-planet[data-tone="moon"] {
+  box-shadow: none;
+}

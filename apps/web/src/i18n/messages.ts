@@ -31,6 +31,18 @@ export const vi = {
   'screen.X02': 'Không tìm thấy trang',
   'notFound.lead': 'Trang này không có trong Universe.',
   'notFound.back': 'Về trang chủ',
+  'origin.official': 'Chính thức · AI tạo',
+  'origin.community': 'Cộng đồng',
+  'origin.private': 'Của bạn · riêng tư',
+  'origin.pending': 'Chờ duyệt',
+
+  'kit.send': 'Gửi',
+  'kit.undo': 'Hoàn tác',
+  'kit.closeToast': 'Đóng thông báo',
+
+  'topActions.inbox': 'Thông báo',
+  'topActions.inboxUnread': 'Thông báo, {count} chưa đọc',
+  'topActions.search': 'Tìm nhanh và chạy lệnh (⌘K)',
 };
 
 export type MessageKey = keyof typeof vi;
@@ -68,4 +80,18 @@ export const en: Messages = {
   'screen.X02': 'Page not found',
   'notFound.lead': 'This page is not in the Universe.',
   'notFound.back': 'Back to home',
+
+  'origin.official': 'Official · AI-made',
+  'origin.community': 'Community',
+  'origin.private': 'Yours · private',
+  'origin.pending': 'Awaiting review',
+
+  'kit.send': 'Send',
+  'kit.undo': 'Undo',
+  'kit.closeToast': 'Dismiss notification',
+
+  'topActions.inbox': 'Notifications',
+  'topActions.inboxUnread': 'Notifications, {count} unread',
+  'topActions.search': 'Quick search and commands (⌘K)',
 };
+

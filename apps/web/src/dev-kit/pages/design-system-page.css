@@ -1,0 +1,655 @@
+/* Layout of the DesignSystem board (design/mock/DesignSystem.dc.html). Looks come from the kit components; this
+   file only places them and styles the board's own specimens (token table, type scale, effect tiles). */
+
+.ds-page {
+  box-sizing: border-box;
+  width: 1440px;
+  min-height: 1800px;
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-sans);
+  transition:
+    background 0.4s,
+    color 0.4s;
+}
+
+.ds-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.ds-kicker {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.ds-title {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-size: 46px;
+  letter-spacing: -1.5px;
+}
+
+.ds-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ds-theme-toggle.kf-btn {
+  padding: 0 16px;
+  border: 1px solid var(--c-border);
+  font-weight: 700;
+}
+
+.ds-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.ds-span-5 {
+  grid-column: span 5;
+}
+.ds-span-6 {
+  grid-column: span 6;
+}
+.ds-span-7 {
+  grid-column: span 7;
+}
+.ds-span-12 {
+  grid-column: span 12;
+}
+
+.ds-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ds-section {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ds-gap-14 {
+  gap: 14px;
+}
+.ds-gap-10 {
+  gap: 10px;
+}
+.ds-gap-8 {
+  gap: 8px;
+}
+
+.ds-h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.ds-h2-gap {
+  margin-top: 6px;
+}
+
+.ds-note {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.ds-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ds-center-items {
+  align-items: center;
+}
+
+.ds-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ds-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ds-grid-2,
+.ds-grid-3,
+.ds-grid-5,
+.ds-grid-6 {
+  display: grid;
+  gap: 14px;
+}
+.ds-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ds-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.ds-grid-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+.ds-grid-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ds-align-start {
+  align-items: start;
+}
+
+/* --- token table --- */
+
+.ds-tokens {
+  display: grid;
+  grid-template-columns: 120px repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  font-size: 12px;
+}
+
+.ds-token-head {
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.ds-token-name {
+  align-self: center;
+  font: 600 12px var(--font-display);
+}
+
+.ds-token-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.ds-token-cell[data-theme-cell="dark"] {
+  background: var(--night-cell);
+  color: var(--dark-text);
+}
+
+.ds-token-cell[data-theme-cell="light"] {
+  background: var(--light-surface-solid);
+  color: var(--light-text);
+  border: 1px solid var(--light-border);
+}
+
+.ds-swatch {
+  width: 22px;
+  height: 22px;
+  box-sizing: content-box;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--white) 25%, transparent);
+}
+
+[data-theme-cell="light"] .ds-swatch {
+  border-color: color-mix(in srgb, var(--light-text) 20%, transparent);
+}
+
+.ds-token-value {
+  flex: 1;
+}
+
+.ds-token-ratio {
+  font-weight: 600;
+  color: var(--cyan-300);
+}
+
+[data-theme-cell="light"] .ds-token-ratio {
+  color: var(--light-accent);
+}
+
+/* --- palette and type --- */
+
+.ds-cosmic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.ds-cosmic-orb {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+}
+
+.ds-cosmic-hex {
+  font: 700 12px var(--font-display);
+}
+
+.ds-cosmic-role {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.ds-type-faces {
+  display: flex;
+  gap: 18px;
+}
+
+.ds-face {
+  flex: 1;
+}
+
+.ds-face-sample {
+  font-size: 52px;
+  line-height: 1;
+}
+
+.ds-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.ds-inter {
+  font-weight: 600;
+}
+
+.ds-face-name {
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.ds-face-use {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.ds-type-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--c-border);
+}
+
+.ds-type-display {
+  font: 700 36px/1.05 var(--font-display);
+  letter-spacing: -1px;
+}
+
+.ds-type-h1 {
+  font: 700 26px var(--font-display);
+}
+
+.ds-type-reader {
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.ds-type-body {
+  font-size: 15px;
+}
+
+.ds-type-tag {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--c-text-muted);
+}
+
+.ds-type-tag.ds-plain {
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+/* --- focus samples: each theme on its own background --- */
+
+.ds-focus-sample {
+  padding: 16px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ds-focus-sample[data-theme-cell="dark"] {
+  background: var(--dark-bg);
+  --focus-pill: var(--dark-primary);
+  --focus-ring: var(--dark-focus);
+  --focus-note: var(--dark-muted);
+}
+
+.ds-focus-sample[data-theme-cell="light"] {
+  background: var(--light-bg);
+  --focus-pill: var(--light-primary);
+  --focus-ring: var(--light-focus);
+  --focus-note: var(--light-muted);
+}
+
+.ds-focus-pill {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  background: var(--focus-pill);
+  color: var(--white);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ds-focus-pill.kf-focus-demo {
+  outline-color: var(--focus-ring);
+}
+
+.ds-focus-note {
+  font-size: 12px;
+  color: var(--focus-note);
+}
+
+/* --- the Universe kit (dark in both themes, like the board) --- */
+
+.ds-kit {
+  color-scheme: dark;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--violet-50);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.ds-kit-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.ds-kit-sub {
+  font-size: 12px;
+  color: var(--violet-300);
+}
+
+.ds-kit-grid {
+  display: grid;
+  grid-template-columns: 100px 370px 280px minmax(0, 1fr) 220px;
+  gap: 12px;
+  align-items: start;
+}
+
+.ds-figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ds-caption {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--violet-300);
+}
+
+.ds-caption b {
+  color: var(--violet-50);
+}
+
+/* 260px content box plus the border, like the board (the nav tile alone is border-box) */
+.ds-tile {
+  position: relative;
+  box-sizing: content-box;
+  height: 260px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--c-tile-bg);
+  border: 1px solid var(--tile-border);
+  box-shadow: var(--c-tile-veil);
+}
+
+.ds-tile .kf-rail {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.ds-tile-nav {
+  box-sizing: border-box;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ds-nav-sample {
+  align-self: flex-start;
+}
+
+.ds-hero.kf-gradient-title {
+  line-height: 1.1;
+  padding-bottom: 2px;
+  letter-spacing: -0.6px;
+}
+
+.ds-hero-note {
+  margin-top: -6px;
+  font-size: 11px;
+  color: var(--violet-300);
+}
+
+.ds-kit-btn.kf-btn {
+  font-size: 13px;
+}
+
+.ds-kit-text {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--violet-300);
+}
+
+.ds-chat {
+  height: 260px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.ds-chat-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ds-chat-title {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.ds-orbit {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.ds-orb {
+  position: absolute;
+  left: 72px;
+  top: 92px;
+  width: 76px;
+  height: 76px;
+}
+
+.ds-crystal {
+  position: absolute;
+  left: 142px;
+  top: 52px;
+}
+
+.ds-kit-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--violet-200);
+}
+
+.ds-kit-note b {
+  color: var(--white);
+}
+
+/* --- cards, dialogs, toast --- */
+
+.ds-preview {
+  display: flex;
+  gap: 4px;
+}
+
+.ds-preview span {
+  flex: 1;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.ds-dialog-btn.kf-btn {
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.ds-bold.kf-btn {
+  font-weight: 700;
+}
+
+.ds-dialog-form.kf-dialog {
+  gap: 8px;
+}
+
+.ds-toast-btn.kf-btn {
+  font-size: 13px;
+}
+
+/* --- states and surfaces --- */
+
+.ds-states .ds-grid-3 {
+  gap: 10px;
+}
+
+.ds-state {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.ds-state-loading {
+  align-items: stretch;
+  text-align: left;
+}
+
+.ds-empty-mark {
+  width: 48px;
+  height: 48px;
+  box-sizing: content-box;
+  border-radius: 50%;
+  border: 2px dashed var(--c-text-muted);
+}
+
+.ds-error-icon {
+  color: var(--c-warn-text);
+  display: flex;
+}
+
+.ds-state-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ds-state-note {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.ds-effect {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ds-effect-box {
+  height: 64px;
+  border-radius: 14px;
+}
+
+.ds-effect-fill {
+  position: relative;
+  background: var(--c-bg2);
+}
+
+.ds-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ds-clip {
+  overflow: hidden;
+}
+
+.ds-facts {
+  gap: 8px;
+  font-size: 11px;
+}
+
+.ds-fact {
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--c-bg2);
+}
+
+.ds-fact span {
+  color: var(--c-text-muted);
+}
+
+/* --- motion tokens --- */
+
+.ds-motion {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--c-bg2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ds-motion-name {
+  font: 700 14px var(--font-display);
+}
+
+.ds-motion-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-accent);
+}
+
+.ds-motion-use {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.ds-effect .ds-effect-box {
+  border-radius: 14px;
+}

@@ -1,0 +1,28 @@
+/* Keyframes shared by several kit components. prefers-reduced-motion turns every animation off (app.css). */
+
+@keyframes kf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes kf-pop {
+  from {
+    transform: scale(0.88);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes kf-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}

@@ -8,6 +8,7 @@ export default defineConfig({
     root: import.meta.dirname,
     include: ['src/**/*.test.{ts,tsx}', '*.test.ts'],
     environment: 'jsdom',
+    setupFiles: ['src/test/setup.ts'],
     testTimeout: 30_000,
   },
 });

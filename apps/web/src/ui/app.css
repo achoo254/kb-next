@@ -1,5 +1,5 @@
-/* Base of every screen: the Universe backdrop of design/KIT-universe-style.txt and the few pieces the empty
-   screens need. Colours come from tokens.css only. The full component kit is built on top of this. */
+/* Base of every screen and the few pieces the empty screens need. Colours come from tokens.css only. The kit
+   components (apps/web/src/ui/*.tsx) bring their own stylesheets. */
 
 *,
 *::before,
@@ -31,6 +31,22 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/* Text for assistive technology only. */
+.kf-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Shows the focus ring at rest, for kit boards that document it. */
+.kf-focus-demo {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
 .skip-link {
   position: absolute;
   left: var(--space-4);
@@ -44,48 +60,6 @@ button:focus-visible {
 
 .skip-link:focus {
   top: var(--space-4);
-}
-
-/* --- The backdrop (KIT §2): landscape, veil, stars --- */
-
-.universe {
-  position: relative;
-  min-height: 100%;
-  overflow: hidden;
-  background: var(--c-bg);
-  color: var(--c-text);
-}
-
-.universe-bg img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: var(--bg-filter);
-}
-
-.universe-veil {
-  position: absolute;
-  inset: 0;
-  background: var(--c-veil);
-}
-
-.universe-star {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--c-star);
-  animation: twinkle 3.2s ease-in-out infinite;
-}
-
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 1;
-  }
 }
 
 /* --- Logo (KIT §3) --- */

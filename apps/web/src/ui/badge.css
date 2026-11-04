@@ -1,0 +1,73 @@
+.kf-badge {
+  --tone: var(--violet-300);
+  --tone-text: var(--violet-200);
+  box-sizing: content-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 12px var(--font-sans);
+  white-space: nowrap;
+  color: var(--tone-text);
+}
+
+.kf-badge[data-tone="success"] {
+  --tone: var(--emerald-500);
+  --tone-text: var(--c-success-text);
+}
+.kf-badge[data-tone="warn"] {
+  --tone: var(--amber-500);
+  --tone-text: var(--c-warn-text);
+}
+.kf-badge[data-tone="accent"] {
+  --tone: var(--cyan-400);
+  --tone-text: light-dark(var(--light-accent), var(--cyan-300));
+}
+.kf-badge[data-tone="neutral"] {
+  --tone: var(--slate-400);
+  --tone-text: light-dark(var(--light-muted), var(--slate-300));
+}
+.kf-badge[data-tone="purple"] {
+  --tone: var(--purple-500);
+  --tone-text: light-dark(var(--light-primary), var(--purple-200));
+}
+.kf-badge[data-tone="danger"] {
+  --tone: var(--red-400);
+  --tone-text: var(--c-danger-text);
+}
+
+.kf-badge[data-variant="glow"] {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--tone) 50%, transparent);
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  box-shadow:
+    inset 0 0 8px color-mix(in srgb, var(--tone) 50%, transparent),
+    0 0 10px color-mix(in srgb, var(--tone) 50%, transparent);
+}
+.kf-badge[data-variant="glow"][data-tone="violet"] {
+  border-color: color-mix(in srgb, var(--tone) 40%, transparent);
+  background: color-mix(in srgb, var(--tone) 15%, transparent);
+  box-shadow:
+    inset 0 0 8px color-mix(in srgb, var(--tone) 40%, transparent),
+    0 0 10px color-mix(in srgb, var(--tone) 40%, transparent);
+}
+
+.kf-badge[data-variant="pill"] {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--tone) 18%, transparent);
+  box-shadow:
+    inset 0 0 8px color-mix(in srgb, var(--violet-300) 25%, transparent),
+    0 0 10px color-mix(in srgb, var(--violet-600) 30%, transparent);
+}
+
+.kf-badge[data-variant="tag"] {
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  color: var(--white);
+  font-size: 10px;
+}

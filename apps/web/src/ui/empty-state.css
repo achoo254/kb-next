@@ -1,0 +1,93 @@
+/* Empty states (X01 "Trạng thái trống", X03 thumbnails): AI art, a sentence, one action. */
+
+.kf-empty {
+  --tone: var(--violet-400);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.kf-empty[data-tone="accent"] {
+  --tone: var(--cyan-400);
+}
+.kf-empty[data-tone="warn"] {
+  --tone: var(--amber-500);
+}
+.kf-empty[data-tone="success"] {
+  --tone: var(--emerald-500);
+}
+.kf-empty[data-tone="danger"] {
+  --tone: var(--red-400);
+}
+
+.kf-empty-art {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: kf-bob 4s ease-in-out infinite;
+}
+
+.kf-empty-art img {
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px var(--tone));
+}
+
+.kf-empty-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px dashed var(--tone);
+  opacity: 0.6;
+}
+
+.kf-empty-title {
+  font: 700 17px var(--font-display);
+}
+
+.kf-empty-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--c-text-muted);
+  white-space: pre-line;
+}
+
+.kf-empty-action.kf-btn {
+  font-size: 13px;
+}
+
+.kf-empty[data-size="compact"] {
+  gap: 8px;
+}
+
+.kf-empty[data-size="compact"] .kf-empty-art {
+  width: 72px;
+  height: 72px;
+  animation: none;
+}
+
+.kf-empty[data-size="compact"] .kf-empty-art img {
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--tone) 60%, transparent));
+}
+
+.kf-empty[data-size="compact"] .kf-empty-text {
+  font-size: 12px;
+}
+
+@keyframes kf-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}

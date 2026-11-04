@@ -1,0 +1,33 @@
+.kf-state-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 22px;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+}
+
+.kf-state-option {
+  height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid transparent;
+  border-radius: 18px;
+  background: none;
+  color: var(--c-text-muted);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+  transition: background var(--motion-feedback);
+}
+
+.kf-state-option[aria-pressed="true"] {
+  background: var(--rim-active-bg);
+  border-color: var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+.kf-state-option:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}

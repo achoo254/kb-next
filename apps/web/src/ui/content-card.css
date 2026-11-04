@@ -1,0 +1,77 @@
+/* Content cards of DesignSystem "Thẻ". */
+
+.kf-content-card {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--c-surface-solid);
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
+  text-decoration: none;
+  transition: transform var(--motion-feedback);
+}
+
+.kf-content-card:hover {
+  transform: translateY(-3px);
+}
+
+.kf-content-card:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+.kf-space-card,
+.kf-collection-card {
+  align-items: center;
+}
+
+.kf-card-title {
+  font: 700 17px var(--font-display);
+}
+
+.kf-card-name {
+  font: 700 14px var(--font-display);
+}
+
+.kf-card-meta {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.kf-card-note {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.kf-moon {
+  position: relative;
+  width: 84px;
+  height: 84px;
+}
+
+.kf-moon-orbit {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px dashed var(--c-text-muted);
+  animation: kf-spin 12s linear infinite;
+}
+
+.kf-moon-satellite {
+  position: absolute;
+  left: 34px;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--white), var(--violet-400));
+}
+
+.kf-moon-body.kf-planet {
+  position: absolute;
+  inset: 26px;
+}

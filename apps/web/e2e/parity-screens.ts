@@ -20,7 +20,7 @@ export const MAX_DIFF_RATIO = 0.03;
 export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'C09-Universe', path: '/u', signedIn: true, status: 'pending' },
   // The UI kit (dev server only, apps/web/src/dev-kit).
-  { board: 'DesignSystem', path: '/dev/kit/design-system', signedIn: false, status: 'pending' },
+  { board: 'DesignSystem', path: '/dev/kit/design-system', signedIn: false, status: 'built' },
   { board: 'Interaction', path: '/dev/kit/interaction', signedIn: false, status: 'pending' },
   { board: 'X01-Feedback', path: '/dev/kit/feedback', signedIn: false, status: 'pending' },
   { board: 'X03-StatesCoverage', path: '/dev/kit/states', signedIn: false, status: 'pending' },

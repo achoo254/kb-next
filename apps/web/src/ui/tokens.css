@@ -1,14 +1,20 @@
 /* =====================================================================
    KNOWFLOW DESIGN TOKENS: Universe
-   Taken from the approved mock board C09 (design/KIT-universe-style.txt):
-   a deep-space night (Tối) and a lavender day (Sáng). The theme follows the
-   system (prefers-color-scheme) until Settings can pick one.
+   Values copied from the approved mock: board DesignSystem (its D and L theme objects), board C09 and
+   design/KIT-universe-style.txt. Two themes: Tối (dark, the default) and Sáng (light).
 
-   This file holds the ONLY colour literals of the web app (checked by
-   `pnpm check:tokens` and `pnpm check:brand`). Each theme declares its
-   colours once under its own prefix (--dark-*, --light-*); the semantic
-   tokens (--c-*) point at the active theme. `pnpm check:tokens` checks the
-   text and focus pairs of both themes at WCAG AA.
+   This file holds the ONLY colour literals of the web app (checked by `pnpm check:tokens` and
+   `pnpm check:brand`). Components derive alpha variants with color-mix(in srgb, var(--x) N%, transparent).
+
+   Layers:
+   1. Theme primitives, once per theme: --dark-* and --light-* (hex where `pnpm check:tokens` checks contrast).
+   2. The palette of the Universe art (crystal tints, rim violets, night inks), the same in both themes.
+   3. Semantic tokens --c-*: light-dark() picks the theme's primitive from the used `color-scheme`.
+   4. Kit tokens (rims, glows, veils, gradients) built from the layers above.
+
+   Theme switch: `data-theme="light" | "dark"` on <html> wins; without it the theme follows
+   prefers-color-scheme. Both only set `color-scheme`, which every light-dark() below reads. A subtree can pin
+   a theme with `color-scheme: dark` (the mock's dark-only kit blocks do).
    ===================================================================== */
 
 :root {
@@ -16,7 +22,7 @@
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
 
-  /* spacing and radii of the mock */
+  /* spacing, radii and touch size of the mock (DesignSystem: 4·8·12·16·24·32·48, 12 chip · 20 card · 28 panel) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -24,72 +30,355 @@
   --space-5: 24px;
   --space-6: 32px;
   --space-7: 48px;
+  --radius-sm: 12px;
   --radius-md: 16px;
+  --radius-card: 20px;
+  --radius-section: 26px;
   --radius-lg: 28px;
   --radius-full: 999px;
   --tap: 44px;
 
-  /* Tối: the board's dark theme */
+  /* motion of the Interaction board: feedback 150–200 ms, pop 300 ms, morph 700 ms, flights at most 900 ms */
+  --motion-feedback: 180ms;
+  --motion-pop: 300ms;
+  --motion-morph: 700ms;
+  --motion-fly: 900ms;
+  --ease-out-back: cubic-bezier(0.2, 0.9, 0.3, 1.3);
+  --ease-fly: cubic-bezier(0.65, 0, 0.2, 1);
+
+  /* ---------- 1. Tối: the board's dark theme ---------- */
   --dark-bg: #06041a;
-  --dark-surface: #1a1440; /* a rim panel's interior over the night sky, as an opaque colour for contrast checks */
+  --dark-bg2: #120a3a;
+  --dark-surface-solid: #1a1146;
+  --dark-surface: rgb(30 20 72 / 0.55);
+  --dark-border: rgb(167 139 250 / 0.28);
   --dark-text: #f5f3ff;
   --dark-muted: #c4b5fd;
+  --dark-sub: #c8c4dc;
   --dark-primary: #7c3aed;
   --dark-on-primary: #ffffff;
+  --dark-accent: #22d3ee;
+  --dark-link: #c4b5fd;
+  --dark-success: #10b981;
+  --dark-success-text: #6ee7b7;
+  --dark-warn: #f59e0b;
+  --dark-warn-text: #fcd34d;
+  --dark-on-warn: #1c1206;
+  --dark-danger: #f87171;
+  --dark-danger-text: #fca5a5;
   --dark-focus: #22d3ee;
   --dark-star: #ffffff;
-  --dark-veil:
-    radial-gradient(ellipse 380px 260px at 250px 190px, rgb(6 4 26 / 0.62) 0%, rgb(6 4 26 / 0.35) 55%, rgb(6 4 26 / 0) 100%),
-    linear-gradient(90deg, rgb(6 4 26 / 0.35), rgb(6 4 26 / 0) 40%, rgb(6 4 26 / 0.15));
+  --dark-nebula: rgb(124 58 237 / 0.25);
+  --dark-track: rgb(255 255 255 / 0.08);
+  --dark-tooltip-bg: #f5f3ff;
+  --dark-tooltip-text: #06041a;
   --dark-glass: rgb(24 16 64 / 0.52);
   --dark-glass-border: rgb(167 139 250 / 0.32);
-  --dark-logo-from: #7c3aed;
-  --dark-logo-to: #a78bfa;
 
-  /* Sáng: the board's light theme (the same landscape, brightened) */
+  /* ---------- 1. Sáng: the board's light theme ---------- */
   --light-bg: #f7f5ff;
-  --light-surface: #ffffff;
+  --light-bg2: #ece8ff;
+  --light-surface-solid: #ffffff;
+  --light-surface: rgb(255 255 255 / 0.78);
+  --light-border: rgb(109 40 217 / 0.18);
   --light-text: #1a1033;
   --light-muted: #5b4b8a;
+  --light-sub: #3b2e66;
   --light-primary: #6d28d9;
   --light-on-primary: #ffffff;
+  /* the board says #0E7490, which reads 4.48:1 on bg2 (accent text sits on bg2 tiles); a touch darker passes AA */
+  --light-accent: #0e718c;
+  --light-link: #6d28d9;
+  --light-success: #047857;
+  --light-success-text: #047857;
+  --light-warn: #b45309;
+  --light-warn-text: #92400e;
+  --light-on-warn: #ffffff;
+  --light-danger: #dc2626;
+  --light-danger-text: #b91c1c;
   --light-focus: #0e7490;
-  --light-star: #ffffff;
-  --light-veil: linear-gradient(180deg, rgb(247 245 255 / 0.55), rgb(236 232 255 / 0.35));
+  --light-star: #c4b5fd;
+  --light-nebula: rgb(124 58 237 / 0.1);
+  --light-track: rgb(26 16 51 / 0.08);
+  --light-tooltip-bg: #1a1033;
+  --light-tooltip-text: #f7f5ff;
   --light-glass: rgb(255 255 255 / 0.62);
   --light-glass-border: rgb(109 40 217 / 0.22);
 
+  /* ---------- 2. Palette of the Universe art (both themes) ---------- */
+  --white: #ffffff;
+  --ink: #06041a;
+  --violet-50: #f5f3ff;
+  --violet-100: #ede9fe;
+  --violet-200: #ddd6fe;
+  --violet-300: #c4b5fd;
+  --violet-400: #a78bfa;
+  --violet-500: #8b5cf6;
+  --violet-600: #7c3aed;
+  --violet-700: #6d28d9;
+  --violet-900: #4c1d95;
+  --violet-deep: #2e1065;
+  --purple-200: #e9d5ff;
+  --purple-100: #f3e8ff;
+  --purple-300: #d8b4fe;
+  --purple-500: #a855f7;
+  --indigo-400: #818cf8;
+  --indigo-500: #6366f1;
+  --sky-300: #7dd3fc;
+  --sky-50: #f0f9ff;
+  --blue-400: #60a5fa;
+  --cyan-100: #cffafe;
+  --cyan-200: #a5f3fc;
+  --cyan-300: #67e8f9;
+  --cyan-400: #22d3ee;
+  --cyan-500: #06b6d4;
+  --emerald-200: #a7f3d0;
+  --emerald-500: #10b981;
+  --amber-200: #fde68a;
+  --amber-300: #fcd34d;
+  --amber-400: #fbbf24;
+  --amber-500: #f59e0b;
+  --orange-700: #c2410c;
+  --red-300: #fca5a5;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --rose-500: #f43f5e;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  /* the night inks of the rim kit (rgb() of the mock as hex) */
+  --night-rim-top: #1a1440;
+  --night-rim-bottom: #0d0a24;
+  --night-well: #0e0a28;
+  --night-inset: #0e0b26;
+  --night-row: #161136;
+  --night-answer: #1e1846;
+  --night-rail: #120c30;
+  --night-chat-avatar: #1e1448;
+  --night-card: #1e1648;
+  --night-shadow: #0a0428;
+  --night-cell: #0e0830;
+  --bubble-top: #7c5cff;
+  --bubble-bottom: #6338f0;
+  --stage-card-top: #403082;
+  --stage-card-bottom: #1c1246;
+  --stage-hi-bottom: #3c2296;
+  --stage-glass-top: #aa96ff;
+  --stage-glass-mid: #5a40be;
+  --stage-glass-low: #281864;
+  --stage-glass-bottom: #1e1250;
+
+  /* Crystal tints (KIT §0): light tint = icon stroke, deep tint = glow. Each Space carries one. */
+  --tint-net: #c4b5fd;
+  --glow-net: #8b5cf6;
+  --tint-k8s: #93c5fd;
+  --glow-k8s: #3b82f6;
+  --tint-linux: #a5f3fc;
+  --glow-linux: #22d3ee;
+  --tint-obs: #86efac;
+  --glow-obs: #10b981;
+  --tint-docker: #fde68a;
+  --glow-docker: #f59e0b;
+  --tint-weekly: #f0abfc;
+  --glow-weekly: #c026d3;
+  --tint-personal: #f9a8d4;
+  --glow-personal: #ec4899;
+  /* the orbit colour change near each crystal (board C09) */
+  --orbit-tint-net: #a78bfa;
+  --orbit-tint-k8s: #60a5fa;
+  --orbit-tint-linux: #22d3ee;
+  --orbit-tint-obs: #34d399;
+  --orbit-tint-docker: #fbbf24;
+  --orbit-tint-weekly: #e879f9;
+  --orbit-tint-personal: #f472b6;
+
+  /* the hero title gradient (Inter 700) */
+  --hero-1: #7dd3fc;
+  --hero-2: #60a5fa;
+  --hero-3: #a78bfa;
+  --hero-4: #d8b4fe;
+  --light-hero-from: #0e7490;
+  --light-hero-to: #6d28d9;
+
+  /* ---------- 3. Semantic tokens: the active theme ---------- */
   color-scheme: dark;
-  --c-bg: var(--dark-bg);
-  --c-surface: var(--dark-surface);
-  --c-text: var(--dark-text);
-  --c-text-muted: var(--dark-muted);
-  --c-primary: var(--dark-primary);
-  --c-on-primary: var(--dark-on-primary);
-  --c-focus: var(--dark-focus);
-  --c-star: var(--dark-star);
+  --c-bg: light-dark(var(--light-bg), var(--dark-bg));
+  --c-bg2: light-dark(var(--light-bg2), var(--dark-bg2));
+  --c-surface: light-dark(var(--light-surface), var(--dark-surface));
+  --c-surface-solid: light-dark(var(--light-surface-solid), var(--dark-surface-solid));
+  --c-border: light-dark(var(--light-border), var(--dark-border));
+  --c-text: light-dark(var(--light-text), var(--dark-text));
+  --c-text-muted: light-dark(var(--light-muted), var(--dark-muted));
+  --c-text-sub: light-dark(var(--light-sub), var(--dark-sub));
+  --c-primary: light-dark(var(--light-primary), var(--dark-primary));
+  --c-on-primary: light-dark(var(--light-on-primary), var(--dark-on-primary));
+  --c-accent: light-dark(var(--light-accent), var(--dark-accent));
+  --c-link: light-dark(var(--light-link), var(--dark-link));
+  --c-success: light-dark(var(--light-success), var(--dark-success));
+  --c-success-text: light-dark(var(--light-success-text), var(--dark-success-text));
+  --c-warn: light-dark(var(--light-warn), var(--dark-warn));
+  --c-warn-text: light-dark(var(--light-warn-text), var(--dark-warn-text));
+  --c-on-warn: light-dark(var(--light-on-warn), var(--dark-on-warn));
+  --c-danger: light-dark(var(--light-danger), var(--dark-danger));
+  --c-danger-text: light-dark(var(--light-danger-text), var(--dark-danger-text));
+  --c-focus: light-dark(var(--light-focus), var(--dark-focus));
+  --c-star: light-dark(var(--light-star), var(--dark-star));
+  --c-nebula: light-dark(var(--light-nebula), var(--dark-nebula));
+  --c-track: light-dark(var(--light-track), var(--dark-track));
+  --c-tooltip-bg: light-dark(var(--light-tooltip-bg), var(--dark-tooltip-bg));
+  --c-tooltip-text: light-dark(var(--light-tooltip-text), var(--dark-tooltip-text));
+  --c-glass: light-dark(var(--light-glass), var(--dark-glass));
+  --c-glass-border: light-dark(var(--light-glass-border), var(--dark-glass-border));
+  --c-logo-from: var(--violet-600);
+  --c-logo-to: var(--violet-400);
+
+  /* ---------- 4. Kit tokens ---------- */
+  --hero-gradient: linear-gradient(
+    90deg,
+    light-dark(var(--light-hero-from), var(--hero-1)) 0%,
+    light-dark(var(--light-hero-from), var(--hero-2)) 36%,
+    light-dark(var(--light-hero-to), var(--hero-3)) 70%,
+    light-dark(var(--light-hero-to), var(--hero-4)) 100%
+  );
+
+  /* veils over the landscape (KIT §2): the C09 scene, the strong veil of reading screens, the boards' radial
+     and fade veils */
+  --dark-veil:
+    radial-gradient(ellipse 380px 260px at 250px 190px, rgb(6 4 26 / 0.62) 0%, rgb(6 4 26 / 0.35) 55%, rgb(6 4 26 / 0) 100%),
+    linear-gradient(90deg, rgb(6 4 26 / 0.35), rgb(6 4 26 / 0) 40%, rgb(6 4 26 / 0.15));
+  --light-veil: linear-gradient(180deg, rgb(247 245 255 / 0.55), rgb(236 232 255 / 0.35));
+  --dark-veil-strong: linear-gradient(180deg, rgb(6 4 26 / 0.72), rgb(6 4 26 / 0.86));
+  --light-veil-strong: linear-gradient(180deg, rgb(247 245 255 / 0.8), rgb(236 232 255 / 0.9));
+  --dark-veil-radial: radial-gradient(ellipse 80% 55% at 55% 30%, rgb(6 4 26 / 0.6), rgb(6 4 26 / 0.86));
+  --light-veil-radial: radial-gradient(ellipse 80% 55% at 55% 30%, rgb(247 245 255 / 0.6), rgb(236 232 255 / 0.86));
+  --dark-veil-fade: linear-gradient(180deg, rgb(6 4 26 / 0.5), rgb(6 4 26 / 0.78));
+  --light-veil-fade: linear-gradient(180deg, rgb(247 245 255 / 0.5), rgb(236 232 255 / 0.78));
+
+  /* rim panel (KIT §7): dark interior, lavender rim glowing inward */
+  --rim-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(255 255 255 / 0.82), rgb(26 20 64 / 0.82)) 0%,
+    light-dark(rgb(247 245 255 / 0.86), rgb(13 10 36 / 0.88)) 100%
+  );
+  --rim-border: light-dark(rgb(109 40 217 / 0.28), rgb(196 181 253 / 0.55));
+  --rim-shadow:
+    inset 0 0 26px light-dark(rgb(139 92 246 / 0.1), rgb(139 92 246 / 0.38)),
+    inset 0 0 3px light-dark(rgb(196 181 253 / 0.4), rgb(233 213 255 / 0.55)),
+    inset 0 1px 0 rgb(255 255 255 / 0.25),
+    0 0 32px light-dark(rgb(124 58 237 / 0.14), rgb(124 58 237 / 0.35));
+  /* the softer rim of the X01/X03 cards */
+  --rim-soft-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(255 255 255 / 0.78), rgb(26 20 64 / 0.8)) 0%,
+    light-dark(rgb(255 255 255 / 0.78), rgb(13 10 36 / 0.86)) 100%
+  );
+  --rim-soft-border: light-dark(rgb(109 40 217 / 0.18), rgb(196 181 253 / 0.5));
+  --rim-soft-shadow:
+    inset 0 0 22px light-dark(rgb(139 92 246 / 0.08), rgb(139 92 246 / 0.32)),
+    inset 0 0 2px light-dark(rgb(196 181 253 / 0.3), rgb(233 213 255 / 0.5)),
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 0 26px light-dark(rgb(124 58 237 / 0.1), rgb(124 58 237 / 0.28));
+  /* the inset well inside rim cards (X01) */
+  --well-bg: light-dark(rgb(109 40 217 / 0.06), rgb(14 10 40 / 0.62));
+  --well-shadow:
+    inset 0 0 14px light-dark(rgb(139 92 246 / 0.08), rgb(139 92 246 / 0.22)),
+    inset 0 0 0 1px light-dark(rgb(109 40 217 / 0.16), rgb(196 181 253 / 0.2));
+  /* the state thumbnail inside an X03 card */
+  --vis-bg: radial-gradient(
+    ellipse 80% 70% at 50% 40%,
+    light-dark(rgb(237 233 254 / 0.8), rgb(40 26 110 / 0.55)),
+    light-dark(rgb(255 255 255 / 0.85), rgb(10 7 32 / 0.85))
+  );
+  --vis-shadow:
+    inset 0 0 18px light-dark(rgb(139 92 246 / 0.1), rgb(139 92 246 / 0.3)),
+    inset 0 0 0 1px light-dark(rgb(109 40 217 / 0.16), rgb(196 181 253 / 0.18));
+  /* the danger rim of a confirm-delete dialog (X01) */
+  --rim-danger-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(255 255 255 / 0.96), rgb(40 16 48 / 0.94)) 0%,
+    light-dark(rgb(254 242 242 / 0.97), rgb(13 10 36 / 0.97)) 100%
+  );
+  --rim-danger-border: light-dark(rgb(220 38 38 / 0.45), rgb(252 165 165 / 0.6));
+  --rim-danger-shadow:
+    inset 0 0 24px light-dark(rgb(239 68 68 / 0.1), rgb(239 68 68 / 0.28)),
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 0 34px light-dark(rgb(239 68 68 / 0.15), rgb(239 68 68 / 0.35));
+  --overlay: light-dark(rgb(26 16 51 / 0.45), rgb(6 4 26 / 0.75));
+  --dialog-shadow: 0 16px 40px rgb(6 4 26 / 0.3);
+
+  /* the active pill of the view nav and the primary rim button (KIT §4, DesignSystem) */
+  --rim-active-bg: linear-gradient(180deg, rgb(88 60 200 / 0.55) 0%, rgb(44 26 112 / 0.78) 100%);
+  --rim-active-border: rgb(196 181 253 / 0.9);
+  --rim-active-shadow:
+    inset 0 0 14px rgb(196 181 253 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 0 16px rgb(139 92 246 / 0.75),
+    0 0 34px rgb(124 58 237 / 0.35);
+
+  /* light-theme stand-ins for the dark-only rim chrome (nav, rail) */
+  --rail-bg: light-dark(
+    linear-gradient(180deg, rgb(255 255 255 / 0.72), rgb(237 233 254 / 0.6)),
+    linear-gradient(90deg, rgb(40 28 96 / 0.35) 0%, rgb(90 70 170 / 0.32) 70%, rgb(150 130 230 / 0.28) 100%)
+  );
+  --nav-bg: light-dark(rgb(255 255 255 / 0.72), rgb(12 9 32 / 0.72));
+  --nav-border: light-dark(rgb(109 40 217 / 0.18), rgb(255 255 255 / 0.12));
+
+  /* the tile behind the kit samples of the DesignSystem board (the landscape behind a veil) */
+  --dark-tile-bg: #0a0722 url("/art/bg-universe-dark.webp") 20% 50% / cover;
+  --light-tile-bg: #ece8ff url("/art/bg-universe-light.webp") 20% 60% / cover;
+  --dark-tile-veil: inset 0 0 0 999px rgb(8 5 26 / 0.45);
+  --light-tile-veil: inset 0 0 0 999px rgb(30 16 80 / 0.28);
+  --tile-border: rgb(196 181 253 / 0.22);
+
+  /* glows */
+  --glow-primary: 0 0 22px rgb(124 58 237 / 0.95);
+  --glow-orb: drop-shadow(0 0 30px rgb(124 58 237 / 0.75)) drop-shadow(0 0 70px rgb(34 211 238 / 0.25));
+  --text-shadow-strong: 0 1px 3px rgb(0 0 0 / 0.9), 0 2px 12px rgb(0 0 0 / 0.75);
+  --crystal-core: radial-gradient(
+    ellipse 46% 42% at 50% 54%,
+    rgb(8 4 28 / 0.78) 0%,
+    rgb(8 4 28 / 0.6) 45%,
+    rgb(8 4 28 / 0.22) 75%,
+    rgb(8 4 28 / 0) 100%
+  );
+  --crystal-core-mini: radial-gradient(
+    ellipse 50% 44% at 50% 54%,
+    rgb(8 4 28 / 0.8) 0%,
+    rgb(8 4 28 / 0.6) 45%,
+    rgb(8 4 28 / 0.2) 78%,
+    rgb(8 4 28 / 0) 100%
+  );
+
+  /* the veils of the theme in use (gradients, so they switch by theme below, not with light-dark()) */
   --c-veil: var(--dark-veil);
-  --c-glass: var(--dark-glass);
-  --c-glass-border: var(--dark-glass-border);
-  --c-logo-from: var(--dark-logo-from);
-  --c-logo-to: var(--dark-logo-to);
-  --bg-filter: none;
+  --c-veil-strong: var(--dark-veil-strong);
+  --c-veil-radial: var(--dark-veil-radial);
+  --c-veil-fade: var(--dark-veil-fade);
+  --c-tile-bg: var(--dark-tile-bg);
+  --c-tile-veil: var(--dark-tile-veil);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --c-veil: var(--light-veil);
+  --c-veil-strong: var(--light-veil-strong);
+  --c-veil-radial: var(--light-veil-radial);
+  --c-veil-fade: var(--light-veil-fade);
+  --c-tile-bg: var(--light-tile-bg);
+  --c-tile-veil: var(--light-tile-veil);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme]) {
     color-scheme: light;
-    --c-bg: var(--light-bg);
-    --c-surface: var(--light-surface);
-    --c-text: var(--light-text);
-    --c-text-muted: var(--light-muted);
-    --c-primary: var(--light-primary);
-    --c-on-primary: var(--light-on-primary);
-    --c-focus: var(--light-focus);
-    --c-star: var(--light-star);
     --c-veil: var(--light-veil);
-    --c-glass: var(--light-glass);
-    --c-glass-border: var(--light-glass-border);
-    --bg-filter: brightness(1.55) saturate(0.75) hue-rotate(-8deg);
+    --c-veil-strong: var(--light-veil-strong);
+    --c-veil-radial: var(--light-veil-radial);
+    --c-veil-fade: var(--light-veil-fade);
+    --c-tile-bg: var(--light-tile-bg);
+    --c-tile-veil: var(--light-tile-veil);
   }
 }

@@ -1,0 +1,50 @@
+.kf-origin {
+  /* height is the content box, as in the mock (32px + its border) */
+  box-sizing: content-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 12px var(--font-sans);
+  white-space: nowrap;
+}
+
+.kf-origin[data-variant="pill"] {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+}
+
+.kf-origin[data-variant="inline"] {
+  gap: 4px;
+  font-size: 11px;
+}
+
+.kf-origin[data-origin="official"] {
+  color: var(--c-link);
+}
+.kf-origin[data-origin="community"] {
+  color: var(--c-accent);
+}
+.kf-origin[data-origin="private"] {
+  color: var(--c-text);
+}
+.kf-origin[data-origin="pending"] {
+  color: var(--c-warn-text);
+}
+
+.kf-origin[data-variant="pill"][data-origin="official"] {
+  background: color-mix(in srgb, var(--violet-600) 18%, transparent);
+  border: 1px solid var(--c-primary);
+}
+.kf-origin[data-variant="pill"][data-origin="community"] {
+  background: color-mix(in srgb, var(--cyan-400) 14%, transparent);
+  border: 1px solid var(--c-accent);
+}
+.kf-origin[data-variant="pill"][data-origin="private"] {
+  background: color-mix(in srgb, var(--glow-personal) 12%, transparent);
+  border: 1px solid var(--glow-personal);
+}
+.kf-origin[data-variant="pill"][data-origin="pending"] {
+  background: color-mix(in srgb, var(--amber-500) 12%, transparent);
+  border: 1.5px dashed var(--c-warn);
+}

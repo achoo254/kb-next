@@ -1,0 +1,80 @@
+.kf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.kf-field-input {
+  /* heights are the content box, as in the mock (46px field + its border) */
+  box-sizing: content-box;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--c-border);
+  background: var(--c-surface-solid);
+  color: var(--c-text);
+  font: 500 14px var(--font-sans);
+}
+
+.kf-field-input::placeholder {
+  color: var(--c-text-muted);
+  opacity: 0.8;
+}
+
+.kf-field-input:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.kf-field-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--c-text-muted);
+}
+
+.kf-field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-danger-text);
+}
+
+.kf-field[data-tone="warn"] .kf-field-error {
+  color: var(--c-warn-text);
+}
+.kf-field[data-tone="danger"] .kf-field-input {
+  border-color: var(--red-400);
+}
+.kf-field[data-tone="warn"] .kf-field-input {
+  border-color: var(--c-warn);
+}
+
+.kf-field[data-variant="well"] .kf-field-label {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+.kf-field[data-variant="well"] .kf-field-input {
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+}
+
+.kf-field[data-variant="compact"] {
+  gap: 4px;
+  font-size: 12px;
+}
+.kf-field[data-variant="compact"] .kf-field-input {
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border-width: 1px;
+  background: var(--c-bg);
+  font-size: 13px;
+}

@@ -1,0 +1,113 @@
+/* The lens rail (KIT §6). The clip-path of the lens lives only here. */
+
+.kf-rail {
+  position: relative;
+  width: 96px;
+  height: 760px;
+}
+
+.kf-rail-glass {
+  position: absolute;
+  inset: 0;
+  clip-path: path("M0 0 L4 0 C54 110 80 250 80 395 C80 540 56 650 0 735 Z");
+  background: var(--rail-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.kf-rail-rim {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+
+.kf-rail-fill {
+  fill: color-mix(in srgb, var(--night-rail) 72%, transparent);
+}
+
+.kf-rail-items {
+  position: absolute;
+  left: 10px;
+  top: 190px;
+  width: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.kf-rail-item {
+  box-sizing: border-box;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--c-text-muted);
+  transition: background var(--motion-feedback);
+}
+
+.kf-rail-item[aria-current="page"] {
+  background: var(--c-primary);
+  color: var(--white);
+  box-shadow: var(--glow-primary);
+}
+
+.kf-rail-item[data-kind="create"] {
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--violet-600) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-300) 70%, transparent);
+  color: var(--white);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--violet-600) 60%, transparent);
+}
+
+.kf-rail-avatar {
+  position: absolute;
+  left: 28px;
+  top: 808px;
+  width: 48px;
+  height: 48px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--violet-400), var(--violet-600));
+  border: 2px solid color-mix(in srgb, var(--white) 75%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--violet-600) 80%, transparent);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.kf-rail[data-size="mini"] {
+  width: 100px;
+  height: 260px;
+}
+
+.kf-rail[data-size="mini"] .kf-rail-items {
+  left: 6px;
+  top: 58px;
+  width: 44px;
+  gap: 6px;
+}
+
+.kf-rail[data-size="mini"] .kf-rail-item {
+  width: 44px;
+  height: 44px;
+  color: var(--violet-300);
+}
+
+.kf-rail[data-size="mini"] .kf-rail-item[aria-current="page"] {
+  background: var(--violet-600);
+  color: var(--white);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--violet-600) 95%, transparent);
+}
+
+.kf-rail[data-size="mini"] .kf-rail-item[data-kind="create"] {
+  box-shadow: none;
+  color: var(--white);
+}

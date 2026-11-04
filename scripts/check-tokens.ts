@@ -3,7 +3,7 @@
  *
  * 1. No colour literal in apps/web/src (ts, tsx, css) or apps/web/index.html outside src/ui/tokens.css.
  * 2. Every text/background pair the UI uses meets WCAG 2 AA (text 4.5:1) in both themes (Tối and Sáng): on every
- *    surface and on every fill that carries text; the focus ring at 3:1 (non-text).
+ *    opaque surface and on every fill that carries text; the focus ring, state borders and icons at 3:1 (non-text).
  *
  * Exits 1 on any failure, printing file:line for literals and the ratio of each failing pair.
  */
@@ -21,13 +21,18 @@ const AA_NON_TEXT = 3;
 
 /** The themes of tokens.css: each declares its colours under its own prefix (--dark-*, --light-*). */
 const THEMES = ['dark', 'light'] as const;
-/** Text colours and the backgrounds each must be readable on, per theme. */
-const SCREEN_TEXT = ['text', 'muted'];
-const SCREEN_BACKGROUNDS = ['bg', 'surface'];
+/** Text colours and the opaque backgrounds each must be readable on, per theme (the page, bg2 fills, solid cards). */
+const SCREEN_TEXT = ['text', 'muted', 'sub', 'link', 'accent', 'success-text', 'warn-text', 'danger-text'];
+const SCREEN_BACKGROUNDS = ['bg', 'bg2', 'surface-solid'];
 /** Fills with text on them, and the text colours they carry. */
-const FILLS: ReadonlyArray<readonly [string, readonly string[]]> = [['primary', ['on-primary']]];
-/** Non-text marks at 3:1: the focus ring on what it sits on. */
-const MARKS: ReadonlyArray<readonly [string, readonly string[]]> = [['focus', ['bg', 'surface']]];
+const FILLS: ReadonlyArray<readonly [string, readonly string[]]> = [
+  ['primary', ['on-primary']],
+  ['warn', ['on-warn']],
+  ['tooltip-bg', ['tooltip-text']],
+];
+/** Non-text marks at 3:1 (focus ring, state borders and icons) on what they sit on. */
+const MARK_COLOURS = ['focus', 'primary', 'accent', 'success', 'warn', 'danger'];
+const MARKS: ReadonlyArray<readonly [string, readonly string[]]> = MARK_COLOURS.map((mark) => [mark, SCREEN_BACKGROUNDS] as const);
 
 async function sourceFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });

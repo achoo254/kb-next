@@ -1,0 +1,56 @@
+.kf-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.kf-tab {
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+  transition:
+    background var(--motion-feedback),
+    border-color var(--motion-feedback);
+}
+
+.kf-tab:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.kf-tabs[data-variant="pill"] {
+  align-self: flex-start;
+  padding: 4px;
+  border-radius: 22px;
+  background: var(--c-bg2);
+}
+
+.kf-tabs[data-variant="pill"] .kf-tab {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 19px;
+}
+
+.kf-tabs[data-variant="pill"] .kf-tab[aria-selected="true"] {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.kf-tabs[data-variant="segment"] {
+  gap: 6px;
+}
+
+.kf-tabs[data-variant="segment"] .kf-tab {
+  flex: 1;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--violet-400) 35%, transparent);
+  color: var(--violet-50);
+  font-size: 12px;
+}
+
+.kf-tabs[data-variant="segment"] .kf-tab[aria-selected="true"] {
+  border-color: var(--violet-300);
+  background: var(--violet-600);
+}

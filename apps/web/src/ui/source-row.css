@@ -1,0 +1,42 @@
+.kf-source {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: light-dark(color-mix(in srgb, var(--white) 70%, transparent), color-mix(in srgb, var(--night-row) 70%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 5%, transparent);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.kf-source:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.kf-source-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.kf-source-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kf-source-meta {
+  display: block;
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.kf-source[data-size="sm"] {
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 10px;
+  box-shadow: none;
+}

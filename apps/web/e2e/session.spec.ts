@@ -15,7 +15,8 @@ test('a signed-in screen sends a visitor through sign-in and back, on the Univer
   await signInAt(page, '/u');
   await expect(page.locator('[data-screen="C09"]')).toBeVisible();
   const background = page.locator('.universe-bg img');
-  await expect(background).toHaveAttribute('src', '/art/bg-universe-dark.webp');
+  // The landscape of the theme in use (the browser's scheme: no data-theme is set yet).
+  await expect(background).toHaveAttribute('src', /^\/art\/bg-universe-(dark|light)\.webp$/);
   // The picture really loaded (not a broken image).
   expect(await background.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 });

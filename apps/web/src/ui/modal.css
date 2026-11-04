@@ -1,0 +1,116 @@
+/* Dialogs (DesignSystem cards, X01 confirm). */
+
+.kf-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay);
+}
+
+.kf-modal-backdrop[data-contained] {
+  position: absolute;
+}
+
+.kf-modal {
+  outline: none;
+  animation: kf-pop 0.35s var(--ease-out-back) both;
+}
+
+.kf-dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--c-surface-solid);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--dialog-shadow);
+  color: var(--c-text);
+}
+
+.kf-dialog-title {
+  font: 700 15px var(--font-display);
+}
+
+.kf-dialog-description {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.kf-dialog-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.kf-dialog-actions[data-layout="stretch"] {
+  gap: 10px;
+  width: 100%;
+}
+
+.kf-dialog-actions[data-layout="stretch"] > * {
+  flex: 1;
+}
+
+.kf-dialog[data-size="lg"] {
+  width: 440px;
+  gap: 14px;
+  padding: 26px;
+  border-radius: var(--radius-lg);
+  align-items: center;
+  text-align: center;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+}
+
+.kf-dialog[data-size="lg"] .kf-dialog-title {
+  font-size: 24px;
+}
+
+.kf-dialog[data-size="lg"] .kf-dialog-description {
+  font-size: 14px;
+  color: var(--c-text);
+}
+
+.kf-dialog[data-tone="danger"][data-size="lg"] {
+  background: var(--rim-danger-bg);
+  border-color: var(--rim-danger-border);
+  box-shadow: var(--rim-danger-shadow);
+}
+
+.kf-dialog-art {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kf-dialog-art img {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--violet-600) 55%, transparent));
+}
+
+.kf-dialog[data-tone="danger"] .kf-dialog-art img {
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--red-500) 55%, transparent));
+}
+
+.kf-dialog-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--violet-300) 60%, transparent);
+  animation: kf-spin 2.4s linear infinite;
+}
+
+.kf-dialog[data-tone="danger"] .kf-dialog-ring {
+  border-color: color-mix(in srgb, var(--red-400) 60%, transparent);
+}

@@ -1,0 +1,89 @@
+/* Orbits of C09: gradient strokes, bloom, crystal tints, running dots. */
+
+.kf-orbit {
+  position: relative;
+  pointer-events: none;
+}
+
+.kf-orbit-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+
+.kf-orbit-bloom {
+  stroke: var(--violet-500);
+}
+
+.kf-orbit-guides {
+  stroke: var(--violet-400);
+}
+
+.kf-orbit-spokes {
+  stroke: color-mix(in srgb, var(--violet-400) 30%, transparent);
+}
+
+.kf-orbit-tint {
+  stroke: var(--orbit-tint-net);
+}
+.kf-orbit-tint[data-space="kubernetes"] {
+  stroke: var(--orbit-tint-k8s);
+}
+.kf-orbit-tint[data-space="linux"] {
+  stroke: var(--orbit-tint-linux);
+}
+.kf-orbit-tint[data-space="observability"] {
+  stroke: var(--orbit-tint-obs);
+}
+.kf-orbit-tint[data-space="docker"] {
+  stroke: var(--orbit-tint-docker);
+}
+.kf-orbit-tint[data-space="weekly"] {
+  stroke: var(--orbit-tint-weekly);
+}
+.kf-orbit-tint[data-space="personal"] {
+  stroke: var(--orbit-tint-personal);
+}
+
+.kf-orbit-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  offset-rotate: 0deg;
+  offset-anchor: center;
+  animation-name: kf-orbit-run;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.kf-orbit-dot[data-tone="sky"] {
+  background: var(--sky-50);
+  box-shadow:
+    0 0 10px 4px var(--sky-300),
+    0 0 22px 8px color-mix(in srgb, var(--sky-300) 40%, transparent);
+}
+.kf-orbit-dot[data-tone="violet"] {
+  background: var(--violet-100);
+  box-shadow: 0 0 9px 4px var(--violet-400);
+}
+.kf-orbit-dot[data-tone="lavender"] {
+  background: var(--violet-50);
+  box-shadow:
+    0 0 10px 4px var(--violet-300),
+    0 0 18px 6px color-mix(in srgb, var(--violet-400) 40%, transparent);
+}
+.kf-orbit-dot[data-tone="cyan"] {
+  background: var(--cyan-100);
+  box-shadow: 0 0 8px 3px var(--cyan-400);
+}
+
+@keyframes kf-orbit-run {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}

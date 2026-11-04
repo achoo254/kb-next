@@ -1,0 +1,30 @@
+.kf-nebula {
+  position: absolute;
+  inset: -20px;
+  background:
+    radial-gradient(closest-side at 40% 50%, color-mix(in srgb, var(--purple-500) 60%, transparent), transparent),
+    radial-gradient(closest-side at 70% 40%, color-mix(in srgb, var(--cyan-500) 40%, transparent), transparent);
+  animation: kf-nebula 9s ease-in-out infinite;
+}
+
+.kf-particles {
+  position: absolute;
+  inset: 0;
+}
+
+.kf-particles span {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--c-star);
+  animation: kf-twinkle 2.6s ease-in-out infinite;
+}
+
+@keyframes kf-nebula {
+  0%,
+  100% {
+    transform: scale(1) rotate(0);
+  }
+  50% {
+    transform: scale(1.15) rotate(8deg);
+  }
+}

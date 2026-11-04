@@ -1,0 +1,67 @@
+.kf-ask-box {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 6px 0 16px;
+  border-radius: 18px;
+  background: light-dark(color-mix(in srgb, var(--white) 85%, transparent), color-mix(in srgb, var(--night-inset) 80%, transparent));
+  border: 1.5px solid color-mix(in srgb, var(--violet-300) 50%, transparent);
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--violet-500) 30%, transparent),
+    0 0 14px color-mix(in srgb, var(--violet-600) 25%, transparent);
+}
+
+.kf-ask-box:focus-within {
+  border-color: var(--c-focus);
+}
+
+.kf-ask-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  color: var(--c-text);
+  font: 500 14px var(--font-sans);
+  outline: none;
+}
+
+.kf-ask-input::placeholder {
+  color: var(--c-text-muted);
+  opacity: 0.85;
+}
+
+.kf-ask-send {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--violet-400), var(--violet-600) 70%);
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--violet-500) 80%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 35%, transparent);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.kf-ask-send:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.kf-ask[data-size="sm"] .kf-ask-box {
+  gap: 6px;
+  height: 46px;
+  padding: 0 4px 0 12px;
+  border-radius: 16px;
+}
+
+.kf-ask[data-size="sm"] .kf-ask-input {
+  font-size: 13px;
+}

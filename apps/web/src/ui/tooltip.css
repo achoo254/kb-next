@@ -1,0 +1,30 @@
+.kf-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.kf-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  width: max-content;
+  max-width: 220px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: var(--c-tooltip-bg);
+  color: var(--c-tooltip-text);
+  font: 600 12px var(--font-sans);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity var(--motion-feedback),
+    transform var(--motion-feedback);
+}
+
+.kf-tooltip-wrap:hover .kf-tooltip,
+.kf-tooltip-wrap:focus-within .kf-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}

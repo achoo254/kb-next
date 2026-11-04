@@ -1,0 +1,37 @@
+.kf-top-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.kf-top-unread {
+  position: absolute;
+  right: 12px;
+  top: 11px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--rose-500);
+  box-shadow: 0 0 8px var(--rose-500);
+}
+
+.kf-top-command {
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  background: var(--c-glass);
+  border: 1px solid var(--c-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text);
+  font: 600 15px var(--font-display);
+  text-decoration: none;
+}
+
+.kf-top-command:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}

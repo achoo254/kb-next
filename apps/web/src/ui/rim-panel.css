@@ -1,0 +1,88 @@
+/* Panels of the kit (KIT §7, X01, X03, DesignSystem). */
+
+.kf-panel {
+  box-sizing: border-box;
+  margin: 0;
+  color: var(--c-text);
+}
+
+.kf-panel[data-radius="panel"] {
+  border-radius: var(--radius-lg);
+}
+.kf-panel[data-radius="section"] {
+  border-radius: var(--radius-section);
+}
+.kf-panel[data-radius="card"] {
+  border-radius: 22px;
+}
+.kf-panel[data-radius="small"] {
+  border-radius: var(--radius-card);
+}
+.kf-panel[data-radius="well"] {
+  border-radius: var(--radius-md);
+}
+
+.kf-panel[data-variant="rim"] {
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.kf-panel[data-variant="soft"] {
+  background: var(--rim-soft-bg);
+  border: 1.5px solid var(--rim-soft-border);
+  box-shadow: var(--rim-soft-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.kf-panel[data-variant="well"] {
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+}
+
+.kf-panel[data-variant="vis"] {
+  position: relative;
+  overflow: hidden;
+  background: var(--vis-bg);
+  box-shadow: var(--vis-shadow);
+}
+
+.kf-panel[data-variant="glass"] {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.kf-panel[data-variant="solid"] {
+  background: var(--c-surface-solid);
+  border: 1px solid var(--c-border);
+}
+
+.kf-panel[data-tone="warn"] {
+  border: 1px solid var(--c-warn);
+}
+.kf-panel[data-tone="success"] {
+  border: 1px solid var(--c-success);
+}
+.kf-panel[data-tone="danger"] {
+  border: 1px solid var(--c-danger);
+}
+.kf-panel[data-tone="accent"] {
+  border: 1px solid var(--c-accent);
+}
+.kf-panel[data-variant="well"][data-tone="warn"] {
+  border-color: color-mix(in srgb, var(--amber-500) 55%, transparent);
+}
+.kf-panel[data-variant="well"][data-tone="accent"] {
+  border-color: color-mix(in srgb, var(--cyan-400) 50%, transparent);
+}
+.kf-panel[data-variant="well"][data-tone="danger"] {
+  border-color: color-mix(in srgb, var(--red-400) 60%, transparent);
+}
+.kf-panel[data-variant="well"][data-tone="success"] {
+  border-color: color-mix(in srgb, var(--emerald-500) 55%, transparent);
+}

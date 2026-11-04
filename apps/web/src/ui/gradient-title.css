@@ -1,0 +1,12 @@
+.kf-gradient-title {
+  margin: 0;
+  padding-bottom: 4px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  background: var(--hero-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
