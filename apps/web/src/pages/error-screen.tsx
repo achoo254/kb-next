@@ -131,6 +131,7 @@ export function ErrorScreen(props: ErrorPanelProps & { code?: string }): ReactNo
       code={code}
       veil="gate"
       layout="board"
+      responsive
       actions={
         <Button variant="glass" href={UNIVERSE_HREF} className="start-ghost" dataId="error-top-home">
           {t('error.toUniverse')}

@@ -247,7 +247,9 @@
   }
 }
 
-@media (max-width: 880px) {
+/* Below 768px the board frame stops shrinking (layout/board-zoom.ts), so this fixed overlay, one window wide, is
+   narrower than the cards: they take the window's width. */
+@media (max-width: 767px) {
   .onboarding-lang,
   .onboarding-topics {
     width: calc(100% - 32px);

@@ -39,6 +39,7 @@
   --tap: 44px;
   /* width of the desktop boards; wider windows centre this area (layout/app-shell.css) */
   --board-width: 1440px;
+  --board-height: 900px;
 
   /* motion of the Interaction board: feedback 150–200 ms, pop 300 ms, morph 700 ms, flights at most 900 ms */
   --motion-feedback: 180ms;

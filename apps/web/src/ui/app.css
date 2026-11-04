@@ -13,6 +13,22 @@ body,
   height: 100%;
 }
 
+/* The board frame (layout/board-zoom.ts, docs/board-frame.md): a board screen is laid out in the 1440×900 board space
+   and zoomed to the window's width. Lengths inside are board px. `100vh` inside is zoomed too, so a height that fills
+   the window is `calc(100vh / var(--frame-zoom, 1))` (--frame-zoom is 1 outside a frame); a fixed overlay sizes
+   against its own box (%), not vw/vh. The board is never shorter than 900 board px: a shorter window scrolls. */
+.universe.board-frame {
+  --frame-zoom: var(--board-zoom, 1);
+  zoom: var(--frame-zoom);
+  /* below 768px the zoom stops at its floor: the frame stays as wide as the board and the page scrolls sideways */
+  min-width: var(--board-width);
+  min-height: calc(100vh / var(--frame-zoom));
+}
+
+.board-frame > .board-frame-main {
+  min-height: max(calc(100vh / var(--frame-zoom)), var(--board-height));
+}
+
 body {
   margin: 0;
   background: var(--c-bg);

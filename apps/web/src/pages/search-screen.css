@@ -750,26 +750,3 @@
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
 }
-
-/* Below the board's width the three columns stack under the query bar. */
-@media (max-width: 1279px) {
-  .search-screen {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 112px 16px 24px 108px;
-  }
-
-  .search-bar,
-  .search-filters,
-  .search-results,
-  .search-side {
-    position: static;
-    width: auto;
-    height: auto;
-  }
-
-  .search-bar {
-    flex-wrap: wrap;
-  }
-}

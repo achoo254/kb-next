@@ -715,31 +715,3 @@
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
 }
-
-/* Below the desktop board: one column, in reading order. */
-@media (max-width: 1200px) {
-  .space-screen {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    padding: 130px 24px 48px 112px;
-  }
-
-  .space-orbits,
-  .space-crystal {
-    display: none;
-  }
-
-  .space-header,
-  .space-collections,
-  .space-docs,
-  .space-members,
-  .space-related,
-  .space-loading-hero,
-  .space-error {
-    position: static;
-    width: auto;
-    height: auto;
-    transform: none;
-  }
-}

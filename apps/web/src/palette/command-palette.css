@@ -17,12 +17,13 @@
 
 .kf-palette-dialog {
   position: absolute;
-  left: calc(50% - 420px);
+  /* sized against the overlay (the window, in the board frame's px), not vw/vh, which the frame's zoom shrinks */
+  left: max(16px, 50% - 420px);
   top: 90px;
   width: 840px;
-  max-width: calc(100vw - 32px);
+  max-width: calc(100% - 32px);
   height: 620px;
-  max-height: calc(100vh - 110px);
+  max-height: calc(100% - 110px);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

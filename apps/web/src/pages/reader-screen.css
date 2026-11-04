@@ -461,7 +461,9 @@ h3.reader-heading {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow: hidden;
+  /* scrolls rather than cuts its last card off when text runs longer (a small board zoom rounds glyphs up) */
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .reader-actions {
@@ -772,26 +774,4 @@ h3.reader-heading {
 .reader-shell button:focus-visible {
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
-}
-
-/* Below the desktop board: contents, text and the right column stacked in reading order. */
-@media (max-width: 1200px) {
-  .reader-screen {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 124px 16px 32px 108px;
-  }
-
-  .reader-toc,
-  .reader-panel,
-  .reader-side {
-    position: static;
-    width: auto;
-    height: auto;
-  }
-
-  .reader-panel {
-    max-height: calc(100vh - 140px);
-  }
 }

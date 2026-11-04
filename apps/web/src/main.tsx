@@ -10,6 +10,7 @@ import { type ReactNode, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app';
 import { I18nProvider } from './i18n/i18n';
+import { installBoardZoom } from './layout/board-zoom';
 
 /** The dev-only UI kit (/dev/kit); `import.meta.env.DEV` is false in builds, so the bundle never contains it. */
 async function devKit(pathname: string): Promise<ReactNode | null> {
@@ -17,6 +18,9 @@ async function devKit(pathname: string): Promise<ReactNode | null> {
   const { DevKitApp } = await import('./dev-kit/dev-kit-app');
   return <DevKitApp pathname={pathname} />;
 }
+
+// before the first render, so the board screens paint at their zoom at once
+installBoardZoom();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root missing from index.html');

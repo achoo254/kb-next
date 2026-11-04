@@ -24,7 +24,8 @@
 .kf-modal-backdrop[data-contained] .kf-modal-frame {
   position: sticky;
   top: 0;
-  height: min(100%, 100dvh);
+  /* one window tall: dvh inside the board frame is zoomed, --frame-zoom gives it back (1 outside a frame) */
+  height: min(100%, calc(100dvh / var(--frame-zoom, 1)));
 }
 
 .kf-modal {

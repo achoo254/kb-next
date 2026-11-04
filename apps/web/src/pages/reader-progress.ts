@@ -5,6 +5,7 @@
  */
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { saveReadingProgress } from '../api/content-api';
+import { toBoardPx } from '../layout/board-zoom';
 
 /** How long scrolling may go on before the progress is saved (the last position wins). */
 export const SAVE_DELAY_MS = 1500;
@@ -38,7 +39,8 @@ function hashAnchor(anchors: readonly string[]): string | null {
 function sectionTop(panel: HTMLElement, anchor: string): number | null {
   const target = document.getElementById(anchor);
   if (!target || !panel.contains(target)) return null;
-  return target.getBoundingClientRect().top - panel.getBoundingClientRect().top + panel.scrollTop;
+  // the rects are on-screen (zoomed) px, scrollTop is in the panel's own (board) px
+  return toBoardPx(target.getBoundingClientRect().top - panel.getBoundingClientRect().top) + panel.scrollTop;
 }
 
 /** How far down the panel has been read, 0–100 (all of it when it has nothing to scroll). */

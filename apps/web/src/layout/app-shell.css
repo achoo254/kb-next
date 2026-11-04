@@ -7,8 +7,8 @@
    the extra width; it is a percentage of the backdrop (the containing block of these absolutely placed pieces), so
    it is 0 at 1440px and below and the boards' coordinates hold unchanged there. */
 
+/* The frame (zoom, height) is the shared board frame (.board-frame in ui/app.css). */
 .app-shell {
-  min-height: 100vh;
   --board-offset: max(0px, 50% - var(--board-width) / 2);
 }
 
@@ -97,5 +97,4 @@
   width: var(--board-width);
   max-width: 100%;
   margin-inline: auto;
-  min-height: 100vh;
 }

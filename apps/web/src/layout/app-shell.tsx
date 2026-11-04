@@ -158,7 +158,7 @@ export function AppShell({
       }
     : undefined;
   return (
-    <UniverseBackdrop veil={veil} stars={stars} className={[`app-shell`, palette.open ? 'app-shell-palette' : '', className ?? ''].filter(Boolean).join(' ')}>
+    <UniverseBackdrop veil={veil} stars={stars} className={[`app-shell board-frame`, palette.open ? 'app-shell-palette' : '', className ?? ''].filter(Boolean).join(' ')}>
       <div className="app-shell-chrome">
         <BrandLogo />
         <ViewNav label={t('shell.views')} items={viewItems(t, docHref)} activeId={view ?? ''} className="app-shell-nav" />
@@ -166,7 +166,7 @@ export function AppShell({
         <LensRail label={t('shell.rail')} items={railItems(t, spaceHref)} activeId={rail} account={account} className="app-shell-rail" />
         {breadcrumb && breadcrumb.length > 0 && <Breadcrumb items={breadcrumb} label={t('shell.breadcrumb')} />}
       </div>
-      <main id="content" className="app-shell-main" data-screen={screen} data-id={`screen-${screen}`}>
+      <main id="content" className="app-shell-main board-frame-main" data-screen={screen} data-id={`screen-${screen}`}>
         {children}
       </main>
       {palette.open && <CommandPalette onClose={palette.close} />}

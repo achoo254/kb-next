@@ -63,6 +63,7 @@ export function LoginPage({ session }: { session: SessionState }): ReactNode {
       code="S02"
       veil="gate"
       layout="board"
+      responsive
       actions={
         <Button variant="glass" href="/" className="start-ghost" dataId="login-home">
           {t('layout.backHome')}
@@ -84,7 +85,7 @@ export function LoginPage({ session }: { session: SessionState }): ReactNode {
  */
 export function UniverseOpening({ stage, code = 'C09' }: { stage: OpeningStage; code?: string }): ReactNode {
   return (
-    <ScreenPage code={code} veil="gate" layout="board">
+    <ScreenPage code={code} veil="gate" layout="board" responsive>
       <div className="login-stage">
         <UniverseOpeningCard stage={stage} />
       </div>

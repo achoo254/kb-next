@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { GradientTitle } from '../ui/gradient-title';
 import { RimPanel } from '../ui/rim-panel';
 import './onboarding.css';
+import { BOARD_WIDTH, toBoardPx } from '../layout/board-zoom';
 
 /** A Space offered as an interest (step 2). */
 export interface OnboardingSpace {
@@ -49,7 +50,13 @@ export function spotlightRect(index: number): Rect {
   const element = document.querySelector(`[data-id="${tip.target}"]`);
   const box = element?.getBoundingClientRect();
   if (!box || box.width === 0) return tip.fallback;
-  return { x: box.left - tip.pad, y: box.top - tip.pad, w: box.width + tip.pad * 2, h: box.height + tip.pad * 2 };
+  // measured on screen (zoomed px); the spotlight is placed in the board's px
+  return {
+    x: toBoardPx(box.left) - tip.pad,
+    y: toBoardPx(box.top) - tip.pad,
+    w: toBoardPx(box.width) + tip.pad * 2,
+    h: toBoardPx(box.height) + tip.pad * 2,
+  };
 }
 
 /** Where the tip card goes: right of the rail, under the top bar, or right-aligned under the top-right buttons. */
@@ -178,7 +185,7 @@ export function Onboarding({ spaces, onDone }: OnboardingProps): ReactNode {
   const lastTip = step === 2 && tour === TIPS.length - 1;
   const tip = TIPS[tour] ?? TIPS[0];
   const lit = step === 2 ? (spot ?? tip?.fallback ?? null) : null;
-  const tipAt = lit ? tipPosition(lit, typeof window === 'undefined' ? 1440 : window.innerWidth) : null;
+  const tipAt = lit ? tipPosition(lit, typeof window === 'undefined' ? BOARD_WIDTH : toBoardPx(document.documentElement.clientWidth)) : null;
   const spotStyle: CSSProperties | undefined = lit && tip ? { left: lit.x, top: lit.y, width: lit.w, height: lit.h, borderRadius: tip.radius } : undefined;
 
   return (

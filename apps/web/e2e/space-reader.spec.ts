@@ -53,11 +53,13 @@ test('a #anchor link opens the document at that passage', async ({ page }) => {
 
 test('scrolling a document saves how far the reader got', async ({ page }) => {
   await signInAt(page, '/s/networking');
-  // A narrow window stacks the reader, so even a short document scrolls inside its panel.
-  await page.setViewportSize({ width: 1000, height: 560 });
   await page.locator('[data-screen="C10"]').getByRole('link', { name: /Giao thức ARP/ }).click();
   const panel = page.locator('[data-id="reader-panel"]');
   await expect(panel.getByRole('heading', { level: 1, name: 'Giao thức ARP' })).toBeVisible();
+  // The seed's document is short: a lower panel makes it scroll (the board's panel is 740px tall).
+  await panel.evaluate((element) => {
+    element.style.height = '320px';
+  });
   const saved = page.waitForRequest((request) => request.url().endsWith('/progress') && request.method() === 'PUT');
   await panel.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
   const body = (await saved).postDataJSON() as { progress: number; anchor: string | null };

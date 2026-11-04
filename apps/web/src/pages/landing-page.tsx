@@ -78,6 +78,7 @@ export function LandingPage({ session }: { session: SessionState }): ReactNode {
     <ScreenPage
       code="S01"
       layout="board"
+      responsive
       className="landing"
       actions={
         <>

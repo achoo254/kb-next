@@ -460,6 +460,8 @@ export default function Universe3dLayer({ crystals, orb, clock, hovered, onReady
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       style={{ width: WIDTH, height: HEIGHT }}
+      // measure the layout size (board px), not the on-screen rect, which the board frame's zoom shrinks
+      resize={{ offsetSize: true }}
       aria-hidden="true"
     >
       <Orbits crystals={crystals} />
