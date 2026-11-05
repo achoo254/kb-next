@@ -517,8 +517,9 @@ h3.reader-heading {
   font-weight: 700;
 }
 
-/* the board's "Chia sẻ" and "Yêu thích" are 48px with their rim */
-button.reader-action {
+/* the board's "Chia sẻ" and "Yêu thích" are 48px with their rim (a link "Chia sẻ" too) */
+button.reader-action,
+a.reader-action-main {
   box-sizing: border-box;
 }
 

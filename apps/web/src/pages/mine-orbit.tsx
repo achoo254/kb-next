@@ -16,7 +16,7 @@ import type { ScreenTranslate } from './space-messages';
 import { kindLabel } from './space-labels';
 import { useSpaceText } from './space-messages';
 import { spaceName } from './space-panels';
-import { SHELL_PATHS, submitPath } from '../layout/shell-paths';
+import { SHELL_PATHS, publishPath, sharePagePath } from '../layout/shell-paths';
 import { createCards } from './universe-states';
 
 type Translate = ScreenTranslate<MineMessageKey>;
@@ -178,8 +178,8 @@ interface DetailProps {
 type Action = { kind: 'link'; label: MineMessageKey; href: string } | { kind: 'withdraw'; label: MineMessageKey } | { kind: 'later'; label: MineMessageKey };
 
 /**
- * What can be done with a text at each step (the board's buttons): sending it for review opens C06, taking it back
- * happens here; sharing and unpublishing are still to come.
+ * What can be done with a text at each step (the board's buttons): sending it for review opens C04 (where it goes,
+ * then C06), taking it back happens here, sharing a published text opens C18; unpublishing is still to come.
  */
 export function actionsOf(item: MineItem): Action[] {
   if (item.kind === 'canvas') return [{ kind: 'link', label: 'mine.action.open', href: item.href }];
@@ -190,7 +190,7 @@ export function actionsOf(item: MineItem): Action[] {
     case 'private':
       return [
         { kind: 'link', label: editLabel, href: edit },
-        { kind: 'link', label: 'mine.action.submit', href: submitPath(item.id) },
+        { kind: 'link', label: 'mine.action.submit', href: publishPath(item.id) },
       ];
     case 'pending':
       return [
@@ -202,7 +202,7 @@ export function actionsOf(item: MineItem): Action[] {
       return [{ kind: 'link', label: item.docType === 'office' ? 'mine.action.open' : 'mine.action.resubmit', href: edit }];
     case 'approved':
       return [
-        { kind: 'later', label: 'mine.action.share' },
+        { kind: 'link', label: 'mine.action.share', href: sharePagePath(item.id) },
         { kind: 'link', label: 'mine.action.open', href: item.href },
         { kind: 'later', label: 'mine.action.unpublish' },
       ];

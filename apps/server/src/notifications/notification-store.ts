@@ -155,3 +155,20 @@ export async function markAllRead(db: Db, userId: string, kind: NotificationKind
     .returning({ id: notifications.id });
   return rows.length;
 }
+
+/**
+ * The account's latest unread `permission` notice of a document (C18's banner "Quyền vừa thay đổi": an admin just hid
+ * or showed it), or null.
+ */
+export async function unreadPermissionNotice(db: Db, userId: string, documentId: string): Promise<{ id: string; hidden: boolean; by: string | null; at: Date } | null> {
+  const [row] = await db
+    .select()
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.documentId, documentId), eq(notifications.kind, 'permission'), isNull(notifications.readAt)))
+    .orderBy(desc(notifications.createdAt), desc(notifications.id))
+    .limit(1);
+  if (!row) return null;
+  const payload = NotificationPayload.safeParse({ ...row.payload, kind: row.kind });
+  if (!payload.success || payload.data.kind !== 'permission') return null;
+  return { id: row.id, hidden: payload.data.hidden, by: payload.data.by, at: row.createdAt };
+}

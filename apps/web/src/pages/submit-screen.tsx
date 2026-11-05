@@ -1,8 +1,11 @@
 /**
  * Sending a text for review (board C06, /d/:id/submit): the four steps while it goes (saved, content ready, Jev's
  * pre-review, into the queue), then "Đã gửi duyệt" or what to fix, and the latest review results of this text from
- * the inbox. The submission starts as the screen opens (C08 "Gửi duyệt" leads here); `?space=&collection=&tags=`
- * place and tag it first (C04). Jev's scores never show here: they are for admins (A01).
+ * the inbox. Jev's scores never show here: they are for admins (A01).
+ *
+ * A submission only ever starts from an explicit action: C04's "Gửi duyệt" renders this screen with its `request`
+ * (placement, tags, language) and puts /submit in the address bar. Opening /d/:id/submit itself (a visit, a reload,
+ * a link) sends nothing: a text waiting for review shows its "Đã gửi duyệt" state, any other goes to C04.
  */
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
@@ -10,22 +13,18 @@ import { type DocumentView, fetchDocument } from '../api/content-api';
 import { type AppNotification, fetchInbox } from '../api/notifications-api';
 import { type SubmitRequest, type SubmitResponse, submitForReview } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { publishPath } from '../layout/shell-paths';
 import { noticeAgo, useInboxText } from './inbox-messages';
 import { type ReviewNotice, ReviewNoticeCard, type SubmitStep, SubmitFix, SubmitSent, SubmitSteps } from './submit-panels';
 import { type SubmitError, type SubmitMessageKey, submitErrorOf, useSubmitText } from './submit-messages';
 import type { ScreenTranslate } from './space-messages';
 import './submit-screen.css';
 
-type Phase = { kind: 'sending' } | { kind: 'sent'; result: SubmitResponse } | { kind: 'failed'; error: SubmitError };
-
-/** Placement and tags a link to this screen asks for (C04). */
-export function submitRequestOf(search: string): SubmitRequest {
-  const query = new URLSearchParams(search);
-  const space = query.get('space');
-  const collection = query.get('collection');
-  const tags = query.getAll('tags').filter(Boolean);
-  return { ...(space ? { space } : {}), ...(collection ? { collection } : {}), ...(tags.length > 0 ? { tags } : {}) };
-}
+/**
+ * `checking`: a visit of /submit, reading the text's status; `sent` without a result: a text already waiting (its
+ * place in the queue and Jev's run belong to the submission, not shown again).
+ */
+type Phase = { kind: 'checking' } | { kind: 'sending' } | { kind: 'sent'; result: SubmitResponse | null } | { kind: 'failed'; error: SubmitError };
 
 /** The four steps of a submission in each phase (C06 A). */
 export function submitSteps(t: ScreenTranslate<SubmitMessageKey>, phase: Phase, doc: DocumentView | null): { steps: SubmitStep[]; percent: number } {
@@ -37,14 +36,12 @@ export function submitSteps(t: ScreenTranslate<SubmitMessageKey>, phase: Phase, 
   };
   const save: SubmitStep = { name: t('submit.step.save'), sub: t('submit.step.save.done'), state: 'done' };
   if (phase.kind === 'sent') {
+    const { result } = phase;
+    const jev = result === null ? t('submit.step.jev.sent') : result.preReviewed ? t('submit.step.jev.done') : t('submit.step.jev.off');
+    const queue = result === null ? t('submit.step.queue.in') : t('submit.step.queue.done', { n: result.queuePosition });
     return {
       percent: 100,
-      steps: [
-        save,
-        extract,
-        { name: t('submit.step.jev'), sub: phase.result.preReviewed ? t('submit.step.jev.done') : t('submit.step.jev.off'), state: 'done' },
-        { name: t('submit.step.queue'), sub: t('submit.step.queue.done', { n: phase.result.queuePosition }), state: 'done' },
-      ],
+      steps: [save, extract, { name: t('submit.step.jev'), sub: jev, state: 'done' }, { name: t('submit.step.queue'), sub: queue, state: 'done' }],
     };
   }
   if (phase.kind === 'failed') {
@@ -89,42 +86,73 @@ export function reviewNotices(
   });
 }
 
-export function SubmitScreen({ id }: { id: string }): ReactNode {
+interface SubmitScreenProps {
+  id: string;
+  /** What C04's "Gửi duyệt" sends; without it the screen only shows where the text stands (see the header). */
+  request?: SubmitRequest;
+  /** The language C04 asked an AI translation into: offered once it is sent. */
+  translateTo?: 'vi' | 'en';
+}
+
+export function SubmitScreen({ id, request, translateTo }: SubmitScreenProps): ReactNode {
   const { t, locale } = useSubmitText();
   const inbox = useInboxText();
   const [doc, setDoc] = useState<DocumentView | null>(null);
-  const [phase, setPhase] = useState<Phase>({ kind: 'sending' });
+  const [phase, setPhase] = useState<Phase>(request ? { kind: 'sending' } : { kind: 'checking' });
   const [retrying, setRetrying] = useState(false);
   const [notices, setNotices] = useState<{ items: AppNotification[]; now: number }>({ items: [], now: 0 });
   const started = useRef(false);
 
-  const send = useCallback(() => {
-    setPhase({ kind: 'sending' });
-    return submitForReview(id, submitRequestOf(window.location.search)).then(
-      (result) => setPhase({ kind: 'sent', result }),
-      (error: unknown) => setPhase({ kind: 'failed', error: submitErrorOf(error instanceof ApiError ? error.code : NETWORK_ERROR) }),
-    );
-  }, [id]);
+  const send = useCallback(
+    (what: SubmitRequest) => {
+      setPhase({ kind: 'sending' });
+      return submitForReview(id, what).then(
+        (result) => setPhase({ kind: 'sent', result }),
+        (error: unknown) => setPhase({ kind: 'failed', error: submitErrorOf(error instanceof ApiError ? error.code : NETWORK_ERROR) }),
+      );
+    },
+    [id],
+  );
 
   useEffect(() => {
-    // Once per visit (React's development double run aside): a reload would send it again, and the server says so.
+    // Once per mount (React's development double run aside).
     if (started.current) return;
     started.current = true;
-    fetchDocument(id)
-      .then(setDoc, () => undefined)
-      .finally(() => void send());
+    const loaded = fetchDocument(id).then(
+      (view) => {
+        setDoc(view);
+        return view;
+      },
+      (error: unknown) => {
+        if (!request) setPhase({ kind: 'failed', error: submitErrorOf(error instanceof ApiError ? error.code : NETWORK_ERROR) });
+        return null;
+      },
+    );
+    if (request) {
+      void loaded.finally(() => void send(request));
+    } else {
+      void loaded.then((view) => {
+        if (!view) return;
+        if (view.document.status === 'pending') setPhase({ kind: 'sent', result: null });
+        // Not waiting: nothing was sent from here. Choosing where it goes and sending it is C04's.
+        else window.location.replace(publishPath(id));
+      });
+    }
     fetchInbox({ kind: 'review' }).then(
       (box) => setNotices({ items: box.notifications, now: Date.now() }),
       () => undefined,
     );
-  }, [id, send]);
+  }, [id, request, send]);
 
-  const retry = (): void => {
-    setRetrying(true);
-    void send().finally(() => setRetrying(false));
-  };
+  const retry = request
+    ? (): void => {
+        setRetrying(true);
+        void send(request).finally(() => setRetrying(false));
+      }
+    : undefined;
 
   const { steps, percent } = submitSteps(t, phase, doc);
+  const translate = translateTo ? { href: `/d/${encodeURIComponent(id)}/translate?to=${translateTo}`, lang: translateTo.toUpperCase() } : undefined;
   const space = doc ? (locale === 'vi' ? doc.document.space.nameVi : doc.document.space.nameEn) : null;
   const collection = doc?.document.collection ? (locale === 'vi' ? doc.document.collection.nameVi : doc.document.collection.nameEn) : null;
   const place = [space, collection].filter(Boolean).join(' › ');
@@ -143,12 +171,18 @@ export function SubmitScreen({ id }: { id: string }): ReactNode {
     >
       <div className="submit-screen" data-id="submit-screen" data-state={phase.kind}>
         <div className="submit-content">
-          <div className="submit-slot submit-slot-a">
-            <SubmitSteps steps={steps} percent={percent} />
-          </div>
+          {phase.kind === 'checking' ? (
+            <p className="submit-slot submit-slot-a submit-checking" role="status">
+              {t('submit.loading')}
+            </p>
+          ) : (
+            <div className="submit-slot submit-slot-a">
+              <SubmitSteps steps={steps} percent={percent} />
+            </div>
+          )}
           {phase.kind === 'sent' && (
             <div className="submit-slot submit-slot-b">
-              <SubmitSent />
+              <SubmitSent translate={translate} />
             </div>
           )}
           {phase.kind === 'failed' && (

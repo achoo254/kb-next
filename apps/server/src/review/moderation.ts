@@ -16,6 +16,8 @@ import {
   type ReviewDecision,
   decideReview,
   findForAdmin,
+  keepPrivate,
+  type PublishSettings,
   renameDocument,
   recordPreReview,
   setHidden,
@@ -113,7 +115,7 @@ function refuseSubmit(kind: string, status?: string): never {
  * Sends the author's text for review: the access rule, then Jev's pre-review (bounded; failing or off leaves the
  * scores out), a word to every admin, and the search sync.
  */
-export async function submitText(deps: ModerationDeps, viewer: UserViewer, id: string, input: { placement?: Placement; tags?: string[] }): Promise<SubmitResponse> {
+export async function submitText(deps: ModerationDeps, viewer: UserViewer, id: string, input: PublishSettings): Promise<SubmitResponse> {
   const { db, now } = deps;
   const at = now();
   const result = await submitForReview(db, viewer, id, input, at);
@@ -140,12 +142,23 @@ export async function submitText(deps: ModerationDeps, viewer: UserViewer, id: s
 /** Takes the author's text out of the queue; the admins' unread notices of it go too. */
 export async function withdrawText(deps: ModerationDeps, viewer: UserViewer, id: string): Promise<DocumentRow> {
   const { db } = deps;
-  const result = await withdrawSubmission(db, viewer, id);
+  const result = await withdrawSubmission(db, viewer, id, deps.now());
   if (result.kind === 'not-found') throw new HttpError(404, 'not-found');
   if (result.kind === 'no-access') throw new HttpError(403, 'no-access');
   if (result.kind === 'not-pending') throw new HttpError(409, 'not-pending');
   deps.sync?.enqueue([result.doc.id]);
   await clearSubmittedNotices(db, result.doc.id).catch((error: unknown) => console.error('notice cleanup failed', safeErrorText(error)));
+  return result.doc;
+}
+
+/** Keeps the author's text private (C04); one that was waiting leaves the queue, the admins' unread notices of it too. */
+export async function keepTextPrivate(deps: ModerationDeps, viewer: UserViewer, id: string, input: PublishSettings): Promise<DocumentRow> {
+  const result = await keepPrivate(deps.db, viewer, id, input, deps.now());
+  if (result.kind === 'not-found') throw new HttpError(404, 'not-found');
+  if (result.kind === 'no-access') throw new HttpError(403, 'no-access');
+  if (result.kind === 'published') throw new HttpError(409, 'published');
+  deps.sync?.enqueue([result.doc.id]);
+  if (result.wasPending) await clearSubmittedNotices(deps.db, result.doc.id).catch((error: unknown) => console.error('notice cleanup failed', safeErrorText(error)));
   return result.doc;
 }
 

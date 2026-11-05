@@ -51,7 +51,10 @@ E2E chậm (dựng web, API, IdP giả rồi mở trình duyệt), nên chỉ ch
   bằng 5 tệp của board (`imports-c16`), H04 nạp sẵn IndexedDB của trình duyệt bằng bản nháp và ghi chú của board rồi cắt
   mạng (`offline-h04`, `offline`); dữ liệu ở `apps/web/e2e/office-boards.ts`. A01–A03 trả `/api/me` như của quản trị
   (`admin`; tài khoản E2E không phải quản trị) và API quản trị bằng dữ liệu của board (`admin-a01`, `admin-a02`,
-  `admin-a03`, `apps/web/e2e/admin-boards.ts`); C20 dùng 7 thông báo seed của chủ seed.
+  `admin-a03`, `apps/web/e2e/admin-boards.ts`); C20 dùng 7 thông báo seed của chủ seed. C04, C05 trả bản nháp của board
+  (xếp ở Networking, có các mục DORA và thẻ) và danh sách Space (`publish-c04`), C18 trả trang chia sẻ của bài DHCP
+  (`share-c18`), H02 trả link mở khi chưa đăng nhập (`open-h02`); dữ liệu ở `apps/web/e2e/share-boards.ts` (E2E không
+  hiện lại được token).
 - Board ghép nhiều trạng thái của một màn cạnh nhau (S02, X02, F02, C06) được so trên trang kit `/dev/kit/…` dựng từ chính
   component của màn đó, mỗi trạng thái một ô như board.
 - Làm xong một màn: đổi `status` sang `built`, seed dữ liệu giống mock cho màn đó, chạy lại. Vượt ngưỡng thì sửa màn;

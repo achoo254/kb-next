@@ -8,6 +8,7 @@
 import { type ReactNode, useState } from 'react';
 import type { DocumentView, LinkedDocument } from '../api/content-api';
 import { SHELL_PATHS } from '../layout/app-shell';
+import { sharePagePath } from '../layout/shell-paths';
 import { AiAvatar } from '../ui/ai-avatar';
 import { Icon } from '../ui/icon';
 import type { KeysLoad } from './copilot-run';
@@ -19,7 +20,37 @@ import { useSpaceText } from './space-messages';
 
 const RELATED_SHOWN = 3;
 
-export function ReaderActions(): ReactNode {
+/**
+ * "Chia sẻ": its author or an admin manages its share link (C18); anyone else copies the text's address (they read it
+ * signed in, as everyone signed in may).
+ */
+function ShareAction({ id, canShare }: { id: string; canShare: boolean }): ReactNode {
+  const { t } = useReaderText();
+  const [copied, setCopied] = useState(false);
+  if (canShare) {
+    return (
+      <a className="reader-action reader-action-main" href={sharePagePath(id)} data-id="reader-share">
+        <Icon name="send" size={15} />
+        {t('reader.share')}
+      </a>
+    );
+  }
+  const copy = (): void => {
+    const url = `${window.location.origin}/d/${encodeURIComponent(id)}`;
+    navigator.clipboard.writeText(url).then(
+      () => setCopied(true),
+      () => setCopied(false),
+    );
+  };
+  return (
+    <button type="button" className="reader-action reader-action-main" onClick={copy} data-id="reader-share">
+      <Icon name="send" size={15} />
+      <span aria-live="polite">{copied ? t('reader.shareCopied') : t('reader.share')}</span>
+    </button>
+  );
+}
+
+export function ReaderActions({ id, canShare }: { id: string; canShare: boolean }): ReactNode {
   const { t } = useReaderText();
   return (
     <div className="reader-actions" role="group" aria-label={t('reader.actions')} data-id="reader-actions">
@@ -27,10 +58,7 @@ export function ReaderActions(): ReactNode {
         <Icon name="pencil" size={15} strokeWidth={2} />
         {t('reader.edit')}
       </a>
-      <button type="button" className="reader-action reader-action-main" disabled title={t('reader.soon')} data-id="reader-share">
-        <Icon name="send" size={15} />
-        {t('reader.share')}
-      </button>
+      <ShareAction id={id} canShare={canShare} />
       <a className="reader-action" href={SHELL_PATHS.canvas} data-id="reader-canvas">
         {t('reader.canvas')}
       </a>

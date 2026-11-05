@@ -19,6 +19,7 @@ import { type DocumentRow, documentColumns } from './content';
 import { HIDE_ACTION, SHOW_ACTION } from './history';
 import { isUuid } from './ids';
 import type { Viewer } from './viewer';
+import { revokeAllLinks } from './share-links';
 import { canRead } from './visibility';
 
 type UserViewer = Extract<Viewer, { kind: 'user' }>;
@@ -73,17 +74,27 @@ export type SubmitResult =
   | { kind: 'title-required' }
   | { kind: 'body-required' };
 
+/** What C04 sets on a text as it is sent for review or kept private: where it goes, its tags, its language. */
+export interface PublishSettings {
+  placement?: Placement;
+  tags?: readonly string[];
+  /** Its original language; left as it is for a text that has translations (the pair keeps one of each). */
+  lang?: DocumentRow['lang'];
+}
+
+function settingsChanges(doc: DocumentRow, input: PublishSettings): Partial<Pick<DocumentRow, 'spaceId' | 'collectionId' | 'tags' | 'lang'>> {
+  return {
+    ...(input.placement ? { spaceId: input.placement.spaceId, collectionId: input.placement.collectionId } : {}),
+    ...(input.tags ? { tags: [...input.tags] } : {}),
+    ...(input.lang && doc.translationGroupId === null ? { lang: input.lang } : {}),
+  };
+}
+
 /**
  * The author sends a text for review (C06 "Gửi duyệt"): from a draft, a private text or one sent back, with a title
- * and a body (or a stored file). Optionally moved first (`placement`) and tagged (C04).
+ * and a body (or a stored file). Optionally moved first (`placement`), tagged and given its language (C04).
  */
-export async function submitForReview(
-  db: Db,
-  viewer: UserViewer,
-  id: string,
-  input: { placement?: Placement; tags?: readonly string[] },
-  now: Date,
-): Promise<SubmitResult> {
+export async function submitForReview(db: Db, viewer: UserViewer, id: string, input: PublishSettings, now: Date): Promise<SubmitResult> {
   if (!isUuid(id)) return { kind: 'not-found' };
   return db.transaction(async (tx): Promise<SubmitResult> => {
     const doc = await lockLive(tx, id);
@@ -98,11 +109,7 @@ export async function submitForReview(
       .orderBy(desc(documentVersions.version))
       .limit(1);
     if (!latest || (latest.fileId === null && !bodyOf(latest.markdown ?? '').trim())) return { kind: 'body-required' };
-    const changes = {
-      status: 'pending' as const,
-      ...(input.placement ? { spaceId: input.placement.spaceId, collectionId: input.placement.collectionId } : {}),
-      ...(input.tags ? { tags: [...input.tags] } : {}),
-    };
+    const changes = { status: 'pending' as const, ...settingsChanges(doc, input) };
     await tx.update(documents).set(changes).where(eq(documents.id, id));
     const [event] = await tx.insert(reviewEvents).values({ documentId: id, actorId: viewer.userId, action: 'submitted', createdAt: now }).returning({ id: reviewEvents.id });
     if (!event) throw new Error('review event insert returned nothing');
@@ -118,7 +125,7 @@ export async function recordPreReview(db: Db, eventId: string, scores: JevPreRev
 export type WithdrawResult = { kind: 'withdrawn'; doc: DocumentRow } | { kind: 'not-found' } | { kind: 'no-access' } | { kind: 'not-pending'; status: DocumentStatus };
 
 /** The author takes a text out of the queue (C08 "Rút lại"): back to a draft, theirs to change again. */
-export async function withdrawSubmission(db: Db, viewer: UserViewer, id: string): Promise<WithdrawResult> {
+export async function withdrawSubmission(db: Db, viewer: UserViewer, id: string, now: Date): Promise<WithdrawResult> {
   if (!isUuid(id)) return { kind: 'not-found' };
   return db.transaction(async (tx): Promise<WithdrawResult> => {
     const doc = await lockLive(tx, id);
@@ -126,7 +133,35 @@ export async function withdrawSubmission(db: Db, viewer: UserViewer, id: string)
     if (doc.authorId !== viewer.userId) return refusal(viewer, doc);
     if (doc.status !== 'pending') return { kind: 'not-pending', status: doc.status };
     await tx.update(documents).set({ status: 'draft' }).where(eq(documents.id, id));
+    await revokeAllLinks(tx, id, viewer.userId, now);
     return { kind: 'withdrawn', doc: { ...doc, status: 'draft' } };
+  });
+}
+
+/** The steps an author may keep a text private from (C04 "Riêng tư"); a text waiting leaves the queue. */
+export const PRIVATE_FROM: ReadonlySet<DocumentStatus> = new Set(['draft', 'private', 'pending', 'changes_requested', 'rejected']);
+
+export type KeepPrivateResult =
+  | { kind: 'kept'; doc: DocumentRow; wasPending: boolean }
+  | { kind: 'not-found' }
+  | { kind: 'no-access' }
+  | { kind: 'published'; status: DocumentStatus };
+
+/**
+ * The author keeps a text to themselves (C04 "Riêng tư · chỉ mình tôi"): status `private`, with C04's placement, tags
+ * and language. A published text stays published (only an admin hides it).
+ */
+export async function keepPrivate(db: Db, viewer: UserViewer, id: string, input: PublishSettings, now: Date): Promise<KeepPrivateResult> {
+  if (!isUuid(id)) return { kind: 'not-found' };
+  return db.transaction(async (tx): Promise<KeepPrivateResult> => {
+    const doc = await lockLive(tx, id);
+    if (!doc) return { kind: 'not-found' };
+    if (doc.authorId !== viewer.userId) return refusal(viewer, doc);
+    if (!PRIVATE_FROM.has(doc.status)) return { kind: 'published', status: doc.status };
+    const changes = { status: 'private' as const, ...settingsChanges(doc, input) };
+    await tx.update(documents).set(changes).where(eq(documents.id, id));
+    await revokeAllLinks(tx, id, viewer.userId, now);
+    return { kind: 'kept', doc: { ...doc, ...changes }, wasPending: doc.status === 'pending' };
   });
 }
 
@@ -147,6 +182,8 @@ export async function decideReview(db: Db, admin: AdminViewer, id: string, decis
     const updatedAt = decision === 'approved' ? now : doc.updatedAt;
     await tx.update(documents).set({ status: decision, origin, updatedAt }).where(eq(documents.id, id));
     await tx.insert(reviewEvents).values({ documentId: id, actorId: admin.userId, action: decision, reason: decision === 'approved' ? null : reason, createdAt: now });
+    // Sent back or rejected: no link of an earlier publication may open the text again.
+    if (decision !== 'approved') await revokeAllLinks(tx, id, admin.userId, now);
     return { kind: 'decided', doc: { ...doc, status: decision, origin, updatedAt } };
   });
 }

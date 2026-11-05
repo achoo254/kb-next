@@ -161,6 +161,15 @@ const ICONS = {
   'notice-warn': { body: <path d="M12 3l10 18H2zM12 10v4M12 17v.5" />, stroke: 2.2, cap: 'round', join: 'round' },
   'notice-shield': { body: <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" />, stroke: 2.2, cap: 'round', join: 'round' },
   'notice-rejected': { body: <path d="M7 7l10 10M17 7L7 17" />, stroke: 2.2, cap: 'round', join: 'round' },
+  /* H02's "Đọc" */
+  play: { body: <path d="M7 4l13 8-13 8z" />, fill: true },
+  /* C05's device switch */
+  'device-desktop': { body: <path d="M3 4h18v12H3zM8 20h8M12 16v4" /> },
+  'device-tablet': { body: <path d="M5 2h14v20H5zM11 18h2" /> },
+  'device-phone': { body: <path d="M7 2h10v20H7zM11 18h2" /> },
+  /* C04's tabs: publish (the rocket of "Xuất bản") and share (the tray of "Chia sẻ") */
+  publish: { body: <path d="M5 19c2-6 6-10 14-14-4 8-8 12-14 14zM9 15l-4 4" />, cap: 'round', join: 'round' },
+  'share-up': { body: <path d="M4 12v7h16v-7M12 3v12M7 8l5-5 5 5" />, cap: 'round', join: 'round' },
   'mark-read': { body: <path d="M5 12l5 5 9-10" />, cap: 'round' },
   'mark-unread': { body: <path d="M4 6h16v12H4zM4 6l8 7 8-7" />, cap: 'round' },
 } satisfies Record<string, IconShape>;

@@ -1,6 +1,6 @@
 /**
  * The editor (board C02) at /d/:id/edit: the save chip with undo and redo, words and reading time, preview and
- * submit (phase 11); the planet colour of the text; the title and the text on TipTap (editor-schema.ts) with the `/`
+ * "Gửi duyệt" (opens C04); the planet colour of the text; the title and the text on TipTap (editor-schema.ts) with the `/`
  * block menu and the `[[` document list; the writing assistant (editor-assistant.tsx). Autosave and the browser copy:
  * editor-autosave.ts. States: loading, the editor, not found, no access, locked (in review or published), not
  * editable (an Office file), offline without a copy on this device, and a failed load.
@@ -12,6 +12,7 @@ import { type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, us
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import { type EditableDocument, type LinkSuggestion, PLANETS, type Planet, suggestLinks } from '../api/authoring-api';
 import { readErrorOf } from '../api/content-api';
+import { publishPath } from '../layout/shell-paths';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
 import { toBoardPx } from '../layout/board-zoom';
 import { EmptyState } from '../ui/empty-state';
@@ -566,11 +567,13 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
           <button
             type="button"
             className="editor-submit"
-            aria-disabled="true"
-            title={t('editor.soon')}
             data-id="editor-submit"
             onClick={() => {
-              if (title.trim()) return;
+              // Where it goes and who sees it are chosen on C04, which sends it (the text saves on leaving).
+              if (title.trim()) {
+                window.location.assign(publishPath(doc.id));
+                return;
+              }
               setTitleError(true);
               titleInput.current?.focus();
             }}

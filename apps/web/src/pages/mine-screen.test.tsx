@@ -127,13 +127,13 @@ describe('the board’s state', () => {
 });
 
 describe('picking a planet', () => {
-  it('shows what each step allows: a published text is not the author’s to delete, sharing waits, a pending one can be taken back', async () => {
+  it('shows what each step allows: a published text is not the author’s to delete and is shared from C18, a pending one can be taken back', async () => {
     await ready();
     fireEvent.click(screen.getByRole('button', { name: 'Máy mới xin IP thế nào · Đã duyệt · Cộng đồng' }));
     const detail = within(screen.getByRole('complementary', { name: 'Chi tiết' }));
     expect(detail.getByText('Networking › Giao thức nền tảng')).toBeTruthy();
     expect(detail.getByRole('link', { name: 'Mở' }).getAttribute('href')).toBe('/d/n1');
-    expect((detail.getByRole('button', { name: 'Chia sẻ' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(detail.getByRole('link', { name: 'Chia sẻ' }).getAttribute('href')).toBe('/d/n1/share');
     expect((detail.getByRole('button', { name: 'Bỏ vào thùng rác' }) as HTMLButtonElement).disabled).toBe(true);
     expect(detail.getByRole('button', { name: 'Bỏ yêu thích' }).getAttribute('aria-pressed')).toBe('true');
 
@@ -146,8 +146,8 @@ describe('picking a planet', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'lab-notes.docx · Riêng tư' }));
     expect(detail.getByRole('link', { name: 'Mở' }).getAttribute('href')).toBe('/d/o1');
-    // Sending for review opens C06, which sends it.
-    expect(detail.getByRole('link', { name: 'Gửi duyệt' }).getAttribute('href')).toBe('/d/o1/submit');
+    // Sending for review opens C04: where it goes, then its "Gửi duyệt" sends it (C06).
+    expect(detail.getByRole('link', { name: 'Gửi duyệt' }).getAttribute('href')).toBe('/d/o1/publish');
     expect(detail.getByText('Vũ trụ của bạn')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'DHCP từ A đến Z · Riêng tư' }));

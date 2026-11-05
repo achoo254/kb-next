@@ -31,6 +31,8 @@ import { JevUsageStore } from './jev/jev-usage';
 import { LIVE_BASES, type ProviderBases } from './llm/providers';
 import { safeErrorText } from './log-error';
 import { searchRoutes } from './api/search-routes';
+import { shareRoutes } from './api/share-routes';
+import { type TemplateLoader, defaultTemplateLoader, ogPageRoutes } from './share/og-page';
 import { type BilingualSummary, loadImportedSummaries } from './search/document-summaries';
 import type { SearchService } from './search/search-service';
 import { readUserKeysSecret } from './user-keys/crypto';
@@ -58,6 +60,8 @@ export interface AppDeps {
   aiBases?: ProviderBases;
   /** Text extraction of uploaded files (server.ts starts it; null: uploads are stored without processing). */
   extraction?: ExtractionService | null;
+  /** The web page a share link's preview is written into (default: the built index.html, the dev server's in dev). */
+  loadTemplate?: TemplateLoader;
 }
 
 /** The real Jev client, each call logged and added to the day's totals. */
@@ -75,7 +79,7 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
  * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, search,
  * the account's own AI keys, the Copilot, AI translation and AI writing
  * (all three on those keys), review (sending for review, the admins' queue and published texts), the inbox, and the
- * admin API (token, docs/admin-api.md). The web app is static (nginx in production, Vite in dev).
+ * admin API (token, docs/admin-api.md), share links and their preview page (/l/<token>). The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
@@ -88,6 +92,7 @@ export function createApp({
   userKeysSecret = readUserKeysSecret(config.userKeysSecretPath).secret,
   aiBases = LIVE_BASES,
   extraction = null,
+  loadTemplate = defaultTemplateLoader(config),
 }: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
@@ -99,6 +104,9 @@ export function createApp({
     await db.execute(sql`select 1`);
     res.set('Cache-Control', 'no-store').type('text/plain').send('ok');
   });
+
+  // A share link's page with its link preview (GET only).
+  app.use(ogPageRoutes({ config, db, now, loadTemplate }));
 
   // The IdP calls this server to server, without an Origin: ahead of the same-origin check, proven by its signature.
   app.use(backchannelLogoutRoute({ config, db, idp, now }));
@@ -124,6 +132,8 @@ export function createApp({
   app.use(reviewRoutes({ config, db, now, sync: search?.sync ?? null, jev, meili: search?.meili ?? null }));
   app.use(notificationRoutes({ config, db, now }));
   app.use(adminTokenRoutes({ config, db, now }));
+  // Share links: made and managed by the author (C18), opened by anyone holding one (H02).
+  app.use(shareRoutes({ config, db, now, sync: search?.sync ?? null }));
   // Stored files: uploads (multipart, streamed to disk, never parsed as JSON), downloads, editor saves.
   app.use(fileRoutes({ config, db, now, extraction, sync: search?.sync ?? null }));
   app.use(graphRoutes({ config, db, now, jev, summaries }));

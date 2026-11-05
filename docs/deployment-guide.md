@@ -16,7 +16,7 @@ hay user máy chủ vào đây; dùng alias SSH (`SSH_TARGET`) và placeholder n
 | Trình sửa Office | `kb-office.hoandat.com`, bản build nguyên của ranuts/document ở `/var/www/kb-office/current`, nginx phục vụ tĩnh ([office-editor.md](office-editor.md)) |
 | Trích chữ tệp tải lên | Apache Tika 2.9.3 dùng chung trên `.65` (loopback `127.0.0.1:9998`, có Tesseract `vie`/`eng`), gọi từ ngay process `kb-server`, một tệp một lúc ([text-extraction.md](text-extraction.md)) |
 | Database | Postgres dùng chung trên `.65`, database `kb`, role `kb` (dòng `host kb kb 127.0.0.1/32 scram-sha-256` trong `pg_hba.conf`); migration chạy khi server khởi động |
-| Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/healthz` sang API |
+| Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/l/`, `/healthz` sang API |
 | Đăng nhập | client `kb-web` trên `auth.hoandat.com` (mục Đăng nhập) |
 
 Việc định kỳ chạy ngay trong process `kb-server` (không cần cron): dọn phiên hết hạn (lúc khởi động, rồi mỗi giờ), xoá
@@ -25,10 +25,11 @@ lỗi thì `trash purge failed` và lần sau thử lại), kiểm lệch chỉ 
 chỉ mục, tệp tải lên của bài đó (mọi phiên bản) bị xoá khỏi `/var/lib/kb/files`. Job không chạy với `KB_SEED=mock`
 (dev/E2E): thùng rác của seed ghi ngày theo board (03/11/2026).
 
-Link chia sẻ `/l/<token>` mang token trong đường dẫn: nginx phục vụ trang web cho nó như mọi trang nhưng `access_log off`
-và `error_log … crit`. Các trang khác ghi log theo định dạng `kb_notoken` (chỉ `$uri`, không query string, không
-`Referer`); cả site gửi `Referrer-Policy: no-referrer`. Test `apps/web/index-html.test.ts` giữ CSP của `/l/` và `/` như
-nhau và giữ các luật log này.
+Link chia sẻ mang token trong đường dẫn: trang `/l/<token>` (server render `index.html` của bản build kèm thẻ xem trước
+OG, mục Link chia sẻ) và API mở link `/api/l/<token>` đều sang API, với `access_log off` và `error_log … crit`. Các
+trang khác ghi log theo định dạng `kb_notoken` (chỉ `$uri`, không query string, không `Referer`); cả site gửi
+`Referrer-Policy: no-referrer`. Test `apps/web/index-html.test.ts` giữ các luật log này và thứ tự location;
+`apps/server/src/share/og-page.test.ts` giữ CSP server gửi cho `/l/` bằng đúng CSP của `location /`.
 
 Các file: [`infra/nginx/kb.hoandat.com.conf`](../infra/nginx/kb.hoandat.com.conf),
 [`infra/nginx/kb-office.hoandat.com.conf`](../infra/nginx/kb-office.hoandat.com.conf) (trình sửa Office),
@@ -258,6 +259,26 @@ bản gốc cho tới khi xem lại). Máy dev: `pnpm import:hoc-cloud` (PGlite 
 5. **Unit và nginx:** `SSH_TARGET=<alias> bash infra/deploy.sh setup`.
 6. **Release:** `SSH_TARGET=<alias> bash infra/deploy.sh`.
 7. **User CI:** `kb-deploy` và secret của repo (mục Deploy tự động).
+
+## Link chia sẻ
+
+Tác giả hay quản trị tạo link cho bài đã duyệt và đang hiện (C18, chi tiết API ở [admin-api.md](admin-api.md#link-chia-sẻ)).
+Database chỉ giữ sha256 của token và 4 ký tự cuối; token không bao giờ vào log của server hay nginx.
+
+- `GET /l/<token>`: route của server (`apps/server/src/share/og-page.ts`) đọc `apps/web/dist/index.html` của chính bản
+  release (production đọc một lần, release mới khởi động lại server) rồi thêm `og:title` (tiêu đề bài, chỉ khi link còn
+  chạy và bài công khai), `og:image` = `https://kb.hoandat.com/og-share.png` (ảnh `ill-doc-planet`, 1200 × 630, nằm
+  trong `apps/web/public`), `noindex`, `Cache-Control: no-store`. Link sai, hết hạn, đã thu hồi hay bài đã bị ẩn đều
+  nhận đúng trang chung của app, không lộ tiêu đề; đường dẫn khác dưới `/l/` nhận trang đó với mã 404. Lấy trang xem
+  trước không tính là lượt mở. Trang gửi cùng CSP và `Permissions-Policy` như `location /`; tối đa 120 lần mỗi phút mỗi IP.
+- `GET /api/l/<token>`: mở link (web H02), ghi lượt mở (giờ và tài khoản, khách thì trống); giới hạn 60 lần mỗi phút
+  mỗi IP. Lượt mở cũ hơn 90 ngày bị xoá trong việc dọn hằng giờ.
+
+**Khi deploy bản có link chia sẻ** (thay đổi nginx: `location ~ ^/(api/)?l/` thay cho `location ^~ /l/` cũ): deploy
+code trước (migration `0014` chạy khi server khởi động), rồi mới chép `infra/nginx/kb.hoandat.com.conf` lên
+`/etc/nginx/conf.d/` và `nginx -t && systemctl reload nginx`. Làm ngược lại thì `/l/` tới server cũ chưa có route,
+trả 404. Kiểm tra: `curl -sS https://kb.hoandat.com/l/xxxx | grep -c 'name="robots" content="noindex"'` ra `1`, và
+`grep -c '/l/' /var/log/nginx/kb.hoandat.com.access.log` không tăng sau khi mở một link.
 
 ## Trình sửa Office
 

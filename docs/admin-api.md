@@ -17,8 +17,14 @@ Lý do yêu cầu sửa hay từ chối chỉ tác giả và quản trị đọc
 có nguồn, trùng bài đã có trong 5 bài gần nhất theo tìm kiếm, ngôn từ không phù hợp), lưu điểm vào sự kiện `submitted`
 cho A01; Jev tắt hay lỗi thì bài vẫn vào hàng duyệt, không có điểm. Không bao giờ tự duyệt hay tự từ chối.
 
-API cho web (phiên đăng nhập): `POST /api/documents/:id/submit` `{space?, collection?, tags?}`, `POST
-/api/documents/:id/withdraw`; quản trị: `GET /api/moderation/queue`, `POST /api/moderation/documents/:id/decision`
+Tác giả chọn nơi đặt, thẻ (tối đa 8), ngôn ngữ gốc rồi bấm "Gửi duyệt" hay "Lưu riêng tư" ở C04 (`/d/:id/publish`;
+C02 và C08 "Gửi duyệt" mở C04). Chỉ nút "Gửi duyệt" của C04 gửi bài: nó hiện các bước của C06 ngay tại chỗ và đổi địa
+chỉ thành `/d/:id/submit`; mở hay tải lại `/d/:id/submit` không bao giờ gửi (bài đang chờ duyệt thì hiện "Đã gửi
+duyệt", bài khác chuyển về C04). C05 (`/d/:id/preview`) xem trước bài như khách (sau khi duyệt) hay như tác giả.
+
+API cho web (phiên đăng nhập): `POST /api/documents/:id/submit` `{space?, collection?, tags?, lang?}`, `POST
+/api/documents/:id/private` (cùng thân; "Lưu riêng tư": bài đang chờ thì ra khỏi hàng duyệt, bài đã duyệt trả 409
+`published`), `POST /api/documents/:id/withdraw`; quản trị: `GET /api/moderation/queue`, `POST /api/moderation/documents/:id/decision`
 `{decision, reason?}`, `GET /api/moderation/published`, `PATCH /api/moderation/documents/:id`. Chi tiết mã lỗi ở đầu
 `apps/server/src/api/review-routes.ts`.
 
@@ -31,6 +37,33 @@ báo một lần), `permission` (quản trị ẩn hay hiện bài). API: `GET /
 /api/me/notifications/unread` (chấm đỏ trên chuông), `POST /api/me/notifications/:id/read|unread`, `POST
 /api/me/notifications/read-all`. Ghi thông báo mới: `notify()` ở `apps/server/src/notifications/notification-store.ts`;
 sau khi việc chính đã lưu thì dùng `notifyAfter()` (lỗi chỉ ghi log, không biến việc đã xong thành lỗi 500).
+
+## Link chia sẻ
+
+Chỉ bài đã duyệt và đang hiện mới có link, do tác giả hoặc quản trị tạo ở C18 (`/d/:id/share`; nút "Chia sẻ" của C11
+và C08 mở trang này; người đọc khác bấm "Chia sẻ" ở C11 thì chép địa chỉ bài). Mỗi bài một link đang chạy: tạo link
+mới thì link cũ bị thu hồi. Token 32 ký tự ngẫu nhiên, server chỉ lưu sha256 và 4 ký tự cuối, nên link chỉ hiện đủ lúc
+vừa tạo; sau đó C18 hiện `…/l/••••abcd` và "Tạo link mới" (có hỏi lại) để chép lại.
+
+- Hạn link: không hạn, 7 ngày, 30 ngày, tính từ lúc chọn. Chỉ đổi được hạn hay quyền của link đang chạy; link đã hết
+  hạn hay đã thu hồi tắt hẳn (409 `link-expired`), muốn chia sẻ lại thì tạo link mới.
+- Bài rời trạng thái đã đăng (bị yêu cầu sửa, bị từ chối, rút lại, giữ riêng tư, vào thùng rác) thu hồi mọi link của nó;
+  xoá hẳn thì link mất theo. Quản trị chỉ ẩn bài thì link trả "riêng tư" trong lúc ẩn và chạy lại khi bài được hiện.
+- Người có link được: chỉ xem, hay cho phép remix (người đã đăng nhập chép bài thành bản nháp của mình, cuối bài ghi
+  "Remix từ …"). Chưa đăng nhập chỉ thấy trang xem trước (tiêu đề, tác giả, các mục, đoạn đầu); đăng nhập rồi đọc bài ở
+  C11 như mọi bài công khai.
+- Mở link (H02, `/l/<token>`): sai token 404 `not-found`; hết hạn 410 `link-expired`, đã thu hồi 410 `link-revoked`
+  ("Link này đã tắt"); bài không còn công khai (bị ẩn, bị gửi lại) mà người mở không đọc được: 404 `private` ("Hành
+  tinh riêng tư", không lộ gì về bài). Đường dẫn khác dưới `/l/` nhận trang "không tìm thấy" của app.
+- Lịch sử truy cập (C18): mỗi lượt mở của người nhận (giờ, tài khoản hoặc "khách"; tác giả và quản trị mở thử không tính), tạo, đổi hạn hay quyền, thu hồi link, cùng lúc
+  bài được duyệt và lúc quản trị ẩn hay hiện bài. Không bao giờ ghi token. Lượt mở giữ 90 ngày.
+- Quản trị vừa ẩn hay hiện bài: tác giả thấy banner "Quyền vừa thay đổi" ở C18 khi còn thông báo `permission` chưa đọc.
+
+API (phiên đăng nhập, tác giả hoặc quản trị): `GET /api/documents/:id/share`, `POST` `{expiry, access}` (201, token chỉ
+có trong câu trả lời này; 409 `not-shareable`), `PATCH` `{expiry?, access?}` (409 `link-expired`), `DELETE` (404 `no-link`). Mở link:
+`GET /api/l/:token`, `POST /api/l/:token/remix` (tối đa 10 lần mỗi phút mỗi tài khoản; 403 `remix-off`, 409 `not-remixable` với tệp lưu sẵn). Trang `/l/:token`
+có thẻ OG do server render (mục Link chia sẻ của [deployment-guide.md](deployment-guide.md#link-chia-sẻ)). Chi tiết mã
+lỗi ở đầu `apps/server/src/api/share-routes.ts`.
 
 ## API quản trị (token)
 

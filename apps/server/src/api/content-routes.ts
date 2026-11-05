@@ -94,6 +94,9 @@ export interface DocumentResponse {
     createdAt: string;
     readingMinutes: number;
     reviewedBy: string | null;
+    tags: string[];
+    /** The viewer manages its share link: its author or an admin (C18). */
+    canShare: boolean;
     /** When it was last approved (C11 "Linh duyệt 03/11"); null when never. */
     reviewedAt: string | null;
     /** Anchor of the passage the signed-in viewer read last (resume there); null for a guest or not started. */
@@ -305,6 +308,8 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
         sourceUrl: doc.sourceUrl,
         createdAt: doc.createdAt.toISOString(),
         readingMinutes: readingMinutes(chunks.map((c) => c.text)),
+        tags: doc.tags,
+        canShare: viewer.kind === 'user' && (viewer.isAdmin || viewer.userId === doc.authorId),
         reviewedBy: approval ? (names.get(approval.actorId) ?? null) : null,
         reviewedAt: approval ? approval.at.toISOString() : null,
         readAnchor: progress?.anchor ?? null,

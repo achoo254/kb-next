@@ -2,6 +2,7 @@ import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards
 import { C02_CLOCK, C02_DRAFT_ID, C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
 import { A01_CLOCK, A03_CLOCK } from './admin-boards';
 import { C08_CLOCK } from './mine-boards';
+import { C18_CLOCK, H02_TOKEN, PUBLISH_DOCUMENT_ID } from './share-boards';
 import { C03_FILES } from './office-boards';
 
 /**
@@ -53,7 +54,10 @@ export interface ParityScreen {
  * titles as other boards draw them); `upload-c03`, `imports-c16`, `offline-h04`: the upload, the Import Center and the
  * offline queue mid-way (office-boards.ts: E2E has no Tika, and a fresh browser keeps no drafts); `admin`: /api/me
  * says the account is an admin (the E2E account is not); `admin-a01` / `admin-a02` / `admin-a03`: the review queue
- * and its first text, the published texts, the token and its calls of the boards (admin-boards.ts).
+ * and its first text, the published texts, the token and its calls of the boards (admin-boards.ts); `publish-c04`:
+ * the owner's draft placed in Networking with its DORA sections and tags, and the Spaces it may go to (C04, C05);
+ * `share-c18`: the DHCP text's sharing with its 7-day link and history; `open-h02`: a share link opened signed out
+ * (share-boards.ts: E2E cannot show a token again, and the seed's draft has no sections or tags).
  */
 export type ParityMock =
   | 'onboarded'
@@ -75,7 +79,10 @@ export type ParityMock =
   | 'admin'
   | 'admin-a01'
   | 'admin-a02'
-  | 'admin-a03';
+  | 'admin-a03'
+  | 'publish-c04'
+  | 'share-c18'
+  | 'open-h02';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -171,6 +178,12 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // three states and the two result cards side by side, from the screen's own panels.
   { board: 'C20-Inbox', path: '/inbox', signedIn: true, status: 'built', clock: SEED_CLOCK, waitFor: '[data-id="inbox-screen"][data-state="ready"]' },
   { board: 'C06-Submit', path: '/dev/kit/submit', signedIn: false, status: 'built' },
+  // Publishing (C04) and previewing (C05) the owner's draft, the DHCP text's sharing (C18), a share link opened
+  // signed out (H02).
+  { board: 'C04-Publish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
+  { board: 'C05-Preview', path: `/d/${PUBLISH_DOCUMENT_ID}/preview`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="preview-stage"]' },
+  { board: 'C18-Share', path: `/d/${C13_DHCP_ID}/share`, signedIn: true, status: 'built', mocks: ['share-c18'], clock: C18_CLOCK, waitFor: '[data-id="share-history"]' },
+  { board: 'H02-SharedOpen', path: `/l/${H02_TOKEN}`, signedIn: false, status: 'built', mocks: ['open-h02'], waitFor: '[data-id="open-card"]' },
   // The admin station on the boards' data (the E2E account answered as an admin): the queue with TCP vs UDP picked,
   // published texts by Space with DHCP picked, the API with its token and calls.
   { board: 'A01-AdminReview', path: '/admin', signedIn: true, status: 'built', mocks: ['admin', 'admin-a01'], clock: A01_CLOCK, waitFor: '.a01-block[data-n="2"]' },

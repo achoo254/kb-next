@@ -168,6 +168,10 @@ const ReaderDocumentSchema = z.extend(DocumentSummarySchema, {
   readAnchor: z.nullable(z.string()),
   collection: z.nullable(CollectionBriefSchema),
   space: z.extend(SpaceBriefSchema, { art: z.string(), kind: z.enum(['public', 'personal']) }),
+  /** Its tags (C04 "Thẻ"). */
+  tags: z.optional(z.array(z.string())),
+  /** The viewer manages its share link (its author or an admin, C18). */
+  canShare: z.optional(z.boolean()),
 });
 
 const DocumentSchema = z.object({

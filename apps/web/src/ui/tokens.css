@@ -644,3 +644,190 @@
     --c-veil-create: var(--light-veil-create);
   }
 }
+
+/* ── Publishing (C04), preview (C05), sharing (C18) and an opened share link (H02) ────────────────────────────── */
+:root {
+  /* C04: the sheet over the blurred editor, its dim, and the ghost of the editor behind it */
+  --pub-dim: light-dark(rgb(236 232 255 / 0.5), rgb(6 4 26 / 0.5));
+  --pub-sheet-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(255 255 255 / 0.9), rgb(26 20 64 / 0.92)) 0%,
+    light-dark(rgb(247 245 255 / 0.94), rgb(13 10 36 / 0.95)) 100%
+  );
+  --pub-ghost-bg: light-dark(rgb(255 255 255 / 0.9), rgb(18 14 48 / 0.9));
+  --pub-ghost-line: light-dark(rgb(109 40 217 / 0.2), rgb(196 181 253 / 0.3));
+  --pub-ghost-block: light-dark(rgb(109 40 217 / 0.2), rgb(124 58 237 / 0.4));
+  /* C04: the three scopes (private pink, pending amber, public cyan) and the rows' quiet border */
+  --pub-private: light-dark(#9d174d, #f9a8d4);
+  --pub-pending: light-dark(#92400e, #fcd34d);
+  --pub-public: light-dark(#0e7490, #67e8f9);
+  --pub-row-border: light-dark(rgb(109 40 217 / 0.18), rgb(167 139 250 / 0.22));
+  --pub-row-bg: light-dark(rgb(255 255 255 / 0.7), rgb(22 17 54 / 0.7));
+  --pub-pick-shadow: inset 0 0 12px rgb(196 181 253 / 0.35), 0 0 14px rgb(139 92 246 / 0.6);
+  /* C04: the two "Ai thấy bài này?" cards, off and picked, and their orbs */
+  --pub-vis-off-bg:
+    radial-gradient(120% 60% at 50% 0%, rgb(196 181 253 / 0.16) 0%, rgb(196 181 253 / 0) 60%),
+    linear-gradient(180deg, rgb(64 48 130 / 0.55) 0%, rgb(28 18 70 / 0.62) 100%);
+  --pub-vis-off-border: rgb(196 181 253 / 0.4);
+  --pub-vis-off-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 0 18px rgb(139 92 246 / 0.12);
+  --pub-vis-on-bg:
+    radial-gradient(120% 70% at 50% 0%, rgb(221 214 254 / 0.42) 0%, rgb(221 214 254 / 0) 60%),
+    linear-gradient(180deg, rgb(167 139 250 / 0.55) 0%, rgb(124 58 237 / 0.55) 50%, rgb(76 29 149 / 0.72) 100%);
+  --pub-vis-on-border: rgb(243 232 255 / 0.95);
+  --pub-vis-on-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    inset 0 0 22px rgb(221 214 254 / 0.35),
+    0 0 18px rgb(167 139 250 / 0.75),
+    0 0 40px rgb(124 58 237 / 0.45);
+  --pub-vis-sub-on: #ede9fe;
+  --pub-orb-deep: #1e0a52;
+  --pub-orb-private: #ec4899;
+  --pub-orb-private-hi: #fbcfe8;
+  --pub-orb-pending: #f59e0b;
+  --pub-orb-pending-hi: #fde68a;
+  /* C04: the fields (selects, tags, switches) */
+  --pub-field-bg: light-dark(rgb(255 255 255 / 0.85), rgb(14 11 38 / 0.8));
+  --pub-field-border: light-dark(rgb(109 40 217 / 0.35), rgb(196 181 253 / 0.5));
+  --pub-field-shadow: inset 0 0 14px light-dark(rgb(139 92 246 / 0.08), rgb(139 92 246 / 0.3));
+  --pub-tag-bg: light-dark(rgb(109 40 217 / 0.12), rgb(124 58 237 / 0.3));
+  --pub-tag-border: light-dark(rgb(109 40 217 / 0.3), rgb(196 181 253 / 0.45));
+  --pub-tag-x: light-dark(rgb(255 255 255 / 0.9), rgb(14 11 38 / 0.7));
+  --pub-switch-row: light-dark(rgb(255 255 255 / 0.7), rgb(30 24 70 / 0.55));
+  --pub-switch-row-border: light-dark(rgb(109 40 217 / 0.16), rgb(167 139 250 / 0.18));
+  --pub-switch-off: light-dark(rgb(109 40 217 / 0.12), rgb(124 58 237 / 0.25));
+  --pub-switch-border: light-dark(rgb(109 40 217 / 0.35), rgb(196 181 253 / 0.45));
+  --pub-switch-knob: #ffffff;
+  --pub-row-shine: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  --pub-warn-bg: light-dark(rgb(245 158 11 / 0.12), rgb(245 158 11 / 0.14));
+  --pub-warn-border: light-dark(rgb(180 83 9 / 0.45), rgb(245 158 11 / 0.6));
+  --pub-glass-bg: light-dark(rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.06));
+  --pub-glass-border: light-dark(rgb(109 40 217 / 0.2), rgb(255 255 255 / 0.14));
+  --pub-cta-off-bg: rgb(124 58 237 / 0.18);
+  --pub-cta-off-border: rgb(196 181 253 / 0.25);
+  --pub-locked-border: light-dark(rgb(109 40 217 / 0.3), rgb(196 181 253 / 0.4));
+  --pub-locked-bg: light-dark(rgb(255 255 255 / 0.6), rgb(14 11 38 / 0.5));
+  --pub-locked-glow: drop-shadow(0 0 14px var(--amber-500));
+  /* C04: the glowing violet card of the preview (the same in both themes, its text light) */
+  --pub-card-bg:
+    radial-gradient(120% 70% at 50% 0%, rgb(221 214 254 / 0.32) 0%, rgb(221 214 254 / 0) 60%),
+    linear-gradient(180deg, rgb(167 139 250 / 0.38) 0%, rgb(124 58 237 / 0.4) 50%, rgb(76 29 149 / 0.62) 100%);
+  --pub-card-border: rgb(243 232 255 / 0.9);
+  --pub-card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 24px rgb(221 214 254 / 0.3), 0 0 24px rgb(167 139 250 / 0.55);
+  --pub-card-text: #ede9fe;
+  --pub-card-meta: #ddd6fe;
+  --pub-card-title-shadow: 0 1px 6px rgb(20 8 60 / 0.5);
+  --pub-card-chip: rgb(20 10 60 / 0.45);
+  --pub-card-chip-border: rgb(255 255 255 / 0.2);
+  --pub-badge-private: rgb(236 72 153 / 0.3);
+  --pub-badge-pending: rgb(245 158 11 / 0.3);
+  --pub-badge-public: rgb(34 211 238 / 0.3);
+  --pub-card-pending: #fcd34d;
+  --pub-card-private: #f9a8d4;
+  --pub-card-public: #67e8f9;
+  /* C05: the stage and device frames of the preview, the page inside them, the chat bubble and the role badges */
+  --prev-stage: light-dark(rgb(236 232 255 / 0.8), rgb(12 6 40 / 0.6));
+  --prev-frame: light-dark(#d9d2f5, #2a1f5e);
+  --prev-paper: light-dark(#ffffff, #120a3a);
+  --prev-line: light-dark(rgb(91 75 138 / 0.15), rgb(196 181 253 / 0.2));
+  --prev-bubble: light-dark(rgb(109 40 217 / 0.12), rgb(124 58 237 / 0.35));
+  --prev-device-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+  --prev-dot-amber: #f59e0b;
+  --prev-dot-green: #10b981;
+  --prev-badge-me: rgb(236 72 153 / 0.18);
+  --prev-badge-me-text: light-dark(#9d174d, #fbcfe8);
+  --prev-badge-guest: rgb(6 182 212 / 0.2);
+  --prev-badge-guest-text: light-dark(#0e7490, #67e8f9);
+  --prev-ring-me: #f59e0b;
+  --prev-ring-guest: #22d3ee;
+  --prev-step-violet: #c4b5fd;
+  --prev-step-cyan: #67e8f9;
+  --prev-step-ink: #1a1033;
+  --prev-og-veil: linear-gradient(90deg, rgb(6 4 26 / 0.35), rgb(6 4 26 / 0.1));
+  --prev-planet-glow: drop-shadow(0 0 16px rgb(124 58 237 / 0.8));
+  --prev-cta-bg: linear-gradient(180deg, rgb(88 60 200 / 0.62) 0%, rgb(44 26 112 / 0.86) 100%);
+  --prev-cta-border: rgb(196 181 253 / 0.85);
+  --prev-cta-shadow: inset 0 0 12px rgb(196 181 253 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 14px rgb(139 92 246 / 0.6);
+  --prev-warn-bg: rgb(245 158 11 / 0.16);
+  /* C18: the story card, the provenance rows, the link's fields and toggles, people and the access history */
+  --share-story-bg: radial-gradient(ellipse 90% 70% at 50% 35%, #3a2a9e 0%, #120c38 75%);
+  --share-story-border: rgb(196 181 253 / 0.7);
+  --share-story-shadow: inset 0 0 26px rgb(139 92 246 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 36px rgb(124 58 237 / 0.5);
+  --share-story-text: #f5f3ff;
+  --share-story-url: #c4b5fd;
+  --share-story-lock: rgb(6 4 26 / 0.6);
+  --share-chip-violet-bg: rgb(124 58 237 / 0.3);
+  --share-chip-violet-border: rgb(196 181 253 / 0.7);
+  --share-chip-violet-text: #ddd6fe;
+  --share-chip-cyan-bg: rgb(6 182 212 / 0.2);
+  --share-chip-cyan-border: rgb(103 232 249 / 0.7);
+  --share-chip-cyan-text: #a5f3fc;
+  --share-violet: light-dark(#6d28d9, #a78bfa);
+  --share-cyan: light-dark(#0e7490, #22d3ee);
+  --share-amber: light-dark(#92400e, #fcd34d);
+  --share-prov-border: rgb(167 139 250 / 0.2);
+  --share-prov-bg: light-dark(rgb(255 255 255 / 0.7), rgb(22 17 54 / 0.6));
+  --share-prov-on-bg: light-dark(rgb(109 40 217 / 0.1), rgb(124 58 237 / 0.16));
+  --share-prov-on-shadow: inset 0 0 14px rgb(139 92 246 / 0.3), 0 0 12px rgb(124 58 237 / 0.3);
+  --share-badge-violet-bg: light-dark(rgb(109 40 217 / 0.1), rgb(124 58 237 / 0.25));
+  --share-badge-violet-glow: rgb(139 92 246 / 0.45);
+  --share-badge-warn-glow: rgb(245 158 11 / 0.35);
+  --share-off-toggle: light-dark(rgb(255 255 255 / 0.7), rgb(14 11 38 / 0.6));
+  --share-off-toggle-border: light-dark(rgb(109 40 217 / 0.2), rgb(255 255 255 / 0.16));
+  --share-done-bg: linear-gradient(180deg, rgb(16 185 129 / 0.45) 0%, rgb(6 78 59 / 0.75) 100%);
+  --share-done-border: rgb(110 231 183 / 0.9);
+  --share-done-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 12px rgb(16 185 129 / 0.55);
+  --share-warn-border: rgb(252 211 77 / 0.8);
+  --share-warn-bg: rgb(245 158 11 / 0.1);
+  --share-warn-shadow: inset 0 0 10px rgb(245 158 11 / 0.2), 0 0 12px rgb(245 158 11 / 0.3);
+  --share-warn-chip-bg: light-dark(rgb(180 83 9 / 0.1), rgb(245 158 11 / 0.14));
+  --share-warn-chip-border: rgb(252 211 77 / 0.5);
+  --share-banner-bg: linear-gradient(180deg, light-dark(rgb(254 243 199 / 0.92), rgb(66 40 10 / 0.8)), light-dark(rgb(254 243 199 / 0.95), rgb(36 22 8 / 0.86)));
+  --share-banner-border: rgb(252 211 77 / 0.75);
+  --share-banner-shadow: inset 0 0 16px rgb(245 158 11 / 0.3), 0 0 18px rgb(245 158 11 / 0.3);
+  --share-row-bg: light-dark(rgb(255 255 255 / 0.7), rgb(22 17 54 / 0.6));
+  --share-row-border: light-dark(rgb(109 40 217 / 0.14), rgb(167 139 250 / 0.16));
+  --share-perm-bg: light-dark(rgb(109 40 217 / 0.1), rgb(167 139 250 / 0.16));
+  --share-perm-border: light-dark(rgb(109 40 217 / 0.25), rgb(196 181 253 / 0.3));
+  --share-orb-border: rgb(255 255 255 / 0.55);
+  --share-orb-cyan: #06b6d4;
+  --share-orb-accent: #22d3ee;
+  --share-orb-success: #10b981;
+  --share-orb-violet: #7c3aed;
+  --share-track: linear-gradient(180deg, rgb(167 139 250 / 0.85), rgb(103 232 249 / 0.7));
+  --share-track-glow: 0 0 6px rgb(139 92 246 / 0.85);
+  --share-dot-hi: #ffffff;
+  --share-dot-opened: #22d3ee;
+  --share-dot-violet: #a78bfa;
+  --share-dot-success: #10b981;
+  --share-dot-warn: #f59e0b;
+  /* H02: the portal and its ring, the guest card's chips, the signed-in stops, the off states */
+  --open-portal-glow: drop-shadow(0 0 40px rgb(124 58 237 / 0.55));
+  --open-ring: rgb(196 181 253 / 0.45);
+  --open-ring-dot: #c4b5fd;
+  --open-ring-dot-glow: 0 0 14px #a78bfa;
+  --open-badge-bg: rgb(34 211 238 / 0.18);
+  --open-badge-text: light-dark(#0e7490, #67e8f9);
+  --open-avatar: #7c3aed;
+  --open-avatar-border: #c4b5fd;
+  --open-sub: light-dark(#5b4b8a, #c4b5fd);
+  --open-step-ink: #06041a;
+  --open-violet: #c4b5fd;
+  --open-cyan: #22d3ee;
+  --open-teal: #06b6d4;
+  --open-amber: #f59e0b;
+  --open-emerald: #10b981;
+  --open-stop-deep: #1e0a52;
+  --open-stop-text-shadow: 0 1px 8px rgb(0 0 0 / 0.7);
+  --open-primary: #7c3aed;
+  --open-primary-glow: 0 0 22px rgb(124 58 237 / 0.8);
+  --open-ghost-border: rgb(167 139 250 / 0.5);
+  --open-ghost-text: light-dark(#4c1d95, #ede9fe);
+  --open-peek-bg: light-dark(rgb(255 255 255 / 0.8), rgb(12 6 40 / 0.7));
+  --open-peek-chip: rgb(124 58 237 / 0.35);
+  --open-save: #22d3ee;
+  --open-save-ink: #06041a;
+  --open-saved: #10b981;
+  --open-saved-ink: #04231a;
+  --open-private-ring: rgb(245 158 11 / 0.55);
+  --open-grey: grayscale(0.55) brightness(0.8);
+}

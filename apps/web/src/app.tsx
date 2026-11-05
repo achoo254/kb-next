@@ -25,8 +25,12 @@ import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
 import { MineScreen } from './pages/mine-screen';
 import { NewNote } from './pages/new-note';
+import { PreviewScreen } from './pages/preview-screen';
+import { PublishScreen } from './pages/publish-screen';
 import { ReaderScreen } from './pages/reader-screen';
 import { SearchScreen } from './pages/search-screen';
+import { ShareScreen } from './pages/share-screen';
+import { SharedOpenScreen } from './pages/shared-open-screen';
 import { SubmitScreen } from './pages/submit-screen';
 import { SyncScreen } from './pages/sync-screen';
 import { SpaceScreen } from './pages/space-screen';
@@ -136,8 +140,14 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <KeysScreen />;
     case 'F04':
       return <TranslateScreen id={routeParam(route, path)} />;
+    case 'C04':
+      return <PublishScreen id={routeParam(route, path)} />;
+    case 'C05':
+      return <PreviewScreen id={routeParam(route, path)} />;
     case 'C06':
       return <SubmitScreen id={routeParam(route, path)} />;
+    case 'C18':
+      return <ShareScreen id={routeParam(route, path)} />;
     case 'C20':
       return <InboxScreen />;
     case 'A01':
@@ -191,6 +201,8 @@ function Screen({ route, path, session }: { route: ScreenRoute; path: string; se
       return <LoginPage session={session} />;
     case 'X02':
       return <ErrorScreen kind="not-found" />;
+    case 'H02':
+      return <SharedOpenScreen token={routeParam(route, path)} />;
     default:
       if (route.access === 'signed-in') return <SignedInScreen route={route} path={path} />;
       return (

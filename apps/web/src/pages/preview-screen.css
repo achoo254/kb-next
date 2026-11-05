@@ -1,0 +1,564 @@
+/* Preview (design/mock/C05-Preview.dc.html). Like C06 and C08, the board draws its content 96px right of the rail at
+   93.3% scale (.kf-content); inside .preview-content the coordinates are the board's: the bar 28,112 (54 high), the
+   side column 28,180 (380 × 580: the Universe card 270 high, then the chat card), the device stage 432,180
+   (980 × 580), the device label 452,730. */
+
+.preview-shell .app-shell-crumbs {
+  left: calc(var(--board-offset) + 96px + 26px);
+  top: 67px;
+  transform: scale(0.933);
+  transform-origin: left top;
+}
+
+.preview-shell .app-shell-crumbs a {
+  font-weight: 400;
+}
+
+.preview-shell .app-shell-crumb-current {
+  font-weight: 600;
+}
+
+.preview-screen {
+  position: relative;
+  height: 900px;
+}
+
+.preview-content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform: translateX(96px) scale(0.933);
+  transform-origin: left top;
+  color: var(--c-text);
+}
+
+.preview-bar {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  top: 112px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preview-fill {
+  flex: 1;
+}
+
+.preview-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 20px;
+  background: var(--prev-warn-bg);
+  color: var(--c-warn-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.preview-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c-warn);
+}
+
+.preview-switch {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 22px;
+  background: var(--submit-surface);
+  border: 1px solid var(--submit-border);
+}
+
+.preview-switch button {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 19px;
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.preview-switch button[aria-pressed="true"] {
+  background: var(--c-primary);
+  color: var(--white);
+}
+
+.preview-edit,
+.preview-submit {
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  border: 1px solid var(--submit-border);
+  color: var(--c-text);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.preview-submit {
+  padding: 0 22px;
+  background: var(--prev-cta-bg);
+  border: 1.5px solid var(--prev-cta-border);
+  box-shadow: var(--prev-cta-shadow);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.preview-loading {
+  position: absolute;
+  left: 28px;
+  top: 180px;
+  color: var(--c-text-muted);
+}
+
+.preview-error {
+  position: absolute;
+  left: 28px;
+  top: 180px;
+  width: 630px;
+}
+
+/* the side column */
+.preview-side {
+  position: absolute;
+  left: 28px;
+  top: 180px;
+  width: 380px;
+  height: 580px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.preview-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.preview-orbit {
+  --ring: var(--prev-ring-guest);
+  position: relative;
+  /* 270 on the board, shrinking (as there) to leave the chat card its content */
+  height: 270px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--submit-surface);
+  border: 1px solid var(--submit-border);
+}
+
+.preview-orbit[data-locked] {
+  --ring: var(--prev-ring-me);
+}
+
+.preview-orbit > .preview-kicker {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+}
+
+.preview-orbit-ring {
+  position: absolute;
+  left: 70px;
+  top: 46px;
+  width: 240px;
+  height: 240px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1px dashed var(--submit-border);
+}
+
+.preview-orbit-crystal {
+  position: absolute;
+  object-fit: contain;
+  opacity: 0.85;
+}
+
+.preview-orbit-crystal[data-n="1"] {
+  left: 34px;
+  top: 84px;
+  width: 56px;
+  height: 56px;
+}
+
+.preview-orbit-crystal[data-n="2"] {
+  left: 284px;
+  top: 64px;
+  width: 48px;
+  height: 48px;
+}
+
+.preview-orbit-crystal[data-n="3"] {
+  left: 264px;
+  top: 184px;
+  width: 42px;
+  height: 42px;
+}
+
+.preview-orbit-planet {
+  position: absolute;
+  left: 142px;
+  top: 96px;
+  width: 96px;
+  height: 96px;
+}
+
+.preview-orbit-planet-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 2px dashed var(--ring);
+}
+
+.preview-orbit-planet img {
+  position: absolute;
+  inset: -14px;
+  width: 124px;
+  height: 124px;
+  object-fit: contain;
+  filter: var(--prev-planet-glow);
+}
+
+.preview-orbit[data-locked] .preview-orbit-planet img {
+  opacity: 0.55;
+}
+
+.preview-orbit-lock {
+  position: absolute;
+  left: 34px;
+  top: 32px;
+  color: var(--white);
+}
+
+.preview-orbit-note {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.preview-og {
+  flex: 1;
+  box-sizing: border-box;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 24px;
+  background: var(--submit-surface);
+  border: 1px solid var(--submit-border);
+}
+
+.preview-bubble {
+  align-self: flex-start;
+  max-width: 300px;
+  padding: 10px 12px;
+  border-radius: 16px 16px 16px 4px;
+  background: var(--prev-bubble);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.preview-og-card {
+  width: 320px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--submit-border);
+  background: var(--submit-solid);
+}
+
+.preview-og-art {
+  position: relative;
+  height: 96px;
+  background: var(--prev-og-veil), url("/art/bg-universe-dark.webp") 30% 40% / cover;
+}
+
+.preview-og-art img {
+  position: absolute;
+  right: 10px;
+  top: 4px;
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+}
+
+.preview-og-brand {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  font: 700 12px var(--font-display);
+  color: var(--white);
+}
+
+.preview-og-text {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.preview-og-host {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.preview-og-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.preview-og-lead {
+  font-size: 12px;
+  color: var(--c-text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.preview-og-note {
+  font-size: 12px;
+  color: var(--c-warn-text);
+}
+
+/* the device stage */
+.preview-stage {
+  position: absolute;
+  left: 432px;
+  top: 180px;
+  width: 980px;
+  height: 580px;
+  box-sizing: border-box;
+  border-radius: 28px;
+  background: var(--prev-stage);
+  border: 1px solid var(--submit-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.preview-device {
+  --pad: 30px;
+  --h1: 34px;
+  --fs: 15px;
+  --cols: 4;
+  width: 900px;
+  height: 520px;
+  border-radius: 14px;
+  border: 2px solid var(--prev-frame);
+  background: var(--prev-paper);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--prev-device-shadow);
+}
+
+.preview-device[data-device="tablet"] {
+  --pad: 24px;
+  --h1: 28px;
+  --fs: 14px;
+  width: 560px;
+  height: 540px;
+  border-radius: 26px;
+  border-width: 10px;
+}
+
+.preview-device[data-device="phone"] {
+  --pad: 16px;
+  --h1: 22px;
+  --fs: 13px;
+  --cols: 2;
+  width: 290px;
+  height: 540px;
+  border-radius: 34px;
+  border-width: 10px;
+}
+
+.preview-device-bar {
+  height: 30px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  background: var(--prev-frame);
+}
+
+.preview-device-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--prev-dot-amber);
+}
+
+.preview-device-dot[data-tone="green"] {
+  background: var(--prev-dot-green);
+}
+
+.preview-device-url {
+  margin-left: 10px;
+  flex: 1;
+  min-width: 0;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--submit-surface);
+  font-size: 10px;
+  color: var(--c-text-muted);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.preview-page {
+  flex: 1;
+  overflow: hidden;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--c-text);
+}
+
+.preview-page-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preview-page-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--prev-badge-guest);
+  color: var(--prev-badge-guest-text);
+}
+
+.preview-page-badge[data-role="me"] {
+  background: var(--prev-badge-me);
+  color: var(--prev-badge-me-text);
+}
+
+.preview-page-place {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.preview-page-title {
+  margin: 0;
+  font: 700 var(--h1) / 1.1 var(--font-display);
+}
+
+.preview-page-lead {
+  margin: 0;
+  font-size: var(--fs);
+  line-height: 1.6;
+  color: var(--c-text-muted);
+}
+
+.preview-page-steps {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 8px;
+}
+
+.preview-page-step {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--prev-step-violet);
+  color: var(--prev-step-ink);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.preview-page-step[data-n="1"] {
+  background: var(--prev-step-cyan);
+}
+
+.preview-page-step-k {
+  font: 700 22px var(--font-display);
+}
+
+.preview-page-step-n {
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-page-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preview-page-chip {
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1px solid var(--submit-border);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.preview-page-chip[data-main] {
+  background: var(--prev-cta-bg);
+  border: 1.5px solid var(--prev-cta-border);
+  box-shadow: var(--prev-cta-shadow);
+  color: var(--white);
+}
+
+.preview-page-line {
+  height: 8px;
+  width: 90%;
+  border-radius: 4px;
+  background: var(--prev-line);
+}
+
+.preview-page-line[data-w="76"] {
+  width: 76%;
+}
+
+.preview-device-label {
+  position: absolute;
+  left: 452px;
+  top: 730px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.preview-content a:focus-visible,
+.preview-content button:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}

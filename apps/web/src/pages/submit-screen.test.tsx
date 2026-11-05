@@ -1,8 +1,8 @@
 /**
  * Sending for review (C06) in jsdom: the steps while it goes (Jev running), then "Đã gửi duyệt" with its place in the
  * queue (and no Jev scores: they are for admins); what to fix when the title is missing (no Try again: the text must
- * change), a dropped connection then Try again; the text's latest review result as a card; and the placement a link
- * passes along (C04).
+ * change), a dropped connection then Try again; the text's latest review result as a card. Only C04's "Gửi duyệt"
+ * sends (its `request`); visiting or reloading /submit never does.
  */
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,7 +10,7 @@ import type { DocumentView } from '../api/content-api';
 import type { AppNotification } from '../api/notifications-api';
 import { answer } from '../test/api-fakes';
 import { renderWithI18n } from '../test/render';
-import { SubmitScreen, submitRequestOf } from './submit-screen';
+import { SubmitScreen } from './submit-screen';
 
 const NOW = new Date('2026-11-03T14:05:00.000Z');
 const ID = 'd1';
@@ -64,12 +64,14 @@ const CHANGES: AppNotification = {
 let submit: () => Promise<Response>;
 let calls: Array<{ url: string; body: unknown }>;
 let release: () => void;
+let status: DocumentView['document']['status'];
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(NOW);
   window.history.replaceState(null, '', `/d/${ID}/submit?lang=vi`);
   calls = [];
+  status = 'draft';
   submit = () => Promise.resolve(answer(200, { status: 'pending', queuePosition: 3, submittedAt: NOW.toISOString(), preReviewed: true }));
   vi.stubGlobal(
     'fetch',
@@ -79,7 +81,7 @@ beforeEach(() => {
         calls.push({ url, body: init?.body ? JSON.parse(String(init.body)) : null });
         return submit();
       }
-      if (url.startsWith(`/api/documents/${ID}`)) return answer(200, DOC);
+      if (url.startsWith(`/api/documents/${ID}`)) return answer(200, { ...DOC, document: { ...DOC.document, status } });
       if (url.startsWith('/api/me/notifications')) return answer(200, { notifications: [CHANGES], unread: { total: 1, byKind: { mention: 0, comment: 0, review: 1, stale: 0, permission: 0 } } });
       return answer(404, { error: 'not-found' });
     }),
@@ -97,7 +99,7 @@ describe('sending for review', () => {
       new Promise((resolve) => {
         release = () => resolve(answer(200, { status: 'pending', queuePosition: 3, submittedAt: NOW.toISOString(), preReviewed: true }));
       });
-    renderWithI18n(<SubmitScreen id={ID} />);
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', tags: ['dhcp'] }} />);
     expect(await screen.findByText('Jev đang chấm 4 tiêu chí…')).toBeTruthy();
     await waitFor(() => expect(calls).toHaveLength(1));
     expect(await screen.findByText('lab-notes.docx · đã trích nội dung')).toBeTruthy();
@@ -116,7 +118,7 @@ describe('sending for review', () => {
 
   it('says what to fix when the title is missing, with no Try again', async () => {
     submit = () => Promise.resolve(answer(400, { error: 'title-required' }));
-    renderWithI18n(<SubmitScreen id={ID} />);
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', tags: ['dhcp'] }} />);
     const fix = within(await screen.findByRole('region', { name: 'Chưa gửi được' }));
     expect(fix.getByText('Thiếu tiêu đề', { selector: '.submit-fix-title' })).toBeTruthy();
     expect(fix.getByText('Thêm tiêu đề → gửi lại')).toBeTruthy();
@@ -127,7 +129,7 @@ describe('sending for review', () => {
 
   it('tries again after a dropped connection', async () => {
     submit = () => Promise.reject(new TypeError('Failed to fetch'));
-    renderWithI18n(<SubmitScreen id={ID} />);
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', tags: ['dhcp'] }} />);
     const fix = within(await screen.findByRole('region', { name: 'Chưa gửi được' }));
     expect(fix.getByText('Mất mạng giữa chừng')).toBeTruthy();
     submit = () => Promise.resolve(answer(200, { status: 'pending', queuePosition: 1, submittedAt: NOW.toISOString(), preReviewed: false }));
@@ -138,14 +140,34 @@ describe('sending for review', () => {
 
   it('says a text already waiting needs no second send', async () => {
     submit = () => Promise.resolve(answer(409, { error: 'already-pending' }));
-    renderWithI18n(<SubmitScreen id={ID} />);
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', tags: ['dhcp'] }} />);
     expect(await screen.findByText('Bài đã nằm trong hàng duyệt')).toBeTruthy();
   });
 });
 
-describe('a link to it', () => {
-  it('passes on where the text goes and its tags (C04)', () => {
-    expect(submitRequestOf('?space=networking&collection=c1&tags=dhcp&tags=dora')).toEqual({ space: 'networking', collection: 'c1', tags: ['dhcp', 'dora'] });
-    expect(submitRequestOf('?lang=vi')).toEqual({});
+describe('opening /submit without sending', () => {
+  it('never sends a text on a visit or reload: one not waiting goes to C04 to be sent from there', async () => {
+    const replace = vi.fn();
+    vi.stubGlobal('location', { ...window.location, replace, search: '?lang=vi', pathname: `/d/${ID}/submit` });
+    renderWithI18n(<SubmitScreen id={ID} />);
+    expect(screen.getByRole('status').textContent).toBe('Đang mở bài');
+    await waitFor(() => expect(replace).toHaveBeenCalledWith(`/d/${ID}/publish`));
+    expect(calls).toEqual([]);
+  });
+
+  it('shows a text already waiting as sent, without sending it again', async () => {
+    status = 'pending';
+    renderWithI18n(<SubmitScreen id={ID} />);
+    expect(await screen.findByRole('heading', { name: 'Đã gửi duyệt' })).toBeTruthy();
+    expect(screen.getByText('Đang trong hàng duyệt')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Thử lại' })).toBeNull();
+    expect(calls).toEqual([]);
+  });
+
+  it('sends what C04 chose, once, and offers the AI translation C04 asked for', async () => {
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', collection: 'c1', tags: ['dhcp', 'dora'], lang: 'vi' }} translateTo="en" />);
+    expect(await screen.findByRole('heading', { name: 'Đã gửi duyệt' })).toBeTruthy();
+    expect(calls.map((c) => c.body)).toEqual([{ space: 'networking', collection: 'c1', tags: ['dhcp', 'dora'], lang: 'vi' }]);
+    expect(screen.getByRole('link', { name: 'Tạo bản dịch EN bằng AI' }).getAttribute('href')).toBe(`/d/${ID}/translate?to=en`);
   });
 });

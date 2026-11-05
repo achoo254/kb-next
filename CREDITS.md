@@ -6,6 +6,9 @@ The images in [`apps/web/public/art/`](apps/web/public/art) (the Universe landsc
 the stage platform and the illustrations) are AI-generated for the hoandat ecosystem; owned by hoandat, all rights
 reserved (not CC0). They may not be reused outside KnowFlow without permission.
 
+The share card picture [`apps/web/public/og-share.png`](apps/web/public/og-share.png) (the link preview of `/l/<token>`)
+is composed from two of them (the dark landscape and `ill-doc-planet`) and the KnowFlow mark, under the same terms.
+
 The same images appear in the mock boards under [`design/`](design) (referenced there as `/_blob/<id>`, mapped to
 file names in [`design/blob-map.json`](design/blob-map.json)).
 

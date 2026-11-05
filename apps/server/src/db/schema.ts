@@ -13,6 +13,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -334,7 +335,16 @@ export const reviewEvents = pgTable(
   (table) => [index('review_events_document_id_idx').on(table.documentId)],
 );
 
-/** Share links (C18): only the sha256 of the token is stored. */
+/** What a share link lets a signed-in recipient do besides reading (C18 "Người có link được"). */
+export const shareLinkAccess = pgEnum('share_link_access', ['view', 'remix']);
+export const SHARE_LINK_ACCESS = shareLinkAccess.enumValues;
+/** How long a share link lasts, as its owner picked it (C18 "Hạn link"); `expires_at` is when it ends. */
+export const shareLinkExpiry = pgEnum('share_link_expiry', ['none', '7d', '30d']);
+
+/**
+ * Share links (C18): only the sha256 of the token is stored, with its last four characters to tell links apart; the
+ * token itself is shown once, when made. One live link per document: making one revokes the others.
+ */
 export const shareLinks = pgTable(
   'share_links',
   {
@@ -343,6 +353,9 @@ export const shareLinks = pgTable(
       .notNull()
       .references(() => documents.id, { onDelete: 'cascade' }),
     tokenHash: text('token_hash').notNull().unique(),
+    last4: text('last4').notNull().default(''),
+    access: shareLinkAccess('access').notNull().default('view'),
+    expiry: shareLinkExpiry('expiry').notNull().default('none'),
     createdBy: uuid('created_by')
       .notNull()
       .references(() => users.id),
@@ -350,10 +363,20 @@ export const shareLinks = pgTable(
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
-  (table) => [index('share_links_document_id_idx').on(table.documentId)],
+  (table) => [
+    index('share_links_document_id_idx').on(table.documentId),
+    // One live link per document, held by the database too (making a link revokes the others first).
+    uniqueIndex('share_links_one_live_idx').on(table.documentId).where(sql`${table.revokedAt} is null`),
+  ],
 );
 
-/** Access log of a share link: when it was opened, and by which account when signed in. */
+/** What happened to a share link: opened (by an account, or a guest when `userId` is null), made, changed, revoked. */
+export const shareLinkEvent = pgEnum('share_link_event', ['opened', 'created', 'changed', 'revoked']);
+
+/**
+ * The access history of a share link (C18 "Lịch sử truy cập"): each opening, when and by which account (null: not
+ * signed in), and what its owner did to it (`detail`: the expiry and access it was given). Never the token.
+ */
 export const shareLinkVisits = pgTable(
   'share_link_visits',
   {
@@ -361,10 +384,16 @@ export const shareLinkVisits = pgTable(
     shareLinkId: uuid('share_link_id')
       .notNull()
       .references(() => shareLinks.id, { onDelete: 'cascade' }),
+    kind: shareLinkEvent('kind').notNull().default('opened'),
     userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    detail: text('detail'),
     visitedAt: timestamp('visited_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('share_link_visits_share_link_id_idx').on(table.shareLinkId)],
+  (table) => [
+    index('share_link_visits_share_link_id_idx').on(table.shareLinkId),
+    // The hourly cleanup of openings older than 90 days.
+    index('share_link_visits_opened_at_idx').on(table.visitedAt).where(sql`${table.kind} = 'opened'`),
+  ],
 );
 
 /** Saved documents of an account (C08). */

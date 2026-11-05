@@ -48,8 +48,11 @@ export function SubmitSteps({ steps, percent }: { steps: readonly SubmitStep[]; 
   );
 }
 
-/** B: sent, waiting for an admin; no share link until then. */
-export function SubmitSent(): ReactNode {
+/**
+ * B: sent, waiting for an admin; no share link until then. `translate`: C04 asked for an AI translation, offered here
+ * in place of "Viết bài khác" (it runs on the author's own key, F04).
+ */
+export function SubmitSent({ translate }: { translate?: { href: string; lang: string } } = {}): ReactNode {
   const { t } = useSubmitText();
   return (
     <section aria-label={t('submit.sent')} className="submit-panel submit-sent" data-id="submit-sent">
@@ -65,9 +68,15 @@ export function SubmitSent(): ReactNode {
         <Button variant="rim" size="lg" href={SHELL_PATHS.mine} className="submit-action" dataId="submit-to-mine">
           {t('submit.sent.mine')}
         </Button>
-        <Button variant="ghost" size="lg" href={SHELL_PATHS.newNote} className="submit-action">
-          {t('submit.sent.write')}
-        </Button>
+        {translate ? (
+          <Button variant="ghost" size="lg" href={translate.href} className="submit-action" dataId="submit-translate">
+            {t('submit.sent.translate', { lang: translate.lang })}
+          </Button>
+        ) : (
+          <Button variant="ghost" size="lg" href={SHELL_PATHS.newNote} className="submit-action">
+            {t('submit.sent.write')}
+          </Button>
+        )}
       </div>
     </section>
   );

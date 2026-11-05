@@ -7,6 +7,7 @@ import { C17_DIFF, C17_HISTORY } from './history-boards';
 import { c08Documents } from './mine-boards';
 import { mockImportsC16, mockUploadC03, seedOfflineH04 } from './office-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
+import { C04_DOCUMENT, C04_SPACES, H02_PREVIEW, H02_TOKEN, PUBLISH_DOCUMENT_ID, c18Share } from './share-boards';
 import { signInAt } from './sign-in';
 
 /**
@@ -42,6 +43,18 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
     await page.route('**/api/moderation/tokens', (route) => (route.request().method() === 'GET' ? route.fulfill({ json: A03_TOKENS }) : route.fallback()));
     await page.route('**/api/moderation/calls', (route) => route.fulfill({ json: A03_CALLS }));
   }
+  if (mocks.includes('publish-c04')) {
+    await page.route(`**/api/documents/${PUBLISH_DOCUMENT_ID}`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: C04_DOCUMENT }) : route.fallback()));
+    await page.route('**/api/spaces', (route) => route.fulfill({ json: C04_SPACES }));
+  }
+  if (mocks.includes('share-c18')) {
+    await page.route('**/api/documents/*/share', (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      const id = new URL(route.request().url()).pathname.split('/')[3] ?? '';
+      return route.fulfill({ json: c18Share(id) });
+    });
+  }
+  if (mocks.includes('open-h02')) await page.route(`**/api/l/${H02_TOKEN}`, (route) => route.fulfill({ json: H02_PREVIEW }));
   if (mocks.includes('spaces-pending')) {
     // never answered: the screen stays in its loading state for the shot
     await page.route('**/api/spaces', () => undefined);

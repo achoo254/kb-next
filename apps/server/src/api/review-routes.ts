@@ -3,12 +3,14 @@
  * session (401 `sign-in-required`); the /api/moderation routes need an admin (403 `admin-only`).
  *
  * Author (C06, C08, C04):
- * - POST /api/documents/:id/submit `{space?, collection?, tags?}` → SubmitResponse: sends a draft, a private text or
- *   one sent back for review (optionally placed and tagged first). 400 `title-required` / `body-required`, 409
+ * - POST /api/documents/:id/submit `{space?, collection?, tags?, lang?}` → SubmitResponse: sends a draft, a private
+ *   text or one sent back for review (optionally placed, tagged and given its language first, C04). 400 `title-required` / `body-required`, 409
  *   `already-pending` / `not-submittable`, 404 / 403 like the reader. Jev's pre-review runs before the answer (its
  *   scores are for admins only); without Jev the submission stands all the same.
  * - POST /api/documents/:id/withdraw → `{status: 'draft'}`: out of the queue, the admins' unread notices of it too.
  *   409 `not-pending`.
+ * - POST /api/documents/:id/private `{space?, collection?, tags?, lang?}` → `{status: 'private'}`: C04 "Riêng tư";
+ *   a text waiting leaves the queue. 409 `published` for an approved text.
  *
  * Admins (A01, A02):
  * - GET /api/moderation/queue → `{documents: ReviewQueueItem[]}`.
@@ -30,7 +32,7 @@ import { HttpError } from '../http-error';
 import type { JevJudge } from '../jev/jev-client';
 import type { IndexSync } from '../search/index-sync';
 import type { MeiliClient } from '../search/meili-client';
-import { type ModerationDeps, cleanTags, decide, publishedItems, queueItems, resolvePlacement, submitText, updatePost, withdrawText } from '../review/moderation';
+import { type ModerationDeps, cleanTags, decide, keepTextPrivate, publishedItems, queueItems, resolvePlacement, submitText, updatePost, withdrawText } from '../review/moderation';
 import { perAccountLimit, signedIn, userIdOf } from './account-limit';
 import { type RequestContextDeps, readerOf } from './request-context';
 import { parseBody, parseQuery } from './validate';
@@ -48,7 +50,7 @@ export const PostTitle = z
   .max(MAX_TITLE_CHARS)
   .refine((title) => !/[\r\n]/.test(title));
 
-const SubmitBody = z.strictObject({ space: Slug.optional(), collection: z.uuid().optional(), tags: Tags.optional() });
+const SubmitBody = z.strictObject({ space: Slug.optional(), collection: z.uuid().optional(), tags: Tags.optional(), lang: z.enum(['vi', 'en']).optional() });
 
 const DecisionBody = z
   .strictObject({ decision: z.enum(REVIEW_DECISIONS), reason: z.string().trim().min(1).max(MAX_REASON_CHARS).optional() })
@@ -107,7 +109,15 @@ export function reviewRoutes({ config, db, now, sync, jev, meili }: ReviewRoutes
     const viewer = await user(req);
     const body = parseBody(SubmitBody, req.body ?? {});
     const placement = await resolvePlacement(db, viewer, body, false);
-    res.json(await submitText(deps, viewer, idParam(req), { placement, tags: cleanTags(body.tags) }));
+    res.json(await submitText(deps, viewer, idParam(req), { placement, tags: cleanTags(body.tags), lang: body.lang }));
+  });
+
+  router.post('/api/documents/:id/private', auth, withdrawLimit, async (req, res) => {
+    const viewer = await user(req);
+    const body = parseBody(SubmitBody, req.body ?? {});
+    const placement = await resolvePlacement(db, viewer, body, false);
+    const doc = await keepTextPrivate(deps, viewer, idParam(req), { placement, tags: cleanTags(body.tags), lang: body.lang });
+    res.json({ status: doc.status });
   });
 
   router.post('/api/documents/:id/withdraw', auth, withdrawLimit, async (req, res) => {

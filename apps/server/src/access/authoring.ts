@@ -18,6 +18,7 @@ import { PLANET_COLOURS, chunks, documentVersions, documents, files, links } fro
 import { type DocumentRow, documentColumns } from './content';
 import { isUuid } from './ids';
 import { historyScope } from './history';
+import { revokeAllLinks } from './share-links';
 import { documentAccess } from './reading';
 import type { Viewer } from './viewer';
 import { visibleTo } from './visibility';
@@ -364,7 +365,11 @@ export async function trashDocument(db: Db, viewer: Viewer, id: string, now: Dat
   if (access.kind !== 'ok' || viewer.kind !== 'user') return 'no-access';
   const own = access.doc.authorId === viewer.userId && access.doc.status !== 'approved';
   if (!viewer.isAdmin && !own) return 'no-access';
-  await db.update(documents).set({ deletedAt: now, deletedBy: viewer.userId }).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
+  await db.transaction(async (tx) => {
+    await tx.update(documents).set({ deletedAt: now, deletedBy: viewer.userId }).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
+    // In the trash it is no longer published: its share links stop for good (restoring it does not revive them).
+    await revokeAllLinks(tx, id, viewer.userId, now);
+  });
   return 'ok';
 }
 

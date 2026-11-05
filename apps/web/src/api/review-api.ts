@@ -31,11 +31,18 @@ export interface SubmitRequest {
   space?: string;
   collection?: string;
   tags?: string[];
+  /** Its original language (C04 "Ngôn ngữ gốc"). */
+  lang?: 'vi' | 'en';
 }
 
 /** Sends the author's text for review (C06). */
 export function submitForReview(id: string, request: SubmitRequest = {}): Promise<SubmitResponse> {
   return getJson(SubmitResponseSchema, `/api/documents/${path(id)}/submit`, json(request));
+}
+
+/** Keeps the author's text to themselves (C04 "Riêng tư"), placed and tagged; a text waiting leaves the queue. */
+export async function keepPrivate(id: string, request: SubmitRequest = {}): Promise<void> {
+  await apiFetch(`/api/documents/${path(id)}/private`, json(request));
 }
 
 /** Takes a text out of the queue: back to a draft (C08 "Rút lại"). */

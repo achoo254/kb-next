@@ -30,8 +30,12 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: /^\/new$/ },
   { code: 'C17', titleKey: 'screen.C17', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/history$`) },
   { code: 'F04', titleKey: 'screen.F04', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/translate$`) },
-  // Sending a text for review (C08 "Gửi duyệt"): the steps, then sent or what to fix.
+  // Publishing a text (C04: who sees it, where it goes, then "Gửi duyệt"), previewing it (C05), sending it for review
+  // (C06: the steps, then sent or what to fix; visiting it never sends), and its share link (C18).
+  { code: 'C04', titleKey: 'screen.C04', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/publish$`) },
+  { code: 'C05', titleKey: 'screen.C05', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/preview$`) },
   { code: 'C06', titleKey: 'screen.C06', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/submit$`) },
+  { code: 'C18', titleKey: 'screen.C18', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/share$`) },
   { code: 'C12', titleKey: 'screen.C12', access: 'signed-in', pattern: /^\/search$/ },
   { code: 'C14', titleKey: 'screen.C14', access: 'signed-in', pattern: /^\/copilot$/ },
   { code: 'C13', titleKey: 'screen.C13', access: 'signed-in', pattern: /^\/graph$/ },

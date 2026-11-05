@@ -1,6 +1,7 @@
 import { createApp, jevWithUsage } from './app';
 import { loadConfig } from './config';
 import { purgeExpiredSessions } from './auth/session-store';
+import { pruneShareOpenings } from './access/share-links';
 import { openConfiguredDatabase } from './db/client';
 import { seedMockCaptions } from './captions/seed-captions';
 import { seedDatabase } from './db/seed-database';
@@ -30,7 +31,10 @@ const userKeys = readUserKeysSecret(config.userKeysSecretPath);
 if (config.userKeysSecretPath && !userKeys.secret) console.error(`own AI keys: ${userKeys.status}`);
 else console.log(`own AI keys: ${userKeys.status}`);
 
-/** Expired sessions are deleted at start and every hour (a session is otherwise only deleted when used again). */
+/**
+ * Expired sessions are deleted at start and every hour (a session is otherwise only deleted when used again), and
+ * share-link openings past their keeping time (access-history of C18).
+ */
 const HOUSEKEEPING_INTERVAL_MS = 60 * 60 * 1000;
 async function housekeeping(): Promise<void> {
   try {
@@ -38,6 +42,12 @@ async function housekeeping(): Promise<void> {
     if (removed > 0) console.log(`purged ${removed} expired session(s)`);
   } catch (error) {
     console.error('session purge failed', safeErrorText(error));
+  }
+  try {
+    const forgotten = await pruneShareOpenings(database.db, new Date());
+    if (forgotten > 0) console.log(`forgot ${forgotten} share link opening(s)`);
+  } catch (error) {
+    console.error('share link history prune failed', safeErrorText(error));
   }
 }
 await housekeeping();

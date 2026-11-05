@@ -28,3 +28,18 @@ export const SHELL_PATHS = {
 export function submitPath(documentId: string): string {
   return `/d/${encodeURIComponent(documentId)}/submit`;
 }
+
+/** Publishing a text: who sees it, where it goes, its tags (C04). */
+export function publishPath(documentId: string): string {
+  return `/d/${encodeURIComponent(documentId)}/publish`;
+}
+
+/** Previewing a text as a guest or as its author, on each device (C05). */
+export function previewPath(documentId: string): string {
+  return `/d/${encodeURIComponent(documentId)}/preview`;
+}
+
+/** A text's share link and who has access (C18). */
+export function sharePagePath(documentId: string): string {
+  return `/d/${encodeURIComponent(documentId)}/share`;
+}

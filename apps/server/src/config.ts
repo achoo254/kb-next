@@ -117,6 +117,10 @@ export interface ServerConfig {
   retryLimitPerMinute: number;
   /** Sendings for review per 10 minutes per account: each costs a Jev call and tells every admin. */
   submitLimitPer10Min: number;
+  /** Share-link openings (and the share pages) a minute from one address; a guest has no account to count by. */
+  shareOpenLimitPerMinute: number;
+  /** Share-link management calls (C18) per minute per account. */
+  shareManageLimitPerMinute: number;
   /** Admin API calls (token) per minute per client IP, wrong tokens included: against guessing and floods. */
   adminApiLimitPerMinute: number;
   /** Load the dev seed at startup as this owner (KB_SEED=mock); null otherwise. Never set in production. */
@@ -205,6 +209,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     uploadLimitPerMinute: 30,
     retryLimitPerMinute: 10,
     submitLimitPer10Min: 5,
+    shareOpenLimitPerMinute: 60,
+    shareManageLimitPerMinute: 30,
     adminApiLimitPerMinute: 60,
     startupSeed: e.KB_SEED === 'mock' ? { ownerSub: e.SEED_OWNER_SUB ?? DEFAULT_SEED_OWNER_SUB } : null,
     tikaUrl: tikaUrl.href.replace(/\/$/, ''),

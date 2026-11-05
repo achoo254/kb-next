@@ -282,7 +282,7 @@ function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }
         <ReaderArticle view={view} offline={offline} articleRef={articleRef} selection={selection} ai={ai} />
       </div>
       <aside className="reader-side" aria-label={view.document.title} data-id="reader-side">
-        <ReaderActions />
+        <ReaderActions id={view.document.id} canShare={view.document.canShare ?? false} />
         <AiPanel
           offline={offline}
           keys={ai.keys}
