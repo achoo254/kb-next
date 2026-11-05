@@ -30,6 +30,8 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: /^\/new$/ },
   { code: 'C17', titleKey: 'screen.C17', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/history$`) },
   { code: 'F04', titleKey: 'screen.F04', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/translate$`) },
+  // Sending a text for review (C08 "Gửi duyệt"): the steps, then sent or what to fix.
+  { code: 'C06', titleKey: 'screen.C06', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/submit$`) },
   { code: 'C12', titleKey: 'screen.C12', access: 'signed-in', pattern: /^\/search$/ },
   { code: 'C14', titleKey: 'screen.C14', access: 'signed-in', pattern: /^\/copilot$/ },
   { code: 'C13', titleKey: 'screen.C13', access: 'signed-in', pattern: /^\/graph$/ },
@@ -45,6 +47,9 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },
   { code: 'F03', titleKey: 'screen.F03', access: 'signed-in', pattern: /^\/settings\/keys$/ },
+  // The admin station (admins only; others get X02 403): published texts, the API and its tokens, the review queue.
+  { code: 'A02', titleKey: 'screen.A02', access: 'signed-in', pattern: /^\/admin\/content$/ },
+  { code: 'A03', titleKey: 'screen.A03', access: 'signed-in', pattern: /^\/admin\/api$/ },
   { code: 'A01', titleKey: 'screen.A01', access: 'signed-in', pattern: /^\/admin(\/[A-Za-z0-9_/-]*)?$/ },
 ];
 

@@ -115,6 +115,10 @@ export interface ServerConfig {
   uploadLimitPerMinute: number;
   /** Extraction retries per minute per account: each is a new run through the shared Tika. */
   retryLimitPerMinute: number;
+  /** Sendings for review per 10 minutes per account: each costs a Jev call and tells every admin. */
+  submitLimitPer10Min: number;
+  /** Admin API calls (token) per minute per client IP, wrong tokens included: against guessing and floods. */
+  adminApiLimitPerMinute: number;
   /** Load the dev seed at startup as this owner (KB_SEED=mock); null otherwise. Never set in production. */
   startupSeed: { ownerSub: string } | null;
   /** Base URL of the Tika server (no trailing slash). */
@@ -200,6 +204,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     keySaveLimitPerMinute: 5,
     uploadLimitPerMinute: 30,
     retryLimitPerMinute: 10,
+    submitLimitPer10Min: 5,
+    adminApiLimitPerMinute: 60,
     startupSeed: e.KB_SEED === 'mock' ? { ownerSub: e.SEED_OWNER_SUB ?? DEFAULT_SEED_OWNER_SUB } : null,
     tikaUrl: tikaUrl.href.replace(/\/$/, ''),
     filesDir: e.FILES_DIR ?? (production ? PRODUCTION_FILES_DIR : DEV_FILES_DIR),

@@ -147,6 +147,22 @@ const ICONS = {
   reconnect: { body: <path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" />, stroke: 2.2, cap: 'round' },
   conflict: { body: <path d="M7 4v10M17 10v10M4 7l3-3 3 3M14 17l3 3 3-3" />, stroke: 2.2, cap: 'round' },
   'cloud-copy': { body: <path d="M7 18a4 4 0 0 1-1-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18z" /> },
+  /* A01–A03: the admin rail (queue, published texts, API), the token key */
+  'admin-review': { body: <path d="M4 6h16M4 12h10M4 18h7M15 16l2.5 2.5L22 14" />, cap: 'round', join: 'round' },
+  'admin-content': { body: <><circle cx="12" cy="12" r="5" /><ellipse cx="12" cy="12" rx="10.5" ry="3.5" transform="rotate(-20 12 12)" /></> },
+  'admin-api': { body: <path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />, cap: 'round' },
+  'admin-key': { body: <><circle cx="8" cy="15" r="4" /><path d="M11 12l9-9M17 6l3 3M15 8l2 2" /></>, cap: 'round' },
+  /* C20: the kinds of notification */
+  'notice-mention': { body: <path d="M16 12a4 4 0 1 0-1.2 2.9M16 8v5a2.5 2.5 0 0 0 5 0v-1a9 9 0 1 0-3.5 7.1" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'notice-comment': { body: <path d="M4 5h16v11H9l-5 4z" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'notice-approved': { body: <path d="M5 12l5 5 9-10" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'notice-fix': { body: <path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'notice-queue': { body: <path d="M4 6h16M4 12h10M4 18h7M18 15v6M15 18h6" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'notice-warn': { body: <path d="M12 3l10 18H2zM12 10v4M12 17v.5" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'notice-shield': { body: <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'notice-rejected': { body: <path d="M7 7l10 10M17 7L7 17" />, stroke: 2.2, cap: 'round', join: 'round' },
+  'mark-read': { body: <path d="M5 12l5 5 9-10" />, cap: 'round' },
+  'mark-unread': { body: <path d="M4 6h16v12H4zM4 6l8 7 8-7" />, cap: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

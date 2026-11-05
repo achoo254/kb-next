@@ -1,0 +1,417 @@
+/* Sending for review (design/mock/C06-Submit.dc.html). Like C08, the board draws its content 96px right of the rail
+   at 93.3% scale (.kf-content); inside .submit-content the coordinates are the board's: panels A 28,128 · B 496,128 ·
+   C 964,128 (448 × 432 each) · result cards 28,576 (1384 × 176). The screen shows its result in B's place. */
+
+.submit-shell .universe-veil {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 35%, var(--c-nebula), transparent 70%),
+    var(--c-veil-gate);
+}
+
+.submit-shell .app-shell-crumbs {
+  left: calc(var(--board-offset) + 96px + 26px);
+  top: 67px;
+  transform: scale(0.933);
+  transform-origin: left top;
+}
+
+.submit-shell .app-shell-crumbs a {
+  font-weight: 400;
+}
+
+.submit-shell .app-shell-crumb-current {
+  font-weight: 600;
+}
+
+.submit-screen {
+  position: relative;
+  height: 900px;
+}
+
+.submit-content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform: translateX(96px) scale(0.933);
+  transform-origin: left top;
+}
+
+.submit-slot {
+  position: absolute;
+  top: 128px;
+  width: 448px;
+  height: 432px;
+}
+
+.submit-slot-a {
+  left: 28px;
+}
+.submit-slot-b {
+  left: 496px;
+}
+.submit-slot-c {
+  left: 964px;
+}
+
+.submit-panel {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 28px;
+  background: var(--submit-surface);
+  border: 1px solid var(--submit-border);
+  color: var(--c-text);
+}
+
+.submit-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.submit-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.submit-kicker-plain {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.submit-kicker-start {
+  align-self: flex-start;
+}
+
+.submit-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--violet-400) 20%, transparent);
+}
+
+.submit-bar-fill {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--c-primary);
+  background-image: repeating-linear-gradient(45deg, color-mix(in srgb, var(--white) 18%, transparent) 0 10px, transparent 10px 20px);
+  transition: width 0.6s;
+}
+
+.submit-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--submit-idle);
+}
+
+.submit-step[data-state="run"] {
+  background: var(--submit-run);
+}
+
+.submit-step-dot {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--submit-wait-dot);
+  color: var(--white);
+}
+
+.submit-step[data-state="done"] .submit-step-dot {
+  background: var(--emerald-500);
+}
+.submit-step[data-state="run"] .submit-step-dot {
+  background: var(--c-primary);
+}
+.submit-step[data-state="failed"] .submit-step-dot {
+  background: var(--amber-500);
+  color: var(--inbox-on-badge);
+}
+
+.submit-step-n {
+  font: 700 12px var(--font-display);
+}
+
+.submit-spin {
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--white) 35%, transparent);
+  border-top-color: var(--white);
+  animation: kf-spin 0.9s linear infinite;
+}
+
+.submit-spin-dark {
+  border-color: var(--submit-border);
+  border-top-color: var(--c-text);
+}
+
+.submit-step-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.submit-step-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.submit-step-sub {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.submit-sent {
+  align-items: center;
+  text-align: center;
+}
+
+.submit-comet {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin-top: 6px;
+}
+
+.submit-comet-ring {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  border: 2px dashed var(--c-warn);
+}
+
+.submit-comet img {
+  position: absolute;
+  inset: -6px;
+  width: 162px;
+  height: 162px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--violet-600) 80%, transparent));
+}
+
+.submit-sent-title {
+  margin: 0;
+  font: 700 24px var(--font-display);
+}
+
+.submit-sent-text {
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+.submit-sent-chip {
+  padding: 5px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--amber-500) 14%, transparent);
+  color: var(--c-warn-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.submit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.submit-action.kf-btn {
+  height: 44px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.submit-fix {
+  border-color: color-mix(in srgb, var(--amber-500) 50%, transparent);
+}
+
+.submit-fix-choices {
+  display: flex;
+  gap: 6px;
+}
+
+.submit-fix-choice {
+  flex: 1;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--submit-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.submit-fix-choice[aria-pressed="true"] {
+  border-color: var(--amber-500);
+  background: color-mix(in srgb, var(--amber-500) 14%, transparent);
+}
+
+.submit-fix-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--amber-500) 14%, transparent);
+}
+
+.submit-fix-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-warn-text);
+}
+
+.submit-fix-why {
+  font-size: 13px;
+}
+
+.submit-fix-how {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--submit-solid);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.submit-fix-arrow {
+  color: var(--c-success-text);
+}
+
+.submit-fix-note {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.submit-retry {
+  height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 22px;
+  border: 1px solid var(--submit-border);
+  background: none;
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.submit-notices {
+  position: absolute;
+  left: 28px;
+  top: 576px;
+  width: 1384px;
+  height: 176px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.submit-notice {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--submit-surface);
+  border: 1px solid color-mix(in srgb, var(--amber-500) 50%, transparent);
+}
+
+.submit-notice[data-kind="approved"] {
+  border-color: color-mix(in srgb, var(--emerald-500) 50%, transparent);
+}
+
+.submit-notice-orbit {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 96px;
+  flex: none;
+}
+
+.submit-notice-ellipse {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  stroke: color-mix(in srgb, var(--cyan-400) 55%, transparent);
+}
+
+.submit-notice-crystal {
+  position: absolute;
+  left: 14px;
+  top: 4px;
+  width: 68px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--cyan-400) 75%, transparent));
+}
+
+.submit-notice-moon {
+  position: absolute;
+  left: -1px;
+  top: 50px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan-100);
+  box-shadow: 0 0 8px 3px var(--cyan-400);
+}
+
+.submit-notice-cracked {
+  width: 72px;
+  height: 72px;
+  flex: none;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--amber-500) 55%, transparent));
+}
+
+.submit-notice-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.submit-notice-kicker {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.submit-notice-title {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.submit-notice-line {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.submit-notice-action.kf-btn {
+  padding: 0 18px;
+}

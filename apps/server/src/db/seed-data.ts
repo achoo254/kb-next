@@ -5,6 +5,8 @@
  * `owner` is the account reading the dev app ("Của bạn"): SEED_OWNER_SUB, else the seed admin.
  */
 
+import type { NotificationPayload } from '../notifications/notification-store';
+
 export type SeedAuthor = 'dat' | 'linh' | 'minh' | 'an' | 'owner';
 
 export const SEED_USERS: ReadonlyArray<{ key: Exclude<SeedAuthor, 'owner'>; sub: string; name: string; role: 'member' | 'reviewer' }> = [
@@ -538,6 +540,20 @@ export const SEED_PROGRESS: Array<[string, number, string | null]> = [
 export const SEED_COMMENTS: Array<[string, string, SeedAuthor, number, string]> = [
   ['relay-question', 'dhcp', 'minh', 2, '@Linh mạng khác subnet thì DHCP relay chạy thế nào?'],
   ['relay-answer', 'dhcp', 'linh', 1, 'Router chuyển tiếp gói Discover tới server. Mình sẽ thêm một đoạn về relay.'],
+];
+
+/**
+ * The owner's inbox of board C20, newest first: [key, document key (null: none), minutes before SEED_LATEST_UPDATE,
+ * read, payload]. Payloads are snapshots, as the server writes them: the board's own texts.
+ */
+export const SEED_NOTIFICATIONS: Array<[string, string | null, number, boolean, NotificationPayload]> = [
+  ['mention-dhcp', 'dhcp', 5, false, { kind: 'mention', title: 'Giao thức DHCP', by: 'Linh', excerpt: '@Đạt xem giúp đoạn Lease và gia hạn nhé, mình nghĩ thiếu ví dụ T1/T2.', anchor: 'lease-va-gia-han' }],
+  ['comment-tcp', 'tcp-udp-pic', 32, false, { kind: 'comment', title: 'TCP vs UDP', by: 'Minh', excerpt: 'Phần UDP lấy ví dụ DNS dễ hiểu quá, thêm hình bắt tay 3 bước nữa là đủ.', anchor: null }],
+  ['approved-swap', 'swap-ubuntu', 60, true, { kind: 'review', title: 'Ghi chú swap trên Ubuntu', action: 'approved', reason: null, by: 'Linh' }],
+  ['changes-tcp', 'tcp-udp-pic', 120, false, { kind: 'review', title: 'TCP vs UDP bằng hình', action: 'changes_requested', reason: 'Thêm link RFC 793 và RFC 768 cho phần định nghĩa nhé.', by: 'Linh' }],
+  ['queue-k8s', null, 180, false, { kind: 'review', title: 'Lối đi: Dựng cụm K8s', action: 'submitted', reason: null, by: 'Minh' }],
+  ['stale-deploy', null, 22 * 60, false, { kind: 'stale', title: 'Deployment Guide', days: 186 }],
+  ['hidden-k8s', null, 23 * 60, true, { kind: 'permission', title: 'k8s-intro.pptx', hidden: true, by: 'Đạt' }],
 ];
 
 /** A Canvas card of the seed (C15): `doc` names a seed document for a document card. */

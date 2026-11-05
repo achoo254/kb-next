@@ -28,6 +28,8 @@ Trình soạn bài (C02, TipTap, Markdown, tự lưu và offline): [`docs/editor
 Trích chữ và OCR tệp tải lên (Tika, chọn trang OCR, cờ chất lượng, hàng đợi): [`docs/text-extraction.md`](docs/text-extraction.md).
 Tải tệp, Trung tâm nhập, trình sửa Office nhúng và đồng bộ offline (C03, C16, H04, ranuts/document ở tên miền riêng):
 [`docs/office-editor.md`](docs/office-editor.md).
+Gửi duyệt, hàng duyệt và quản lý bài của quản trị, thông báo, API đăng bài bằng token quản trị (C06, C20, A01–A03):
+[`docs/admin-api.md`](docs/admin-api.md).
 
 ## Chạy
 

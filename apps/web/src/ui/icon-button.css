@@ -33,3 +33,11 @@
   background: color-mix(in srgb, var(--white) 6%, transparent);
   border: 1px solid color-mix(in srgb, var(--white) 12%, transparent);
 }
+
+/* The bell of the inbox while the inbox is on show (C20): lit like the active view pill. */
+.kf-icon-btn[data-variant="glass"][aria-current="page"] {
+  background: var(--rim-active-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}

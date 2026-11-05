@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import type { ParityMock, ParityScreen } from './parity-screens';
 import { C11_STREAM, C14_HISTORY, C14_STREAM, F03_KEYS, F04_DOCUMENT, F04_DOCUMENT_ID, F04_STREAM } from './ai-boards';
+import { A01_DOCUMENT, A01_FIRST_ID, A01_QUEUE, A02_PUBLISHED, A03_CALLS, A03_TOKENS } from './admin-boards';
 import { C15_SUGGESTION } from './graph-canvas-boards';
 import { C17_DIFF, C17_HISTORY } from './history-boards';
 import { c08Documents } from './mine-boards';
@@ -22,6 +23,24 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
       const me = (await response.json()) as Record<string, unknown>;
       return route.fulfill({ response, json: { ...me, onboardedAt: me.onboardedAt ?? '2026-11-03T14:05:00.000Z' } });
     });
+  }
+  if (mocks.includes('admin')) {
+    await page.route('**/api/me', async (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      const response = await route.fetch();
+      if (!response.ok()) return route.fulfill({ response });
+      const me = (await response.json()) as Record<string, unknown>;
+      return route.fulfill({ response, json: { ...me, isAdmin: true } });
+    });
+  }
+  if (mocks.includes('admin-a01')) {
+    await page.route('**/api/moderation/queue', (route) => route.fulfill({ json: A01_QUEUE }));
+    await page.route(`**/api/documents/${A01_FIRST_ID}*`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: A01_DOCUMENT }) : route.fallback()));
+  }
+  if (mocks.includes('admin-a02')) await page.route('**/api/moderation/published', (route) => route.fulfill({ json: A02_PUBLISHED }));
+  if (mocks.includes('admin-a03')) {
+    await page.route('**/api/moderation/tokens', (route) => (route.request().method() === 'GET' ? route.fulfill({ json: A03_TOKENS }) : route.fallback()));
+    await page.route('**/api/moderation/calls', (route) => route.fulfill({ json: A03_CALLS }));
   }
   if (mocks.includes('spaces-pending')) {
     // never answered: the screen stays in its loading state for the shot

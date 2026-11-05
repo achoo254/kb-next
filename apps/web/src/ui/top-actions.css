@@ -15,6 +15,24 @@
   box-shadow: 0 0 8px var(--rose-500);
 }
 
+.kf-top-unread-count {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--rose-500);
+  box-shadow: 0 0 8px var(--rose-500);
+  color: var(--white);
+  font: 700 11px var(--font-sans);
+}
+
 .kf-top-command {
   box-sizing: border-box;
   height: 48px;

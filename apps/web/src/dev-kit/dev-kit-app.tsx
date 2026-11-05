@@ -8,6 +8,7 @@ import { SignInBoardPage } from './pages/sign-in-board-page';
 import { SitemapPage } from './pages/sitemap-page';
 import { SpatialPage } from './pages/spatial-page';
 import { StatesPage } from './pages/states-page';
+import { SubmitBoardPage } from './pages/submit-board-page';
 
 /**
  * /dev/kit: the shared UI kit laid out like the kit boards of the mock, for the parity check and for building
@@ -24,6 +25,7 @@ export const KIT_PAGES = [
   { path: '/dev/kit/sign-in', board: 'S02-Login', Page: SignInBoardPage },
   { path: '/dev/kit/errors', board: 'X02-Errors', Page: ErrorsBoardPage },
   { path: '/dev/kit/copilot-states', board: 'F02-CopilotStates', Page: CopilotStatesPage },
+  { path: '/dev/kit/submit', board: 'C06-Submit', Page: SubmitBoardPage },
   { path: '/dev/kit/sitemap', board: 'Z01-Sitemap', Page: SitemapPage },
   { path: '/dev/kit/spatial', board: 'Z02-Spatial3D', Page: SpatialPage },
 ] as const;

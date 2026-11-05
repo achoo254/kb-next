@@ -107,6 +107,16 @@ export async function isOpenForComments(db: Db, documentId: string): Promise<boo
   return Boolean(row);
 }
 
+/** Who has written in a document's live discussion, with their names (who a new comment may name with `@`). */
+export async function discussionParticipants(db: Db, documentId: string): Promise<Array<{ userId: string; name: string | null }>> {
+  if (!isUuid(documentId)) return [];
+  return db
+    .selectDistinct({ userId: users.id, name: users.name })
+    .from(comments)
+    .innerJoin(users, eq(users.id, comments.authorId))
+    .where(and(eq(comments.documentId, documentId), isNull(comments.deletedAt)));
+}
+
 /** A new comment by `authorId` on a document the caller checked open for comments; its id. */
 export async function addComment(db: Db, authorId: string, documentId: string, body: string, anchor: string | null, at: Date): Promise<string> {
   const [row] = await db

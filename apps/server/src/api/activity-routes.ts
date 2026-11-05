@@ -6,9 +6,11 @@
 import express, { type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
-import { addComment, anchorsOf, isOpenForComments, listComments, saveProgress } from '../access/participation';
+import { addComment, anchorsOf, discussionParticipants, isOpenForComments, listComments, saveProgress } from '../access/participation';
 import type { Viewer } from '../access/viewer';
 import { HttpError } from '../http-error';
+import { safeErrorText } from '../log-error';
+import { noticeComment } from '../notifications/comment-notices';
 import { type RequestContextDeps, openDocument, readerOf } from './request-context';
 import type { MemberRole } from './space-members';
 import { parseBody } from './validate';
@@ -107,9 +109,17 @@ export function activityRoutes(deps: RequestContextDeps): Router {
     const body = parseBody(CommentBody, req.body);
     if (!(await isOpenForComments(db, doc.id))) throw new HttpError(403, 'comments-closed');
     const anchor = await checkedAnchor(viewer, doc.id, body.anchor);
+    const before = await discussionParticipants(db, doc.id);
     const id = await addComment(db, user.userId, doc.id, body.body, anchor, now());
     const created = (await comments(viewer, doc.id)).comments.find((c) => c.id === id);
     if (!created) throw new Error('new comment not found');
+    // Telling the author and those named never fails the comment itself.
+    await noticeComment(
+      db,
+      config.adminSubs,
+      { documentId: doc.id, title: doc.title, authorId: doc.authorId, commenterId: user.userId, body: body.body, anchor, participants: before },
+      now(),
+    ).catch((error: unknown) => console.error('comment notice failed', safeErrorText(error)));
     res.status(201).set('Cache-Control', 'no-store').json(created);
   });
 

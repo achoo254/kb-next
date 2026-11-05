@@ -16,7 +16,7 @@ import type { ScreenTranslate } from './space-messages';
 import { kindLabel } from './space-labels';
 import { useSpaceText } from './space-messages';
 import { spaceName } from './space-panels';
-import { SHELL_PATHS } from '../layout/shell-paths';
+import { SHELL_PATHS, submitPath } from '../layout/shell-paths';
 import { createCards } from './universe-states';
 
 type Translate = ScreenTranslate<MineMessageKey>;
@@ -171,11 +171,16 @@ interface DetailProps {
   now: number;
   onStar(item: MineItem): void;
   onTrash(item: MineItem): void;
+  /** "Rút lại": takes a text out of the review queue. */
+  onWithdraw(item: MineItem): void;
 }
 
-type Action = { kind: 'link'; label: MineMessageKey; href: string } | { kind: 'later'; label: MineMessageKey };
+type Action = { kind: 'link'; label: MineMessageKey; href: string } | { kind: 'withdraw'; label: MineMessageKey } | { kind: 'later'; label: MineMessageKey };
 
-/** What can be done with a text at each step (the board's buttons; review and sharing arrive with phase 11). */
+/**
+ * What can be done with a text at each step (the board's buttons): sending it for review opens C06, taking it back
+ * happens here; sharing and unpublishing are still to come.
+ */
 export function actionsOf(item: MineItem): Action[] {
   if (item.kind === 'canvas') return [{ kind: 'link', label: 'mine.action.open', href: item.href }];
   const edit = item.docType === 'office' ? item.href : `${item.href}/edit`;
@@ -185,12 +190,12 @@ export function actionsOf(item: MineItem): Action[] {
     case 'private':
       return [
         { kind: 'link', label: editLabel, href: edit },
-        { kind: 'later', label: 'mine.action.submit' },
+        { kind: 'link', label: 'mine.action.submit', href: submitPath(item.id) },
       ];
     case 'pending':
       return [
         { kind: 'link', label: 'mine.action.preview', href: item.href },
-        { kind: 'later', label: 'mine.action.withdraw' },
+        { kind: 'withdraw', label: 'mine.action.withdraw' },
       ];
     case 'changes':
     case 'rejected':
@@ -207,7 +212,7 @@ export function actionsOf(item: MineItem): Action[] {
 }
 
 /** The picked planet: what it is, where it stands in review and why, where it lives, and what to do with it. */
-export function Detail({ item, now, onStar, onTrash }: DetailProps): ReactNode {
+export function Detail({ item, now, onStar, onTrash, onWithdraw }: DetailProps): ReactNode {
   const { t, locale } = useMineText();
   const space = useSpaceText();
   const review = item.review && (item.review.action === 'changes_requested' || item.review.action === 'rejected') && item.review.reason ? item.review : null;
@@ -249,6 +254,10 @@ export function Detail({ item, now, onStar, onTrash }: DetailProps): ReactNode {
         {actionsOf(item).map((action, index) =>
           action.kind === 'link' ? (
             <Button key={action.label} variant={index === 0 ? 'primary' : 'ghost'} size="lg" href={action.href} className="mine-action" dataId={`mine-action-${action.label.slice('mine.action.'.length)}`}>
+              {t(action.label)}
+            </Button>
+          ) : action.kind === 'withdraw' ? (
+            <Button key={action.label} variant={index === 0 ? 'primary' : 'ghost'} size="lg" className="mine-action" onClick={() => onWithdraw(item)} dataId="mine-action-withdraw">
               {t(action.label)}
             </Button>
           ) : (

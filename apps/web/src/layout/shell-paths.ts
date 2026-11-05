@@ -18,4 +18,13 @@ export const SHELL_PATHS = {
   upload: '/upload',
   imports: '/import',
   sync: '/sync',
+  /** The admin station: the review queue (A01), published texts (A02), the API and its tokens (A03). */
+  adminReview: '/admin',
+  adminContent: '/admin/content',
+  adminApi: '/admin/api',
 } as const;
+
+/** Sending a text for review (C06). */
+export function submitPath(documentId: string): string {
+  return `/d/${encodeURIComponent(documentId)}/submit`;
+}

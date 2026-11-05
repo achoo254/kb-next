@@ -5,7 +5,12 @@ import { useI18n } from './i18n/i18n';
 import { AppShell, type RailId, type ViewId } from './layout/app-shell';
 import { ScreenPage } from './layout/screen-page';
 import { SessionProvider } from './layout/session-context';
+import { UnreadProvider } from './layout/unread-context';
 import type { BackdropVeil } from './ui/universe-backdrop';
+import { AdminApiScreen } from './pages/admin-api-screen';
+import { AdminContentScreen } from './pages/admin-content-screen';
+import { AdminGate } from './pages/admin-gate';
+import { AdminReviewScreen } from './pages/admin-review-screen';
 import { CanvasRoute } from './pages/canvas-screen';
 import { CopilotScreen } from './pages/copilot-screen';
 import { CreateMenu } from './pages/create-menu';
@@ -14,6 +19,7 @@ import { ErrorScreen } from './pages/error-screen';
 import { GraphScreen } from './pages/graph-screen';
 import { HistoryScreen } from './pages/history-screen';
 import { ImportScreen } from './pages/import-screen';
+import { InboxScreen } from './pages/inbox-screen';
 import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
@@ -21,6 +27,7 @@ import { MineScreen } from './pages/mine-screen';
 import { NewNote } from './pages/new-note';
 import { ReaderScreen } from './pages/reader-screen';
 import { SearchScreen } from './pages/search-screen';
+import { SubmitScreen } from './pages/submit-screen';
 import { SyncScreen } from './pages/sync-screen';
 import { SpaceScreen } from './pages/space-screen';
 import { TranslateScreen } from './pages/translate-screen';
@@ -60,6 +67,9 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   F03: { rail: 'settings', veil: 'radial' },
   F04: { rail: 'spaces', veil: 'strong' },
   A01: { veil: 'strong' },
+  A02: { veil: 'strong' },
+  A03: { veil: 'strong' },
+  C06: { rail: 'mine' },
 };
 
 /** The card of a screen not built yet: its board code and name, and a sign-out on signed-in screens. */
@@ -126,6 +136,28 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <KeysScreen />;
     case 'F04':
       return <TranslateScreen id={routeParam(route, path)} />;
+    case 'C06':
+      return <SubmitScreen id={routeParam(route, path)} />;
+    case 'C20':
+      return <InboxScreen />;
+    case 'A01':
+      return (
+        <AdminGate code="A01">
+          <AdminReviewScreen />
+        </AdminGate>
+      );
+    case 'A02':
+      return (
+        <AdminGate code="A02">
+          <AdminContentScreen />
+        </AdminGate>
+      );
+    case 'A03':
+      return (
+        <AdminGate code="A03">
+          <AdminApiScreen />
+        </AdminGate>
+      );
     default: {
       const chrome = SCREEN_CHROME[route.code] ?? {};
       return (
@@ -187,10 +219,12 @@ export function App({ pathname }: { pathname: string }): ReactNode {
 
   return (
     <SessionProvider value={session}>
-      <a className="skip-link" href="#content">
-        {t('layout.skip')}
-      </a>
-      <Screen route={route} path={path} session={session} />
+      <UnreadProvider signedIn={session.status === 'ready' && session.signedIn}>
+        <a className="skip-link" href="#content">
+          {t('layout.skip')}
+        </a>
+        <Screen route={route} path={path} session={session} />
+      </UnreadProvider>
     </SessionProvider>
   );
 }

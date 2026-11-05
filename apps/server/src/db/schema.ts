@@ -303,6 +303,20 @@ export const links = pgTable(
 
 export const reviewAction = pgEnum('review_action', ['submitted', 'approved', 'changes_requested', 'rejected']);
 
+/**
+ * Jev's pre-review of a submitted text (A01), each 0–1, for admins only and never a verdict: `onTopic` (fits its
+ * Space), `hasSources` (cites or links where it comes from), `duplicate` (repeats `duplicateOf`, the closest existing
+ * text among the search's top candidates), `inappropriate` (language unfit to publish). A judgment Jev could not make
+ * is left out; no Jev (off or failing) leaves the whole record null.
+ */
+export interface JevPreReview {
+  onTopic?: number;
+  hasSources?: number;
+  duplicate?: number;
+  duplicateOf?: string | null;
+  inappropriate?: number;
+}
+
 /** The review trail of a document; `jevScores` are the pre-review scores shown to admins (A01), never a verdict. */
 export const reviewEvents = pgTable(
   'review_events',
@@ -314,7 +328,7 @@ export const reviewEvents = pgTable(
     actorId: uuid('actor_id').references(() => users.id),
     action: reviewAction('action').notNull(),
     reason: text('reason'),
-    jevScores: jsonb('jev_scores').$type<Record<string, number>>(),
+    jevScores: jsonb('jev_scores').$type<JevPreReview>(),
     createdAt: createdAt(),
   },
   (table) => [index('review_events_document_id_idx').on(table.documentId)],
@@ -368,6 +382,14 @@ export const favorites = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.documentId] })],
 );
 
+/**
+ * The kinds of notification (C20): `mention` and `comment` on a text, `review` (a result: approved, changes
+ * requested, rejected; its payload says which and why), `stale` (an approved text of the account unchanged for 180
+ * days), `permission` (an admin hid or showed a text of the account).
+ */
+export const NOTIFICATION_KINDS = ['mention', 'comment', 'review', 'stale', 'permission'] as const;
+export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
+
 /** The inbox of an account (C20). `kind` names the event; `payload` holds what its message needs. */
 export const notifications = pgTable(
   'notifications',
@@ -382,7 +404,11 @@ export const notifications = pgTable(
     readAt: timestamp('read_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
-  (table) => [index('notifications_user_id_created_at_idx').on(table.userId, table.createdAt)],
+  (table) => [
+    index('notifications_user_id_created_at_idx').on(table.userId, table.createdAt),
+    // The bell's count: unread rows of one account.
+    index('notifications_unread_idx').on(table.userId).where(sql`${table.readAt} is null`),
+  ],
 );
 
 /**
@@ -512,16 +538,41 @@ export const copilotQuestions = pgTable(
   (table) => [index('copilot_questions_user_id_created_at_idx').on(table.userId, table.createdAt)],
 );
 
-/** Admin API tokens (A03): only the sha256 is stored; shown once at creation; revocable. */
+/**
+ * Admin API tokens (A03): only the sha256 is stored; shown once at creation; revocable. `last4` is all that is ever
+ * shown again ("kf_admin_••••7f2a"). A call acts as `createdBy`, and only while that account is still an admin.
+ */
 export const adminTokens = pgTable('admin_tokens', {
   id: uuid('id').primaryKey().defaultRandom(),
   tokenHash: text('token_hash').notNull().unique(),
   label: text('label').notNull(),
+  last4: text('last4').notNull().default(''),
   createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
   lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
   revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: createdAt(),
 });
+
+/**
+ * Calls to the admin API (A03 "Nhật ký gọi gần đây"): method, path (ids, never a token), the answer's status and
+ * error code, the token used (null when none matched) and the document it created or changed with its title then.
+ * Kept 30 days.
+ */
+export const adminApiCalls = pgTable(
+  'admin_api_calls',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tokenId: uuid('token_id').references(() => adminTokens.id, { onDelete: 'set null' }),
+    method: text('method').notNull(),
+    path: text('path').notNull(),
+    status: integer('status').notNull(),
+    error: text('error'),
+    documentId: uuid('document_id').references(() => documents.id, { onDelete: 'set null' }),
+    documentTitle: text('document_title'),
+    createdAt: createdAt(),
+  },
+  (table) => [index('admin_api_calls_created_at_idx').on(table.createdAt)],
+);
 
 /** A Canvas board (C15): its nodes and edges as JSON. */
 export const canvases = pgTable(

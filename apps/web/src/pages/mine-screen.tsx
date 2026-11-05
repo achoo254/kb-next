@@ -25,6 +25,7 @@ import {
 } from '../api/authoring-api';
 import { type CanvasListItem, fetchCanvases } from '../api/canvas-api';
 import { type SpaceListItem, fetchSpaces } from '../api/content-api';
+import { withdrawSubmission } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { Button } from '../ui/button';
 import { Modal } from '../ui/modal';
@@ -207,6 +208,8 @@ export function MineScreen(): ReactNode {
       () => act(() => restoreFromTrash(item.id), t('mine.toast.restored', { title: item.title })),
     );
 
+  const withdraw = (item: MineItem): void => act(() => withdrawSubmission(item.id), t('mine.toast.withdrawn', { title: item.title }));
+
   const restore = (doc: TrashedDocument): void =>
     act(
       () => restoreFromTrash(doc.id),
@@ -311,7 +314,7 @@ export function MineScreen(): ReactNode {
           </section>
           <aside aria-label={t('mine.details')} className="mine-aside" data-id="mine-aside">
             {data && selected ? (
-              <Detail item={selected} onStar={star} onTrash={moveToTrash} now={now} />
+              <Detail item={selected} onStar={star} onTrash={moveToTrash} onWithdraw={withdraw} now={now} />
             ) : (
               <span className="mine-aside-none">{data && items.length === 0 ? t('mine.empty.aside') : t('mine.pickOne')}</span>
             )}

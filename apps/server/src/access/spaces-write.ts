@@ -98,6 +98,13 @@ export async function collectionIn(db: Db, spaceId: string, collectionId: string
   return row ?? null;
 }
 
+/** A Collection by its id alone, or null. */
+export async function findCollectionById(db: Db, collectionId: string): Promise<CollectionRow | null> {
+  if (!isUuid(collectionId)) return null;
+  const [row] = await db.select().from(collections).where(eq(collections.id, collectionId));
+  return row ?? null;
+}
+
 /** Whether `viewer` may add Collections to `space`: its owner (personal), or an admin. */
 export function mayAddCollection(viewer: UserViewer, space: SpaceRow): boolean {
   return viewer.isAdmin || (space.kind === 'personal' && space.ownerId === viewer.userId);

@@ -9,10 +9,11 @@ import { CommandPalette } from '../palette/command-palette';
 import { BrandLogo } from './brand-logo';
 import { SHELL_PATHS } from './shell-paths';
 import { signedInUser, useSessionState } from './session-context';
+import { useUnread } from './unread-context';
 import './app-shell.css';
 
-/** The sections of the lens rail, top to bottom (boards C09–C15). */
-export type RailId = 'universe' | 'graph' | 'create' | 'search' | 'copilot' | 'spaces' | 'mine' | 'settings';
+/** The sections of the lens rail, top to bottom (boards C09–C15), and of the admin rail (A01–A03). */
+export type RailId = 'universe' | 'graph' | 'create' | 'search' | 'copilot' | 'spaces' | 'mine' | 'settings' | 'review' | 'content' | 'api';
 /** The views of the nav pill. */
 export type ViewId = 'orbit' | 'graph' | 'canvas' | 'docs';
 
@@ -44,8 +45,12 @@ interface AppShellProps {
   spaceHref?: string;
   /** The document the "Docs" view opens (the current or last one); "My content" otherwise. */
   docHref?: string;
-  /** Unread notifications (the red dot on the bell). */
+  /** Unread notifications (the red dot on the bell); default: the account's count (unread-context.tsx). */
   unread?: number;
+  /** The admin station (A01–A03): no view pill, the "Trạm quản trị" badge by the logo, the admin rail. */
+  admin?: boolean;
+  /** Left of the bell (A01's shortcut hint). */
+  topExtra?: ReactNode;
   className?: string;
   children?: ReactNode;
 }
@@ -66,6 +71,17 @@ function railItems(t: Translate, spaceHref: string): LensRailItem[] {
     { id: 'spaces', label: t('shell.rail.spaces'), href: spaceHref, icon: 'orbit' },
     { id: 'mine', label: t('shell.rail.mine'), href: SHELL_PATHS.mine, icon: 'bars' },
     { id: 'settings', label: t('shell.rail.settings'), href: SHELL_PATHS.settings, icon: 'settings' },
+  ];
+}
+
+/** The admin station's rail (A01–A03): the queue, published texts, the API; then settings and back to the Universe. */
+function adminRailItems(t: Translate): LensRailItem[] {
+  return [
+    { id: 'review', label: t('shell.admin.review'), href: SHELL_PATHS.adminReview, icon: 'admin-review', spaceAfter: 2 },
+    { id: 'content', label: t('shell.admin.content'), href: SHELL_PATHS.adminContent, icon: 'admin-content', spaceAfter: 2 },
+    { id: 'api', label: t('shell.admin.api'), href: SHELL_PATHS.adminApi, icon: 'admin-api', spaceAfter: 21 },
+    { id: 'settings', label: t('shell.admin.settings'), href: SHELL_PATHS.settings, icon: 'settings', spaceAfter: 2 },
+    { id: 'universe', label: t('shell.admin.universe'), href: SHELL_PATHS.universe, icon: 'orbit' },
   ];
 }
 
@@ -152,11 +168,14 @@ export function AppShell({
   stars = true,
   spaceHref = SHELL_PATHS.universe,
   docHref = SHELL_PATHS.mine,
-  unread = 0,
+  unread,
+  admin = false,
+  topExtra,
   className,
   children,
 }: AppShellProps): ReactNode {
   const { t } = useI18n();
+  const accountUnread = useUnread().total;
   const user = signedInUser(useSessionState());
   const palette = usePalette();
   const account = user
@@ -171,9 +190,30 @@ export function AppShell({
     <UniverseBackdrop veil={veil} stars={stars} className={[`app-shell board-frame`, palette.open ? 'app-shell-palette' : '', className ?? ''].filter(Boolean).join(' ')}>
       <div className="app-shell-chrome">
         <BrandLogo />
-        <ViewNav label={t('shell.views')} items={viewItems(t, docHref, spaceHref)} activeId={view ?? ''} className="app-shell-nav" />
-        <TopActions inboxHref={SHELL_PATHS.inbox} unread={unread} searchHref={SHELL_PATHS.search} onCommand={palette.toggle} commandOpen={palette.open} className="app-shell-top" />
-        <LensRail label={t('shell.rail')} items={railItems(t, spaceHref)} activeId={rail} account={account} className="app-shell-rail" />
+        {admin ? (
+          <span className="app-shell-admin-badge" data-id="admin-badge">
+            {t('shell.admin.badge')}
+          </span>
+        ) : (
+          <ViewNav label={t('shell.views')} items={viewItems(t, docHref, spaceHref)} activeId={view ?? ''} className="app-shell-nav" />
+        )}
+        <TopActions
+          inboxHref={SHELL_PATHS.inbox}
+          unread={unread ?? accountUnread}
+          inboxOpen={screen === 'C20'}
+          extra={topExtra}
+          searchHref={SHELL_PATHS.search}
+          onCommand={palette.toggle}
+          commandOpen={palette.open}
+          className="app-shell-top"
+        />
+        <LensRail
+          label={admin ? t('shell.admin.rail') : t('shell.rail')}
+          items={admin ? adminRailItems(t) : railItems(t, spaceHref)}
+          activeId={rail}
+          account={account}
+          className={admin ? 'app-shell-rail app-shell-rail-admin' : 'app-shell-rail'}
+        />
         {breadcrumb && breadcrumb.length > 0 && <Breadcrumb items={breadcrumb} label={t('shell.breadcrumb')} action={crumbAction} />}
       </div>
       <main id="content" className="app-shell-main board-frame-main" data-screen={screen} data-id={`screen-${screen}`}>

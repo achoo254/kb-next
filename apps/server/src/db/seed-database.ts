@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Db } from './client';
 import { HIDE_ACTION, SHOW_ACTION } from '../access/history';
-import { auditLog, canvases, chunks, collections, comments, documentVersions, documents, favorites, links, readingProgress, reviewEvents, spaces, users } from './schema';
+import { auditLog, canvases, chunks, collections, comments, documentVersions, documents, favorites, links, notifications, readingProgress, reviewEvents, spaces, users } from './schema';
 import {
   SEED_CANVAS,
   SEED_COMMENTS,
@@ -17,6 +17,7 @@ import {
   SEED_HISTORY,
   SEED_LATEST_UPDATE,
   SEED_LINKS,
+  SEED_NOTIFICATIONS,
   SEED_PROGRESS,
   SEED_RECENT_FIRST,
   SEED_SPACES,
@@ -238,6 +239,11 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
     const at = new Date(SEED_LATEST_UPDATE.getTime() - hoursBefore * HOUR);
     const row = { id: seedId(`comment:${key}`), documentId: seedId(`document:${documentKey}`), authorId: userId(author), body, createdAt: at, updatedAt: at, deletedAt: null };
     await db.insert(comments).values(row).onConflictDoUpdate({ target: comments.id, set: row });
+  }
+  for (const [key, documentKey, minutesBefore, read, payload] of SEED_NOTIFICATIONS) {
+    const at = new Date(SEED_LATEST_UPDATE.getTime() - minutesBefore * 60 * 1000);
+    const row = { id: seedId(`notification:${key}`), userId: owner.id, kind: payload.kind, documentId: documentKey ? seedId(`document:${documentKey}`) : null, payload, readAt: read ? at : null, createdAt: at };
+    await db.insert(notifications).values(row).onConflictDoUpdate({ target: notifications.id, set: row });
   }
   const canvas = {
     id: seedId(`canvas:${SEED_CANVAS.key}`),

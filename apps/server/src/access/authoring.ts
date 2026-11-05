@@ -160,13 +160,26 @@ export interface NewDocument {
   collectionId: string | null;
   title: string;
   body: string;
-  type: WritableType;
+  type: WritableType | 'lab';
   lang: 'vi' | 'en';
   planet: Planet | null;
 }
 
-/** A new draft of `author` (origin `own`, status `draft`: only its author and admins see it), with its version 1. */
-export async function createDocument(db: Db, author: UserViewer, input: NewDocument, now: Date): Promise<{ id: string; rev: Date }> {
+/**
+ * An official text published at once through the admin API: approved (hidden when asked), its version 1 marked as
+ * sent through the API and, when `aiMade`, written by AI.
+ */
+export interface Publication {
+  hidden: boolean;
+  tags: readonly string[];
+  aiMade: boolean;
+}
+
+/**
+ * A new document of `author` with its version 1: a draft (origin `own`, status `draft`: only its author and admins
+ * see it), or, given a `publication` (admins only; the caller checks), an approved official text.
+ */
+export async function createDocument(db: Db, author: UserViewer, input: NewDocument, now: Date, publication: Publication | null = null): Promise<{ id: string; rev: Date }> {
   const markdown = composeMarkdown(input.title, input.body);
   const targets = await resolveLinkTargets(db, author.userId, linkedTitles(markdown), { id: null, lang: input.lang });
   return db.transaction(async (tx) => {
@@ -178,8 +191,10 @@ export async function createDocument(db: Db, author: UserViewer, input: NewDocum
         title: input.title.trim(),
         type: input.type,
         lang: input.lang,
-        origin: 'own',
-        status: 'draft',
+        origin: publication ? 'official' : 'own',
+        status: publication ? 'approved' : 'draft',
+        hidden: publication?.hidden ?? false,
+        tags: publication ? [...publication.tags] : [],
         authorId: author.userId,
         contentHash: contentHash(markdown),
         planet: input.planet,
@@ -188,7 +203,16 @@ export async function createDocument(db: Db, author: UserViewer, input: NewDocum
       })
       .returning({ id: documents.id, lang: documents.lang, updatedAt: documents.updatedAt });
     if (!row) throw new Error('document insert returned nothing');
-    await tx.insert(documentVersions).values({ documentId: row.id, version: 1, markdown, editorId: author.userId, via: 'editor', createdAt: now, updatedAt: now });
+    await tx.insert(documentVersions).values({
+      documentId: row.id,
+      version: 1,
+      markdown,
+      editorId: author.userId,
+      via: publication ? 'api' : 'editor',
+      aiMade: publication?.aiMade ?? false,
+      createdAt: now,
+      updatedAt: now,
+    });
     await writeDerived(tx, row, markdown, targets);
     return { id: row.id, rev: row.updatedAt };
   });

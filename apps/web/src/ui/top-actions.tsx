@@ -8,6 +8,10 @@ interface TopActionsProps {
   inboxHref: string;
   /** Unread notifications; a red dot shows when above 0. */
   unread: number;
+  /** The inbox is the screen on show (C20): the bell is lit and shows the count instead of a dot. */
+  inboxOpen?: boolean;
+  /** Shown left of the bell (A01's shortcut hint and its button). */
+  extra?: ReactNode;
   /** Quick search and commands (F01, ⌘K): where the button leads without script. */
   searchHref: string;
   /** Opens the ⌘K palette in place (the link is the fallback). */
@@ -18,13 +22,21 @@ interface TopActionsProps {
 }
 
 /** Top right of every screen (KIT §5): the bell and ⌘K, nothing else. */
-export function TopActions({ inboxHref, unread, searchHref, onCommand, commandOpen = false, className }: TopActionsProps): ReactNode {
+export function TopActions({ inboxHref, unread, inboxOpen = false, extra, searchHref, onCommand, commandOpen = false, className }: TopActionsProps): ReactNode {
   const { t } = useI18n();
   const inboxLabel = unread > 0 ? t('topActions.inboxUnread', { count: unread }) : t('topActions.inbox');
   return (
     <div className={className ? `kf-top-actions ${className}` : 'kf-top-actions'}>
-      <IconButton label={inboxLabel} icon="bell" href={inboxHref} dataId="top-inbox">
-        {unread > 0 && <span className="kf-top-unread" aria-hidden="true" />}
+      {extra}
+      <IconButton label={inboxLabel} icon="bell" href={inboxHref} dataId="top-inbox" current={inboxOpen}>
+        {unread > 0 &&
+          (inboxOpen ? (
+            <span className="kf-top-unread-count" aria-hidden="true">
+              {unread}
+            </span>
+          ) : (
+            <span className="kf-top-unread" aria-hidden="true" />
+          ))}
       </IconButton>
       <a
         href={searchHref}

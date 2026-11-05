@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import { sql } from 'drizzle-orm';
 import { AccountBudget } from './api/account-limit';
 import { activityRoutes } from './api/activity-routes';
+import { adminApiRoutes, adminTokenRoutes } from './api/admin-api-routes';
 import { DOCUMENT_BODY_LIMIT, authoringRoutes } from './api/authoring-routes';
 import { CANVAS_BODY_LIMIT, canvasRoutes } from './api/canvas-routes';
 import { contentRoutes } from './api/content-routes';
@@ -11,6 +12,8 @@ import { graphRoutes } from './api/graph-routes';
 import { historyRoutes } from './api/history-routes';
 import { meRoutes } from './api/me-routes';
 import { myContentRoutes } from './api/my-content-routes';
+import { notificationRoutes } from './api/notification-routes';
+import { reviewRoutes } from './api/review-routes';
 import { authRoutes } from './auth/auth-routes';
 import { backchannelLogoutRoute } from './auth/backchannel-logout';
 import { type IdpMetadata, idpMetadata } from './auth/idp-metadata';
@@ -71,7 +74,8 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
  * (/api/me), the reading API (Spaces, documents, recent), writing (documents, versions, trash, favourites, Spaces and
  * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, search,
  * the account's own AI keys, the Copilot, AI translation and AI writing
- * (all three on those keys). The web app is static (nginx in production, Vite in dev).
+ * (all three on those keys), review (sending for review, the admins' queue and published texts), the inbox, and the
+ * admin API (token, docs/admin-api.md). The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
@@ -99,6 +103,9 @@ export function createApp({
   // The IdP calls this server to server, without an Origin: ahead of the same-origin check, proven by its signature.
   app.use(backchannelLogoutRoute({ config, db, idp, now }));
 
+  // The admin API authenticates by token, not by the session cookie: called from other servers, without an Origin.
+  app.use(adminApiRoutes({ config, db, now, sync: search?.sync ?? null, jev, meili: search?.meili ?? null }));
+
   app.use(requireSameOrigin(config.publicOrigin));
   // A canvas (its cards and connections) is saved whole: a larger body than the rest of the API takes.
   app.use('/api/canvases', express.json({ limit: CANVAS_BODY_LIMIT }));
@@ -113,6 +120,10 @@ export function createApp({
   app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(historyRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(myContentRoutes({ config, db, now, sync: search?.sync ?? null }));
+  // Review (submit, withdraw, the admins' queue and published texts), the inbox, admin tokens.
+  app.use(reviewRoutes({ config, db, now, sync: search?.sync ?? null, jev, meili: search?.meili ?? null }));
+  app.use(notificationRoutes({ config, db, now }));
+  app.use(adminTokenRoutes({ config, db, now }));
   // Stored files: uploads (multipart, streamed to disk, never parsed as JSON), downloads, editor saves.
   app.use(fileRoutes({ config, db, now, extraction, sync: search?.sync ?? null }));
   app.use(graphRoutes({ config, db, now, jev, summaries }));

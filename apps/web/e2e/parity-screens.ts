@@ -1,5 +1,6 @@
 import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
 import { C02_CLOCK, C02_DRAFT_ID, C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
+import { A01_CLOCK, A03_CLOCK } from './admin-boards';
 import { C08_CLOCK } from './mine-boards';
 import { C03_FILES } from './office-boards';
 
@@ -50,7 +51,9 @@ export interface ParityScreen {
  * the history and comparison an admin sees (history-boards.ts: the E2E account is an ordinary reader); `mine-c08`:
  * /api/me/documents answers the board's eight texts at every step of review (mine-boards.ts: the seed holds those
  * titles as other boards draw them); `upload-c03`, `imports-c16`, `offline-h04`: the upload, the Import Center and the
- * offline queue mid-way (office-boards.ts: E2E has no Tika, and a fresh browser keeps no drafts).
+ * offline queue mid-way (office-boards.ts: E2E has no Tika, and a fresh browser keeps no drafts); `admin`: /api/me
+ * says the account is an admin (the E2E account is not); `admin-a01` / `admin-a02` / `admin-a03`: the review queue
+ * and its first text, the published texts, the token and its calls of the boards (admin-boards.ts).
  */
 export type ParityMock =
   | 'onboarded'
@@ -68,7 +71,11 @@ export type ParityMock =
   | 'mine-c08'
   | 'upload-c03'
   | 'imports-c16'
-  | 'offline-h04';
+  | 'offline-h04'
+  | 'admin'
+  | 'admin-a01'
+  | 'admin-a02'
+  | 'admin-a03';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -160,6 +167,15 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'C16-ImportCenter', path: '/import', signedIn: true, status: 'built', mocks: ['imports-c16'], waitFor: '[data-id="import-suggestion"]' },
   // The offline queue: lab-notes.docx in conflict with the server's version, subnet.xlsx and a note waiting; offline.
   { board: 'H04-Offline', path: '/sync', signedIn: true, status: 'built', mocks: ['offline-h04'], offline: true, waitFor: '[data-id="sync-banner"][data-state="offline"]' },
+  // The inbox (C20) on the seed's seven notifications of the board, the mention picked; sending for review (C06): its
+  // three states and the two result cards side by side, from the screen's own panels.
+  { board: 'C20-Inbox', path: '/inbox', signedIn: true, status: 'built', clock: SEED_CLOCK, waitFor: '[data-id="inbox-screen"][data-state="ready"]' },
+  { board: 'C06-Submit', path: '/dev/kit/submit', signedIn: false, status: 'built' },
+  // The admin station on the boards' data (the E2E account answered as an admin): the queue with TCP vs UDP picked,
+  // published texts by Space with DHCP picked, the API with its token and calls.
+  { board: 'A01-AdminReview', path: '/admin', signedIn: true, status: 'built', mocks: ['admin', 'admin-a01'], clock: A01_CLOCK, waitFor: '.a01-block[data-n="2"]' },
+  { board: 'A02-AdminContent', path: '/admin/content', signedIn: true, status: 'built', mocks: ['admin', 'admin-a02'], waitFor: '[data-id="content-detail"]' },
+  { board: 'A03-AdminApi', path: '/admin/api', signedIn: true, status: 'built', mocks: ['admin', 'admin-a03'], clock: A03_CLOCK, waitFor: '.a03-line[data-tone="danger"]' },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The UI kit (dev server only, apps/web/src/dev-kit).

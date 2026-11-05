@@ -11,6 +11,8 @@ interface IconButtonProps {
   'aria-describedby'?: string;
   /** `glass`: the 48px frosted square of the top bar and X01; `soft`: the 40px expand button of a rim panel. */
   variant?: 'glass' | 'soft';
+  /** The page it leads to is the one on show (aria-current, lit like the active view pill). */
+  current?: boolean;
   /** Extra content inside, e.g. an unread dot. */
   children?: ReactNode;
   className?: string;
@@ -18,12 +20,13 @@ interface IconButtonProps {
 }
 
 /** An icon-only button or link with an accessible name. */
-export function IconButton({ label, icon, href, onClick, variant = 'glass', children, className, dataId, ...aria }: IconButtonProps): ReactNode {
+export function IconButton({ label, icon, href, onClick, variant = 'glass', current = false, children, className, dataId, ...aria }: IconButtonProps): ReactNode {
   const shared = {
     className: className ? `kf-icon-btn ${className}` : 'kf-icon-btn',
     'data-variant': variant,
     'aria-label': label,
     'data-id': dataId,
+    'aria-current': current ? ('page' as const) : undefined,
     ...aria,
   };
   const body = (

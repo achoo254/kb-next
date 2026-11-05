@@ -8,6 +8,7 @@ import { startExtraction } from './extract';
 import { safeErrorText } from './log-error';
 import { startSearch } from './search/search-service';
 import { startTrashPurge } from './authoring/trash-purge';
+import { startStaleCheck } from './notifications/stale-job';
 import { readUserKeysSecret } from './user-keys/crypto';
 
 const config = loadConfig();
@@ -59,6 +60,11 @@ console.log(`text extraction: Tika at ${config.tikaUrl}, files in ${config.files
 const trashPurge = config.startupSeed ? null : startTrashPurge(database.db, search?.sync ?? null, config.filesDir);
 console.log(`trash purge: ${trashPurge ? 'daily' : 'off (KB_SEED=mock keeps the boards’ trash)'}`);
 
+// Authors of approved texts unchanged for 180 days are told (C20), at start and then daily. Not on the mock seed:
+// the boards' inbox is the seed's own.
+const staleCheck = config.startupSeed ? null : startStaleCheck(database.db);
+console.log(`stale check: ${staleCheck ? 'daily' : 'off (KB_SEED=mock keeps the boards’ inbox)'}`);
+
 // Loopback only: nginx (production) and the web dev server proxy to it.
 const server = createApp({ config, db: database.db, search, userKeysSecret: userKeys.secret, extraction }).listen(config.port, '127.0.0.1', () => {
   console.log(`kb server listening on 127.0.0.1:${config.port} (${config.nodeEnv})`);
@@ -76,6 +82,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   console.log(`${signal}: closing`);
   clearInterval(housekeepingTimer);
   trashPurge?.stop();
+  staleCheck?.stop();
   extraction.close();
   search?.close();
   server.close();

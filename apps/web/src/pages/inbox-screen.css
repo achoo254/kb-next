@@ -1,0 +1,432 @@
+/* The inbox (design/mock/C20-Inbox.dc.html), at the board's coordinates: breadcrumb 120,84 · title row 120,108 ·
+   tabs 120,168 · list 120,230 (560 × 620) · preview 700,230 (700 × 620). */
+
+.inbox-shell .app-shell-crumbs {
+  left: calc(var(--board-offset) + 120px);
+  top: 76px;
+}
+
+.inbox-shell .app-shell-crumbs a {
+  font-weight: 400;
+}
+
+.inbox-shell .app-shell-crumb-current {
+  font-weight: 600;
+}
+
+.inbox-screen {
+  position: relative;
+  height: 900px;
+}
+
+.inbox-fill {
+  flex: 1;
+}
+
+.inbox-head {
+  position: absolute;
+  left: 120px;
+  right: 40px;
+  top: 108px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* The board's "Demo: đặt lại" button (a mock control) held this place: the two buttons stay where it put them. */
+  padding-right: 118px;
+}
+
+.inbox-title {
+  margin: 0;
+  font: 700 32px var(--font-sans);
+  letter-spacing: -0.6px;
+  background: var(--hero-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.inbox-count {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.inbox-only {
+  height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.inbox-only-track {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--violet-400) 25%, transparent);
+}
+
+.inbox-only[aria-checked="true"] .inbox-only-track {
+  background: var(--violet-500);
+}
+
+.inbox-only-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--white);
+  transition: left var(--motion-feedback);
+}
+
+.inbox-only[aria-checked="true"] .inbox-only-knob {
+  left: 16px;
+}
+
+.inbox-read-all {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 18px;
+}
+
+.inbox-tabs {
+  position: absolute;
+  left: 120px;
+  top: 168px;
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 24px;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.inbox-tab {
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--c-text-muted);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.inbox-tab[aria-selected="true"] {
+  background: var(--rim-active-bg);
+  border-color: var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+.inbox-tab-count {
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--amber-500);
+  color: var(--inbox-on-badge);
+  font: 700 11px var(--font-sans);
+}
+
+.inbox-list,
+.inbox-preview {
+  position: absolute;
+  top: 230px;
+  height: 620px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.inbox-list {
+  left: 120px;
+  width: 560px;
+  padding: 10px;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.inbox-preview {
+  left: 700px;
+  width: 700px;
+  padding: 26px;
+}
+
+.inbox-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--c-text-muted);
+  font-size: 14px;
+}
+
+.inbox-empty-art {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+
+.inbox-empty-art img {
+  position: absolute;
+  inset: -8px;
+  width: 146px;
+  height: 146px;
+  object-fit: contain;
+}
+
+.inbox-empty-ring {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--emerald-300) 50%, transparent);
+}
+
+.inbox-empty-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.inbox-empty-text {
+  font-size: 13px;
+}
+
+.inbox-row {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: var(--inbox-row-unread);
+}
+
+.inbox-row[data-read] {
+  background: transparent;
+}
+
+.inbox-row[data-selected] {
+  background: var(--inbox-row-selected);
+  border-color: color-mix(in srgb, var(--violet-300) 75%, transparent);
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--violet-300) 30%, transparent),
+    0 0 14px color-mix(in srgb, var(--violet-600) 35%, transparent);
+}
+
+.inbox-row-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: var(--c-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inbox-orb {
+  --tone: var(--violet-500);
+  /* 42px inside its rim, as the board draws it (content-box). */
+  box-sizing: content-box;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, var(--tone), var(--inbox-orb-deep) 75%);
+  border: 1.5px solid var(--tone);
+  box-shadow: 0 0 12px var(--tone);
+  color: var(--white);
+}
+
+.inbox-orb-big {
+  width: 58px;
+  height: 58px;
+  box-shadow: 0 0 24px var(--tone);
+}
+
+[data-tone="cyan"] {
+  --tone: var(--cyan-500);
+}
+[data-tone="emerald"] {
+  --tone: var(--emerald-500);
+}
+[data-tone="amber"] {
+  --tone: var(--amber-500);
+}
+[data-tone="purple"] {
+  --tone: var(--purple-500);
+}
+[data-tone="orange"] {
+  --tone: var(--inbox-orange);
+}
+[data-tone="teal"] {
+  --tone: var(--cyan-700);
+}
+[data-tone="rose"] {
+  --tone: var(--rose-500);
+}
+
+.inbox-row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-row-title {
+  display: block;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.inbox-row[data-read] .inbox-row-title {
+  font-weight: 500;
+}
+
+.inbox-row-meta {
+  display: block;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.inbox-dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--amber-500);
+}
+
+.inbox-toggle {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.inbox-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.inbox-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.inbox-detail-heading {
+  flex: 1;
+}
+
+.inbox-detail-kind {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.inbox-detail-title {
+  margin: 2px 0 0;
+  font: 700 24px/1.25 var(--font-sans);
+}
+
+.inbox-detail-body {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--inbox-inner);
+  border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 5%, transparent);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.inbox-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+/* The person on the line under the message: the board's member green, whatever the kind. */
+.inbox-avatar {
+  --tone: var(--emerald-500);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--tone);
+  color: var(--white);
+  font: 700 12px var(--font-display);
+}
+
+.inbox-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.inbox-action.kf-btn {
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.inbox-action-toggle.kf-btn {
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
