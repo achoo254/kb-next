@@ -61,7 +61,7 @@ export function fakeAskJev() {
     if (purpose === 'search-passages' || purpose === 'ask-passages') {
       const passages = passagesOf(state);
       for (const id of Object.keys(questions)) {
-        if (id === 'enough') continue;
+        if (id === 'enough' || id === 'language') continue;
         answers[id] = { type: 'score', score: rate(passages[id]?.text ?? ''), confidence: 0.9, probabilities: {} };
       }
       if ('enough' in questions) {
@@ -105,10 +105,11 @@ export function seedReply(prompt: FakePrompt): string {
   const sources = promptSources(prompt.user);
   const dora = sources.find((s) => /DORA/.test(s.text));
   const other = [...sources].reverse().find((s) => s !== dora);
-  // The unsupported claim cites another source, or a number no source has when there is only one.
+  // The unsupported claim cites another source, or the DORA one again when there is only one (only that sentence is
+  // flagged then: verdicts go per citation, not per source).
   const sentences = [
     `A new computer gets its IP address from a DHCP server in four DORA steps: Discover, Offer, Request, Acknowledge [${dora?.n ?? 1}].`,
-    `The moon is made of cheese [${other?.n ?? sources.length + 1}].`,
+    `The moon is made of cheese [${other?.n ?? dora?.n ?? 1}].`,
   ];
   // A citation-like mark inside the diagram is not a claim.
   return `${sentences.join(' ')}\n\n\`\`\`mermaid\nsequenceDiagram\n  Client->>Server: Discover. [9]\n\`\`\``;

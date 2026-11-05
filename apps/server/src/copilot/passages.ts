@@ -48,6 +48,21 @@ export interface PassageChoice {
   passages: Found[];
   /** Jev's probability that the candidates are enough to answer; null when it gave none (the ratings decide). */
   enough: number | null;
+  /** The language the question is written in, as Jev reads it; null when it gave none. */
+  language: AnswerLanguage | null;
+}
+
+export type AnswerLanguage = 'vi' | 'en';
+
+/** Letters only Vietnamese uses (beyond plain Latin): their presence settles the language without Jev. */
+const VIETNAMESE_LETTERS = /[ăâđêôơưàảãáạằẳẵắặầẩẫấậèẻẽéẹềểễếệìỉĩíịòỏõóọồổỗốộờởỡớợùủũúụừửữứựỳỷỹýỵ]/i;
+
+/**
+ * The language to answer in when Jev gave none: Vietnamese when the text has a Vietnamese letter, else English
+ * (Vietnamese typed without its marks reads as English here; Jev tells them apart when it is on).
+ */
+export function guessLanguage(text: string): AnswerLanguage {
+  return VIETNAMESE_LETTERS.test(text) ? 'vi' : 'en';
 }
 
 /** Whether the choice answers: something rated useful, and Jev did not find the whole set too thin. */
@@ -57,7 +72,7 @@ export function hasAnswer(choice: PassageChoice): boolean {
 
 /** One Jev call over the candidates; rejects on any Jev failure (the caller falls back to keyword order). */
 export async function choosePassages(jev: JevJudge, question: string, candidates: readonly Found[]): Promise<PassageChoice> {
-  if (candidates.length === 0) return { passages: [], enough: null };
+  if (candidates.length === 0) return { passages: [], enough: null, language: null };
   const state = {
     question,
     passages: Object.fromEntries(
@@ -74,6 +89,13 @@ export async function choosePassages(jev: JevJudge, question: string, candidates
         true: 'The passages state what the answer needs, at least its main part',
         false: 'The passages are about other things, or only name the topic without what the question asks',
       },
+    },
+    // Asked here, in the same call, so the answer's language costs no extra request: models tend to follow the
+    // sources' language (mostly Vietnamese) instead of the question's when only told "the question's language".
+    language: {
+      type: 'choice',
+      instructions: 'Which language is `question` written in? Vietnamese typed without its accent marks is still Vietnamese.',
+      criteria: { vi: 'Vietnamese', en: 'English, or any language other than Vietnamese' },
     },
     ...Object.fromEntries(
       candidates.map((_, i) => [
@@ -98,5 +120,7 @@ export async function choosePassages(jev: JevJudge, question: string, candidates
     })
     .sort((a, b) => (b.relevance ?? 0) - (a.relevance ?? 0))
     .slice(0, MAX_SOURCES);
-  return { passages, enough: enoughAnswer?.type === 'noul' ? enoughAnswer.noul : null };
+  const languageAnswer = answers.language;
+  const language = languageAnswer?.type === 'choice' && (languageAnswer.choice === 'vi' || languageAnswer.choice === 'en') ? languageAnswer.choice : null;
+  return { passages, enough: enoughAnswer?.type === 'noul' ? enoughAnswer.noul : null, language };
 }

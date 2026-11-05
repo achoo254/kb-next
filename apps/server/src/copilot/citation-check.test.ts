@@ -14,16 +14,16 @@ describe('cited sentences', () => {
       'Last line without a stop [2]',
     ].join('\n');
     expect(citedSentences(answer)).toEqual([
-      { sentence: 'DHCP uses four steps.', numbers: [1] },
-      { sentence: 'The server offers an IP from 192.168.1.100.', numbers: [2, 1] },
-      { sentence: 'Version 4.1 is fine.', numbers: [3] },
-      { sentence: 'Last line without a stop', numbers: [2] },
+      { sentence: 'DHCP uses four steps.', numbers: [1], cites: [1] },
+      { sentence: 'The server offers an IP from 192.168.1.100.', numbers: [2, 1], cites: [2, 1] },
+      { sentence: 'Version 4.1 is fine.', numbers: [3], cites: [3] },
+      { sentence: 'Last line without a stop', numbers: [2], cites: [2] },
     ]);
   });
 });
 
 describe('citation check', () => {
-  it('flags a number whose source does not support its claim, and a number no source has', async () => {
+  it('gives one verdict per citation in writing order, leaving out a number no source has', async () => {
     const { jev, calls } = fakeAskJev();
     const sources = [
       { n: 1, title: 'Giao thức DHCP', section: null, text: 'Máy mới xin IP qua 4 bước gọi là DORA.' },
@@ -33,9 +33,19 @@ describe('citation check', () => {
     expect(await checkCitations(jev, answer, sources)).toEqual([
       { n: 1, supported: true },
       { n: 2, supported: false },
-      { n: 7, supported: false },
     ]);
     expect(calls.map((c) => c.purpose)).toEqual(['ask-check']);
+  });
+
+  it('flags only the sentence a source does not back, not every sentence citing that source', async () => {
+    // Seen on prod 05/11/2026: one unsupported claim citing [1] marked every [1] of the answer.
+    const { jev } = fakeAskJev();
+    const sources = [{ n: 1, title: 'Giao thức DHCP', section: null, text: 'Máy mới xin IP qua 4 bước gọi là DORA.' }];
+    const answer = 'A new machine gets its IP in four DORA steps [1]. The exchange is encrypted [1]. Code `[1]` is not a citation.';
+    expect(await checkCitations(jev, answer, sources)).toEqual([
+      { n: 1, supported: true },
+      { n: 1, supported: false },
+    ]);
   });
 
   it('checks every cited number even past the question cap', async () => {
@@ -45,10 +55,10 @@ describe('citation check', () => {
       { n: 2, title: 'B', section: null, text: 'DORA.' },
     ];
     const answer = `${Array.from({ length: 40 }, (_, i) => `DORA fact ${i} [1].`).join(' ')} DORA last [2].`;
-    expect(await checkCitations(jev, answer, sources)).toEqual([
-      { n: 1, supported: true },
-      { n: 2, supported: true },
-    ]);
+    const verdicts = await checkCitations(jev, answer, sources);
+    expect(verdicts).toHaveLength(41);
+    expect(verdicts.every((v) => v.supported)).toBe(true);
+    expect(verdicts.at(-1)).toEqual({ n: 2, supported: true });
     expect(Object.keys((calls[0]?.state as { claims: object }).claims)).toHaveLength(30);
   });
 

@@ -1,7 +1,9 @@
 /**
  * Jev checks the answer's citations (F02 "Trích dẫn mất"): every sentence carrying `[n]` becomes a claim, and one Noul
- * per (claim, cited source) asks whether that source supports it. A citation number is `supported` when every claim
- * citing it is; a number no source has is never supported. Code blocks (the Mermaid diagram) are not claims.
+ * per (claim, cited source) asks whether that source supports it. The result has one entry per `[n]` written in the
+ * answer, in the order they appear (code blocks and inline code skipped, as the web renders them), so the web marks
+ * exactly the sentence a source does not back, not every sentence citing that source. A number no source has is left
+ * out (the web shows it as plain text); a pair past the question cap stays unchecked and is not flagged.
  */
 import type { JevJudge, JevQuestion } from '../jev/jev-client';
 import { excerpt } from '../search/document-summaries';
@@ -22,6 +24,8 @@ export interface CheckSource {
 export interface Claim {
   sentence: string;
   numbers: number[];
+  /** Every `[n]` of the sentence in writing order, repeats included (the numbers the web shows, one each). */
+  cites: number[];
 }
 
 /** (claim, cited source) pairs checked at most, one question each; sources are at most 5, so every number fits. */
@@ -31,6 +35,8 @@ export const MIN_SUPPORT = 0.5;
 const SOURCE_CHARS = 1_800;
 
 const CITATION = /\[(\d{1,2})\]/g;
+/** Inline code, whose `[n]` the web shows as code, not as a citation. */
+const INLINE_CODE = /`[^`\n]*`/g;
 /** A sentence: up to a stop followed by a space or the line's end, with the citations written after the stop. */
 const SENTENCE = /.+?(?:[.!?…]+(?=\s|$)(?:\s*\[\d{1,2}\])*|$)/g;
 
@@ -44,16 +50,20 @@ export function citedSentences(answer: string): Claim[] {
       continue;
     }
     if (fenced) continue;
-    for (const match of line.matchAll(SENTENCE)) {
+    for (const match of line.replace(INLINE_CODE, (code) => ' '.repeat(code.length)).matchAll(SENTENCE)) {
       const sentence = match[0].trim();
-      const numbers = [...new Set([...sentence.matchAll(CITATION)].map((m) => Number(m[1])))];
-      if (numbers.length > 0) claims.push({ sentence: sentence.replace(CITATION, '').replace(/\s+([.!?…])/g, '$1').trim(), numbers });
+      const cites = [...sentence.matchAll(CITATION)].map((m) => Number(m[1]));
+      const numbers = [...new Set(cites)];
+      if (numbers.length > 0) claims.push({ sentence: sentence.replace(CITATION, '').replace(/\s+([.!?…])/g, '$1').trim(), numbers, cites });
     }
   }
   return claims;
 }
 
-/** Every number cited in `answer`, each with whether its sources support it; rejects on any Jev failure. */
+/**
+ * One verdict per citation of a known source in `answer`, in writing order: whether that source supports the sentence
+ * it closes. Rejects on any Jev failure.
+ */
 export async function checkCitations(jev: JevJudge, answer: string, sources: readonly CheckSource[]): Promise<CitationCheck[]> {
   const claims = citedSentences(answer);
   const byNumber = new Map(sources.map((s) => [s.n, s]));
@@ -61,8 +71,8 @@ export async function checkCitations(jev: JevJudge, answer: string, sources: rea
   // Past the cap, every cited number still gets its first claim checked, so none is left without a verdict.
   const firsts = all.filter((p, i) => all.findIndex((q) => q.n === p.n) === i);
   const pairs = [...firsts, ...all.filter((p) => !firsts.includes(p))].slice(0, MAX_QUESTIONS);
-  const verdicts = new Map<number, boolean>();
-  for (const claim of claims) for (const n of claim.numbers) if (!byNumber.has(n)) verdicts.set(n, false);
+  /** Verdict per (claim, number); a pair missing from it was not asked (past the cap). */
+  const verdicts = new Map<string, boolean>();
 
   if (pairs.length > 0) {
     const cited = [...new Set(pairs.map((p) => p.n))];
@@ -91,9 +101,11 @@ export async function checkCitations(jev: JevJudge, answer: string, sources: rea
     const { answers } = await jev.ask('ask-check', state, questions, { timeoutMs: ASK_JEV_TIMEOUT_MS });
     for (const p of pairs) {
       const answer = answers[p.key];
-      const supported = answer?.type === 'noul' && answer.noul >= MIN_SUPPORT;
-      verdicts.set(p.n, (verdicts.get(p.n) ?? true) && supported);
+      verdicts.set(p.key, answer?.type === 'noul' && answer.noul >= MIN_SUPPORT);
     }
   }
-  return [...verdicts].map(([n, supported]) => ({ n, supported })).sort((a, b) => a.n - b.n);
+  // Only citations of a listed source: the web renders an unknown `[n]` as plain text, so it has no place in the order.
+  return claims.flatMap((claim, c) =>
+    claim.cites.filter((n) => byNumber.has(n)).map((n) => ({ n, supported: verdicts.get(`C${c + 1}_S${n}`) ?? true })),
+  );
 }

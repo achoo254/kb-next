@@ -17,14 +17,14 @@ const DORA = ['sequenceDiagram', '  title DHCP DORA', '  participant M as Máy b
 
 describe('splitCitations', () => {
   it('turns the [n] of known sources into citations and underlines the sentence a doubtful one closes', () => {
-    const parts = splitCitations('Câu một [1]. Câu hai sai [2]. Lạ [9].', new Set([1, 2]), new Set([2]));
+    const parts = splitCitations('Câu một [1]. Câu hai sai [2]. Lạ [9].', new Set([1, 2]), (n) => n === 2);
     expect(parts).toEqual([
       { type: 'text', value: 'Câu một ' },
       { type: 'link', url: '#kf-cite-1', children: [{ type: 'text', value: '1' }] },
       { type: 'text', value: '. ' },
       { type: 'link', url: '#kf-claim-2', children: [{ type: 'text', value: 'Câu hai sai' }] },
       { type: 'text', value: ' ' },
-      { type: 'link', url: '#kf-cite-2', children: [{ type: 'text', value: '2' }] },
+      { type: 'link', url: '#kf-cite-2-doubt', children: [{ type: 'text', value: '2' }] },
       { type: 'text', value: '. Lạ [9].' },
     ]);
   });
@@ -48,6 +48,14 @@ describe('AnswerText', () => {
     expect(Array.from(document.querySelectorAll('.copilot-claim'), (claim) => claim.textContent)).toEqual(['Một', 'Hai']);
     expect(screen.queryByRole('link', { name: /Citation 1/ })).toBeNull();
     expect(screen.getByRole('note', { name: /Citation 1/ }).textContent).toBe('1 ?');
+  });
+
+  it('marks only the sentence Jev did not confirm when one source backs one sentence and not the next', () => {
+    // Seen on prod 05/11/2026: one unconfirmed sentence citing [1] marked every [1] of the answer.
+    const mixed = turn('Một [1]. Hai [1]. Ba [2].', { citations: [{ n: 1, supported: true }, { n: 1, supported: false }, { n: 2, supported: true }], sources: [source(1), source(2)] });
+    renderWithI18n(<AnswerText turn={mixed} />);
+    expect(Array.from(document.querySelectorAll('.copilot-claim'), (claim) => claim.textContent)).toEqual(['Hai']);
+    expect(Array.from(document.querySelectorAll('.copilot-cite'), (cite) => cite.textContent)).toEqual(['1', '1 ?', '2']);
   });
 
   it('draws a two-party sequence like board C14, with its Mermaid code a toggle away', () => {

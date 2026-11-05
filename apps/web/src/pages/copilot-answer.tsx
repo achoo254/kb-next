@@ -3,7 +3,8 @@
  * of a known source becomes a citation number that opens the reader at the cited passage (`/d/<id>#<anchor>`), and
  * a ```mermaid block becomes a diagram (copilot-diagram.tsx). A citation Jev did not find supported by its source,
  * or whose source the reader can no longer open, is drawn dashed ("2 ?") and the sentence it closes gets an orange
- * wavy underline (F02 G).
+ * wavy underline (F02 G). Jev's verdicts come one per citation in writing order (`turn.citations`), so only the
+ * sentence a source does not back is marked, not every sentence citing that source.
  */
 import { type ReactNode, useMemo } from 'react';
 import Markdown, { type Components } from 'react-markdown';
@@ -32,6 +33,8 @@ interface MdNode {
 }
 
 const CITE_HREF = '#kf-cite-';
+/** Appended to a citation's href when that citation is in doubt. */
+const DOUBT_SUFFIX = '-doubt';
 const CLAIM_HREF = '#kf-claim-';
 const CITATION = /\[(\d{1,3})\]/g;
 /** Where the sentence a citation closes starts: after the last sentence end before it. */
@@ -52,15 +55,19 @@ function sentenceStart(before: string): number {
   return start;
 }
 
-/** A text node split into text, citation links and, before a doubtful citation, its underlined sentence. */
-export function splitCitations(value: string, known: ReadonlySet<number>, doubtful: ReadonlySet<number>): MdNode[] {
+/**
+ * A text node split into text, citation links and, before a doubtful citation, its underlined sentence. `isDoubtful`
+ * is asked once per citation of a known source, in writing order.
+ */
+export function splitCitations(value: string, known: ReadonlySet<number>, isDoubtful: (n: number) => boolean): MdNode[] {
   const out: MdNode[] = [];
   let last = 0;
   for (const match of value.matchAll(CITATION)) {
     const n = Number(match[1]);
     if (!known.has(n)) continue;
     const before = value.slice(last, match.index);
-    if (doubtful.has(n)) {
+    const doubt = isDoubtful(n);
+    if (doubt) {
       const start = sentenceStart(before);
       const sentence = before.slice(start);
       const claim = sentence.trim();
@@ -70,7 +77,7 @@ export function splitCitations(value: string, known: ReadonlySet<number>, doubtf
       const gap = sentence.slice(sentence.trimEnd().length);
       if (gap && claim) out.push(text(gap));
     } else if (before) out.push(text(before));
-    out.push(link(`${CITE_HREF}${n}`, String(n)));
+    out.push(link(`${CITE_HREF}${n}${doubt ? DOUBT_SUFFIX : ''}`, String(n)));
     last = match.index + match[0].length;
   }
   if (last === 0) return [text(value)];
@@ -78,11 +85,11 @@ export function splitCitations(value: string, known: ReadonlySet<number>, doubtf
   return out;
 }
 
-function markCitations(node: MdNode, known: ReadonlySet<number>, doubtful: ReadonlySet<number>): void {
+function markCitations(node: MdNode, known: ReadonlySet<number>, isDoubtful: (n: number) => boolean): void {
   if (!node.children || SKIPPED.has(node.type)) return;
   node.children = node.children.flatMap((child) => {
-    if (child.type === 'text' && child.value !== undefined) return splitCitations(child.value, known, doubtful);
-    markCitations(child, known, doubtful);
+    if (child.type === 'text' && child.value !== undefined) return splitCitations(child.value, known, isDoubtful);
+    markCitations(child, known, isDoubtful);
     return [child];
   });
 }
@@ -101,20 +108,33 @@ interface AnswerTextProps {
 export function AnswerText({ turn, writing = false, className }: AnswerTextProps): ReactNode {
   const { t } = useCopilotText();
   const { sources } = turn;
-  const doubts = doubtfulCitations(turn);
-  const doubtKey = [...doubts.unsupported, ...doubts.unavailable].join(',');
+  const { citations } = turn;
+  const unavailableKey = doubtfulCitations(turn).unavailable.join(',');
   const known = useMemo(() => new Set(sources.map((s) => s.n)), [sources]);
-  const doubtful = useMemo(() => new Set(doubtKey ? doubtKey.split(',').map(Number) : []), [doubtKey]);
-  const plugins = useMemo(() => [remarkGfm, () => (tree: MdNode) => markCitations(tree, known, doubtful)], [known, doubtful]);
+  const plugins = useMemo(() => {
+    const unavailable = new Set(unavailableKey ? unavailableKey.split(',').map(Number) : []);
+    return [
+      remarkGfm,
+      () => (tree: MdNode) => {
+        // One verdict per citation, in the order the answer writes them (the server counts them the same way).
+        let next = 0;
+        markCitations(tree, known, (n) => {
+          const verdict = citations?.[next];
+          next += 1;
+          return unavailable.has(n) || verdict?.supported === false;
+        });
+      },
+    ];
+  }, [known, citations, unavailableKey]);
   const streaming = turn.stage === 'writing' || turn.stage === 'searching';
 
   const components = useMemo<Components>(
     () => ({
       a({ node: _node, href, children, ...props }) {
         if (href?.startsWith(CITE_HREF)) {
-          const n = Number(href.slice(CITE_HREF.length));
+          const doubt = href.endsWith(DOUBT_SUFFIX);
+          const n = Number(href.slice(CITE_HREF.length, doubt ? -DOUBT_SUFFIX.length : undefined));
           const source = sources.find((s) => s.n === n);
-          const doubt = doubtful.has(n);
           const label = source ? t(doubt ? 'copilot.citeDoubt' : 'copilot.cite', { n, title: sourceTitle(source) }) : String(n);
           if (!source || source.available === false)
             return (
@@ -155,7 +175,7 @@ export function AnswerText({ turn, writing = false, className }: AnswerTextProps
         return <img {...props} alt={alt ?? ''} loading="lazy" />;
       },
     }),
-    [sources, doubtful, streaming, t],
+    [sources, streaming, t],
   );
 
   return (

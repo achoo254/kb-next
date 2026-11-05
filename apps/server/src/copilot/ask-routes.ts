@@ -52,7 +52,7 @@ import type { OpenedKey, UserKeyStore } from '../user-keys/key-store';
 import { answerPrompt } from './answer-prompt';
 import { type CitationCheck, checkCitations } from './citation-check';
 import { type EventStream, connectionSignal, openEventStream } from './event-stream';
-import { MAX_SOURCES, candidatesOf, choosePassages, hasAnswer } from './passages';
+import { MAX_SOURCES, candidatesOf, choosePassages, guessLanguage, hasAnswer } from './passages';
 import { reportProviderFailure } from './provider-failure';
 
 export const MAX_QUESTION_CHARS = 1_000;
@@ -153,11 +153,13 @@ export function askRoutes({ config, db, now, meili, jev, summaries, keys, bases,
     const candidates = candidatesOf(search);
     let passages = candidates.slice(0, MAX_SOURCES);
     let answerable = passages.length > 0;
+    let language = guessLanguage(body.question || (selection ?? ''));
     if (jev && jevState === 'ok' && candidates.length > 0) {
       try {
         const choice = await choosePassages(jev, body.question || (selection ?? ''), candidates);
         passages = choice.passages;
         answerable = hasAnswer(choice);
+        language = choice.language ?? language;
       } catch (error) {
         console.error('ask: Jev unavailable, keyword passages only', safeErrorText(error));
         jevState = 'off';
@@ -181,7 +183,7 @@ export function askRoutes({ config, db, now, meili, jev, summaries, keys, bases,
     const promptSources = chosen.map((c) => ({ n: c.n, title: c.doc.title, section: c.chunk.heading, text: c.chunk.text }));
     let text = '';
     try {
-      for await (const delta of streamText(bases, key, answerPrompt(body.task, body.question, selection, promptSources), 'ask', stream.signal)) {
+      for await (const delta of streamText(bases, key, answerPrompt(body.task, body.question, selection, promptSources, language), 'ask', stream.signal)) {
         text += delta;
         stream.send('delta', { text: delta });
       }
