@@ -7,8 +7,7 @@
  *
  * The board's "Trạng thái (demo)" switch is the preview panel here: each of its states is a real state of the screen.
  */
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import { type SpaceListItem, fetchSpaces } from '../api/content-api';
+import { type ReactNode, useState } from 'react';
 import { SEARCH_MODES, type SearchMode, type SearchResponse, type SearchResult, resultHref } from '../api/search-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { useDevice } from '../layout/device';
@@ -16,8 +15,9 @@ import { Icon, type IconName } from '../ui/icon';
 import { OriginTag } from '../ui/origin-tag';
 import { RimPanel } from '../ui/rim-panel';
 import { stateArtSrc } from '../ui/art';
-import { allResults, type SearchFailure, type SearchState, useSearch } from './search-data';
-import { FilterPanel, type SearchAddress, type SearchFilters, addressOf, readAddress, searchParamsOf } from './search-filters';
+import { allResults, type SearchFailure, type SearchState } from './search-data';
+import { useSearchAddress, useVisibleSpaces } from './search-address';
+import { FilterPanel, type SearchAddress, type SearchFilters } from './search-filters';
 import { copilotHref } from './copilot-links';
 import { SearchPhone } from './search-phone';
 import { type SearchTranslate, useSearchText } from './search-messages';
@@ -226,35 +226,6 @@ function SidePanels({ state, preview, t, locale, onPick }: { state: SearchState;
   );
 }
 
-export function useVisibleSpaces(): readonly SpaceListItem[] {
-  const [spaces, setSpaces] = useState<readonly SpaceListItem[]>([]);
-  useEffect(() => {
-    let live = true;
-    // Without the list the Space filter is empty; searching still works.
-    fetchSpaces()
-      .then((list) => live && setSpaces(list))
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, []);
-  return spaces;
-}
-
-/** The search in the page's address (?q=, mode, filters): the answer, and a way to change it that keeps the address in step. */
-export function useSearchAddress(): { address: SearchAddress; update(next: Partial<SearchAddress>): void; state: SearchState; retry(): void } {
-  const [address, setAddress] = useState<SearchAddress>(() => readAddress(window.location.search));
-  const params = useMemo(() => searchParamsOf(address), [address]);
-  const { state, retry } = useSearch(params);
-  const update = (next: Partial<SearchAddress>): void => {
-    const changed = { ...address, ...next };
-    // A new query asks for the exact diacritics again.
-    if (next.q !== undefined && next.q !== address.q) changed.variants = false;
-    setAddress(changed);
-    window.history.replaceState(window.history.state, '', addressOf(changed));
-  };
-  return { address, update, state, retry };
-}
 
 /** /search: the phone board M06 on a phone, C12 elsewhere. */
 export function SearchScreen(): ReactNode {

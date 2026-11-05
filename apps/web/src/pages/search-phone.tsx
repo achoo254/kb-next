@@ -9,7 +9,7 @@ import { usePhoneText } from './phone-messages';
 import { PhoneOrigin } from './phone-origin';
 import { type SearchTranslate, useSearchText } from './search-messages';
 import { Highlighted, SearchSkeleton, SpaceOrb } from './search-results';
-import { useSearchAddress, useVisibleSpaces } from './search-screen';
+import { useSearchAddress, useVisibleSpaces } from './search-address';
 import { originOf, relevanceText } from './space-labels';
 import { spaceName } from './space-panels';
 import { spaceHref } from './universe-spaces';

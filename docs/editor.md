@@ -4,6 +4,10 @@ Trình soạn bài ở `/d/<id>/edit` (board C02), tạo ghi chú mới ở `/ne
 Mã: [`apps/web/src/pages/editor-screen.tsx`](../apps/web/src/pages/editor-screen.tsx) và các tệp `editor-*` cùng thư
 mục; API: [`apps/server/src/api/authoring-routes.ts`](../apps/server/src/api/authoring-routes.ts).
 
+Trên điện thoại (đến 640px) cùng trình soạn đó hiện theo bước soạn của board M02: thanh trên (quay lại, loại bài,
+chip tự lưu, "Tiếp" sang M03), tiêu đề với hành tinh, màu, nội dung, thanh công cụ `/`, `[[`, ảnh, sơ đồ, AI (trợ lý mở
+thành sheet). Tự lưu, bản offline và xung đột y như trên máy tính ([`board-frame.md`](board-frame.md#tablet-và-điện-thoại)).
+
 ## Chọn TipTap thay vì CodeMirror 6
 
 Phase 9 cho chọn CodeMirror 6 hoặc TipTap, lấy cái dựng lại board C02 với ít ghi đè style nhất. Chọn **TipTap 3**

@@ -11,7 +11,7 @@ import { ReaderAiCard, type ReaderTask, useReaderAi } from './reader-ai';
 import { COMMENTS_ANCHOR } from './reader-comments';
 import { ReaderMarkdown } from './reader-markdown';
 import { useReaderText } from './reader-messages';
-import { type ReaderLoad, ReaderFailed, ReaderLoading, sideAsk } from './reader-screen';
+import { type ReaderLoad, ReaderFailed, ReaderLoading, sideAsk } from './reader-states';
 import { orderBacklinks } from './reader-side';
 import { originOf } from './space-labels';
 import { spaceName } from './space-panels';

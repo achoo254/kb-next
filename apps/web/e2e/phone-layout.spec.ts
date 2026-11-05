@@ -1,6 +1,9 @@
 import { type Page, expect, test } from '@playwright/test';
+import { C02_DRAFT_ID } from './graph-canvas-boards';
 import { openScreen } from './open-screen';
 import { PARITY_SCREENS, layoutOf } from './parity-screens';
+import { PUBLISH_DOCUMENT_ID } from './share-boards';
+import { signInAt } from './sign-in';
 
 /**
  * The phone screens (boards Mobile, M02–M06; apps/web/src/layout/device.ts) at 390×844: laid out at the window's own
@@ -53,3 +56,53 @@ for (const screen of PHONE_SCREENS) {
     expect(result.small).toEqual([]);
   });
 }
+
+/** The phone screens with no board of their own: the editor stage of M02, the stages after M03, the upload. */
+async function checkPhone(page: Page): Promise<void> {
+  const result = await measure(page);
+  expect(result.layout).toBe('phone');
+  expect(result.sideways).toBe(false);
+  expect(result.small).toEqual([]);
+}
+
+test('the phone editor (M02 editor stage) of a draft', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await signInAt(page, `/d/${C02_DRAFT_ID}/edit`);
+  await page.locator('[data-id="editor-screen"][data-state="ready"]').waitFor();
+  await checkPhone(page);
+  // the AI assistant opens as a sheet over the editor
+  await page.locator('[data-id="editor-tool-ai"]').click();
+  await page.locator('[data-id="editor-ai-sheet"]').waitFor();
+  await checkPhone(page);
+});
+
+test('a new note opens in the phone editor', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await signInAt(page, '/new');
+  await page.waitForURL(/\/d\/[^/]+\/edit$/);
+  await page.locator('[data-id="editor-screen"][data-state="ready"]').waitFor();
+  await checkPhone(page);
+});
+
+for (const outcome of ['sent', 'failed'] as const) {
+  test(`sending for review on a phone ends ${outcome} (M03 stages)`, async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    // the submission is answered here: the shared draft must stay a draft for the other screens
+    await page.route('**/api/documents/*/submit', (route) =>
+      outcome === 'sent'
+        ? route.fulfill({ json: { status: 'pending', queuePosition: 2, submittedAt: '2026-11-03T14:05:00.000Z', preReviewed: true } })
+        : route.abort('internetdisconnected'),
+    );
+    await signInAt(page, `/d/${PUBLISH_DOCUMENT_ID}/publish`);
+    await page.locator('[data-id="publish-cta"]').click();
+    await page.locator(`[data-id="submit-screen"][data-state="${outcome}"]`).waitFor();
+    await checkPhone(page);
+  });
+}
+
+test('uploading on a phone', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await signInAt(page, '/upload');
+  await page.locator('[data-id="upload-phone"]').waitFor();
+  await checkPhone(page);
+});

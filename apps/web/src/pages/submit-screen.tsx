@@ -11,20 +11,21 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import { type DocumentView, fetchDocument } from '../api/content-api';
 import { type AppNotification, fetchInbox } from '../api/notifications-api';
-import { type SubmitRequest, type SubmitResponse, submitForReview } from '../api/review-api';
+import { type SubmitRequest, submitForReview } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
 import { publishPath } from '../layout/shell-paths';
 import { noticeAgo, useInboxText } from './inbox-messages';
-import { type ReviewNotice, ReviewNoticeCard, type SubmitStep, SubmitFix, SubmitSent, SubmitSteps } from './submit-panels';
-import { type SubmitError, type SubmitMessageKey, submitErrorOf, useSubmitText } from './submit-messages';
+import { type ReviewNotice, ReviewNoticeCard, type SubmitPhase as Phase, type SubmitStep, SubmitFix, SubmitSent, SubmitSteps } from './submit-panels';
+import { type SubmitMessageKey, submitErrorOf, useSubmitText } from './submit-messages';
 import type { ScreenTranslate } from './space-messages';
+import { SubmitPhone } from './submit-phone';
 import './submit-screen.css';
 
 /**
  * `checking`: a visit of /submit, reading the text's status; `sent` without a result: a text already waiting (its
  * place in the queue and Jev's run belong to the submission, not shown again).
  */
-type Phase = { kind: 'checking' } | { kind: 'sending' } | { kind: 'sent'; result: SubmitResponse | null } | { kind: 'failed'; error: SubmitError };
 
 /** The four steps of a submission in each phase (C06 A). */
 export function submitSteps(t: ScreenTranslate<SubmitMessageKey>, phase: Phase, doc: DocumentView | null): { steps: SubmitStep[]; percent: number } {
@@ -97,6 +98,7 @@ interface SubmitScreenProps {
 export function SubmitScreen({ id, request, translateTo }: SubmitScreenProps): ReactNode {
   const { t, locale } = useSubmitText();
   const inbox = useInboxText();
+  const device = useDevice();
   const [doc, setDoc] = useState<DocumentView | null>(null);
   const [phase, setPhase] = useState<Phase>(request ? { kind: 'sending' } : { kind: 'checking' });
   const [retrying, setRetrying] = useState(false);
@@ -157,6 +159,10 @@ export function SubmitScreen({ id, request, translateTo }: SubmitScreenProps): R
   const collection = doc?.document.collection ? (locale === 'vi' ? doc.document.collection.nameVi : doc.document.collection.nameEn) : null;
   const place = [space, collection].filter(Boolean).join(' › ');
   const cards = reviewNotices(t, (iso) => noticeAgo(inbox.t, iso, notices.now), place, id, notices.items).slice(0, 2);
+
+  if (device === 'phone') {
+    return <SubmitPhone id={id} title={doc?.document.title ?? ''} phase={phase} steps={steps} retry={retry} retrying={retrying} translate={translate} />;
+  }
 
   return (
     <AppShell

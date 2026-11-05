@@ -21,7 +21,7 @@ import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import { ErrorPanel } from './error-screen';
 import { ReaderMarkdown } from './reader-markdown';
-import { type ReaderFailure, readerLoadError } from './reader-screen';
+import { type ReaderFailure, readerLoadError } from './reader-states';
 import { NATIVE_LANGUAGE, type TranslateMessageKey, useTranslateText } from './translate-messages';
 import { roundedWords, sourceParagraphs, translatedPercent, wordCount } from './translate-source';
 import './translate-screen.css';

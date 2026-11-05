@@ -32,7 +32,7 @@ Bề ngang cửa sổ chọn một trong ba bố cục ([`apps/web/src/layout/de
 |---|---|---|---|
 | `desktop` | từ 1280px | (board 1440×900) | board 1440×900 như trên |
 | `tablet` | 641–1279px | Universe (T01) và reader (T02) dựng trên board 1180×820, co bằng `--tablet-zoom` cùng công thức (`AppShell tabletBoard`, lớp `.board-frame-tablet`) | board 1440×900 |
-| `phone` | đến 640px | `/u` (Mobile), `/create` (M02), `/d/:id/publish` (M03), `/copilot` (M04), `/d/:id` (M05), `/search` (M06): bố cục thật theo bề ngang cửa sổ, không zoom, chỉ 2D, trong `PhoneShell` có thanh pill dưới `MobileTabBar` thay lens rail | board 1440×900 ở mức co nhỏ nhất, cuộn ngang |
+| `phone` | đến 640px | `/u` (Mobile), `/create` (M02), trình soạn `/new` và `/d/:id/edit` (bước soạn của M02), `/d/:id/publish` (M03) và các bước gửi duyệt sau đó (`/d/:id/submit`: đang gửi, đã gửi, chưa gửi được), `/copilot` (M04), `/d/:id` (M05), `/search` (M06), `/upload` (chọn và tải tệp, không sửa): bố cục thật theo bề ngang cửa sổ, không zoom, chỉ 2D, trong `PhoneShell`; thanh pill dưới `MobileTabBar` thay lens rail (trình soạn và các bước gửi duyệt che cả màn, không có thanh) | board 1440×900 ở mức co nhỏ nhất, cuộn ngang |
 
 - Tablet: T01 là 3D nhẹ (`TABLET_SCENE.light3d`: không quầng blur quanh quỹ đạo, nửa số chấm sáng, không
   supersampling), không có panel AI (nút "Copilot" trên thanh trên mở C14); T02 bỏ cột mục lục và cột phải, mục lục
@@ -42,8 +42,11 @@ Bề ngang cửa sổ chọn một trong ba bố cục ([`apps/web/src/layout/de
   Canvas ở M04 chỉ giải thích), Graph chỉ xem (ẩn nối và gỡ liên kết, gợi ý của Jev), tệp Office chỉ đọc (`OfficeView
   readOnly`, nút "Sửa" của M05 tắt kèm lý do). Vũ trụ 2D chỉ đặt 6 Space theo board, Space khác vào từ "Bay tới
   Space" của M06.
+- Trình soạn trên điện thoại dùng chung tự lưu, bản offline trong trình duyệt và trợ lý AI với C02 (trợ lý mở thành
+  sheet); `toBoardPx()` trả 1 trên màn điện thoại (không có khung board).
 - Màn điện thoại không bao giờ cuộn ngang ở 390px và mọi điều khiển từ 44×44px:
-  [`apps/web/e2e/phone-layout.spec.ts`](../apps/web/e2e/phone-layout.spec.ts) kiểm các route trên.
+  [`apps/web/e2e/phone-layout.spec.ts`](../apps/web/e2e/phone-layout.spec.ts) kiểm các route trên, kể cả trình soạn,
+  các bước sau "Gửi duyệt" (đã gửi, mất mạng) và tải tệp.
 
 ## Dựng một màn mới
 

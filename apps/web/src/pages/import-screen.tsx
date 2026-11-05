@@ -26,7 +26,7 @@ import { Icon } from '../ui/icon';
 import { FileBadge } from './file-badge';
 import { type OfficeMessageKey, clockTime, fileSize, useOfficeText } from './office-messages';
 import { spaceName } from './space-panels';
-import { errorLine } from './upload-screen';
+import { errorLine } from './upload-queue';
 import { type UploadRow, rowPercent, useUploadQueue } from './upload-queue';
 import './import-screen.css';
 

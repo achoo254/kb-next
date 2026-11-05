@@ -11,3 +11,63 @@
   position: relative;
   height: 100%;
 }
+
+/* Parts every phone screen uses: the round glass button, the scrim under a sheet, the two board buttons. */
+
+/* the round glass button of the phone boards (back, close) */
+.phone-round {
+  flex: none;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.phone-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  padding: 0;
+  border: none;
+  background: var(--phone-scrim);
+  cursor: pointer;
+}
+
+/* The two buttons of the phone boards: the glowing rim one and the ghost one (46px inside their rim, round). */
+.phone-button {
+  flex: 1;
+  box-sizing: content-box;
+  height: 46px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 23px;
+  font: 600 14px var(--font-sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.phone-button[data-tone="rim"] {
+  background: var(--rim-active-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+.phone-button[data-tone="ghost"] {
+  background: none;
+  border: 1px solid var(--phone-ghost-border);
+  color: var(--phone-ghost-text);
+}

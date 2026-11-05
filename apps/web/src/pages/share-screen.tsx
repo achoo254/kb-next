@@ -33,7 +33,7 @@ import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
 import { Modal } from '../ui/modal';
 import { ErrorPanel } from './error-screen';
-import { type ReaderFailure, readerLoadError } from './reader-screen';
+import { type ReaderFailure, readerLoadError } from './reader-states';
 import { type ShareMessageKey, isToday, shareDate, shareTime, useShareText } from './share-messages';
 import type { ScreenTranslate } from './space-messages';
 import './share-screen.css';

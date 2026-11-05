@@ -266,7 +266,17 @@ export function layoutOf(screen: Pick<ParityScreen, 'board'>): 'phone' | 'tablet
 }
 
 /** Routes with a phone layout (apps/web/src/layout/device.ts): on a phone their desktop board is not shown. */
-const PHONE_ROUTES: readonly RegExp[] = [/^\/u(\?|$)/, /^\/create$/, /^\/search(\?|$)/, /^\/copilot(\?|$)/, /^\/d\/[^/?]+(\?|$)/, /^\/d\/[^/?]+\/publish$/, /^\/canvas(\/|$)/];
+const PHONE_ROUTES: readonly RegExp[] = [
+  /^\/u(\?|$)/,
+  /^\/create$/,
+  /^\/new$/,
+  /^\/upload$/,
+  /^\/search(\?|$)/,
+  /^\/copilot(\?|$)/,
+  /^\/d\/[^/?]+(\?|$)/,
+  /^\/d\/[^/?]+\/(publish|submit|edit)$/,
+  /^\/canvas(\/|$)/,
+];
 
 export function hasPhoneLayout(path: string): boolean {
   return PHONE_ROUTES.some((route) => route.test(path));

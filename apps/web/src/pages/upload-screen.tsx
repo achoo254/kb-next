@@ -8,11 +8,13 @@
 import { type DragEvent, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { MAX_UPLOAD_BYTES, type Upload, fetchUploads } from '../api/files-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
 import { CRYSTAL_ART, ORB_ART } from '../ui/art';
 import { Icon } from '../ui/icon';
 import { FileBadge } from './file-badge';
-import { type OfficeMessageKey, fileSize, useOfficeText } from './office-messages';
-import { type UploadRow, overallPercent, rowPercent, useUploadQueue } from './upload-queue';
+import { fileSize, useOfficeText } from './office-messages';
+import { type UploadRow, errorLine, knownError, overallPercent, retryable, rowPercent, useUploadQueue, useUploadTarget } from './upload-queue';
+import { UploadPhone } from './upload-phone';
 import './upload-screen.css';
 
 const MAX_MB = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
@@ -20,33 +22,6 @@ const MAX_MB = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
 const READ_POLL_MS = 2500;
 const RING_RADIUS = 84;
 
-/** The API error codes the screen has words for; any other reads as `other`. */
-const KNOWN_ERRORS = ['network', 'too-large', 'unsupported-type', 'wrong-content', 'encrypted'] as const;
-type KnownError = (typeof KNOWN_ERRORS)[number];
-
-export function knownError(code: string | null): KnownError | 'other' {
-  return KNOWN_ERRORS.find((known) => known === code) ?? 'other';
-}
-
-/** The line under a failed row ("Quá 25 MB · chia nhỏ hoặc nén lại"). */
-export function errorLine(code: string | null): OfficeMessageKey {
-  if (code === 'rate-limited') return 'file.err.rate-limited';
-  if (code === 'sign-in-required') return 'file.err.sign-in-required';
-  return `file.err.${knownError(code)}`;
-}
-
-/** Whether pressing "Thử lại" may help (a refusal of the file itself will not). */
-function retryable(row: UploadRow): boolean {
-  return row.state === 'failed' && !row.refused && !['too-large', 'unsupported-type', 'wrong-content', 'encrypted'].includes(row.error ?? '');
-}
-
-function useUploadTarget(): { space?: string; collection?: string } {
-  const [target] = useState(() => {
-    const query = new URLSearchParams(window.location.search);
-    return { space: query.get('space') ?? undefined, collection: query.get('collection') ?? undefined };
-  });
-  return target;
-}
 
 /** The server's processing of the files uploaded here (polled while any is still running). */
 function useProcessing(fileIds: readonly string[]): Upload[] {
@@ -263,7 +238,12 @@ function draggedCount(event: DragEvent): number {
   return [...event.dataTransfer.items].filter((item) => item.kind === 'file').length;
 }
 
+/** /upload: a simple pick and upload on a phone, C03 elsewhere. */
 export function UploadScreen(): ReactNode {
+  return useDevice() === 'phone' ? <UploadPhone /> : <UploadDesktop />;
+}
+
+function UploadDesktop(): ReactNode {
   const { t } = useOfficeText();
   const target = useUploadTarget();
   const queue = useUploadQueue(target);

@@ -6,9 +6,10 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '../api/api-client';
 import { type NewDocumentRequest, createDocument } from '../api/authoring-api';
-import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { SHELL_PATHS } from '../layout/shell-paths';
 import { EmptyState } from '../ui/empty-state';
 import { useEditorText } from './editor-messages';
+import { EditorFrame } from './editor-screen';
 import './editor-screen.css';
 
 /** The note to create, from the page's query. */
@@ -44,7 +45,7 @@ export function NewNote(): ReactNode {
     create();
   }, [create]);
   return (
-    <AppShell screen="C02" rail="create" view="docs" veil="strong" breadcrumb={[{ label: 'Universe', href: SHELL_PATHS.universe }, { label: t('editor.crumbDrafts'), href: SHELL_PATHS.mine }]} className="editor-shell">
+    <EditorFrame breadcrumb={[{ label: 'Universe', href: SHELL_PATHS.universe }, { label: t('editor.crumbDrafts'), href: SHELL_PATHS.mine }]}>
       <div className="editor-screen" data-id="new-note" data-state={failed ? 'failed' : 'creating'}>
         {failed ? (
           <EmptyState art="crystal-cracked" title={t('editor.new.failed')} action={{ label: t('editor.offline.retry'), onClick: create }} className="editor-state" />
@@ -54,6 +55,6 @@ export function NewNote(): ReactNode {
           </p>
         )}
       </div>
-    </AppShell>
+    </EditorFrame>
   );
 }

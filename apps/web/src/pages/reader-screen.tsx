@@ -5,8 +5,8 @@
  * drops while reading the loaded copy.
  */
 import { Fragment, type ReactNode, type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ApiError, NETWORK_ERROR } from '../api/api-client';
-import { type DocumentView, fetchDocument, readErrorOf } from '../api/content-api';
+import { ApiError } from '../api/api-client';
+import { type DocumentView, fetchDocument } from '../api/content-api';
 import { brand } from '../brand';
 import { useI18n } from '../i18n/i18n';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
@@ -14,33 +14,22 @@ import { useDevice } from '../layout/device';
 import { journeyPath } from '../layout/shell-paths';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { EmptyState } from '../ui/empty-state';
 import { Icon } from '../ui/icon';
 import { OriginTag } from '../ui/origin-tag';
 import { Skeleton } from '../ui/skeleton';
-import { ErrorPanel } from './error-screen';
 import { COMMENTS_ANCHOR, ReaderComments } from './reader-comments';
 import { OfficeView } from './office-view';
 import { ReaderMarkdown } from './reader-markdown';
 import { shortDate, useReaderText } from './reader-messages';
 import { useReading } from './reader-progress';
-import { type PassageSelection, type ReaderAi, type ReaderTask, ReaderAiCard, SelectionToolbar, usePassageSelection, useReaderAi } from './reader-ai';
+import { type PassageSelection, type ReaderAi, ReaderAiCard, SelectionToolbar, usePassageSelection, useReaderAi } from './reader-ai';
 import { AiPanel, Backlinks, KeyHints, ReaderActions, RelatedDocuments, Versions } from './reader-side';
 import { originOf } from './space-labels';
 import { TabletActions, TabletLinks, TocButton, TocDrawer } from './reader-tablet';
 import { ReaderPhone } from './reader-phone';
 import { spaceName } from './space-panels';
+import { type ReaderLoad, ReaderFailed, ReaderLoading, readerLoadError, sideAsk } from './reader-states';
 import './reader-screen.css';
-
-export type ReaderFailure = 'not-found' | 'no-access' | 'hidden' | 'offline' | 'server';
-export type ReaderLoad = { status: 'loading' } | { status: 'ready'; view: DocumentView; loadedAt: number } | { status: 'failed'; error: ReaderFailure };
-
-export function readerLoadError(error: unknown): ReaderFailure {
-  const code = readErrorOf(error);
-  if (code) return code;
-  if (error instanceof ApiError && error.code === NETWORK_ERROR) return 'offline';
-  return 'server';
-}
 
 function useDocument(id: string): { load: ReaderLoad; reload(): Promise<void> } {
   const { locale } = useI18n();
@@ -90,52 +79,6 @@ function useOffline(): boolean {
     };
   }, []);
   return offline;
-}
-
-export function ReaderLoading(): ReactNode {
-  const { t } = useReaderText();
-  return (
-    <div className="reader-loading" aria-busy="true" aria-label={t('reader.loading')} data-id="reader-loading">
-      <Skeleton width="40%" height={22} radius={8} tone="glow" />
-      <Skeleton width="70%" height={42} radius={8} tone="glow" />
-      <Skeleton width="90%" height={16} radius={8} tone="glow" />
-      <Skeleton width="84%" height={16} radius={8} tone="glow" />
-      <Skeleton height={120} radius={18} tone="glow" />
-      <Skeleton width="92%" height={16} radius={8} tone="glow" />
-      <Skeleton width="76%" height={16} radius={8} tone="glow" />
-      <Skeleton width="88%" height={16} radius={8} tone="glow" />
-    </div>
-  );
-}
-
-export function ReaderFailed({ error, onRetry }: { error: ReaderFailure; onRetry(): Promise<void> }): ReactNode {
-  const { t } = useReaderText();
-  if (error === 'hidden') {
-    return (
-      <EmptyState
-        art="vault-lock"
-        title={t('reader.hidden.title')}
-        description={t('reader.hidden.text')}
-        action={{ label: t('reader.hidden.action'), href: SHELL_PATHS.universe }}
-        className="reader-state reader-state-hidden"
-        dataId="reader-hidden"
-      />
-    );
-  }
-  if (error === 'offline') {
-    return (
-      <EmptyState
-        art="planet-offline"
-        title={t('reader.offline.title')}
-        description={t('reader.offline.text')}
-        action={{ label: t('reader.offline.action'), onClick: () => void onRetry() }}
-        tone="accent"
-        className="reader-state"
-        dataId="reader-offline"
-      />
-    );
-  }
-  return <ErrorPanel kind={error === 'no-access' ? 'forbidden' : error} onRetry={onRetry} className="reader-error" />;
 }
 
 function TableOfContents({ view, current, onGo }: { view: DocumentView; current: string | null; onGo(anchor: string): void }): ReactNode {
@@ -246,16 +189,6 @@ function ReaderArticle({ view, offline, articleRef, selection, ai, tablet }: Art
       <ReaderComments documentId={documentId} offline={offline} />
     </article>
   );
-}
-
-/** The text the side panel's AI buttons read: the current passage, or the whole document. */
-export function sideAsk(view: DocumentView, current: string | null, task: ReaderTask, overview: string): Parameters<ReaderAi['ask']>[0] | null {
-  const chunks = view.chunks;
-  const first = chunks[0];
-  if (!first) return null;
-  if (task === 'summarize') return { task, about: 'document', anchor: first.anchor, text: chunks.map((chunk) => [chunk.heading, chunk.markdown].filter(Boolean).join('\n\n')).join('\n\n') };
-  const chunk = chunks.find((c) => c.anchor === current) ?? chunks.at(-1) ?? first;
-  return { task, about: 'passage', anchor: chunk.anchor, text: chunk.markdown, heading: chunk.heading ?? overview };
 }
 
 function ReaderBody({ view, loadedAt, tablet }: { view: DocumentView; loadedAt: number; tablet: boolean }): ReactNode {

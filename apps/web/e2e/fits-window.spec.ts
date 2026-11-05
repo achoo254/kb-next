@@ -6,7 +6,7 @@ import { PARITY_SCREENS, hasPhoneLayout, layoutOf } from './parity-screens';
  * Every screen fits windows other than its 1440×900 board (the board frame, apps/web/src/layout/board-zoom.ts): no
  * link, button, field or text is cut off by an ancestor that clips it or left where the page cannot scroll to, and
  * from 768px up the page never scrolls sideways. On a phone (390×844) the screens with a phone board (/u, /create,
- * /search, /copilot, a text and its publishing) take the phone layout and never scroll sideways either; the others
+ * /new, /upload, /search, /copilot, a text, its editor, publishing and sending) take the phone layout and never scroll sideways either; the others
  * keep their desktop board at its smallest zoom and scroll sideways (apps/web/src/layout/device.ts). A new screen is
  * checked as soon as it is listed in parity-screens.ts. The /dev/kit pages are the kit's own sheets and are left out.
  */

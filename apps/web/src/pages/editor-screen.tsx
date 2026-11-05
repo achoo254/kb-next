@@ -15,6 +15,9 @@ import { readErrorOf } from '../api/content-api';
 import { journeyEditPath, publishPath } from '../layout/shell-paths';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
 import { toBoardPx } from '../layout/board-zoom';
+import { currentDevice, useDevice } from '../layout/device';
+import { PhoneShell } from '../layout/phone-shell';
+import { RimPanel, SheetHandle } from '../ui/rim-panel';
 import { EmptyState } from '../ui/empty-state';
 import { Icon, type IconName } from '../ui/icon';
 import { Modal } from '../ui/modal';
@@ -27,6 +30,7 @@ import { type EditorMessageKey, savedTime, useEditorText } from './editor-messag
 import { type Step, editorExtensions, isStepList, stepLetter } from './editor-schema';
 import { type MenuState, MenuStore, suggestionMenu } from './editor-suggestions';
 import { ErrorPanel } from './error-screen';
+import { usePhoneText } from './phone-messages';
 import { spaceName } from './space-panels';
 import './editor-screen.css';
 
@@ -72,10 +76,29 @@ export function EditorScreen({ id }: { id: string }): ReactNode {
   const { load, reload } = useOpened(id);
   if (load.status === 'ready') return <EditorWorkspace key={`${load.opened.doc.id}|${load.opened.baseRev}`} opened={load.opened} onReload={reload} />;
   return (
-    <AppShell screen="C02" rail="create" view="docs" veil="strong" breadcrumb={[{ label: 'Universe', href: SHELL_PATHS.universe }]} className="editor-shell">
+    <EditorFrame breadcrumb={[{ label: 'Universe', href: SHELL_PATHS.universe }]}>
       <div className="editor-screen" data-id="editor-screen" data-state={load.status === 'failed' ? load.error : 'loading'}>
         {load.status === 'loading' ? <EditorLoading /> : <EditorFailed id={id} error={load.error} onRetry={reload} />}
       </div>
+    </EditorFrame>
+  );
+}
+
+/**
+ * The frame of the editor's states (loading, failed, creating a note): C02's shell on a desktop or tablet, the phone
+ * frame of M02's editor stage (no tab bar) on a phone.
+ */
+export function EditorFrame({ breadcrumb, children }: { breadcrumb: BreadcrumbItem[]; children: ReactNode }): ReactNode {
+  if (useDevice() === 'phone') {
+    return (
+      <PhoneShell screen="M02" tabBar={false} stars={false} className="editor-phone-frame">
+        {children}
+      </PhoneShell>
+    );
+  }
+  return (
+    <AppShell screen="C02" rail="create" view="docs" veil="strong" breadcrumb={breadcrumb} className="editor-shell">
+      {children}
     </AppShell>
   );
 }
@@ -159,8 +182,11 @@ function useMenu<T>(store: MenuStore<T>): MenuState<T> {
 }
 
 /** Where a pop-up list sits: under the caret, in board px (the frame is zoomed). */
+/** Under the caret; on a phone the list spans the screen's width (12px from each side) under the caret's line. */
 function caretStyle(caret: MenuState<unknown>['caret']): { left: number; top: number } | undefined {
-  return caret ? { left: toBoardPx(caret.left), top: toBoardPx(caret.bottom) + 8 } : undefined;
+  if (!caret) return undefined;
+  if (currentDevice() === 'phone') return { left: 12, top: caret.bottom + 8 };
+  return { left: toBoardPx(caret.left), top: toBoardPx(caret.bottom) + 8 };
 }
 
 function BlockMenu({ store }: { store: MenuStore<BlockItem> }): ReactNode {
@@ -380,6 +406,9 @@ function tagOf(doc: EditableDocument): EditorMessageKey {
 
 function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReload(): void }): ReactNode {
   const { t, locale } = useEditorText();
+  const phone = usePhoneText();
+  const device = useDevice();
+  const [aiSheet, setAiSheet] = useState(false);
   const { doc } = opened;
   const { state, autosave } = useDocumentAutosave(opened);
   const [title, setTitle] = useState(opened.start.title);
@@ -432,6 +461,8 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
         chain.run();
         setAssistantTab('ai');
         setAiFocus((n) => n + 1);
+        // on a phone the assistant is a sheet, opened here
+        setAiSheet(true);
         return;
       case 'office':
         return;
@@ -539,6 +570,180 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
     void autosave.discard().then(onReload);
   };
 
+  // "Gửi duyệt" (desktop) and "Tiếp" (phone): where it goes and who sees it are chosen on C04 / M03, which sends it
+  // (the text saves on leaving).
+  const next = (): void => {
+    if (title.trim()) {
+      window.location.assign(publishPath(doc.id));
+      return;
+    }
+    setTitleError(true);
+    titleInput.current?.focus();
+  };
+
+  const pickPlanet = (colour: Planet): void => {
+    planetRef.current = colour;
+    setPlanet(colour);
+    changed();
+  };
+
+  const editTitle = (value: string): void => {
+    titleRef.current = value;
+    setTitle(value);
+    if (value.trim()) setTitleError(false);
+    if (editor) setWords(countWords(`${value} ${editor.getText()}`));
+    changed();
+  };
+
+  const menus = (
+    <>
+      <BlockMenu store={blockStore} />
+      <LinkMenu store={linkStore} />
+      {dialog?.kind === 'steps' && editor && (
+        <StepsDialog
+          steps={dialog.steps}
+          onClose={() => setDialog(null)}
+          onSave={(steps) => {
+            editor.chain().focus().command(({ tr }) => {
+              const node = tr.doc.nodeAt(dialog.pos);
+              if (!node || node.type.name !== 'steps') return false;
+              tr.setNodeMarkup(dialog.pos, undefined, { ...node.attrs, steps });
+              return true;
+            }).run();
+            setDialog(null);
+          }}
+        />
+      )}
+      {dialog?.kind === 'image' && editor && (
+        <ImageDialog
+          onClose={() => setDialog(null)}
+          onInsert={(src, alt) => {
+            editor.chain().focus().setImage({ src, alt }).run();
+            setDialog(null);
+          }}
+        />
+      )}
+    </>
+  );
+
+  if (device === 'phone') {
+    // M02's editor stage: back, what is written and where, the save state and "Tiếp" (M03); the title with its planet,
+    // the planet colours, the text, and the writing tools over the keyboard
+    const typeText = (text: string): void => {
+      editor?.chain().focus().insertContent(text).run();
+    };
+    const tools: Array<{ id: string; label: string; icon?: IconName; text?: string; run(): void }> = [
+      { id: 'slash', label: phone.t('editor.slash'), text: '/', run: () => typeText('/') },
+      { id: 'link', label: phone.t('editor.link'), text: '[[', run: () => typeText('[[') },
+      { id: 'image', label: phone.t('editor.image'), icon: 'block-image', run: () => setDialog({ kind: 'image' }) },
+      {
+        id: 'diagram',
+        label: phone.t('editor.diagram'),
+        icon: 'block-diagram',
+        run: () => {
+          if (!editor) return;
+          const steps: Step[] = [
+            { term: 'Bước 1', text: '' },
+            { term: 'Bước 2', text: '' },
+          ];
+          const pos = editor.state.selection.from;
+          editor.chain().focus().insertContent({ type: 'steps', attrs: { steps } }).run();
+          setDialog({ kind: 'steps', pos: Math.max(0, pos - 1), steps });
+        },
+      },
+    ];
+    return (
+      <PhoneShell screen="M02" tabBar={false} stars={false} className="editor-phone-frame">
+        <div className="editor-phone" data-id="editor-screen" data-state="ready">
+          <div className="editor-phone-top">
+            <a className="phone-round" href={`/d/${encodeURIComponent(doc.id)}`} aria-label={phone.t('editor.back')} data-id="editor-back">
+              <Icon name="chevron-left" size={20} />
+            </a>
+            <span className="editor-phone-kind">{phone.t('editor.kind', { kind: t(tagOf(doc)), space: spaceName(locale, space) })}</span>
+            <SaveChip state={state} autosave={autosave} onLoadServer={loadServer} />
+            <button type="button" className="editor-phone-next" onClick={next} data-id="editor-submit">
+              {phone.t('editor.next')}
+            </button>
+          </div>
+          <div className="editor-phone-scroll">
+            <div className="editor-phone-head">
+              <span className="editor-phone-planet" data-planet={planet ?? 'violet'} aria-hidden="true" />
+              <label className="editor-phone-title">
+                <span>{phone.t('editor.title')}</span>
+                <input
+                  ref={titleInput}
+                  type="text"
+                  value={title}
+                  maxLength={200}
+                  placeholder={t('editor.titlePlaceholder')}
+                  aria-invalid={titleError && !title.trim() ? true : undefined}
+                  data-id="editor-title"
+                  onChange={(event) => editTitle(event.target.value)}
+                />
+              </label>
+            </div>
+            {titleError && !title.trim() && (
+              <span className="editor-title-error" role="alert">
+                {t('editor.titleRequired')}
+              </span>
+            )}
+            <div className="editor-phone-swatches" role="group" aria-label={t('editor.planetColours')}>
+              <span aria-hidden="true">{phone.t('editor.colour')}</span>
+              {PLANETS.map((colour) => (
+                <button key={colour} type="button" className="editor-phone-swatch" aria-label={t(`editor.planet.${colour}`)} aria-pressed={(planet ?? 'violet') === colour} onClick={() => pickPlanet(colour)}>
+                  <span data-planet={colour} />
+                </button>
+              ))}
+            </div>
+            {opened.openedAs !== 'clean' && (
+              <p className="editor-restored" role="status">
+                {t('editor.save.restored')}
+              </p>
+            )}
+            <span className="editor-phone-label" aria-hidden="true">
+              {phone.t('editor.body')}
+            </span>
+            <EditorContent editor={editor} className="editor-phone-body" data-id="editor-body" />
+            <StepCaptions editor={editor} />
+          </div>
+          <div className="editor-phone-tools" role="toolbar" aria-label={phone.t('editor.tools')}>
+            {tools.map((tool) => (
+              <button key={tool.id} type="button" className="editor-phone-tool" aria-label={tool.label} onClick={tool.run} data-id={`editor-tool-${tool.id}`}>
+                {tool.icon ? <Icon name={tool.icon} size={20} /> : tool.text}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="editor-phone-tool editor-phone-ai"
+              aria-label={phone.t('editor.ai')}
+              aria-expanded={aiSheet}
+              onClick={() => {
+                setAssistantTab('ai');
+                setAiSheet(true);
+                setAiFocus((n) => n + 1);
+              }}
+              data-id="editor-tool-ai"
+            >
+              <Icon name="sparkles" size={16} />
+              AI
+            </button>
+          </div>
+          <p className="editor-phone-hint">{phone.t('editor.hint')}</p>
+          {aiSheet && (
+            <>
+              <button type="button" className="phone-scrim" aria-label={phone.t('editor.aiClose')} tabIndex={-1} onClick={() => setAiSheet(false)} />
+              <RimPanel variant="sheet" as="div" className="editor-phone-ai-sheet" dataId="editor-ai-sheet">
+                <SheetHandle label={phone.t('editor.aiClose')} onPress={() => setAiSheet(false)} />
+                <EditorAssistant id={doc.id} writing={writing} tab={assistantTab} onTab={setAssistantTab} focusRequest={aiFocus} />
+              </RimPanel>
+            </>
+          )}
+        </div>
+        {menus}
+      </PhoneShell>
+    );
+  }
+
   return (
     <AppShell
       screen="C02"
@@ -573,15 +778,7 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
             type="button"
             className="editor-submit"
             data-id="editor-submit"
-            onClick={() => {
-              // Where it goes and who sees it are chosen on C04, which sends it (the text saves on leaving).
-              if (title.trim()) {
-                window.location.assign(publishPath(doc.id));
-                return;
-              }
-              setTitleError(true);
-              titleInput.current?.focus();
-            }}
+            onClick={next}
           >
             {t('editor.submit')}
           </button>
@@ -603,11 +800,7 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
                   data-planet={colour}
                   aria-label={t(`editor.planet.${colour}`)}
                   aria-pressed={on}
-                  onClick={() => {
-                    planetRef.current = colour;
-                    setPlanet(colour);
-                    changed();
-                  }}
+                  onClick={() => pickPlanet(colour)}
                 />
               );
             })}
@@ -626,13 +819,7 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
               placeholder={t('editor.titlePlaceholder')}
               aria-invalid={titleError && !title.trim() ? true : undefined}
               data-id="editor-title"
-              onChange={(event) => {
-                titleRef.current = event.target.value;
-                setTitle(event.target.value);
-                if (event.target.value.trim()) setTitleError(false);
-                if (editor) setWords(countWords(`${event.target.value} ${editor.getText()}`));
-                changed();
-              }}
+              onChange={(event) => editTitle(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === 'ArrowDown') {
                   event.preventDefault();
@@ -662,32 +849,7 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
 
         <EditorAssistant id={doc.id} writing={writing} tab={assistantTab} onTab={setAssistantTab} focusRequest={aiFocus} />
       </div>
-      <BlockMenu store={blockStore} />
-      <LinkMenu store={linkStore} />
-      {dialog?.kind === 'steps' && editor && (
-        <StepsDialog
-          steps={dialog.steps}
-          onClose={() => setDialog(null)}
-          onSave={(steps) => {
-            editor.chain().focus().command(({ tr }) => {
-              const node = tr.doc.nodeAt(dialog.pos);
-              if (!node || node.type.name !== 'steps') return false;
-              tr.setNodeMarkup(dialog.pos, undefined, { ...node.attrs, steps });
-              return true;
-            }).run();
-            setDialog(null);
-          }}
-        />
-      )}
-      {dialog?.kind === 'image' && editor && (
-        <ImageDialog
-          onClose={() => setDialog(null)}
-          onInsert={(src, alt) => {
-            editor.chain().focus().setImage({ src, alt }).run();
-            setDialog(null);
-          }}
-        />
-      )}
+      {menus}
     </AppShell>
   );
 }

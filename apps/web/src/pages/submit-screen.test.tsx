@@ -171,3 +171,48 @@ describe('opening /submit without sending', () => {
     expect(screen.getByRole('link', { name: 'Tạo bản dịch EN bằng AI' }).getAttribute('href')).toBe(`/d/${ID}/translate?to=en`);
   });
 });
+
+describe('sending for review on a phone (M03 stages)', () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+  });
+
+  it('shows the steps, then "Đã gửi duyệt" with the way to Của tôi and to write another', async () => {
+    document.documentElement.dataset.device = 'phone';
+    submit = () =>
+      new Promise((resolve) => {
+        release = () => resolve(answer(200, { status: 'pending', queuePosition: 3, submittedAt: NOW.toISOString(), preReviewed: true }));
+      });
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', tags: ['dhcp'] }} />);
+    expect(await screen.findByRole('heading', { name: 'Đang gửi duyệt…' })).toBeTruthy();
+    expect(document.querySelector('[data-screen="M03"]')).not.toBeNull();
+    expect(screen.getByRole('list', { name: 'Các bước gửi duyệt' }).querySelectorAll('li')).toHaveLength(4);
+    await waitFor(() => expect(calls).toHaveLength(1));
+    release();
+    expect(await screen.findByRole('heading', { name: 'Đã gửi duyệt' })).toBeTruthy();
+    expect(screen.getByText(`${DOC.document.title} đang chờ quản trị duyệt. Bạn sẽ được báo trong app.`)).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Xem trong Của tôi' }).getAttribute('href')).toBe('/me');
+    expect(screen.getByRole('link', { name: 'Viết bài khác' }).getAttribute('href')).toBe('/create');
+  });
+
+  it('says it was not sent and tries again after a dropped connection; "Để sau" goes back to the text', async () => {
+    document.documentElement.dataset.device = 'phone';
+    submit = () => Promise.reject(new TypeError('Failed to fetch'));
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', tags: ['dhcp'] }} />);
+    expect(await screen.findByRole('heading', { name: 'Chưa gửi được' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Để sau' }).getAttribute('href')).toBe(`/d/${ID}`);
+    submit = () => Promise.resolve(answer(200, { status: 'pending', queuePosition: 1, submittedAt: NOW.toISOString(), preReviewed: false }));
+    fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }));
+    expect(await screen.findByRole('heading', { name: 'Đã gửi duyệt' })).toBeTruthy();
+    expect(calls).toHaveLength(2);
+  });
+
+  it('leads to the fix when retrying cannot help (no title)', async () => {
+    document.documentElement.dataset.device = 'phone';
+    submit = () => Promise.resolve(answer(400, { error: 'title-required' }));
+    renderWithI18n(<SubmitScreen id={ID} request={{ space: 'networking', tags: ['dhcp'] }} />);
+    expect(await screen.findByRole('heading', { name: 'Chưa gửi được' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Thêm tiêu đề' }).getAttribute('href')).toBe(`/d/${ID}/edit`);
+    expect(screen.queryByRole('button', { name: 'Thử lại' })).toBeNull();
+  });
+});

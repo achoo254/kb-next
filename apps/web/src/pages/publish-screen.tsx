@@ -28,7 +28,7 @@ import { Icon } from '../ui/icon';
 import { ErrorPanel } from './error-screen';
 import { PROVIDERS } from './keys-messages';
 import { MAX_TAGS, type PublishMessageKey, usePublishText } from './publish-messages';
-import { type ReaderFailure, readerLoadError } from './reader-screen';
+import { type ReaderFailure, readerLoadError } from './reader-states';
 import { SubmitScreen } from './submit-screen';
 import './publish-screen.css';
 

@@ -15,7 +15,7 @@ import { CRYSTAL_ART, ILLUSTRATIONS } from '../ui/art';
 import { Icon } from '../ui/icon';
 import { ErrorPanel } from './error-screen';
 import { type PublishMessageKey, usePublishText } from './publish-messages';
-import { type ReaderFailure, readerLoadError } from './reader-screen';
+import { type ReaderFailure, readerLoadError } from './reader-states';
 import './preview-screen.css';
 
 export type PreviewRole = 'guest' | 'me';

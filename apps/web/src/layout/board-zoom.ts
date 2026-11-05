@@ -107,12 +107,14 @@ function scrollbarWidth(): number {
 }
 
 /**
- * The zoom in force (1 before the frame is installed or outside a browser): the tablet board's when the screen on
- * show is laid out on it, else the desktop board's.
+ * The zoom in force (1 before the frame is installed, outside a browser, and on a phone screen): the tablet board's
+ * when the screen on show is laid out on it, else the desktop board's.
  */
 export function boardZoom(): number {
   if (typeof document === 'undefined') return 1;
   const root = document.documentElement;
+  // a phone screen (PhoneShell) is laid out at the window's own px, without a board frame
+  if (root.dataset.device === 'phone' && document.querySelector('.board-frame') === null) return 1;
   const tablet = root.dataset.device === 'tablet' && document.querySelector('.board-frame-tablet') !== null;
   const value = Number.parseFloat(root.style.getPropertyValue(tablet ? '--tablet-zoom' : '--board-zoom'));
   return Number.isFinite(value) && value > 0 ? value : 1;

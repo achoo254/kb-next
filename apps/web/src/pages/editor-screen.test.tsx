@@ -266,3 +266,31 @@ describe('textToSteps', () => {
     expect(textToSteps('1\n2\n3\n4\n5\n6\n7')).toBeNull();
   });
 });
+
+describe('EditorScreen on a phone (M02 editor stage)', () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+  });
+
+  it('edits the same draft in the phone layout: title, planet colour, autosave, "Next" and the AI sheet', async () => {
+    document.documentElement.dataset.device = 'phone';
+    await open();
+    expect(document.querySelector('[data-screen="M02"]')).not.toBeNull();
+    expect(document.querySelector('[data-id="tab-bar"]')).toBeNull();
+    expect(screen.getByText('Yours · private · Your universe')).toBeTruthy();
+    expect(chipState()).toBe('saved');
+    // the same autosave as on a desktop
+    fireEvent.change(screen.getByRole('textbox', { name: 'Title' }), { target: { value: 'Máy mới xin IP' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Teal' }));
+    await waitFor(() => expect(puts.at(-1)).toMatchObject({ title: 'Máy mới xin IP', planet: 'teal' }));
+    // "Next" needs a title, then goes to publishing (M03)
+    fireEvent.change(screen.getByRole('textbox', { name: 'Title' }), { target: { value: ' ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.getByRole('alert')).toBeTruthy();
+    // the assistant opens as a sheet and closes from its handle
+    fireEvent.click(screen.getByRole('button', { name: 'Ask AI to write on' }));
+    expect(document.querySelector('[data-id="editor-ai-sheet"] [data-id="editor-assistant"]')).not.toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Close the assistant' })[1] as HTMLElement);
+    expect(document.querySelector('[data-id="editor-ai-sheet"]')).toBeNull();
+  });
+});

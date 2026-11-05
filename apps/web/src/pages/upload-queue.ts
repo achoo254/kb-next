@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ABORTED, type FileKind, type StoredFile, checkBeforeUpload, kindOfName } from '../api/files-api';
 import { uploadFile } from '../api/upload-api';
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
+import type { OfficeMessageKey } from './office-messages';
 
 export type UploadState = 'queued' | 'uploading' | 'done' | 'failed' | 'cancelled';
 
@@ -165,3 +166,31 @@ export function useUploadQueue(target: UploadTarget, onUploaded?: (file: StoredF
   return { rows, add, retry, cancel, remove, cancelAll };
 }
 
+/** The API error codes the screen has words for; any other reads as `other`. */
+const KNOWN_ERRORS = ['network', 'too-large', 'unsupported-type', 'wrong-content', 'encrypted'] as const;
+type KnownError = (typeof KNOWN_ERRORS)[number];
+
+export function knownError(code: string | null): KnownError | 'other' {
+  return KNOWN_ERRORS.find((known) => known === code) ?? 'other';
+}
+
+/** The line under a failed row ("Quá 25 MB · chia nhỏ hoặc nén lại"). */
+export function errorLine(code: string | null): OfficeMessageKey {
+  if (code === 'rate-limited') return 'file.err.rate-limited';
+  if (code === 'sign-in-required') return 'file.err.sign-in-required';
+  return `file.err.${knownError(code)}`;
+}
+
+/** Whether pressing "Thử lại" may help (a refusal of the file itself will not). */
+export function retryable(row: UploadRow): boolean {
+  return row.state === 'failed' && !row.refused && !['too-large', 'unsupported-type', 'wrong-content', 'encrypted'].includes(row.error ?? '');
+}
+
+/** Where new uploads go: `?space=&collection=` of the page (default: the personal Space). */
+export function useUploadTarget(): { space?: string; collection?: string } {
+  const [target] = useState(() => {
+    const query = new URLSearchParams(window.location.search);
+    return { space: query.get('space') ?? undefined, collection: query.get('collection') ?? undefined };
+  });
+  return target;
+}

@@ -4,11 +4,15 @@
  * card of the review's result.
  */
 import type { ReactNode } from 'react';
+import type { SubmitResponse } from '../api/review-api';
 import { CRYSTAL_ART, ILLUSTRATIONS } from '../ui/art';
 import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
 import { SHELL_PATHS } from '../layout/shell-paths';
 import { type SubmitError, canRetry, useSubmitText } from './submit-messages';
+
+/** Where a submission is: loading what was sent, sending, sent (with the queue's answer), or not sent. */
+export type SubmitPhase = { kind: 'checking' } | { kind: 'sending' } | { kind: 'sent'; result: SubmitResponse | null } | { kind: 'failed'; error: SubmitError };
 
 export type StepState = 'done' | 'run' | 'wait' | 'failed';
 
@@ -92,7 +96,7 @@ interface SubmitFixProps {
 }
 
 /** Where each error's own action leads. */
-function actionHref(error: SubmitError, documentId: string): string {
+export function actionHref(error: SubmitError, documentId: string): string {
   const edit = `/d/${encodeURIComponent(documentId)}/edit`;
   return error === 'title-required' || error === 'body-required' ? edit : SHELL_PATHS.mine;
 }

@@ -90,6 +90,9 @@ describe('installBoardZoom', () => {
     expect(document.documentElement.dataset.device).toBe('phone');
     // a tablet frame left on the page counts only in the tablet layout
     expect(boardZoom()).toBe(MIN_BOARD_ZOOM);
+    // a phone screen has no board frame: its px are the window's
+    frame.remove();
+    expect(boardZoom()).toBe(1);
     stop();
   });
 
