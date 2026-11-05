@@ -6,6 +6,7 @@ import { seedMockCaptions } from './captions/seed-captions';
 import { seedDatabase } from './db/seed-database';
 import { safeErrorText } from './log-error';
 import { startSearch } from './search/search-service';
+import { startTrashPurge } from './authoring/trash-purge';
 import { readUserKeysSecret } from './user-keys/crypto';
 
 const config = loadConfig();
@@ -42,6 +43,11 @@ await housekeeping();
 const housekeepingTimer = setInterval(() => void housekeeping(), HOUSEKEEPING_INTERVAL_MS);
 housekeepingTimer.unref();
 
+// The trash keeps a deleted document 30 days (C08): purged at start, then daily. Not on the mock seed (dev/E2E): its
+// trash is dated on the boards' fixed day (03/11/2026), which the real clock would purge out from under them.
+const trashPurge = config.startupSeed ? null : startTrashPurge(database.db, search?.sync ?? null);
+console.log(`trash purge: ${trashPurge ? 'daily' : 'off (KB_SEED=mock keeps the boards’ trash)'}`);
+
 // Loopback only: nginx (production) and the web dev server proxy to it.
 const server = createApp({ config, db: database.db, search, userKeysSecret: userKeys.secret }).listen(config.port, '127.0.0.1', () => {
   console.log(`kb server listening on 127.0.0.1:${config.port} (${config.nodeEnv})`);
@@ -58,6 +64,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   stopping = true;
   console.log(`${signal}: closing`);
   clearInterval(housekeepingTimer);
+  trashPurge?.stop();
   search?.close();
   server.close();
   try {

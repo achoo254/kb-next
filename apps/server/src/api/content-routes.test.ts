@@ -76,8 +76,8 @@ describe('GET /api/spaces', () => {
     expect(net?.collections.map((c) => c.nameVi)).toEqual(['Giao thức nền tảng', 'Web', 'Địa chỉ', 'Hành trình gói tin']);
     // No TYPESAFE_API_KEY in tests: the plain count.
     expect(net?.caption).toEqual({ vi: '12 bài', en: '12 docs' });
-    // Three files and the draft note of C02.
-    expect(body.spaces.at(-1)).toMatchObject({ kind: 'personal', slug: `personal-${ownerId}`, documentCount: 4 });
+    // Three files, the draft note of C02 and the three notes of C08 at the other steps of review.
+    expect(body.spaces.at(-1)).toMatchObject({ kind: 'personal', slug: `personal-${ownerId}`, documentCount: 7 });
   });
 
   it('shows a guest and another member only the public Spaces and published documents', async () => {
@@ -178,7 +178,15 @@ describe('GET /api/spaces/:slug', () => {
     const slug = `personal-${ownerId}`;
     const mine = await get<SpaceDetailResponse>(`/api/spaces/${slug}`, owner);
     expect(mine.status).toBe(200);
-    expect(mine.body.uncollected.map((d) => d.title)).toEqual(['lab-notes.docx', 'subnet.xlsx', 'k8s-intro.pptx', 'Máy mới xin IP thế nào']);
+    expect(mine.body.uncollected.map((d) => d.title)).toEqual([
+      'lab-notes.docx',
+      'subnet.xlsx',
+      'k8s-intro.pptx',
+      'Máy mới xin IP thế nào',
+      'Ghi chú: swap trên Ubuntu',
+      'TCP vs UDP bằng hình',
+      'Mẹo DNS cache',
+    ]);
     for (const cookie of [stranger, admin, undefined]) {
       const res = await get<unknown>(`/api/spaces/${slug}`, cookie);
       expect(res.status).toBe(403);

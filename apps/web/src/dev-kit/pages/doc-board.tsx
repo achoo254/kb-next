@@ -8,6 +8,7 @@ export const BOARD_ROUTES: Readonly<Record<string, string>> = {
   S01: '/',
   S02: '/login',
   S03: '/u?tour=1',
+  C01: '/create',
   C08: '/me',
   C09: '/u',
   C10: '/s/networking',

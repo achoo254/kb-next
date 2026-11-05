@@ -125,7 +125,9 @@ describe('UniverseScreen', () => {
     serve(BOARD_SPACES.filter((s) => s.kind !== 'personal').map((s) => ({ ...s, documentCount: 0 })));
     renderWithI18n(<UniverseScreen />);
     await waitFor(() => expect(state()).toBe('empty'));
-    expect(screen.getByRole('link', { name: 'Create your first planet' }).getAttribute('href')).toBe('/me');
+    expect(screen.getByRole('link', { name: 'Create your first planet' }).getAttribute('href')).toBe('/create');
+    expect(screen.getByRole('link', { name: /Write a note/ }).getAttribute('href')).toBe('/new');
+    expect(screen.getByRole('link', { name: /Upload an Office file/ }).getAttribute('href')).toBe('/create');
     expect(screen.getByRole('link', { name: 'explore the shared Universe' }).getAttribute('href')).toBe('/u?shared=1');
     expect(screen.getByRole('link', { name: 'Networking · 8 labs' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Explain “Giao thức DHCP”' })).toBeTruthy();

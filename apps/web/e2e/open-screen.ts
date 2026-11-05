@@ -3,6 +3,7 @@ import type { ParityMock, ParityScreen } from './parity-screens';
 import { C11_STREAM, C14_HISTORY, C14_STREAM, F03_KEYS, F04_DOCUMENT, F04_DOCUMENT_ID, F04_STREAM } from './ai-boards';
 import { C15_SUGGESTION } from './graph-canvas-boards';
 import { C17_DIFF, C17_HISTORY } from './history-boards';
+import { c08Documents } from './mine-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
 import { signInAt } from './sign-in';
 
@@ -53,6 +54,15 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
   if (mocks.includes('history-c17')) {
     await page.route('**/api/documents/*/history', (route) => route.fulfill({ json: C17_HISTORY }));
     await page.route('**/api/documents/*/diff?*', (route) => route.fulfill({ json: C17_DIFF }));
+  }
+  if (mocks.includes('mine-c08')) {
+    await page.route('**/api/me/documents', async (route) => {
+      const response = await route.fetch();
+      if (!response.ok()) return route.fulfill({ response });
+      const real = (await response.json()) as { documents: Array<{ space: { slug: string; nameVi: string; nameEn: string; tint: string; glow: string } }> };
+      const personal = real.documents.map((doc) => doc.space).find((space) => space.slug.startsWith('personal-'));
+      return personal ? route.fulfill({ response, json: c08Documents(personal) }) : route.fulfill({ response });
+    });
   }
   if (mocks.includes('canvas-c15')) await page.route('**/api/canvases/*/suggestion', (route) => route.fulfill({ json: C15_SUGGESTION }));
   if (mocks.includes('translate-f04')) {

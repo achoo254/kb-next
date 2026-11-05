@@ -34,12 +34,12 @@ interface Command {
   href: string;
 }
 
-/** The quick commands of F01. Writing and uploading start from "Của tôi" (C08) until C01 and C03 are built. */
+/** The quick commands of F01. A note opens the editor; uploading starts from the create ring (C01) until C03 is built. */
 export const COMMANDS: readonly Command[] = [
-  { id: 'note', key: 'N', icon: 'plus', label: 'palette.command.note', href: SHELL_PATHS.mine },
+  { id: 'note', key: 'N', icon: 'plus', label: 'palette.command.note', href: SHELL_PATHS.newNote },
   { id: 'canvas', key: 'C', icon: 'graph-tree', label: 'palette.command.canvas', href: SHELL_PATHS.canvas },
   { id: 'ask', key: 'A', icon: 'star', label: 'palette.command.ask', href: SHELL_PATHS.copilot },
-  { id: 'upload', key: 'U', icon: 'upload', label: 'palette.command.upload', href: SHELL_PATHS.mine },
+  { id: 'upload', key: 'U', icon: 'upload', label: 'palette.command.upload', href: SHELL_PATHS.create },
 ];
 
 /** Something the arrows can land on, and where Enter takes it. */

@@ -79,6 +79,7 @@ export const F04_DOCUMENT = {
   chunks: [{ anchor: 'tong-quan', heading: null, markdown: PARAGRAPHS.map(([vi]) => vi).join('\n\n') }],
   backlinks: [],
   outgoing: [],
+  wikilinks: [],
   related: [],
   versions: [],
 };

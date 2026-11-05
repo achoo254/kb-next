@@ -7,11 +7,12 @@ import { createHash } from 'node:crypto';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Db } from './client';
 import { HIDE_ACTION, SHOW_ACTION } from '../access/history';
-import { auditLog, canvases, chunks, collections, comments, documentVersions, documents, links, readingProgress, reviewEvents, spaces, users } from './schema';
+import { auditLog, canvases, chunks, collections, comments, documentVersions, documents, favorites, links, readingProgress, reviewEvents, spaces, users } from './schema';
 import {
   SEED_CANVAS,
   SEED_COMMENTS,
   SEED_DOCUMENTS,
+  SEED_FAVORITES,
   SEED_FIRST_CREATED,
   SEED_HISTORY,
   SEED_LATEST_UPDATE,
@@ -27,6 +28,7 @@ import {
 
 const TEN_MINUTES = 10 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
 
 /** A document's Markdown from its title and its chunks; the overview has no heading line. */
 function documentMarkdown(doc: SeedDocument, chunkList: SeedDocument['chunks'] = doc.chunks): string {
@@ -149,8 +151,8 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
       sortOrder: order,
       createdAt,
       updatedAt: doc.at ? createdAt : updatedAt(doc.key),
-      deletedAt: null,
-      deletedBy: null,
+      deletedAt: doc.trashedDaysBefore === undefined ? null : new Date(SEED_LATEST_UPDATE.getTime() - doc.trashedDaysBefore * DAY),
+      deletedBy: doc.trashedDaysBefore === undefined ? null : userId(doc.author),
       planet: doc.planet ?? null,
     };
     await db.insert(documents).values(values).onConflictDoUpdate({ target: documents.id, set: values });
@@ -177,11 +179,12 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
       await db.insert(documentVersions).values(version).onConflictDoUpdate({ target: documentVersions.id, set: version });
     }
     // The review trail and visibility changes are the listed ones only (an older seed wrote others).
-    if (history) {
+    const reviewTrail = history?.reviews ?? doc.reviews ?? [];
+    if (history || doc.reviews) {
       await db.delete(reviewEvents).where(eq(reviewEvents.documentId, id));
       await db.delete(auditLog).where(and(eq(auditLog.targetType, 'document'), eq(auditLog.targetId, id)));
     }
-    for (const [index, step] of (history?.reviews ?? []).entries()) {
+    for (const [index, step] of reviewTrail.entries()) {
       const review = { id: seedId(`review:${doc.key}:${index}`), documentId: id, actorId: userId(step.by), action: step.action, reason: step.reason, createdAt: new Date(step.at) };
       await db.insert(reviewEvents).values(review).onConflictDoUpdate({ target: reviewEvents.id, set: review });
     }
@@ -226,6 +229,10 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
   for (const [key, progress, anchor] of SEED_PROGRESS) {
     const row = { userId: owner.id, documentId: seedId(`document:${key}`), progress, anchor, updatedAt: SEED_LATEST_UPDATE };
     await db.insert(readingProgress).values(row).onConflictDoUpdate({ target: [readingProgress.userId, readingProgress.documentId], set: row });
+  }
+  for (const [order, key] of SEED_FAVORITES.entries()) {
+    const row = { userId: owner.id, documentId: seedId(`document:${key}`), createdAt: new Date(SEED_LATEST_UPDATE.getTime() - (SEED_FAVORITES.length - order) * HOUR) };
+    await db.insert(favorites).values(row).onConflictDoUpdate({ target: [favorites.userId, favorites.documentId], set: row });
   }
   for (const [key, documentKey, author, hoursBefore, body] of SEED_COMMENTS) {
     const at = new Date(SEED_LATEST_UPDATE.getTime() - hoursBefore * HOUR);

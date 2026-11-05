@@ -184,6 +184,10 @@ export interface SeedDocument {
   at?: string;
   /** Its planet colour (C02 "Hành tinh của bài"). */
   planet?: 'violet' | 'teal' | 'cyan' | 'amber' | 'emerald' | 'pink';
+  /** Its review trail (C08 "Lý do · …"), oldest first; a document of SEED_HISTORY takes its trail from there. */
+  reviews?: SeedReview[];
+  /** In its author's trash since this many days before SEED_LATEST_UPDATE (C08 "Thùng rác"). */
+  trashedDaysBefore?: number;
 }
 
 const official = { origin: 'official', status: 'approved', author: 'dat' } as const;
@@ -368,7 +372,46 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
       ],
     ],
   },
+  // The owner's texts at the other steps of review, and two in the trash (C08 "Của tôi"). Written long before the
+  // other texts, so the Universe's recent lists (C09) stay as they were.
+  {
+    key: 'swap-ubuntu', space: 'me', collection: null, title: 'Ghi chú: swap trên Ubuntu', type: 'note', origin: 'community', status: 'pending', author: 'owner',
+    at: '2026-10-18T09:00:00Z',
+    reviews: [{ by: 'owner', at: '2026-10-18T09:05:00Z', action: 'submitted', reason: null }],
+    chunks: [['swap-ubuntu', 'Swap trên Ubuntu', 'Ubuntu tạo sẵn /swap.img; đổi cỡ bằng swapoff, fallocate rồi mkswap và swapon lại.']],
+  },
+  {
+    key: 'tcp-udp-pic', space: 'me', collection: null, title: 'TCP vs UDP bằng hình', type: 'note', origin: 'own', status: 'changes_requested', author: 'owner',
+    at: '2026-10-16T13:00:00Z', planet: 'cyan',
+    reviews: [
+      { by: 'owner', at: '2026-10-16T13:10:00Z', action: 'submitted', reason: null },
+      { by: 'linh', at: '2026-10-17T02:30:00Z', action: 'changes_requested', reason: 'Thêm link RFC 793 cho phần bắt tay 3 bước nhé.' },
+    ],
+    chunks: [['bat-tay', 'Bắt tay 3 bước', 'SYN, SYN-ACK rồi ACK: hai bên thống nhất số thứ tự trước khi gửi dữ liệu. UDP không có bước này.']],
+  },
+  {
+    key: 'dns-cache', space: 'me', collection: null, title: 'Mẹo DNS cache', type: 'note', origin: 'own', status: 'rejected', author: 'owner',
+    at: '2026-10-15T08:00:00Z',
+    reviews: [
+      { by: 'owner', at: '2026-10-15T08:10:00Z', action: 'submitted', reason: null },
+      { by: 'linh', at: '2026-10-15T15:00:00Z', action: 'rejected', reason: 'Nội dung nói về trình duyệt hơn là DNS.' },
+    ],
+    chunks: [['xoa-cache', 'Xoá cache', 'Trình duyệt giữ bản ghi DNS riêng; mở trang nội bộ của trình duyệt để xoá khi tên miền vừa đổi IP.']],
+  },
+  {
+    key: 'arp-old', space: 'me', collection: null, title: 'Bản nháp cũ: ARP', type: 'note', origin: 'own', status: 'draft', author: 'owner',
+    at: '2026-10-12T10:00:00Z', trashedDaysBefore: 3,
+    chunks: [['arp', 'ARP', 'ARP hỏi bằng broadcast, trả lời bằng unicast.']],
+  },
+  {
+    key: 'boot-notes', space: 'me', collection: null, title: 'boot-notes.docx', type: 'office', origin: 'own', status: 'private', author: 'owner',
+    at: '2026-10-02T10:00:00Z', trashedDaysBefore: 27,
+    chunks: [['ghi-chu', 'Ghi chú', 'Ghi chú khi đọc về GRUB và initramfs.']],
+  },
 ];
+
+/** The owner's favourites (C08 "Yêu thích"), by document key, oldest first. */
+export const SEED_FAVORITES = ['dhcp', 'new-host', 'new-host-ip'];
 
 /** [source, target, kind, label] by document key. */
 export const SEED_LINKS: Array<[string, string, 'wikilink' | 'relation', string | null]> = [

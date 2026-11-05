@@ -60,7 +60,7 @@ function railItems(t: Translate, spaceHref: string): LensRailItem[] {
   return [
     { id: 'universe', label: t('shell.rail.universe'), href: SHELL_PATHS.universe, icon: 'home', spaceAfter: 6 },
     { id: 'graph', label: t('shell.rail.graph'), href: spaceViewHref(SHELL_PATHS.graph, spaceHref), icon: 'graph', spaceAfter: 22 },
-    { id: 'create', label: t('shell.rail.create'), href: SHELL_PATHS.mine, icon: 'plus', kind: 'create', spaceAfter: 8 },
+    { id: 'create', label: t('shell.rail.create'), href: SHELL_PATHS.create, icon: 'plus', kind: 'create', spaceAfter: 8 },
     { id: 'search', label: t('shell.rail.search'), href: SHELL_PATHS.search, icon: 'search' },
     { id: 'copilot', label: t('shell.rail.copilot'), href: SHELL_PATHS.copilot, icon: 'sparkles' },
     { id: 'spaces', label: t('shell.rail.spaces'), href: spaceHref, icon: 'orbit' },

@@ -37,6 +37,18 @@
   color: var(--c-on-primary);
 }
 
+.kf-tab-count {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 9px;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--violet-400) 18%, transparent);
+}
+
+.kf-tab[aria-selected="true"] .kf-tab-count {
+  background: color-mix(in srgb, var(--white) 20%, transparent);
+}
+
 .kf-tabs[data-variant="segment"] {
   gap: 6px;
 }

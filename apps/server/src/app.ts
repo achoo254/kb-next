@@ -106,7 +106,7 @@ export function createApp({
   app.use(activityRoutes({ config, db, now }));
   app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(historyRoutes({ config, db, now, sync: search?.sync ?? null }));
-  app.use(myContentRoutes({ config, db, now }));
+  app.use(myContentRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(graphRoutes({ config, db, now, jev, summaries }));
   app.use(canvasRoutes({ config, db, now, jev }));
   app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));

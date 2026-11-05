@@ -10,6 +10,7 @@
  */
 import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, lt, max, ne, or } from 'drizzle-orm';
 import { type BlockDiff, diffBlocks } from '../authoring/block-diff';
+import { ORIGIN_RANK, bestLinkTarget } from '../authoring/link-targets';
 import { bodyOf, chunksOf, composeMarkdown, contentHash, foldTitle, linkedTitles } from '../authoring/markdown-text';
 import { titleLine } from '../import/hoc-cloud/sections';
 import type { Db } from '../db/client';
@@ -102,8 +103,6 @@ function escapeLike(text: string): string {
   return text.replace(/[\\%_]/g, (c) => `\\${c}`);
 }
 
-const ORIGIN_RANK: Record<DocumentRow['origin'], number> = { official: 0, community: 1, own: 2 };
-
 /** Who `[[ ]]` links of a document are resolved for: its author, never more (an admin's edit links what the author sees). */
 function authorViewer(authorId: string): Viewer {
   return { kind: 'user', userId: authorId, isAdmin: false };
@@ -130,22 +129,10 @@ async function resolveLinkTargets(db: Db, authorId: string, titles: readonly str
     )
     .orderBy(asc(documents.createdAt))
     .limit(LINK_CANDIDATES * wanted.length);
-  const folded = rows.map((row) => ({ row, fold: foldTitle(row.title) }));
   const targets = new Set<string>();
   for (const title of wanted) {
-    const want = foldTitle(title);
-    const word = new RegExp(`(^|[^\\p{L}\\p{N}])${want.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}\\p{N}])`, 'u');
-    const best = folded
-      .filter(({ fold }) => fold === want || word.test(fold))
-      .sort(
-        (a, b) =>
-          Number(b.fold === want) - Number(a.fold === want) ||
-          ORIGIN_RANK[a.row.origin] - ORIGIN_RANK[b.row.origin] ||
-          Number(b.row.status === 'approved') - Number(a.row.status === 'approved') ||
-          Number(b.row.lang === self.lang) - Number(a.row.lang === self.lang) ||
-          a.row.title.length - b.row.title.length,
-      )[0];
-    if (best) targets.add(best.row.id);
+    const best = bestLinkTarget(title, rows, self.lang);
+    if (best) targets.add(best.id);
   }
   return [...targets];
 }
@@ -387,16 +374,24 @@ export interface PurgeResult {
  */
 export async function purgeTrash(db: Db, now: Date): Promise<PurgeResult> {
   const cutoff = new Date(now.getTime() - TRASH_DAYS * DAY_MS);
+  return purgeWhere(db, and(isNotNull(documents.deletedAt), lt(documents.deletedAt, cutoff)));
+}
+
+/**
+ * Deletes for good, before the 30 days are up, what the account itself put in the trash (C08 "Xoá vĩnh viễn" of one
+ * document, or "Dọn thùng rác" with `id` null): the same rows as the trash list (src/access/my-content.ts), never
+ * anyone else's. An unknown id, or one not in this account's trash, deletes nothing.
+ */
+export async function purgeOwnTrash(db: Db, viewer: UserViewer, id: string | null): Promise<PurgeResult> {
+  if (id !== null && !isUuid(id)) return { documentIds: [], storageKeys: [] };
+  return purgeWhere(db, and(isNotNull(documents.deletedAt), eq(documents.deletedBy, viewer.userId), id === null ? undefined : eq(documents.id, id)));
+}
+
+async function purgeWhere(db: Db, condition: ReturnType<typeof and>): Promise<PurgeResult> {
   return db.transaction(async (tx) => {
-    const doomed = tx
-      .select({ id: documents.id })
-      .from(documents)
-      .where(and(isNotNull(documents.deletedAt), lt(documents.deletedAt, cutoff)));
+    const doomed = tx.select({ id: documents.id }).from(documents).where(condition);
     const fileRows = await tx.select({ id: files.id, storageKey: files.storageKey }).from(files).where(inArray(files.documentId, doomed));
-    const rows = await tx
-      .delete(documents)
-      .where(and(isNotNull(documents.deletedAt), lt(documents.deletedAt, cutoff)))
-      .returning({ id: documents.id });
+    const rows = await tx.delete(documents).where(condition).returning({ id: documents.id });
     // After the documents: their versions (which may point at these files) are gone by then.
     if (fileRows.length > 0)
       await tx.delete(files).where(

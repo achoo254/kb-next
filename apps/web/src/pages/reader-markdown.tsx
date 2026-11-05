@@ -5,9 +5,11 @@
  *
  * One reading rule of the boards: an ordered list whose every item starts with a bold term ("1. **Discover** Hét lên
  * cả mạng xin IP") is a list of steps, drawn as step cards with the term's first letter (C11's DORA diagram). A quote
- * opening with `[!WARNING]` (as the editor, C02, writes its warning box) is drawn as that warning.
+ * opening with `[!WARNING]` (as the editor, C02, writes its warning box) is drawn as that warning. A `[[Tiêu đề]]`
+ * (or `[[Tiêu đề|chữ]]`) the server resolved to a document the reader may open is a link to it; any other stays as
+ * written.
  */
-import type { ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -107,12 +109,64 @@ export function rehypeWarnings() {
   };
 }
 
-const PLUGINS = [remarkGfm];
-const REHYPE_PLUGINS = [rehypeWarnings];
+/** A `[[ ]]` link as written (same syntax as the server's, src/import/hoc-cloud/prepare.ts): title, then its label. */
+const WIKILINK = /\[\[([^\]\n|]+)(?:\|([^\]\n]*))?\]\]/g;
+/** Elements whose text is never turned into links: links themselves and code. */
+const NO_LINKS = new Set(['a', 'code', 'pre']);
 
-export function ReaderMarkdown({ markdown }: { markdown: string }): ReactNode {
+/** The text of `value` with each resolved `[[ ]]` as a link (`/d/<id>`), or null when it holds none. */
+export function linkWikilinks(value: string, targets: ReadonlyMap<string, string>): ElementContent[] | null {
+  const parts: ElementContent[] = [];
+  let last = 0;
+  for (const match of value.matchAll(WIKILINK)) {
+    const id = targets.get((match[1] ?? '').trim());
+    if (!id) continue;
+    const start = match.index;
+    if (start > last) parts.push({ type: 'text', value: value.slice(last, start) });
+    const label = match[2]?.trim() || (match[1] ?? '').trim();
+    parts.push({
+      type: 'element',
+      tagName: 'a',
+      properties: { href: `/d/${encodeURIComponent(id)}`, className: ['reader-wikilink'], dataId: 'reader-wikilink' },
+      children: [{ type: 'text', value: label }],
+    });
+    last = start + match[0].length;
+  }
+  if (parts.length === 0) return null;
+  if (last < value.length) parts.push({ type: 'text', value: value.slice(last) });
+  return parts;
+}
+
+/** A rehype plugin turning the resolved `[[ ]]` titles of the text into links (see the module comment). */
+export function rehypeWikilinks(targets: ReadonlyMap<string, string>) {
+  const visit = (node: Element): void => {
+    if (NO_LINKS.has(node.tagName)) return;
+    node.children = node.children.flatMap((child) => {
+      if (isElement(child)) {
+        visit(child);
+        return [child];
+      }
+      return child.type === 'text' ? (linkWikilinks(child.value, targets) ?? [child]) : [child];
+    });
+  };
+  return () =>
+    (tree: { children: ElementContent[] }): void => {
+      for (const child of tree.children) if (isElement(child)) visit(child);
+    };
+}
+
+const PLUGINS = [remarkGfm];
+
+interface ReaderMarkdownProps {
+  markdown: string;
+  /** `[[ ]]` titles and the document each links (the reader's `wikilinks`). */
+  wikilinks?: ReadonlyMap<string, string>;
+}
+
+export function ReaderMarkdown({ markdown, wikilinks }: ReaderMarkdownProps): ReactNode {
+  const rehypePlugins = useMemo(() => (wikilinks && wikilinks.size > 0 ? [rehypeWarnings, rehypeWikilinks(wikilinks)] : [rehypeWarnings]), [wikilinks]);
   return (
-    <Markdown remarkPlugins={PLUGINS} rehypePlugins={REHYPE_PLUGINS} components={COMPONENTS} skipHtml>
+    <Markdown remarkPlugins={PLUGINS} rehypePlugins={rehypePlugins} components={COMPONENTS} skipHtml>
       {markdown}
     </Markdown>
   );

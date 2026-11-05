@@ -19,6 +19,7 @@ describe('routes', () => {
     ['/canvas', 'C15'],
     ['/canvas/8bb6d274-c582-491b-88b0-06fdcd845e55', 'C15'],
     ['/canvas/a/b', 'X02'],
+    ['/create', 'C01'],
     ['/me', 'C08'],
     ['/inbox', 'C20'],
     ['/settings', 'H03'],

@@ -132,6 +132,10 @@ const ReviewSchema = z.object({
 
 export const MyDocumentSchema = z.extend(DocumentSummarySchema, {
   planet: z.nullable(z.string()),
+  /** An admin took the published text off the Universe ("Bị quản trị ẩn"). */
+  hidden: z.boolean(),
+  /** "Nơi nằm": the Collection within `space`, if any. */
+  collection: z.nullable(CollectionBriefSchema),
   favorite: z.boolean(),
   /** The latest review event ("Lý do · Thiếu nguồn … · Linh"); null when never reviewed. */
   review: z.nullable(ReviewSchema),
@@ -164,6 +168,16 @@ export async function fetchFavorites(): Promise<FavoriteDocument[]> {
 
 export async function fetchTrash(): Promise<TrashedDocument[]> {
   return (await getJson(TrashSchema, '/api/me/trash')).documents;
+}
+
+/** Deletes one document of the account's trash for good ("Xoá vĩnh viễn"); ApiError `not-found` when not there. */
+export async function purgeFromTrash(id: string): Promise<void> {
+  await apiFetch(`/api/me/trash/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+/** Deletes the account's whole trash for good ("Dọn thùng rác"); how many documents went. */
+export async function emptyTrash(): Promise<number> {
+  return (await getJson(z.object({ purged: z.number() }), '/api/me/trash', { method: 'DELETE' })).purged;
 }
 
 // ── Spaces and Collections ──

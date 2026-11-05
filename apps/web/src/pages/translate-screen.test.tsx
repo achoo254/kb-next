@@ -55,6 +55,7 @@ function view(overrides: Partial<DocumentView> = {}): DocumentView {
     chunks: [{ anchor: 'tong-quan', heading: null, markdown: VI.join('\n\n') }],
     backlinks: [],
     outgoing: [],
+    wikilinks: [],
     related: [],
     versions: [],
     ...overrides,

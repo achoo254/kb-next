@@ -8,6 +8,7 @@ import { SessionProvider } from './layout/session-context';
 import type { BackdropVeil } from './ui/universe-backdrop';
 import { CanvasRoute } from './pages/canvas-screen';
 import { CopilotScreen } from './pages/copilot-screen';
+import { CreateMenu } from './pages/create-menu';
 import { EditorScreen } from './pages/editor-screen';
 import { ErrorScreen } from './pages/error-screen';
 import { GraphScreen } from './pages/graph-screen';
@@ -15,6 +16,7 @@ import { HistoryScreen } from './pages/history-screen';
 import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
+import { MineScreen } from './pages/mine-screen';
 import { NewNote } from './pages/new-note';
 import { ReaderScreen } from './pages/reader-screen';
 import { SearchScreen } from './pages/search-screen';
@@ -43,6 +45,7 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   C13: { rail: 'graph', view: 'graph' },
   C14: { rail: 'copilot' },
   C15: { rail: 'spaces', view: 'canvas' },
+  C01: { rail: 'create' },
   C02: { rail: 'create', view: 'docs', veil: 'strong' },
   C17: { rail: 'spaces', view: 'docs', veil: 'strong' },
   C08: { rail: 'mine', veil: 'strong' },
@@ -95,6 +98,10 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return path === '/new' ? <NewNote /> : <EditorScreen id={routeParam(route, path)} />;
     case 'C17':
       return <HistoryScreen id={routeParam(route, path)} />;
+    case 'C01':
+      return <CreateMenu />;
+    case 'C08':
+      return <MineScreen />;
     case 'C12':
       return <SearchScreen />;
     case 'C13':

@@ -261,6 +261,8 @@ describe('what a save refuses and links', () => {
 
 describe('favourites and own documents', () => {
   it('lists favourites the account may read and marks them in its own list', async () => {
+    // Start from none: the seed's favourites of C08 aside.
+    for (const doc of await as('owner', () => fetchFavorites())) await as('owner', () => setFavorite(doc.id, false));
     await as('owner', () => setFavorite(DHCP, true));
     clock = new Date(clock.getTime() + 1_000);
     const dhcpHome = seedId('document:dhcp-home');
@@ -271,7 +273,7 @@ describe('favourites and own documents', () => {
     expect(mine.every((d) => d.type === 'note')).toBe(true);
     await as('owner', () => setFavorite(DHCP, false));
     expect((await as('owner', () => fetchFavorites())).map((d) => d.title)).toEqual(['DHCP trên router nhà']);
-    expect((await as('owner', () => fetchMyDocuments({ status: 'pending' }))).map((d) => d.title)).toEqual(['So sánh ARP và NDP']);
+    expect((await as('owner', () => fetchMyDocuments({ status: 'pending' }))).map((d) => d.title)).toEqual(['So sánh ARP và NDP', 'Ghi chú: swap trên Ubuntu']);
   });
 });
 

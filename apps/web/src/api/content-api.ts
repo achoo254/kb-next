@@ -184,6 +184,8 @@ const DocumentSchema = z.object({
   backlinks: z.array(LinkedDocumentSchema),
   /** Readable documents this one links to. */
   outgoing: z.array(LinkedDocumentSchema),
+  /** `[[ ]]` titles written in the text and the readable document each links; any other title stays plain text. */
+  wikilinks: z.array(z.object({ title: z.string(), id: z.string() })),
   /** C11 "Liên quan": texts of the same Space or linked to this one, most related first, at most 5. */
   related: z.array(z.extend(DocumentSummarySchema, { relevance: Relevance })),
   /** Newest first. */

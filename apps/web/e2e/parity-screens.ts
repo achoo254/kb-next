@@ -1,5 +1,6 @@
 import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
 import { C02_CLOCK, C02_DRAFT_ID, C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
+import { C08_CLOCK } from './mine-boards';
 
 /**
  * The screens the parity check compares with their mock board (design/mock-png/<board>.png), with the route that
@@ -41,9 +42,24 @@ export interface ParityScreen {
  * `copilot-c14`: the board's keys, Copilot history and finished answer; `ask-c11`: the board's keys and AI card answer;
  * `canvas-c15`: Jev's suggested connection of the board (graph-canvas-boards.ts: E2E has no Jev key); `keys-c02`: the
  * board's OpenAI key ••••a1b2 for the editor's AI writing chip (E2E has no secret file to store keys); `history-c17`:
- * the history and comparison an admin sees (history-boards.ts: the E2E account is an ordinary reader).
+ * the history and comparison an admin sees (history-boards.ts: the E2E account is an ordinary reader); `mine-c08`:
+ * /api/me/documents answers the board's eight texts at every step of review (mine-boards.ts: the seed holds those
+ * titles as other boards draw them).
  */
-export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04' | 'copilot-c14' | 'ask-c11' | 'canvas-c15' | 'keys-c02' | 'history-c17';
+export type ParityMock =
+  | 'onboarded'
+  | 'spaces-pending'
+  | 'spaces-without-texts'
+  | 'search-c12'
+  | 'search-f01'
+  | 'keys-f03'
+  | 'translate-f04'
+  | 'copilot-c14'
+  | 'ask-c11'
+  | 'canvas-c15'
+  | 'keys-c02'
+  | 'history-c17'
+  | 'mine-c08';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -117,6 +133,10 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'C02-Editor', path: `/d/${C02_DRAFT_ID}/edit`, signedIn: true, status: 'built', mocks: ['keys-c02'], clock: C02_CLOCK, waitFor: '[data-id="editor-key"]' },
   // The history of DHCP (C17) as its admin sees it: AI versions, the review, Minh's v4, hiding and showing; v3 ⇄ v4.
   { board: 'C17-Timeline', path: `/d/${C13_DHCP_ID}/history`, signedIn: true, status: 'built', mocks: ['history-c17'], waitFor: '[data-id="history-lines"][data-state="ready"]' },
+  // The create ring of the "+" (C01), the note described; and "Của tôi" (C08) on the board's texts, the one sent
+  // back picked, with the seed's recent texts, favourites and trash.
+  { board: 'C01-CreateMenu', path: '/create', signedIn: true, status: 'built', waitFor: '[data-id="create-hint"]' },
+  { board: 'C08-MyContent', path: '/me', signedIn: true, status: 'built', mocks: ['mine-c08'], clock: C08_CLOCK, waitFor: '[data-id="mine-screen"][data-state="ready"]' },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The UI kit (dev server only, apps/web/src/dev-kit).

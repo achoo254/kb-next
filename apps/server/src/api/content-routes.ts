@@ -41,6 +41,8 @@ import {
 } from './content-views';
 import { neighbours, relevance, spaceRelevance, termsOf } from './relevance';
 import { summarize } from './summaries';
+import { type LinkCandidate, bestLinkTarget } from '../authoring/link-targets';
+import { linkedTitles } from '../authoring/markdown-text';
 import { openDocument, readerOf } from './request-context';
 import { type SpaceMember, type SpacePermissions, spaceMembers, spacePermissions } from './space-members';
 
@@ -101,9 +103,26 @@ export interface DocumentResponse {
   chunks: Array<{ anchor: string; heading: string | null; markdown: string }>;
   backlinks: LinkedDocument[];
   outgoing: LinkedDocument[];
+  /**
+   * `[[ ]]` titles written in the text, each with the readable document it links (C11 draws them as links); a title
+   * whose document the viewer may not read, or that links nothing, is not here and stays plain text.
+   */
+  wikilinks: Array<{ title: string; id: string }>;
   /** Most related readable texts first: same Space or linked, scored in code. */
   related: Array<WithRelevance<DocumentSummary>>;
   versions: Array<{ version: number; editorName: string | null; createdAt: string }>;
+}
+
+/**
+ * Which readable document each `[[ ]]` title of `markdown` links: a link row does not keep the title it was written
+ * as, so the save's choice (src/authoring/link-targets.ts) is replayed over the document's own readable wikilink
+ * targets. When the document the save chose is one the viewer may not read, its title links nothing here.
+ */
+export function writtenLinks(markdown: string, targets: readonly LinkCandidate[], lang: DocumentRow['lang']): Array<{ title: string; id: string }> {
+  return linkedTitles(markdown).flatMap((title) => {
+    const target = bestLinkTarget(title, targets, lang);
+    return target ? [{ title, id: target.id }] : [];
+  });
 }
 
 export interface ContentRoutesOptions {
@@ -287,6 +306,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
       chunks: chunks.map((c) => ({ anchor: c.anchor, heading: c.heading, markdown: c.text })),
       backlinks: linked('in'),
       outgoing: linked('out'),
+      wikilinks: writtenLinks(chunks.map((c) => c.text).join('\n\n'), others.filter((d) => links.some((l) => l.kind === 'wikilink' && l.sourceId === doc.id && l.targetId === d.id)), doc.lang),
       related,
       versions: (versions ?? []).map((v) => ({ version: v.version, editorName: names.get(v.editorId) ?? null, createdAt: v.createdAt.toISOString() })),
     };

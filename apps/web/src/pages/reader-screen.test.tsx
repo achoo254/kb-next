@@ -67,6 +67,7 @@ function view(overrides: Partial<DocumentView> = {}, documentOverrides: Partial<
       { kind: 'wikilink', label: null, document: summary('notes', 'lab-notes.docx', { type: 'office', origin: 'own', status: 'private' }) },
     ],
     outgoing: [],
+    wikilinks: [],
     related: [
       { ...summary('arp', 'Giao thức ARP'), relevance: 75 },
       { ...summary('spoof', 'Ghi chú: DHCP giả mạo'), relevance: 68 },
@@ -192,6 +193,24 @@ describe('ReaderScreen', () => {
     expect(passage?.querySelector('script')).toBeNull();
     expect(passage?.querySelector('img')).toBeNull();
     expect(passage?.querySelector('a')?.getAttribute('href') ?? '').not.toContain('javascript');
+  });
+
+  it('links the [[ ]] titles the server resolved, and leaves an unresolved one as written', async () => {
+    serve(() =>
+      answer(
+        200,
+        view({
+          toc: [{ anchor: 'tong-quan', title: null, level: 2 }],
+          chunks: [{ anchor: 'tong-quan', heading: null, markdown: 'Trước DHCP, đọc [[ARP]]. Còn [[Bài chưa viết]].' }],
+          wikilinks: [{ title: 'ARP', id: 'arp' }],
+        }),
+      ),
+    );
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+    const passage = document.getElementById('tong-quan');
+    expect([...(passage?.querySelectorAll('a') ?? [])].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['ARP', '/d/arp']]);
+    expect(passage?.textContent).toContain('[[Bài chưa viết]]');
   });
 
   it('opens at a #anchor deep link', async () => {

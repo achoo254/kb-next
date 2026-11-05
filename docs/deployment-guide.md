@@ -16,6 +16,12 @@ hay user máy chủ vào đây; dùng alias SSH (`SSH_TARGET`) và placeholder n
 | Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/healthz` sang API |
 | Đăng nhập | client `kb-web` trên `auth.hoandat.com` (mục Đăng nhập) |
 
+Việc định kỳ chạy ngay trong process `kb-server` (không cần cron): dọn phiên hết hạn (lúc khởi động, rồi mỗi giờ), xoá
+vĩnh viễn bài nằm trong thùng rác từ 30 ngày (lúc khởi động, rồi mỗi ngày; log `trash purge: deleted N document(s)…`,
+lỗi thì `trash purge failed` và lần sau thử lại), kiểm lệch chỉ mục Meilisearch (mỗi ngày). Bài bị xoá hẳn được gỡ khỏi
+chỉ mục. Chưa có thư mục tệp tải lên (tải Office là phase 10), nên job chưa có tệp nào trên đĩa để xoá. Job không chạy
+với `KB_SEED=mock` (dev/E2E): thùng rác của seed ghi ngày theo board (03/11/2026).
+
 Link chia sẻ `/l/<token>` mang token trong đường dẫn: nginx phục vụ trang web cho nó như mọi trang nhưng `access_log off`
 và `error_log … crit`. Các trang khác ghi log theo định dạng `kb_notoken` (chỉ `$uri`, không query string, không
 `Referer`); cả site gửi `Referrer-Policy: no-referrer`. Test `apps/web/index-html.test.ts` giữ CSP của `/l/` và `/` như

@@ -39,6 +39,7 @@ const DOCUMENT: DocumentView = {
   chunks: [],
   backlinks: [],
   outgoing: [],
+  wikilinks: [],
   related: [],
   versions: [],
 };

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { DocumentSummary } from '../api/content-api';
 import { useI18n } from '../i18n/i18n';
+import { SHELL_PATHS } from '../layout/shell-paths';
 import { SCENE_ORBITS, SCENE_SLOTS, type SceneSpace, UniverseScene } from '../layout/universe-scene';
 import { ILLUSTRATIONS } from '../ui/art';
 import { GradientTitle } from '../ui/gradient-title';
@@ -13,8 +14,8 @@ import { UniverseAskSuggestions } from './universe-ai-panel';
 /** The heights of the five dock cards (the centre one is taller), as on board S04. */
 const SKELETON_CARDS = [148, 148, 172, 148, 148] as const;
 const SKELETON_DROP = [26, 12, 0, 12, 26] as const;
-/** Where the "Tạo" links of S05 lead: the reader's own content, where writing and uploading start (C08). */
-const CREATE_HREF = '/me';
+/** Where the "Tạo" links of S05 (and of an empty "Của tôi", C08) lead: a note opens the editor, the rest the create ring. */
+const CREATE_HREF = SHELL_PATHS.create;
 
 interface SkeletonProps {
   /** The load takes longer than SLOW_LOAD_MS, or failed: offer "Thử lại". */
@@ -91,9 +92,10 @@ export function UniverseSkeleton({ slow, failed, onRetry }: SkeletonProps): Reac
   );
 }
 
-function createCards(t: ReturnType<typeof useI18n>['t']): StageCard[] {
+/** The three ways to start of an empty universe (S05, and C08's "vũ trụ riêng còn trống"). */
+export function createCards(t: ReturnType<typeof useI18n>['t']): StageCard[] {
   return [
-    { id: 'note', href: CREATE_HREF, title: t('universe.empty.note'), sub: t('universe.empty.noteSub'), icon: 'pencil' },
+    { id: 'note', href: SHELL_PATHS.newNote, title: t('universe.empty.note'), sub: t('universe.empty.noteSub'), icon: 'pencil' },
     { id: 'upload', href: CREATE_HREF, title: t('universe.empty.upload'), sub: t('universe.empty.uploadSub'), icon: 'upload', highlight: true },
     { id: 'journey', href: CREATE_HREF, title: t('universe.empty.journey'), sub: t('universe.empty.journeySub'), icon: 'journey' },
   ];

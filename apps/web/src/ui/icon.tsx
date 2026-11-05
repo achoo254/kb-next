@@ -122,6 +122,24 @@ const ICONS = {
   'arrow-up-right': { body: <path d="M7 17L17 7M9 7h8v8" />, cap: 'round' },
   /* C17: the two versions compared */
   swap: { body: <path d="M7 7h12l-3-3M17 17H5l3 3" />, cap: 'round' },
+  /* C01: the ring of things to create */
+  'create-note': { body: <path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4" />, stroke: 2.1, cap: 'round', join: 'round' },
+  'create-template': { body: <path d="M5 3h14v18H5zM9 7h6M9 11h6M9 15h4" />, stroke: 2.1, cap: 'round', join: 'round' },
+  'create-space': { body: <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6" />, stroke: 2.1, cap: 'round', join: 'round' },
+  'create-collection': { body: <path d="M4 7h16M4 12h16M4 17h10" />, stroke: 2.1, cap: 'round', join: 'round' },
+  'create-office': { body: <path d="M12 16V4M7 9l5-5 5 5M5 20h14" />, stroke: 2.1, cap: 'round', join: 'round' },
+  'create-bulk': { body: <path d="M4 6h6l2 2h8v10H4zM12 11v5M9.5 13.5L12 11l2.5 2.5" />, stroke: 2.1, cap: 'round', join: 'round' },
+  'create-url': {
+    body: <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />,
+    stroke: 2.1,
+    cap: 'round',
+    join: 'round',
+  },
+  'create-journey': { body: <path d="M5 18a2.5 2.5 0 1 0 0 .1M19 6a2.5 2.5 0 1 0 0 .1M7 16c4-1 3-7 10-9" />, stroke: 2.1, cap: 'round', join: 'round' },
+  /* C08: a favourite (outlined; filled by CSS once on) and a text an admin hid */
+  favorite: { body: <path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z" /> },
+  'eye-off': { body: <path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 22 12s-1.2 2.2-3.3 4M6.6 6.6C3.8 8.3 2 12 2 12s4 7 10 7c1.6 0 3-.4 4.3-1" />, stroke: 2.4, cap: 'round' },
+  'create-canvas': { body: <path d="M4 4h7v7H4zM13 13h7v7h-7zM11 7.5h3.5a2 2 0 0 1 2 2V13" />, stroke: 2.1, cap: 'round', join: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

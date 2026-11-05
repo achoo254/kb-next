@@ -184,6 +184,7 @@ interface ArticleProps {
 function ReaderArticle({ view, offline, articleRef, selection, ai }: ArticleProps): ReactNode {
   const { t, locale } = useReaderText();
   const levels = new Map(view.toc.map((entry) => [entry.anchor, entry.level]));
+  const wikilinks = useMemo(() => new Map(view.wikilinks.map((link) => [link.title, link.id])), [view.wikilinks]);
   const documentId = view.document.id;
   const asked = ai.asked;
   const pressed = selection && asked?.about === 'selection' && asked.anchor === selection.anchor && asked.text === selection.text ? asked.task : null;
@@ -205,7 +206,7 @@ function ReaderArticle({ view, offline, articleRef, selection, ai }: ArticleProp
           <Fragment key={chunk.anchor}>
             <section id={chunk.anchor} className="reader-passage" data-overview={chunk.heading === null || undefined} aria-label={chunk.heading ?? t('reader.overview')}>
               {chunk.heading !== null && <Heading className="reader-heading">{chunk.heading}</Heading>}
-              <ReaderMarkdown markdown={chunk.markdown} />
+              <ReaderMarkdown markdown={chunk.markdown} wikilinks={wikilinks} />
               {selection?.anchor === chunk.anchor && !offline && (
                 <SelectionToolbar
                   selection={selection}

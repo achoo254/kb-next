@@ -4,6 +4,8 @@ import './tabs.css';
 export interface TabItem {
   id: string;
   label: string;
+  /** A count after the label (C08 "Thùng rác 2"). */
+  count?: number;
 }
 
 interface TabsProps {
@@ -62,6 +64,7 @@ export function Tabs({ label, items, value, onChange, variant = 'pill', panelIdP
             onKeyDown={move}
           >
             {item.label}
+            {item.count !== undefined && <span className="kf-tab-count">{item.count}</span>}
           </button>
         );
       })}

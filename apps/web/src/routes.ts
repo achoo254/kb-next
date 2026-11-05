@@ -35,6 +35,8 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C13', titleKey: 'screen.C13', access: 'signed-in', pattern: /^\/graph$/ },
   // /canvas lists the account's canvases (and creates one), /canvas/:id opens one.
   { code: 'C15', titleKey: 'screen.C15', access: 'signed-in', pattern: new RegExp(`^/canvas(?:/${segment})?$`) },
+  // The create ring, opened by the lens rail's "+".
+  { code: 'C01', titleKey: 'screen.C01', access: 'signed-in', pattern: /^\/create$/ },
   { code: 'C08', titleKey: 'screen.C08', access: 'signed-in', pattern: /^\/me$/ },
   { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },

@@ -1,0 +1,989 @@
+/* "Của tôi" (design/mock/C08-MyContent.dc.html). The board draws its content 96px right of the rail at 93.3% scale
+   (.kf-content); inside .mine-content the coordinates are the board's own: tabs 28,110 · filters 28,160 · section
+   28,206 (972 × 556) · aside 1020,160 (392 × 602) · toast centred at 714. */
+
+.mine-shell .universe-veil {
+  background:
+    radial-gradient(ellipse 45% 45% at 36% 52%, var(--c-nebula), transparent 70%),
+    var(--c-veil-gate);
+}
+
+/* The breadcrumb of the shell, placed and scaled like the board's (28,80 in its scaled content). */
+.mine-shell .app-shell-crumbs {
+  left: calc(var(--board-offset) + 96px + 26px);
+  top: 67px;
+  transform: scale(0.933);
+  transform-origin: left top;
+}
+
+.mine-shell .app-shell-crumbs a {
+  font-weight: 400;
+}
+
+.mine-shell .app-shell-crumb-current {
+  font-weight: 600;
+}
+
+.mine-screen {
+  position: relative;
+  height: 900px;
+}
+
+.mine-content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform: translateX(96px) scale(0.933);
+  transform-origin: left top;
+}
+
+/* status colours: the planet's glow (--st), its ring (--st-ring, --st-ring-style) and its pill */
+.mine-content [data-status="draft"] {
+  --st: var(--slate-400);
+  --st-ring: var(--slate-400);
+  --st-ring-style: dashed;
+  --pill-bg: var(--mine-pill-draft);
+  --pill-text: var(--mine-text-draft);
+}
+
+.mine-content [data-status="private"] {
+  --st: var(--planet-pink);
+  --st-ring: transparent;
+  --st-ring-style: solid;
+  --pill-bg: var(--mine-pill-private);
+  --pill-text: var(--mine-text-private);
+}
+
+.mine-content [data-status="pending"] {
+  --st: var(--amber-500);
+  --st-ring: var(--amber-500);
+  --st-ring-style: dashed;
+  --pill-bg: var(--mine-pill-review);
+  --pill-text: var(--c-warn-text);
+}
+
+.mine-content [data-status="changes"] {
+  --st: var(--amber-500);
+  --st-ring: var(--amber-500);
+  --st-ring-style: solid;
+  --pill-bg: var(--mine-pill-review);
+  --pill-text: var(--c-warn-text);
+}
+
+.mine-content [data-status="approved"] {
+  --st: var(--cyan-500);
+  --st-ring: var(--cyan-400);
+  --st-ring-style: solid;
+  --pill-bg: var(--mine-pill-approved);
+  --pill-text: var(--mine-text-approved);
+}
+
+.mine-content [data-status="hidden"] {
+  --st: var(--slate-500);
+  --st-ring: transparent;
+  --st-ring-style: solid;
+  --pill-bg: var(--mine-pill-dim);
+  --pill-text: var(--mine-text-dim);
+}
+
+.mine-content [data-status="rejected"] {
+  --st: var(--slate-500);
+  --st-ring: var(--slate-500);
+  --st-ring-style: dashed;
+  --pill-bg: var(--mine-pill-dim);
+  --pill-text: var(--mine-text-dim);
+}
+
+/* ── tabs, view switch, filters ── */
+
+.mine-bar {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  top: 110px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mine-bar-fill {
+  flex: 1;
+}
+
+.mine-tabs.kf-tabs[data-variant="pill"],
+.mine-views {
+  padding: 3px;
+  gap: 2px;
+  border-radius: 22px;
+  background: var(--mine-surface);
+  border: 1px solid var(--mine-border);
+}
+
+.mine-views {
+  display: flex;
+}
+
+.mine-tabs.kf-tabs[data-variant="pill"] .kf-tab {
+  padding: 0 14px;
+}
+
+.mine-view {
+  height: 38px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 19px;
+  background: transparent;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.mine-view[aria-pressed="true"] {
+  background: var(--c-primary);
+  color: var(--c-on-primary);
+}
+
+.mine-filters {
+  position: absolute;
+  left: 28px;
+  right: 440px;
+  top: 160px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The chips of both groups flow in one wrapping row, as on the board. */
+.mine-filter-group {
+  display: contents;
+}
+
+.mine-filter-label {
+  margin-right: 2px;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.mine-filter-gap {
+  width: 2px;
+}
+
+.mine-chip {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid var(--mine-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mine-chip[data-dot] {
+  padding: 0 10px;
+}
+
+.mine-chip[aria-pressed="true"] {
+  border-color: var(--c-primary);
+  background: var(--mine-selected);
+}
+
+.mine-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--violet-400);
+}
+
+.mine-chip[data-dot="draft"] .mine-chip-dot {
+  background: var(--slate-400);
+}
+
+.mine-chip[data-dot="private"] .mine-chip-dot {
+  background: var(--planet-pink);
+}
+
+.mine-chip[data-dot="pending"] .mine-chip-dot,
+.mine-chip[data-dot="changes"] .mine-chip-dot {
+  background: var(--amber-500);
+}
+
+.mine-chip[data-dot="approved"] .mine-chip-dot {
+  background: var(--cyan-400);
+}
+
+.mine-chip[data-dot="hidden"] .mine-chip-dot,
+.mine-chip[data-dot="rejected"] .mine-chip-dot {
+  background: var(--slate-500);
+}
+
+.mine-view:focus-visible,
+.mine-chip:focus-visible,
+.mine-planet:focus-visible,
+.mine-row:focus-visible,
+.mine-star:focus-visible,
+.mine-first:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* ── the section and the aside ── */
+
+.mine-section {
+  position: absolute;
+  left: 28px;
+  top: 206px;
+  width: 972px;
+  height: 556px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--mine-surface);
+  border: 1px solid var(--mine-border);
+  box-shadow:
+    inset 0 0 26px color-mix(in srgb, var(--violet-500) 30%, transparent),
+    inset 0 0 2px color-mix(in srgb, var(--purple-200) 50%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 18%, transparent),
+    0 0 26px color-mix(in srgb, var(--violet-600) 25%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.mine-aside {
+  position: absolute;
+  left: 1020px;
+  top: 160px;
+  width: 392px;
+  height: 602px;
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--mine-surface);
+  border: 1px solid var(--mine-border);
+}
+
+.mine-aside-none {
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+.mine-state {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+.mine-state p {
+  margin: 0;
+}
+
+/* ── the orbits ── */
+
+@keyframes mine-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes mine-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.mine-orbit {
+  position: absolute;
+  inset: 0;
+}
+
+.mine-ring {
+  --ring: var(--mine-ring-draft);
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed var(--ring);
+  box-shadow:
+    0 0 10px var(--ring),
+    inset 0 0 10px var(--ring);
+  pointer-events: none;
+}
+
+.mine-ring[data-ring="2"] {
+  --ring: var(--mine-ring-review);
+}
+
+.mine-ring[data-ring="3"] {
+  --ring: var(--mine-ring-public);
+  border-style: solid;
+}
+
+.mine-ring-label {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--c-text-muted);
+}
+
+.mine-centre {
+  position: absolute;
+  left: 426px;
+  top: 206px;
+  width: 120px;
+  height: 128px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--glow-personal) 60%, transparent));
+  animation: mine-float 5s ease-in-out infinite;
+}
+
+.mine-centre-label {
+  position: absolute;
+  left: 426px;
+  top: 338px;
+  width: 120px;
+  text-align: center;
+  font: 700 13px var(--font-display);
+  color: var(--violet-50);
+}
+
+.mine-centre-label span,
+.mine-planet-name {
+  border-radius: 10px;
+  background: var(--mine-label-bg);
+  border: 1px solid var(--mine-label-border);
+}
+
+.mine-centre-label span {
+  padding: 3px 10px;
+}
+
+.mine-first {
+  position: absolute;
+  left: 426px;
+  top: 206px;
+  width: 120px;
+  height: 120px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px dashed var(--violet-300);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--c-text);
+  text-decoration: none;
+  background: color-mix(in srgb, var(--violet-600) 14%, transparent);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--violet-600) 45%, transparent);
+}
+
+.mine-first-alone {
+  position: relative;
+  left: auto;
+  top: auto;
+  flex: none;
+}
+
+.mine-refused {
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  width: 170px;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px dashed var(--mine-border);
+  background: var(--mine-row);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.mine-planet {
+  position: absolute;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  animation: mine-float 5s ease-in-out infinite;
+  transition: transform 0.25s;
+}
+
+.mine-planet:hover {
+  transform: scale(1.1);
+}
+
+.mine-planet[data-status="hidden"],
+.mine-planet[data-status="rejected"] {
+  opacity: 0.55;
+}
+
+.mine-planet-art {
+  position: absolute;
+  left: -6px;
+  top: -10px;
+  width: calc(100% + 12px);
+  height: calc(100% + 18px);
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px var(--st));
+}
+
+.mine-planet[data-status="approved"] .mine-planet-art {
+  filter: drop-shadow(0 0 16px var(--st));
+}
+
+.mine-planet[data-status="hidden"] .mine-planet-art,
+.mine-planet[data-status="rejected"] .mine-planet-art {
+  filter: drop-shadow(0 0 8px var(--st)) grayscale(0.7);
+}
+
+.mine-planet[data-type="canvas"] .mine-planet-art {
+  filter: hue-rotate(28deg) saturate(1.2) drop-shadow(0 0 8px var(--st));
+}
+
+.mine-planet[data-selected] .mine-planet-art {
+  filter: drop-shadow(0 0 4px var(--white)) drop-shadow(0 0 18px var(--st));
+}
+
+.mine-planet-ring {
+  position: absolute;
+  left: -12px;
+  right: -12px;
+  top: 30%;
+  bottom: 18%;
+  border-radius: 50%;
+  border: 1.2px var(--st-ring-style) var(--st-ring);
+}
+
+.mine-planet[data-status="pending"] .mine-planet-ring {
+  animation: mine-pulse 1.8s ease-in-out infinite;
+}
+
+.mine-planet[data-selected] .mine-planet-ring {
+  border-color: var(--white);
+}
+
+.mine-planet-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 5px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--white);
+  background: var(--mine-label-bg);
+}
+
+.mine-planet-star {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  color: var(--amber-400);
+  fill: currentColor;
+  stroke: none;
+}
+
+.mine-planet-name {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  max-width: 160px;
+  margin-top: 12px;
+  padding: 3px 9px;
+  overflow: hidden;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 600 11px var(--font-sans);
+  color: var(--violet-50);
+}
+
+.mine-no-match,
+.mine-empty-line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.mine-no-match {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  text-align: center;
+}
+
+.mine-section > .mine-empty-line {
+  padding: 20px;
+}
+
+/* ── the list ── */
+
+.mine-list {
+  height: 100%;
+  margin: 0;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow: auto;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mine-row {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--mine-border);
+  background: var(--mine-row);
+  color: var(--c-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mine-row[data-selected] {
+  border-color: var(--c-primary);
+  background: var(--mine-selected);
+}
+
+.mine-row-art {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px var(--st));
+}
+
+.mine-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mine-row-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mine-row-meta {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.mine-pill {
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--pill-bg);
+  color: var(--pill-text);
+}
+
+/* ── the empty own universe ── */
+
+.mine-empty-universe {
+  position: absolute;
+  inset: 0;
+  padding-top: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.mine-empty-title {
+  font: 700 24px var(--font-display);
+}
+
+.mine-empty-text {
+  max-width: 520px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--c-text-sub);
+}
+
+.mine-empty-stage {
+  position: absolute;
+  left: 4px;
+  bottom: -18px;
+  transform: scale(0.82);
+  transform-origin: bottom center;
+}
+
+/* ── recent, favourites, trash ── */
+
+.mine-tab-body {
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mine-lead {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.mine-grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.mine-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mine-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mine-card {
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--mine-row);
+  border: 1px solid var(--mine-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: kf-pop var(--motion-pop) var(--ease-out-back) both;
+}
+
+.mine-card-centred {
+  padding: 16px;
+  align-items: center;
+  text-align: center;
+}
+
+.mine-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mine-card-art {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 7px var(--violet-600));
+}
+
+.mine-fav-art {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px var(--violet-600));
+  animation: mine-float 5s ease-in-out infinite;
+}
+
+.mine-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.mine-card-centred .mine-card-title {
+  font-size: 14px;
+}
+
+.mine-card-title:hover {
+  text-decoration: underline;
+}
+
+.mine-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.mine-origin {
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.mine-origin[data-origin="official"] {
+  background: color-mix(in srgb, var(--violet-600) 30%, transparent);
+  color: light-dark(var(--violet-900), var(--violet-200));
+}
+
+.mine-origin[data-origin="community"] {
+  background: var(--mine-pill-approved);
+  color: var(--mine-text-approved);
+}
+
+.mine-origin[data-origin="own"] {
+  background: var(--mine-pill-private);
+  color: var(--mine-text-private);
+}
+
+.mine-star {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  border-radius: 50%;
+  border: 1px solid var(--mine-border);
+  background: none;
+  color: var(--amber-400);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mine-star[aria-pressed="true"] svg {
+  fill: currentColor;
+}
+
+.mine-trash-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mine-trash-head .mine-lead {
+  flex: 1;
+}
+
+.mine-trash-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mine-trash-row {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--mine-row);
+  border: 1px solid var(--mine-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mine-trash-art {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.mine-trash-when {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.mine-trash-when[data-soon] {
+  color: var(--c-warn-text);
+}
+
+.mine-trash-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+.mine-trash-empty img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  filter: grayscale(0.85);
+  opacity: 0.55;
+}
+
+.mine-action-warn.kf-btn,
+.mine-action-warn {
+  border-color: var(--mine-warn-line);
+  color: var(--c-warn-text);
+}
+
+/* ── the picked planet ── */
+
+.mine-detail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: kf-pop var(--motion-pop) var(--ease-out-back) both;
+}
+
+.mine-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mine-detail-art {
+  flex: none;
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px var(--st));
+}
+
+.mine-detail[data-status="hidden"] .mine-detail-art,
+.mine-detail[data-status="rejected"] .mine-detail-art {
+  opacity: 0.6;
+}
+
+.mine-detail-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mine-detail-name {
+  font: 700 20px var(--font-display);
+}
+
+.mine-detail-meta {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.mine-detail > .mine-pill {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.mine-detail-desc {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mine-reason {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--mine-warn-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.mine-reason-head {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-warn-text);
+}
+
+.mine-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  font-size: 12px;
+}
+
+.mine-fact {
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--mine-row);
+}
+
+.mine-fact-label {
+  color: var(--c-text-muted);
+}
+
+.mine-fact-value {
+  font-weight: 600;
+}
+
+.mine-detail-fill {
+  flex: 1;
+}
+
+.mine-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── toast and the purge dialog ── */
+
+.mine-toast {
+  position: absolute;
+  left: 50%;
+  top: 714px;
+  z-index: 3;
+  transform: translateX(-50%);
+}
+
+.mine-purge-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.mine-purge-input {
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--mine-border);
+  background: var(--mine-row);
+  color: var(--c-text);
+  font: 600 15px var(--font-sans);
+}
+
+.mine-purge-input:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
