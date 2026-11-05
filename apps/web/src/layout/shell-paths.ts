@@ -39,6 +39,16 @@ export function previewPath(documentId: string): string {
   return `/d/${encodeURIComponent(documentId)}/preview`;
 }
 
+/** A journey's run (Flow). */
+export function journeyPath(journeyId: string): string {
+  return `/journey/${encodeURIComponent(journeyId)}`;
+}
+
+/** A journey's builder (C07). */
+export function journeyEditPath(journeyId: string): string {
+  return `${journeyPath(journeyId)}/edit`;
+}
+
 /** A text's share link and who has access (C18). */
 export function sharePagePath(documentId: string): string {
   return `/d/${encodeURIComponent(documentId)}/share`;

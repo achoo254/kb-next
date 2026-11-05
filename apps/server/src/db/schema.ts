@@ -619,35 +619,54 @@ export const canvases = pgTable(
   (table) => [index('canvases_owner_id_idx').on(table.ownerId)],
 );
 
-/** A knowledge journey (C07, Flow): an ordered path through documents. */
-export const journeys = pgTable(
-  'journeys',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    ownerId: uuid('owner_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
-    title: text('title').notNull(),
-    description: text('description'),
-    createdAt: createdAt(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [index('journeys_owner_id_idx').on(table.ownerId)],
-);
+/** What a journey step asks of the learner: read a text, do a lab, answer a quiz ("ôn tập"), or read a note. */
+export const journeyStepKind = pgEnum('journey_step_kind', ['read', 'lab', 'quiz', 'note']);
+export const JOURNEY_STEP_KINDS = journeyStepKind.enumValues;
 
+/**
+ * The steps of a knowledge journey (C07, Flow). The journey itself is a document of type `journey`, so it shares the
+ * read rule and the review lifecycle of every text; its steps are these rows, in `position` order. A step points at
+ * the document it is about (`documentId`; null for a note step, or once that document is gone); `note` is the line
+ * the run shows under the step (a note step's whole content); `minutes` is the author's estimate. Read and written
+ * only through src/access/journeys.ts.
+ */
 export const journeySteps = pgTable(
   'journey_steps',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     journeyId: uuid('journey_id')
       .notNull()
-      .references(() => journeys.id, { onDelete: 'cascade' }),
+      .references(() => documents.id, { onDelete: 'cascade' }),
     position: integer('position').notNull(),
+    kind: journeyStepKind('kind').notNull().default('read'),
     title: text('title').notNull(),
+    minutes: integer('minutes').notNull().default(5),
     documentId: uuid('document_id').references(() => documents.id, { onDelete: 'set null' }),
     note: text('note'),
   },
-  (table) => [unique('journey_steps_journey_position_unique').on(table.journeyId, table.position)],
+  (table) => [
+    unique('journey_steps_journey_position_unique').on(table.journeyId, table.position),
+    check('journey_steps_minutes_range', sql`${table.minutes} between 1 and 240`),
+    index('journey_steps_document_id_idx').on(table.documentId),
+  ],
+);
+
+/**
+ * The steps an account marked done on a journey's run (Flow "Xong"). A step whose document the account read to the
+ * end (`readingProgress` at 100) counts as done as well, without a row here.
+ */
+export const journeyProgress = pgTable(
+  'journey_progress',
+  {
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    stepId: uuid('step_id')
+      .notNull()
+      .references(() => journeySteps.id, { onDelete: 'cascade' }),
+    doneAt: timestamp('done_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.stepId] }), index('journey_progress_step_id_idx').on(table.stepId)],
 );
 
 /** Audit trail (C19): who did what to which record. `detail` never holds secrets or document text. */

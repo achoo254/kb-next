@@ -74,10 +74,11 @@ describe('the ring', () => {
       'Tải file Office · Nhập',
       'Nhập hàng loạt · Nhập',
       'Từ URL / Link · Nhập · Sắp có',
-      'Lối đi · Hành trình · Sắp có',
+      'Lối đi · Hành trình',
       'Canvas · Hành trình',
     ]);
     expect(ringItem('Ghi chú').getAttribute('href')).toBe('/new');
+    expect(ringItem('Lối đi').getAttribute('href')).toBe('/journey/new');
     expect(ringItem('Canvas').getAttribute('href')).toBe('/canvas');
     expect(ringItem('Tải file Office').getAttribute('href')).toBe('/upload');
     expect(ringItem('Nhập hàng loạt').getAttribute('href')).toBe('/import');
@@ -107,7 +108,7 @@ describe('the ring', () => {
     expect(screen.getByText('Mô tả')).toBeTruthy();
 
     fireEvent.focus(ringItem('Lối đi'));
-    expect(panel().getByText('Sắp có · mở cùng trình dựng Lối đi')).toBeTruthy();
+    expect(panel().queryByText(/Sắp có/)).toBeNull();
     fireEvent.focus(ringItem('Tài liệu từ mẫu'));
     expect(panel().getByText('Sắp có · mở khi có thư viện mẫu')).toBeTruthy();
   });

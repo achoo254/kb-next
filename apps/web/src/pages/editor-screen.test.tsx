@@ -235,6 +235,14 @@ describe('EditorScreen', () => {
     expect(state.textContent).toContain(title);
   });
 
+  it('sends a journey on to its builder (C07)', async () => {
+    const replace = vi.fn();
+    vi.stubGlobal('location', { ...window.location, replace, pathname: `/d/${ID}/edit`, search: '' });
+    editReply = () => answer(409, { error: 'journey' });
+    renderWithI18n(<EditorScreen id={ID} />);
+    await waitFor(() => expect(replace).toHaveBeenCalledWith(`/journey/${ID}/edit`));
+  });
+
   it('refuses someone else’s document and an unknown one with the X02 panels', async () => {
     editReply = () => answer(403, { error: 'no-access' });
     const { unmount } = renderWithI18n(<EditorScreen id={ID} />);

@@ -10,6 +10,7 @@ import { type DocumentView, fetchDocument, readErrorOf } from '../api/content-ap
 import { brand } from '../brand';
 import { useI18n } from '../i18n/i18n';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
+import { journeyPath } from '../layout/shell-paths';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { EmptyState } from '../ui/empty-state';
@@ -45,7 +46,13 @@ function useDocument(id: string): { load: ReaderLoad; reload(): Promise<void> } 
   const [result, setResult] = useState<{ key: string; load: ReaderLoad } | null>(null);
   const request = useCallback(async (): Promise<ReaderLoad> => {
     try {
-      return { status: 'ready', view: await fetchDocument(id, locale), loadedAt: Date.now() };
+      const view = await fetchDocument(id, locale);
+      // A journey is run on its own path (Flow), not read as a text.
+      if (view.document.type === 'journey') {
+        window.location.replace(journeyPath(id));
+        return { status: 'loading' };
+      }
+      return { status: 'ready', view, loadedAt: Date.now() };
     } catch (error) {
       if (!(error instanceof ApiError)) console.error('document load failed', error);
       return { status: 'failed', error: readerLoadError(error) };

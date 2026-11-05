@@ -1,0 +1,814 @@
+/* The journey builder (design/mock/C07-FlowBuilder.dc.html). The board draws its content 96px right of the rail at
+   93.3% scale (.kf-content); inside .jb-content the coordinates are the board's own: actions right 28,74 · sources
+   28,128 (320 × 630) · steps 368,128 (600 × 630) · editor 988,128 (424 × 630). */
+
+.jb-shell .universe-veil {
+  background:
+    radial-gradient(ellipse 50% 50% at 46% 45%, var(--c-nebula), transparent 70%),
+    var(--c-veil-gate);
+}
+
+/* the breadcrumb, placed and scaled like the board's (28,80 in its scaled content) */
+.jb-shell .app-shell-crumbs {
+  left: calc(var(--board-offset) + 96px + 26px);
+  top: 67px;
+  transform: scale(0.933);
+  transform-origin: left top;
+}
+
+.jb-shell .app-shell-crumbs a {
+  font-weight: 400;
+}
+
+.jb-shell .app-shell-crumb-current {
+  font-weight: 600;
+}
+
+.jb-screen {
+  position: relative;
+  height: 900px;
+}
+
+.jb-content {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform: translateX(96px) scale(0.933);
+  transform-origin: left top;
+  color: var(--c-text);
+}
+
+.jb-loading {
+  position: absolute;
+  left: 28px;
+  top: 140px;
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.jb-state {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+}
+
+.jb-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── the actions: Xem thử, Lưu, Gửi duyệt ── */
+.jb-actions {
+  position: absolute;
+  right: 28px;
+  top: 74px;
+  display: flex;
+  gap: 8px;
+}
+
+.jb-action {
+  box-sizing: border-box;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 21px;
+  border: 1px solid var(--journey-border);
+  background: var(--journey-surface);
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.jb-action:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.jb-action-main {
+  padding: 0 18px;
+  background: var(--prev-cta-bg);
+  border: 1.5px solid var(--prev-cta-border);
+  box-shadow: var(--prev-cta-shadow);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.jb-status {
+  position: absolute;
+  left: 368px;
+  top: 772px;
+  width: 600px;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-warn-text);
+}
+
+/* saving and saved are told by the "Lưu" button; only what needs the author shows here */
+.jb-status[data-state="idle"],
+.jb-status[data-state="pending"],
+.jb-status[data-state="saving"],
+.jb-status[data-state="saved"] {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.jb-status-action,
+.jb-link-button {
+  margin-left: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--c-link);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── the three panels ── */
+.jb-panel {
+  position: absolute;
+  top: 128px;
+  height: 630px;
+  box-sizing: border-box;
+  border-radius: 26px;
+  background: var(--journey-surface);
+  border: 1px solid var(--journey-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.jb-content [data-kind="read"] {
+  --kind: var(--journey-read);
+  --kind-text: var(--journey-read-text);
+}
+
+.jb-content [data-kind="lab"] {
+  --kind: var(--journey-lab);
+  --kind-text: var(--journey-lab-text);
+}
+
+.jb-content [data-kind="quiz"] {
+  --kind: var(--journey-quiz);
+  --kind-text: var(--journey-quiz-text);
+}
+
+.jb-content [data-kind="note"] {
+  --kind: var(--journey-note);
+  --kind-text: var(--journey-note-text);
+}
+
+.jb-round {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--journey-border);
+  background: none;
+  color: var(--c-text);
+  font: 700 18px var(--font-sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.jb-round:disabled {
+  cursor: default;
+}
+
+/* left: Jev's next steps, the documents to pick from */
+.jb-sources {
+  left: 28px;
+  width: 320px;
+  padding: 16px;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.jb-jev {
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--journey-jev-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jb-jev-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-success-text);
+}
+
+.jb-jev-note {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.jb-jev-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jb-jev-icon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--kind);
+  color: var(--journey-tag-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jb-jev-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.jb-jev-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jb-jev-why {
+  font-size: 11px;
+  color: var(--c-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jb-jev-item .jb-round[data-used="true"] {
+  background: var(--journey-jev-used);
+}
+
+.jb-pool-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.jb-pool {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jb-pool-item {
+  /* as on the board, the rows give a little height for the list to fit before it scrolls */
+  flex: 0 1 44px;
+  min-height: 36px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: var(--journey-row);
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.jb-pool-item[data-used="true"] {
+  background: transparent;
+  opacity: 0.4;
+  cursor: default;
+}
+
+.jb-pool-dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--white), var(--space-tint) 55%);
+}
+
+.jb-pool-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jb-pool-space {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+/* middle: the journey and its steps */
+.jb-steps {
+  left: 368px;
+  width: 600px;
+  padding: 18px;
+  gap: 10px;
+  overflow: hidden;
+  box-shadow: var(--journey-section-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.jb-steps-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jb-title {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--c-text);
+  font: 700 22px var(--font-display);
+}
+
+.jb-title::placeholder {
+  color: var(--c-text-muted);
+}
+
+.jb-total {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--journey-chip);
+}
+
+.jb-legend {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.jb-legend-kind {
+  color: var(--kind-text);
+}
+
+.jb-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--c-text-muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.jb-empty img {
+  object-fit: contain;
+}
+
+.jb-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.jb-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.jb-step {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.jb-step[data-drop="true"] .jb-step-row {
+  box-shadow: 0 -3px 0 var(--journey-drop);
+}
+
+.jb-wire {
+  position: relative;
+  display: block;
+  margin-left: 29px;
+  width: 2px;
+  height: 18px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, var(--wire-from), var(--kind));
+  box-shadow: 0 0 8px var(--kind);
+}
+
+/* the packet running down the wire (still with reduced motion, at its top) */
+.jb-wire::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--journey-wire-dot);
+  box-shadow: 0 0 8px 3px var(--kind);
+  animation: jb-packet 1.6s linear infinite;
+}
+
+@keyframes jb-packet {
+  from {
+    top: -3px;
+  }
+  to {
+    top: 15px;
+  }
+}
+
+.jb-step-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  background: var(--journey-row);
+  cursor: grab;
+}
+
+.jb-step[data-selected="true"] .jb-step-row {
+  background: var(--journey-selected);
+  box-shadow: 0 0 0 2px var(--kind);
+}
+
+.jb-step-pick {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  color: var(--c-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.jb-crystal {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 48px;
+}
+
+.jb-crystal img {
+  position: absolute;
+  inset: 0;
+  width: 44px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px var(--kind));
+}
+
+.jb-crystal-n {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--journey-crystal-n-bg);
+  border: 1px solid var(--journey-crystal-n-border);
+  color: var(--white);
+  font: 700 12px var(--font-display);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jb-step-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jb-step-name {
+  font-size: 14px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jb-step-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.jb-tag {
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--kind);
+  color: var(--journey-tag-ink);
+  font-weight: 700;
+}
+
+.jb-step-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.jb-square {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--journey-border);
+  background: none;
+  color: var(--c-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.jb-square:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.jb-square-warn {
+  border-color: var(--journey-warn-line);
+  color: var(--c-warn-text);
+}
+
+/* right: the selected step and the story card */
+.jb-editor {
+  left: 988px;
+  width: 424px;
+  padding: 18px;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.jb-editor-step,
+.jb-story-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.jb-story-title {
+  margin-top: 4px;
+}
+
+.jb-editor-none {
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+.jb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.jb-field input,
+.jb-field select,
+.jb-field textarea {
+  box-sizing: border-box;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--journey-border);
+  background: var(--journey-input);
+  color: var(--c-text);
+  font: 600 15px var(--font-sans);
+}
+
+.jb-field select {
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.jb-field textarea {
+  height: auto;
+  min-height: 70px;
+  padding: 10px 14px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.jb-kinds {
+  display: flex;
+  gap: 6px;
+}
+
+.jb-kind {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 6px;
+  border-radius: 14px;
+  border: 1.5px solid var(--journey-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px/1.15 var(--font-sans);
+  cursor: pointer;
+}
+
+.jb-kind[aria-pressed="true"] {
+  border-color: var(--kind);
+  background: var(--journey-selected);
+}
+
+.jb-time {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jb-time-label {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.jb-time-value {
+  min-width: 70px;
+  text-align: center;
+  font: 700 18px var(--font-display);
+}
+
+.jb-story-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.jb-story {
+  position: relative;
+  flex: none;
+  width: 150px;
+  height: 266px;
+  box-sizing: border-box;
+  padding: 12px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--journey-story-veil), url("/art/bg-universe-mobile.webp") center / cover;
+  border: 1px solid var(--journey-story-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--journey-story-text);
+  animation: jb-float 4s ease-in-out infinite;
+}
+
+@keyframes jb-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* "Đổi màu bìa": the cover takes the journey's planet colour */
+.jb-story[data-planet="teal"] {
+  --cover: var(--planet-teal);
+}
+
+.jb-story[data-planet="cyan"] {
+  --cover: var(--planet-cyan);
+}
+
+.jb-story[data-planet="amber"] {
+  --cover: var(--planet-amber);
+}
+
+.jb-story[data-planet="emerald"] {
+  --cover: var(--planet-emerald);
+}
+
+.jb-story[data-planet="pink"] {
+  --cover: var(--planet-pink);
+}
+
+.jb-story:not([data-planet="violet"]) {
+  border-color: var(--cover);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--cover) 30%, transparent), transparent 60%),
+    var(--journey-story-veil),
+    url("/art/bg-universe-mobile.webp") center / cover;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--cover) 55%, transparent);
+}
+
+.jb-story-brand {
+  font: 700 10px var(--font-display);
+}
+
+.jb-story-name {
+  font: 700 16px/1.1 var(--font-display);
+}
+
+.jb-story-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jb-story-swatch {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--kind);
+}
+
+.jb-story-art {
+  position: absolute;
+  right: -6px;
+  bottom: 14px;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+.jb-story-minutes {
+  position: relative;
+  margin-top: auto;
+  font-size: 9px;
+  color: var(--journey-story-minutes);
+}
+
+.jb-story-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.jb-cover {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 20px;
+  border: 1px solid var(--journey-border);
+  background: none;
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}

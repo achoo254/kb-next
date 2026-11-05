@@ -412,6 +412,23 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
   },
 ];
 
+/** A step of a seeded journey: [kind, title, minutes, document key or null, note]. */
+export type SeedJourneyStep = ['read' | 'lab' | 'quiz' | 'note', string, number, string | null, string | null];
+
+/**
+ * The steps of the seeded journeys (Flow), by journey key: "Máy mới vào mạng" walks the documents its "bước N"
+ * relations (SEED_LINKS) point at, in that order.
+ */
+export const SEED_JOURNEY_STEPS: Record<string, SeedJourneyStep[]> = {
+  'new-host': [
+    ['lab', 'DHCP', 12, 'dhcp', 'Hét lên cả mạng: ai cấp IP cho mình với?'],
+    ['lab', 'ARP', 6, 'arp', 'Hỏi: router ở địa chỉ MAC nào?'],
+    ['lab', 'DNS', 8, 'dns', 'Đổi tên miền thành địa chỉ IP.'],
+    ['read', 'TCP', 10, 'tcp-udp', 'Bắt tay ba bước rồi mới gửi dữ liệu.'],
+    ['lab', 'HTTP', 5, 'http', 'Gửi GET, nhận trang web. Xong!'],
+  ],
+};
+
 /** The owner's favourites (C08 "Yêu thích"), by document key, oldest first. */
 export const SEED_FAVORITES = ['dhcp', 'new-host', 'new-host-ip'];
 

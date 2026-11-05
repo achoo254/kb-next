@@ -132,6 +132,33 @@ describe('CopilotScreen (C14)', () => {
     expect(window.location.search).toBe('?scope=space%3Anetworking&from=dhcp&h=q-new');
   });
 
+  it('saves the answer as a path: a draft journey of its sources, opened in the builder', async () => {
+    const posts: unknown[] = [];
+    const base = fetchMock as unknown as (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        if (String(input) !== '/api/journeys') return base(input, init);
+        posts.push(JSON.parse(String(init?.body)));
+        return posts.length === 1 ? answer(500, { error: 'internal' }) : answer(201, { id: 'j1' });
+      }),
+    );
+    const search = `?${new URLSearchParams({ q: 'Máy mới lấy IP kiểu gì?' }).toString()}`;
+    window.history.replaceState(null, '', `/copilot${search}`);
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign, search, pathname: '/copilot', href: window.location.href, origin: window.location.origin });
+    renderWithI18n(<CopilotScreen />);
+    await waitFor(() => expect(state()).toBe('done'));
+    fireEvent.click(screen.getByRole('button', { name: 'Save as a path' }));
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Could not create the path, try again later.');
+    fireEvent.click(screen.getByRole('button', { name: 'Save as a path' }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/journey/j1/edit'));
+    expect(posts).toEqual([
+      { title: 'Máy mới lấy IP kiểu gì?', documents: ['dhcp'] },
+      { title: 'Máy mới lấy IP kiểu gì?', documents: ['dhcp'] },
+    ]);
+  });
+
   it('opens a question of the history and asks the next one in the chosen scope', async () => {
     routes.item = () =>
       answer(200, {

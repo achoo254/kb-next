@@ -10,6 +10,7 @@ import { contentRoutes } from './api/content-routes';
 import { fileRoutes } from './api/file-routes';
 import { graphRoutes } from './api/graph-routes';
 import { historyRoutes } from './api/history-routes';
+import { JOURNEY_BODY_LIMIT, journeyRoutes } from './api/journey-routes';
 import { meRoutes } from './api/me-routes';
 import { myContentRoutes } from './api/my-content-routes';
 import { notificationRoutes } from './api/notification-routes';
@@ -76,7 +77,8 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
 /**
  * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
  * (/api/me), the reading API (Spaces, documents, recent), writing (documents, versions, trash, favourites, Spaces and
- * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, search,
+ * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, knowledge
+ * journeys (builder and run), search,
  * the account's own AI keys, the Copilot, AI translation and AI writing
  * (all three on those keys), review (sending for review, the admins' queue and published texts), the inbox, and the
  * admin API (token, docs/admin-api.md), share links and their preview page (/l/<token>). The web app is static (nginx in production, Vite in dev).
@@ -119,6 +121,7 @@ export function createApp({
   app.use('/api/canvases', express.json({ limit: CANVAS_BODY_LIMIT }));
   // A document (the editor's save) and the draft AI writing reads are larger too.
   app.use('/api/documents', express.json({ limit: DOCUMENT_BODY_LIMIT }));
+  app.use('/api/journeys', express.json({ limit: JOURNEY_BODY_LIMIT }));
   app.use('/api/write', express.json({ limit: WRITE_BODY_LIMIT }));
   app.use(express.json({ limit: '32kb' }));
   app.use(authRoutes({ config, db, idp, now }));
@@ -138,6 +141,7 @@ export function createApp({
   app.use(fileRoutes({ config, db, now, extraction, sync: search?.sync ?? null }));
   app.use(graphRoutes({ config, db, now, jev, summaries }));
   app.use(canvasRoutes({ config, db, now, jev }));
+  app.use(journeyRoutes({ config, db, now, jev, summaries, sync: search?.sync ?? null }));
   app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));
   // Own AI keys and what runs on them; nothing here has a server AI key (Jev aside).
   const keys = new UserKeyStore(db, userKeysSecret, now);

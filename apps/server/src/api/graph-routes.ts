@@ -143,10 +143,10 @@ export function firstSentence(text: string): string {
 }
 
 /**
- * One line on a document (the node panel): the curated summary of an imported text, else the first sentence of its
- * first passage, cut at a word.
+ * One line on a document (the node panel, a journey step): the curated summary of an imported text, else the first
+ * sentence of its first passage, cut at a word.
  */
-function summaryOf(doc: DocumentRow, lang: Lang, summaries: ReadonlyMap<string, BilingualSummary>, passage: string | undefined): string | null {
+export function summaryOf(doc: DocumentRow, lang: Lang, summaries: ReadonlyMap<string, BilingualSummary>, passage: string | undefined): string | null {
   const curated = doc.translationGroupId ? summaries.get(doc.translationGroupId)?.[lang].summary : undefined;
   const source = curated ?? (passage ? firstSentence(excerpt(passage.split(/\n\s*\n/)[0] ?? '', SUMMARY_CHARS)) : undefined);
   return source ? excerpt(source, SUMMARY_CHARS) : null;

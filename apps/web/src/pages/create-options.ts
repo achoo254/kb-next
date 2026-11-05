@@ -8,7 +8,7 @@ export type OptionId = 'note' | 'template' | 'space' | 'collection' | 'office' |
 /** What the panel on the right shows: the description of the option under the pointer, or a form. */
 export type PaneId = 'hint' | 'space' | 'collection';
 /** Why an option waits: the phase that brings it. */
-export type LaterReason = 'import' | 'journey' | 'template';
+export type LaterReason = 'import' | 'template';
 
 export type OptionAction = { kind: 'link'; href: string } | { kind: 'pane'; pane: Exclude<PaneId, 'hint'> } | { kind: 'later'; when: LaterReason };
 
@@ -28,7 +28,7 @@ export const CREATE_OPTIONS: readonly [CreateOption, ...CreateOption[]] = [
   { id: 'office', group: 'import', icon: 'create-office', action: { kind: 'link', href: '/upload' } },
   { id: 'bulk', group: 'import', icon: 'create-bulk', action: { kind: 'link', href: '/import' } },
   { id: 'url', group: 'import', icon: 'create-url', action: { kind: 'later', when: 'import' } },
-  { id: 'journey', group: 'journey', icon: 'create-journey', action: { kind: 'later', when: 'journey' } },
+  { id: 'journey', group: 'journey', icon: 'create-journey', action: { kind: 'link', href: '/journey/new' } },
   { id: 'canvas', group: 'journey', icon: 'create-canvas', action: { kind: 'link', href: '/canvas' } },
 ];
 

@@ -353,6 +353,15 @@ describe('ReaderScreen', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' })).toBeTruthy();
   });
 
+  it('sends a journey on to its run (Flow) instead of reading it as a text', async () => {
+    const replace = vi.fn();
+    vi.stubGlobal('location', { ...window.location, replace, pathname: '/d/path', search: '' });
+    serve(() => answer(200, view({}, { id: 'path', type: 'journey', title: 'Máy mới vào mạng' })));
+    renderWithI18n(<ReaderScreen id="path" />);
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/journey/path'));
+    expect(screen.queryByRole('heading', { level: 1, name: 'Máy mới vào mạng' })).toBeNull();
+  });
+
   it('shows the offline banner and pauses AI when the connection drops while reading', async () => {
     renderWithI18n(<ReaderScreen id="dhcp" />);
     await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });

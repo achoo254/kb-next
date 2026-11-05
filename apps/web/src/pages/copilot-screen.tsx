@@ -8,7 +8,9 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { ApiError } from '../api/api-client';
 import { type DocumentView, fetchDocument, fetchSpace } from '../api/content-api';
 import { type AskScope, type CopilotHistory, fetchCopilotHistory, fetchCopilotQuestion } from '../api/copilot-api';
+import { createJourney } from '../api/journey-api';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
+import { journeyEditPath } from '../layout/shell-paths';
 import { AiAvatar } from '../ui/ai-avatar';
 import { ILLUSTRATIONS } from '../ui/art';
 import { AskInput } from '../ui/ask-input';
@@ -240,6 +242,41 @@ function SourcesPanel({ turn }: { turn: CopilotTurn | null }): ReactNode {
 }
 
 /** The actions under a finished answer: Jev's check, copy, ask again, votes, and "create from the answer". */
+/** The documents an answer cites that can still be opened, in citation order, once each. */
+export function journeyDocuments(turn: Pick<CopilotTurn, 'sources'>): string[] {
+  return [...new Set(turn.sources.filter((s) => s.available !== false).map((s) => s.documentId))];
+}
+
+/** "Lưu thành lối đi": a draft journey with one step per cited document, opened in the builder (C07). */
+function MakeJourney({ turn }: { turn: CopilotTurn }): ReactNode {
+  const { t } = useCopilotText();
+  const [state, setState] = useState<'idle' | 'busy' | 'failed'>('idle');
+  const documents = journeyDocuments(turn);
+  if (documents.length === 0) return <LaterButton label={t('copilot.makePath')} hint={t('copilot.makePathNone')} />;
+  const make = (): void => {
+    setState('busy');
+    createJourney({ title: (turn.request.question ?? '').replace(/\s+/g, ' ').trim().slice(0, 200), documents }).then(
+      (id) => window.location.assign(journeyEditPath(id)),
+      (error: unknown) => {
+        if (!(error instanceof ApiError)) console.error('journey from answer failed', error);
+        setState('failed');
+      },
+    );
+  };
+  return (
+    <>
+      <Button variant="glass" size="lg" className="copilot-btn" disabled={state === 'busy'} onClick={make} dataId="copilot-make-path">
+        {t(state === 'busy' ? 'copilot.makePathBusy' : 'copilot.makePath')}
+      </Button>
+      {state === 'failed' && (
+        <span className="copilot-note" role="alert">
+          {t('copilot.makePathFailed')}
+        </span>
+      )}
+    </>
+  );
+}
+
 function AnswerFooter({ turn, onRetry }: { turn: CopilotTurn; onRetry(): void }): ReactNode {
   const { t } = useCopilotText();
   const [copied, setCopied] = useState(false);
@@ -278,7 +315,7 @@ function AnswerFooter({ turn, onRetry }: { turn: CopilotTurn; onRetry(): void })
             </Button>
           )}
         </Tooltip>
-        <LaterButton label={t('copilot.makePath')} hint={t('copilot.soon')} />
+        <MakeJourney turn={turn} />
         <LaterButton label={t('copilot.makeCanvas')} hint={t('copilot.soon')} />
       </div>
     </>

@@ -7,7 +7,8 @@
  *   own personal one; default: their personal Space, made on first use) and `collection` (one of that Space).
  *   400 `invalid-body` / `unknown-collection`, 404 `not-found` / 403 `no-access` for the Space.
  * - GET /api/documents/:id/edit → EditableDocument. 404 `not-found`, 403 `hidden` / `no-access` (not theirs),
- *   403 `locked` (waiting for review or published: changes go through review), 409 `not-editable` (a stored file).
+ *   403 `locked` (waiting for review or published: changes go through review), 409 `not-editable` (a stored file),
+ *   409 `journey` (a journey: its steps are edited at /journey/:id/edit, src/api/journey-routes.ts).
  * - PUT /api/documents/:id `{title, body, planet?, baseRev}` → SaveResponse; 409 `{error: 'stale', rev}` when
  *   another save landed since `baseRev` (the copy the writer started from), same 403/404/409 as above.
  * - DELETE /api/documents/:id → 204: to the trash (30 days, then deleted for good). An admin deletes any document,
@@ -163,6 +164,8 @@ function refuse(access: Exclude<EditAccess, { kind: 'ok' }> | { kind: 'not-found
       throw new HttpError(403, 'locked');
     case 'not-editable':
       throw new HttpError(409, 'not-editable');
+    case 'journey':
+      throw new HttpError(409, 'journey');
   }
 }
 
@@ -235,7 +238,7 @@ export function authoringRoutes({ config, db, now, sync }: AuthoringRoutesOption
     const viewer = await reader(req);
     const body = parseBody(SaveBody, req.body);
     const id = idOf(req);
-    const saved = await saveDocument(db, viewer, id, { title: body.title, body: body.body, planet: body.planet, baseRev: new Date(body.baseRev) }, now());
+    const saved = await saveDocument(db, viewer, id, { title: body.title, body: body.body, planet: body.planet, baseRev: new Date(body.baseRev), editor: 'text' }, now());
     if (saved.kind === 'stale') {
       res.status(409).json({ error: 'stale', rev: saved.rev.toISOString() });
       return;

@@ -172,6 +172,10 @@ const ICONS = {
   'share-up': { body: <path d="M4 12v7h16v-7M12 3v12M7 8l5-5 5 5" />, cap: 'round', join: 'round' },
   'mark-read': { body: <path d="M5 12l5 5 9-10" />, cap: 'round' },
   'mark-unread': { body: <path d="M4 6h16v12H4zM4 6l8 7 8-7" />, cap: 'round' },
+  // C07: moving a step up and down, and a lab step (a pulse line)
+  'step-up': { body: <path d="M6 15l6-6 6 6" />, stroke: 2.4, cap: 'round' },
+  'step-down': { body: <path d="M6 9l6 6 6-6" />, stroke: 2.4, cap: 'round' },
+  pulse: { body: <path d="M3 12h4l3-8 4 16 3-8h4" />, stroke: 2.2, cap: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

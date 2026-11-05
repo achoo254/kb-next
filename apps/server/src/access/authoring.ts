@@ -66,7 +66,9 @@ export type EditAccess =
   | { kind: 'no-access' }
   | { kind: 'locked'; doc: DocumentRow }
   /** A stored file (Office), not Markdown: the editor cannot open it. */
-  | { kind: 'not-editable' };
+  | { kind: 'not-editable' }
+  /** A journey: its steps are edited in the journey builder (C07), never as Markdown. */
+  | { kind: 'journey' };
 
 async function latestVersion(db: Db | Tx, documentId: string): Promise<(LatestVersion & { id: string; editorId: string; via: string; restoredFrom: number | null; createdAt: Date; fileId: string | null; markdownOrNull: string | null }) | null> {
   const [row] = await db
@@ -95,6 +97,7 @@ export async function editAccess(db: Db, viewer: Viewer, id: string): Promise<Ed
   const right = editRight(viewer, access.doc);
   if (right === 'no-access') return { kind: 'no-access' };
   if (right === 'locked') return { kind: 'locked', doc: access.doc };
+  if (access.doc.type === 'journey') return { kind: 'journey' };
   const latest = await latestVersion(db, id);
   if (access.doc.type === 'office' || (latest !== null && latest.markdownOrNull === null)) return { kind: 'not-editable' };
   return { kind: 'ok', doc: access.doc, latest: latest ?? { version: 0, markdown: '', updatedAt: access.doc.updatedAt } };
@@ -161,7 +164,7 @@ export interface NewDocument {
   collectionId: string | null;
   title: string;
   body: string;
-  type: WritableType | 'lab';
+  type: WritableType | 'lab' | 'journey';
   lang: 'vi' | 'en';
   planet: Planet | null;
 }
@@ -229,6 +232,11 @@ export interface SaveInput {
   /** `restore`: copying version `restoredFrom` (never merged into the latest version). */
   restoredFrom?: number;
   summary?: string | null;
+  /**
+   * Which editor saves: `text` (C02, a C17 restore) never writes a journey, whose Markdown is made from its steps;
+   * `journey` (C07) writes only journeys. Left out (an admin's title fix): any document.
+   */
+  editor?: 'text' | 'journey';
 }
 
 export type SaveResult =
@@ -259,6 +267,7 @@ export async function saveDocument(db: Db, writer: Viewer, id: string, input: Sa
     const right = editRight(writer, doc);
     if (right !== 'ok') return { kind: right };
     if (input.baseRev && input.baseRev.getTime() !== doc.updatedAt.getTime()) return { kind: 'stale', rev: doc.updatedAt };
+    if (input.editor !== undefined && (doc.type === 'journey') !== (input.editor === 'journey')) return { kind: 'not-editable' };
     const latest = await latestVersion(tx, id);
     if (doc.type === 'office' || (latest !== null && latest.markdownOrNull === null)) return { kind: 'not-editable' };
 
@@ -350,7 +359,7 @@ export async function restoreVersion(db: Db, writer: Viewer, id: string, version
   if (source.markdown === null) return { kind: 'not-editable' };
   // The title of a restored version is its own `#` line (the document had that title then); without one, no title.
   const title = titleLine(source.markdown)?.replace(/^#\s+/, '').trim() ?? '';
-  return saveDocument(db, writer, id, { title, body: bodyOf(source.markdown), restoredFrom: version }, now);
+  return saveDocument(db, writer, id, { title, body: bodyOf(source.markdown), restoredFrom: version, editor: 'text' }, now);
 }
 
 export type TrashResult = 'ok' | 'not-found' | 'no-access';

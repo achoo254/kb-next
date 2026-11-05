@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Db } from './client';
 import { HIDE_ACTION, SHOW_ACTION } from '../access/history';
-import { auditLog, canvases, chunks, collections, comments, documentVersions, documents, favorites, links, notifications, readingProgress, reviewEvents, spaces, users } from './schema';
+import { auditLog, canvases, chunks, collections, comments, documentVersions, documents, favorites, journeySteps, links, notifications, readingProgress, reviewEvents, spaces, users } from './schema';
 import {
   SEED_CANVAS,
   SEED_COMMENTS,
@@ -15,6 +15,7 @@ import {
   SEED_FAVORITES,
   SEED_FIRST_CREATED,
   SEED_HISTORY,
+  SEED_JOURNEY_STEPS,
   SEED_LATEST_UPDATE,
   SEED_LINKS,
   SEED_NOTIFICATIONS,
@@ -227,6 +228,21 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
       })),
     )
     .onConflictDoNothing();
+  for (const [journey, steps] of Object.entries(SEED_JOURNEY_STEPS)) {
+    for (const [position, [kind, title, minutes, documentKey, note]] of steps.entries()) {
+      const row = {
+        id: seedId(`journey-step:${journey}:${position}`),
+        journeyId: seedId(`document:${journey}`),
+        position,
+        kind,
+        title,
+        minutes,
+        documentId: documentKey ? seedId(`document:${documentKey}`) : null,
+        note,
+      };
+      await db.insert(journeySteps).values(row).onConflictDoUpdate({ target: journeySteps.id, set: row });
+    }
+  }
   for (const [key, progress, anchor] of SEED_PROGRESS) {
     const row = { userId: owner.id, documentId: seedId(`document:${key}`), progress, anchor, updatedAt: SEED_LATEST_UPDATE };
     await db.insert(readingProgress).values(row).onConflictDoUpdate({ target: [readingProgress.userId, readingProgress.documentId], set: row });

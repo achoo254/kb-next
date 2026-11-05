@@ -12,7 +12,7 @@ import { type CSSProperties, type ReactNode, useCallback, useEffect, useMemo, us
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import { type EditableDocument, type LinkSuggestion, PLANETS, type Planet, suggestLinks } from '../api/authoring-api';
 import { readErrorOf } from '../api/content-api';
-import { publishPath } from '../layout/shell-paths';
+import { journeyEditPath, publishPath } from '../layout/shell-paths';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
 import { toBoardPx } from '../layout/board-zoom';
 import { EmptyState } from '../ui/empty-state';
@@ -51,6 +51,11 @@ function useOpened(id: string): { load: EditorLoad; reload(): void } {
       (opened) => current && setResult({ key, load: { status: 'ready', opened } }),
       (error: unknown) => {
         if (!current) return;
+        // A journey is built in its own builder (C07), not written as Markdown.
+        if (error instanceof ApiError && error.code === 'journey') {
+          window.location.replace(journeyEditPath(id));
+          return;
+        }
         if (!(error instanceof ApiError)) console.error('editor load failed', error);
         setResult({ key, load: { status: 'failed', error: editorLoadError(error) } });
       },

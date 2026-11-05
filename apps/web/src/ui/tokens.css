@@ -831,3 +831,69 @@
   --open-private-ring: rgb(245 158 11 / 0.55);
   --open-grey: grayscale(0.55) brightness(0.8);
 }
+
+/* ── Knowledge journeys: the builder (C07) and the run (Flow) ─────────────────────────────────────────────────── */
+:root {
+  /* the step kinds (C07 "Kiểu bước"): read violet, lab cyan, quiz amber, note pink; the ink on their tags, and their
+     names as text (the light theme's darker shades read AA on white) */
+  --journey-read: #a78bfa;
+  --journey-lab: #22d3ee;
+  --journey-quiz: #f59e0b;
+  --journey-note: #f472b6;
+  --journey-tag-ink: #1a1033;
+  --journey-read-text: light-dark(#6d28d9, #a78bfa);
+  --journey-lab-text: light-dark(#0e7490, #22d3ee);
+  --journey-quiz-text: light-dark(#92400e, #f59e0b);
+  --journey-note-text: light-dark(#9d174d, #f472b6);
+  /* C07: the panels, rows, selected row, chips, fields and Jev's well */
+  --journey-surface: light-dark(rgb(255 255 255 / 0.78), rgb(16 12 42 / 0.78));
+  --journey-border: light-dark(rgb(109 40 217 / 0.18), rgb(196 181 253 / 0.42));
+  --journey-row: light-dark(rgb(236 232 255 / 0.6), rgb(12 6 40 / 0.45));
+  --journey-selected: light-dark(rgb(109 40 217 / 0.12), rgb(124 58 237 / 0.35));
+  --journey-chip: light-dark(rgb(109 40 217 / 0.1), rgb(167 139 250 / 0.18));
+  --journey-input: light-dark(#ffffff, rgb(12 6 40 / 0.7));
+  --journey-jev-bg: light-dark(rgb(4 120 87 / 0.08), rgb(16 185 129 / 0.12));
+  --journey-jev-used: rgb(16 185 129 / 0.25);
+  --journey-warn-line: light-dark(rgb(180 83 9 / 0.4), rgb(245 158 11 / 0.5));
+  --journey-section-shadow:
+    inset 0 0 26px light-dark(rgb(139 92 246 / 0.08), rgb(139 92 246 / 0.3)),
+    inset 0 0 2px light-dark(rgb(196 181 253 / 0.3), rgb(233 213 255 / 0.5)),
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 0 26px light-dark(rgb(124 58 237 / 0.1), rgb(124 58 237 / 0.25));
+  --journey-crystal-n-bg: rgb(10 7 30 / 0.82);
+  --journey-crystal-n-border: rgb(233 213 255 / 0.55);
+  --journey-wire-dot: #f5f3ff;
+  --journey-drop: rgb(34 211 238 / 0.8);
+  /* C07: the story card (its landscape stays dark in both themes, its text light) */
+  --journey-story-veil: linear-gradient(180deg, rgb(6 4 26 / 0.55), rgb(6 4 26 / 0.35) 55%, rgb(6 4 26 / 0.7));
+  --journey-story-border: rgb(200 185 255 / 0.5);
+  --journey-story-text: #f5f3ff;
+  --journey-story-minutes: #c4b5fd;
+  /* Flow: the veil, the five crystal colours of the path, its line, the traveller and the card's well */
+  --dark-veil-run: radial-gradient(ellipse 70% 60% at 55% 50%, rgb(6 4 26 / 0.5), rgb(6 4 26 / 0.8));
+  --light-veil-run: radial-gradient(ellipse 70% 60% at 55% 50%, rgb(247 245 255 / 0.5), rgb(236 232 255 / 0.8));
+  --c-veil-run: var(--dark-veil-run);
+  --run-tone-0: #b9a6ff;
+  --run-tone-1: #22d3ee;
+  --run-tone-2: #8fd8ff;
+  --run-tone-3: #ffb347;
+  --run-tone-4: #ff8fbe;
+  --run-seg-from: rgb(167 139 250 / 0.9);
+  --run-seg-glow: rgb(139 92 246 / 0.6);
+  --run-traveller: #22d3ee;
+  --run-stop-text: #ffffff;
+  --run-stop-shadow: 0 1px 8px rgb(0 0 0 / 0.6);
+  --run-inset: light-dark(rgb(109 40 217 / 0.06), rgb(12 6 40 / 0.6));
+  --run-origin-bg: rgb(124 58 237 / 0.22);
+  --run-origin-border: rgb(124 58 237 / 0.6);
+}
+
+:root[data-theme="light"] {
+  --c-veil-run: var(--light-veil-run);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --c-veil-run: var(--light-veil-run);
+  }
+}

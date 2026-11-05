@@ -20,6 +20,8 @@ import { GraphScreen } from './pages/graph-screen';
 import { HistoryScreen } from './pages/history-screen';
 import { ImportScreen } from './pages/import-screen';
 import { InboxScreen } from './pages/inbox-screen';
+import { JourneyBuilderScreen, NewJourney } from './pages/journey-builder';
+import { JourneyRunScreen } from './pages/journey-run';
 import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
@@ -136,6 +138,10 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <CopilotScreen />;
     case 'C15':
       return <CanvasRoute id={routeParam(route, path)} />;
+    case 'C07':
+      return path === '/journey/new' ? <NewJourney /> : <JourneyBuilderScreen id={routeParam(route, path)} />;
+    case 'Flow':
+      return <JourneyRunScreen id={routeParam(route, path)} />;
     case 'F03':
       return <KeysScreen />;
     case 'F04':

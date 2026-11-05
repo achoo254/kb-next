@@ -4,6 +4,7 @@ import { C11_STREAM, C14_HISTORY, C14_STREAM, F03_KEYS, F04_DOCUMENT, F04_DOCUME
 import { A01_DOCUMENT, A01_FIRST_ID, A01_QUEUE, A02_PUBLISHED, A03_CALLS, A03_TOKENS } from './admin-boards';
 import { C15_SUGGESTION } from './graph-canvas-boards';
 import { C17_DIFF, C17_HISTORY } from './history-boards';
+import { C07_JOURNEY, C07_NEXT, C07_POOL, FLOW_JOURNEY, JOURNEY_ID } from './journey-boards';
 import { c08Documents } from './mine-boards';
 import { mockImportsC16, mockUploadC03, seedOfflineH04 } from './office-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
@@ -101,6 +102,12 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
   if (mocks.includes('imports-c16')) await mockImportsC16(page);
   if (mocks.includes('offline-h04')) await seedOfflineH04(page);
   if (mocks.includes('canvas-c15')) await page.route('**/api/canvases/*/suggestion', (route) => route.fulfill({ json: C15_SUGGESTION }));
+  if (mocks.includes('journey-c07')) {
+    await page.route(`**/api/journeys/${JOURNEY_ID}/edit`, (route) => route.fulfill({ json: C07_JOURNEY }));
+    await page.route(`**/api/journeys/${JOURNEY_ID}/pool`, (route) => route.fulfill({ json: { documents: C07_POOL } }));
+    await page.route(`**/api/journeys/${JOURNEY_ID}/suggestions`, (route) => route.fulfill({ json: { suggestions: C07_NEXT } }));
+  }
+  if (mocks.includes('journey-flow')) await page.route(`**/api/journeys/${JOURNEY_ID}`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: FLOW_JOURNEY }) : route.fallback()));
   if (mocks.includes('translate-f04')) {
     await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
     await page.route(`**/api/documents/${F04_DOCUMENT_ID}`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: F04_DOCUMENT }) : route.fallback()));

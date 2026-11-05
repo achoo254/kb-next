@@ -1,5 +1,5 @@
 /**
- * Proves that src/access/ is the only read path to documents, their versions, chunks, links and search: no other
+ * Proves that src/access/ is the only read path to documents, their versions, chunks, links, journey steps and search: no other
  * module of the server (tests aside) imports those tables, reaches them through `db.query.*` or raw SQL, or calls
  * the index's search. src/db/ (schema, migrations, seed) is the only other place allowed to name them.
  */
@@ -9,8 +9,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const SRC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const GUARDED = ['documents', 'documentVersions', 'chunks', 'links'];
-const GUARDED_SQL = ['documents', 'document_versions', 'chunks', 'links'];
+const GUARDED = ['documents', 'documentVersions', 'chunks', 'links', 'journeySteps'];
+const GUARDED_SQL = ['documents', 'document_versions', 'chunks', 'links', 'journey_steps'];
 const ALLOWED_DIRS = ['access', 'db'];
 /** The client defines the call; only src/access/ may make it. */
 const SEARCH_CALL = /\bfederatedSearch\b/;
@@ -48,7 +48,7 @@ export function bypasses(source: string, file: string): string[] {
 }
 
 describe('access/ is the only read path', () => {
-  it('no server module outside access/ and db/ reads documents, versions, chunks, links or search', async () => {
+  it('no server module outside access/ and db/ reads documents, versions, chunks, links, journey steps or search', async () => {
     const files = await sourceFiles(SRC);
     expect(files.length).toBeGreaterThan(10);
     const violations: string[] = [];

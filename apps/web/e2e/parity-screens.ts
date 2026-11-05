@@ -2,6 +2,7 @@ import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards
 import { C02_CLOCK, C02_DRAFT_ID, C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
 import { A01_CLOCK, A03_CLOCK } from './admin-boards';
 import { C08_CLOCK } from './mine-boards';
+import { JOURNEY_ID } from './journey-boards';
 import { C18_CLOCK, H02_TOKEN, PUBLISH_DOCUMENT_ID } from './share-boards';
 import { C03_FILES } from './office-boards';
 
@@ -57,7 +58,9 @@ export interface ParityScreen {
  * and its first text, the published texts, the token and its calls of the boards (admin-boards.ts); `publish-c04`:
  * the owner's draft placed in Networking with its DORA sections and tags, and the Spaces it may go to (C04, C05);
  * `share-c18`: the DHCP text's sharing with its 7-day link and history; `open-h02`: a share link opened signed out
- * (share-boards.ts: E2E cannot show a token again, and the seed's draft has no sections or tags).
+ * (share-boards.ts: E2E cannot show a token again, and the seed's draft has no sections or tags); `journey-c07` /
+ * `journey-flow`: the journey "Máy mới vào mạng" of the boards, built (its steps, Jev's next steps, the documents to
+ * pick) and run two steps in (journey-boards.ts: the seed's journey walks other steps, and E2E has no Jev key).
  */
 export type ParityMock =
   | 'onboarded'
@@ -82,7 +85,9 @@ export type ParityMock =
   | 'admin-a03'
   | 'publish-c04'
   | 'share-c18'
-  | 'open-h02';
+  | 'open-h02'
+  | 'journey-c07'
+  | 'journey-flow';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -191,6 +196,18 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'A03-AdminApi', path: '/admin/api', signedIn: true, status: 'built', mocks: ['admin', 'admin-a03'], clock: A03_CLOCK, waitFor: '.a03-line[data-tone="danger"]' },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
+  // The journey builder (C07) on the board's five steps, step 2 picked, with Jev's next steps; its run (Flow) two steps
+  // in, ARP to do (where they differ from the boards: docs/mock-deviations.md).
+  {
+    board: 'C07-FlowBuilder',
+    path: `/journey/${JOURNEY_ID}/edit`,
+    signedIn: true,
+    status: 'built',
+    mocks: ['journey-c07'],
+    click: '[aria-label="Chọn bước 2"]',
+    waitFor: '[data-id="journey-jev"][data-state="ready"] ~ [data-id="journey-pool"][data-state="ready"]',
+  },
+  { board: 'Flow', path: `/journey/${JOURNEY_ID}`, signedIn: true, status: 'built', mocks: ['journey-flow'], waitFor: '[data-id="journey-card"]' },
   // The UI kit (dev server only, apps/web/src/dev-kit).
   { board: 'DesignSystem', path: '/dev/kit/design-system', signedIn: false, status: 'built' },
   { board: 'Interaction', path: '/dev/kit/interaction', signedIn: false, status: 'built' },
