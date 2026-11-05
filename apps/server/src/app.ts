@@ -10,6 +10,7 @@ import { contentRoutes } from './api/content-routes';
 import { fileRoutes } from './api/file-routes';
 import { graphRoutes } from './api/graph-routes';
 import { historyRoutes } from './api/history-routes';
+import { internalRoutes } from './api/internal-routes';
 import { JOURNEY_BODY_LIMIT, journeyRoutes } from './api/journey-routes';
 import { meRoutes } from './api/me-routes';
 import { myContentRoutes } from './api/my-content-routes';
@@ -83,7 +84,8 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
  * the account's own AI keys, the Copilot, AI translation and AI writing
  * (all three on those keys), review (sending for review, the reviewers' queue and published texts), the inbox, the
  * admin API (token, docs/admin-api.md), workspace settings (members, roles, invites, audit), share links and their
- * preview page (/l/<token>). The web app is static (nginx in production, Vite in dev).
+ * preview page (/l/<token>), and the internal API for other services on this host (loopback only, /api/internal/). The
+ * web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
@@ -108,6 +110,9 @@ export function createApp({
     await db.execute(sql`select 1`);
     res.set('Cache-Control', 'no-store').type('text/plain').send('ok');
   });
+
+  // Other services on this host, over loopback only (no Origin, no session): ahead of every other route.
+  app.use(internalRoutes({ db }));
 
   // A share link's page with its link preview (GET only).
   app.use(ogPageRoutes({ config, db, now, loadTemplate }));

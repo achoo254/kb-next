@@ -63,6 +63,26 @@ trong runbook của `auth-next`). Scope `openid profile email`. Khi người dù
 ES256) tới `/auth/backchannel-logout`; server kiểm chữ ký bằng JWKS của IdP rồi xoá các phiên đăng nhập từ đúng phiên IdP
 đó (`sessions.idp_sid`), hoặc mọi phiên của tài khoản khi token không có `sid`. Route này nằm trước bước kiểm Origin.
 
+## API nội bộ
+
+Cho các dịch vụ khác trên cùng `.65` (Tiểu Đệ đọc chi phí Jev của kb mỗi ngày để ghi vào sổ chi phí hệ sinh thái).
+Gọi thẳng `http://127.0.0.1:5320`, không qua nginx; không có khoá bí mật nên rào bằng đường đi:
+
+- Server chỉ trả lời request tới thẳng từ loopback: địa chỉ socket là `127.0.0.1`/`::1` và **không** có header
+  `X-Forwarded-For`, `X-Real-IP` hay `Forwarded` (nginx luôn thêm `X-Forwarded-For`). Sai một điều là `404 not-found`
+  như route không tồn tại. Kiểm bằng địa chỉ socket, không dùng `req.ip`, nên `trust proxy` không cho giả mạo được.
+- nginx trả `404` cho `location ^~ /api/internal/` (không log, không chuyển vào server): lớp chặn thứ hai.
+
+| Route | Trả về |
+|---|---|
+| `GET /api/internal/jev-usage?from=YYYY-MM-DD&to=YYYY-MM-DD` | `{days: [{day, purpose, calls, failedCalls, inputTokens, outputTokens}]}`: tổng Jev mỗi ngày (giờ Việt Nam) theo mục đích, hai đầu tính cả, cũ trước; ngày không gọi thì không có dòng. Tối đa 31 ngày một lần; ngày sai dạng, không có thật, `from` sau `to` hay quá 31 ngày thì `400 invalid-query` |
+
+```sh
+# trên server
+curl -fsS 'http://127.0.0.1:5320/api/internal/jev-usage?from=2026-11-04&to=2026-11-04'
+curl -s -o /dev/null -w '%{http_code}\n' https://kb.hoandat.com/api/internal/jev-usage   # 404
+```
+
 ## Biến môi trường
 
 Mẫu: [`.env.example`](../.env.example). Trên server: `/etc/kb/production.env` (`root:kb`, 640). Bản sao ở thư mục env

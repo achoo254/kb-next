@@ -42,4 +42,11 @@ describe('nginx site', () => {
     for (const leak of ['$http_referer', '$request ', '$request_uri', '$args', '$query_string']) expect(format).not.toContain(leak);
     for (const line of conf().match(/access_log [^;]*;/g) ?? []) expect(line).toMatch(/^access_log (off|\S+ kb_notoken);$/);
   });
+
+  it('never lets the internal API through (services on the host call the server directly)', () => {
+    // ^~ beats every regex location, so no /api/ block can reach it first.
+    const block = /location \^~ \/api\/internal\/ \{([^}]*)\}/.exec(conf())?.[1] ?? '';
+    expect(block).toContain('return 404;');
+    expect(block).not.toContain('proxy_pass');
+  });
 });
