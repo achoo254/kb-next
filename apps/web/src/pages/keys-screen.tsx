@@ -140,6 +140,8 @@ export function saveErrorMessage(error: unknown): KeysMessageKey {
       return 'keys.msg.rejected';
     case 'KEY_NO_CREDIT':
       return 'keys.msg.noCredit';
+    case 'KEY_NO_MODEL':
+      return 'keys.msg.noModel';
     case 'KEY_CHECK_FAILED':
       return 'keys.msg.checkFailed';
     case 'rate-limited':

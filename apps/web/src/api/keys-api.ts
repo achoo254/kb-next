@@ -3,7 +3,7 @@
  * only the provider, the last 4 characters, the status and times ever come back) and the provider and model the
  * Copilot uses.
  *
- * Errors (ApiError.code): `sign-in-required` (401); saving: `KEY_FORMAT`, `KEY_REJECTED`, `KEY_NO_CREDIT` (400),
+ * Errors (ApiError.code): `sign-in-required` (401); saving: `KEY_FORMAT`, `KEY_REJECTED`, `KEY_NO_CREDIT`, `KEY_NO_MODEL` (400),
  * `KEY_CHECK_FAILED` (503: the provider could not be reached, nothing saved), `USER_KEYS_DISABLED` (503: own keys
  * are off on this server), `rate-limited` (429: 5 saves a minute); `invalid-body` (400) for a model not in the
  * provider's list; `not-found` (404) for an unknown provider; `network` when the request got no answer.

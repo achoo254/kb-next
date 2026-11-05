@@ -26,12 +26,21 @@ export async function reportProviderFailure(keys: UserKeyStore, userId: string, 
       console.error('could not mark the key after a provider failure', safeErrorText(markError));
     }
   }
-  return { code: errorCode(error), provider: key.provider, last4: key.last4 };
+  const code = errorCode(error);
+  if (code === 'MODEL_UNAVAILABLE') {
+    try {
+      await keys.dropModel(userId, key.provider, key.nonce, key.model);
+    } catch (dropError) {
+      console.error('could not drop the unavailable model', safeErrorText(dropError));
+    }
+  }
+  return { code, provider: key.provider, last4: key.last4 };
 }
 
 /**
  * A 404 from the provider means the chosen model is not there for this key (a project without access to it, or a
- * model the provider retired): the key itself works, so it is not marked and the user is told to pick another model.
+ * model the provider retired): the key itself works, so it is not marked; that model leaves the key's list (the next
+ * turn uses another one) and the user is told to pick another model.
  */
 function errorCode(error: ProviderError): ProviderErrorCode {
   if (error.kind === 'rejected') return 'USER_KEY_REJECTED';

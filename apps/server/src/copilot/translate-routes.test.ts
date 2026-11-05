@@ -50,7 +50,7 @@ beforeAll(async () => {
   translator = await signIn(server);
   idp.setSub('someone-else');
   other = await signIn(server);
-  await new UserKeyStore(server.database.db, secretFile.secret, () => new Date()).save(translatorId, 'gemini', 'AIza-Rt5Yu7Io9Pa2Sd4Fg6Hj-GOOD');
+  await new UserKeyStore(server.database.db, secretFile.secret, () => new Date()).save(translatorId, 'gemini', 'AIza-Rt5Yu7Io9Pa2Sd4Fg6Hj-GOOD', null);
 });
 
 afterAll(async () => {
@@ -142,7 +142,7 @@ describe('AI translation', () => {
   });
 
   it('saves nothing when the provider refuses the key', async () => {
-    await new UserKeyStore(server.database.db, secretFile.secret, () => new Date()).save(translatorId, 'gemini', 'AIza-Rt5Yu7Io9-revoked-0009');
+    await new UserKeyStore(server.database.db, secretFile.secret, () => new Date()).save(translatorId, 'gemini', 'AIza-Rt5Yu7Io9-revoked-0009', null);
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
       const { events } = await translate(seedId('document:arp'), 'en');
@@ -164,7 +164,7 @@ async function longDocument(count: number, chars: number): Promise<string> {
 }
 
 describe('AI translation after review', () => {
-  const useKey = (key: string) => new UserKeyStore(server.database.db, secretFile.secret, () => new Date()).save(translatorId, 'gemini', key);
+  const useKey = (key: string) => new UserKeyStore(server.database.db, secretFile.secret, () => new Date()).save(translatorId, 'gemini', key, null);
 
   it('fails a translation cut by the output cap and keeps the earlier draft as it was', async () => {
     await useKey('AIza-Rt5Yu7Io9Pa2Sd4Fg6Hj-GOOD');

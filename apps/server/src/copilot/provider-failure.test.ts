@@ -20,11 +20,14 @@ describe('provider failure', () => {
   });
 
   it('tells a model the key cannot reach (404) apart from a cut answer, and leaves the key as it is', async () => {
-    const keys = { mark: vi.fn(() => Promise.resolve()) } as unknown as UserKeyStore;
+    const keys = { mark: vi.fn(() => Promise.resolve()), dropModel: vi.fn(() => Promise.resolve()) } as unknown as UserKeyStore;
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
       expect(await reportProviderFailure(keys, 'user', KEY, new ProviderError('failed', 404))).toEqual({ code: 'MODEL_UNAVAILABLE', provider: 'openai', last4: 'ABCD' });
+      // That model leaves the key's list, so the next turn runs on another one.
+      expect(keys.dropModel).toHaveBeenCalledWith('user', 'openai', 'n', 'gpt-4.1-mini');
       expect(await reportProviderFailure(keys, 'user', KEY, new ProviderError('failed', null))).toEqual({ code: 'PROVIDER_FAILED', provider: 'openai', last4: 'ABCD' });
+      expect(keys.dropModel).toHaveBeenCalledTimes(1);
       expect(keys.mark).not.toHaveBeenCalled();
     } finally {
       error.mockRestore();

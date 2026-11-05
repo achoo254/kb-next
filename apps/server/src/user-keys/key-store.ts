@@ -4,12 +4,13 @@
  * a response is a KeyEntry (provider, last 4 characters, status, times), never the key.
  *
  * Which key a call uses (`active`): the provider the account chose when its key is `ok`, else the first `ok` key in
- * the order openai, gemini, anthropic; the model is the chosen one when it belongs to that provider, else its default.
+ * the order openai, gemini, anthropic; the model is the chosen one when that key may call it, else the first model the
+ * key may call. A key that may call none of the app's models is not usable.
  */
 import { and, eq } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { userKeyPrefs, userKeyStatus, userKeys } from '../db/schema';
-import { AI_PROVIDERS, type AiProvider, defaultModel, isListedModel } from '../llm/providers';
+import { AI_PROVIDERS, type AiProvider, modelsFor } from '../llm/providers';
 import { openKey, sealKey } from './crypto';
 
 export type KeyStatus = (typeof userKeyStatus.enumValues)[number];
@@ -20,6 +21,8 @@ export interface KeyEntry {
   status: KeyStatus;
   updatedAt: string;
   lastCheckedAt: string | null;
+  /** Ids of the app's models this key may call, in the app's order (all of them while not known). */
+  models: string[];
 }
 
 export interface KeyPrefs {
@@ -50,10 +53,11 @@ export function last4Of(key: string): string {
 
 /** The provider and model a call would use, from the keys' statuses and the account's choice; null without an ok key. */
 export function pickActive(keys: readonly KeyEntry[], prefs: KeyPrefs | null): ActiveChoice | null {
-  const usable = keys.filter((k) => k.status === 'ok').sort((a, b) => order(a.provider) - order(b.provider));
+  const usable = keys.filter((k) => k.status === 'ok' && k.models.length > 0).sort((a, b) => order(a.provider) - order(b.provider));
   const chosen = (prefs && usable.find((k) => k.provider === prefs.provider)) ?? usable[0];
-  if (!chosen) return null;
-  const model = prefs && prefs.provider === chosen.provider && isListedModel(chosen.provider, prefs.model) ? prefs.model : defaultModel(chosen.provider);
+  const firstModel = chosen?.models[0];
+  if (!chosen || firstModel === undefined) return null;
+  const model = prefs && prefs.provider === chosen.provider && chosen.models.includes(prefs.model) ? prefs.model : firstModel;
   return { provider: chosen.provider, model, last4: chosen.last4 };
 }
 
@@ -71,25 +75,40 @@ export class UserKeyStore {
 
   async list(userId: string): Promise<KeyEntry[]> {
     const rows = await this.db
-      .select({ provider: userKeys.provider, last4: userKeys.last4, status: userKeys.status, updatedAt: userKeys.updatedAt, lastCheckedAt: userKeys.lastCheckedAt })
+      .select({ provider: userKeys.provider, last4: userKeys.last4, status: userKeys.status, updatedAt: userKeys.updatedAt, lastCheckedAt: userKeys.lastCheckedAt, models: userKeys.models })
       .from(userKeys)
       .where(eq(userKeys.userId, userId));
     return rows
-      .map((row) => ({ ...row, updatedAt: row.updatedAt.toISOString(), lastCheckedAt: row.lastCheckedAt?.toISOString() ?? null }))
+      .map((row) => ({
+        ...row,
+        updatedAt: row.updatedAt.toISOString(),
+        lastCheckedAt: row.lastCheckedAt?.toISOString() ?? null,
+        models: modelsFor(row.provider, row.models).map((m) => m.id),
+      }))
       .sort((a, b) => order(a.provider) - order(b.provider));
   }
 
-  /** Saves a key the provider just accepted (replacing the account's key of that provider). */
-  async save(userId: string, provider: AiProvider, key: string): Promise<KeyEntry> {
+  /**
+   * Saves a key the provider just accepted (replacing the account's key of that provider), with the app's models the
+   * provider listed for it (null: not known).
+   */
+  async save(userId: string, provider: AiProvider, key: string, models: string[] | null): Promise<KeyEntry> {
     if (!this.secret) throw new Error('own keys are off');
     const sealed = sealKey(this.secret, userId, provider, key);
     const at = this.now();
-    const values = { ...sealed, last4: last4Of(key), status: 'ok' as const, updatedAt: at, lastCheckedAt: at };
+    const values = { ...sealed, last4: last4Of(key), status: 'ok' as const, models, updatedAt: at, lastCheckedAt: at };
     await this.db
       .insert(userKeys)
       .values({ userId, provider, ...values, createdAt: at })
       .onConflictDoUpdate({ target: [userKeys.userId, userKeys.provider], set: values });
-    return { provider, last4: values.last4, status: 'ok', updatedAt: at.toISOString(), lastCheckedAt: at.toISOString() };
+    return {
+      provider,
+      last4: values.last4,
+      status: 'ok',
+      updatedAt: at.toISOString(),
+      lastCheckedAt: at.toISOString(),
+      models: modelsFor(provider, models).map((m) => m.id),
+    };
   }
 
   async remove(userId: string, provider: AiProvider): Promise<void> {
@@ -124,6 +143,25 @@ export class UserKeyStore {
     console.error(JSON.stringify({ event: 'user-key-unreadable', provider: choice.provider }));
     await this.mark(userId, choice.provider, row.nonce, 'unreadable');
     return { kind: 'unreadable', provider: choice.provider, last4: choice.last4 };
+  }
+
+  /**
+   * Drops `model` from what the saved version `nonce` of a key may call, after the provider answered that the model
+   * is not there for it (404): the next turn picks another model of that key instead of failing again.
+   */
+  async dropModel(userId: string, provider: AiProvider, nonce: string, model: string): Promise<void> {
+    const [row] = await this.db
+      .select({ models: userKeys.models })
+      .from(userKeys)
+      .where(and(eq(userKeys.userId, userId), eq(userKeys.provider, provider), eq(userKeys.nonce, nonce)));
+    if (!row) return;
+    const left = modelsFor(provider, row.models)
+      .map((m) => m.id)
+      .filter((id) => id !== model);
+    await this.db
+      .update(userKeys)
+      .set({ models: left, lastCheckedAt: this.now() })
+      .where(and(eq(userKeys.userId, userId), eq(userKeys.provider, provider), eq(userKeys.nonce, nonce)));
   }
 
   /** Marks the saved version `nonce` of a key after a call it failed (a key saved again since then is left alone). */

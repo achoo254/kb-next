@@ -74,7 +74,7 @@ afterAll(async () => {
 
 /** Saves a key straight through the store (the save route and its limit are tested in key-routes.test.ts). */
 async function useKey(provider: AiProvider, key: string): Promise<void> {
-  await keys.save(ownerId, provider, key);
+  await keys.save(ownerId, provider, key, null);
 }
 
 async function ask(body: unknown): Promise<{ status: number; events: StreamEvent[]; error: unknown }> {
@@ -266,7 +266,7 @@ describe('after review', () => {
 
   it('stops the turn when the active key no longer decrypts, without moving to another provider', async () => {
     // Sealed with another secret: as if the secret file had been replaced.
-    await new UserKeyStore(server.database.db, Buffer.alloc(32, 7), () => new Date()).save(ownerId, 'openai', 'sk-Hq4Lr8Ty2Wp6-other-0005');
+    await new UserKeyStore(server.database.db, Buffer.alloc(32, 7), () => new Date()).save(ownerId, 'openai', 'sk-Hq4Lr8Ty2Wp6-other-0005', null);
     await useKey('gemini', 'AIza-Hq4Lr8Ty2Wp6Zx0-GEMI');
     const before = fake.generations().length;
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);

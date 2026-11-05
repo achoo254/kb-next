@@ -154,7 +154,11 @@ export async function startFakeProviders(): Promise<FakeProviders> {
       return;
     }
     if (req.method === 'GET') {
-      res.writeHead(200).end(JSON.stringify({ data: [], models: [] }));
+      // A key naming `only-<model id>` lists just that model (a project limited to some models); others list none,
+      // which reads as "not known" (every model of the app stays offered).
+      const only = /only-([a-z0-9.-]+)/.exec(auth.key)?.[1];
+      const ids = only ? [only] : [];
+      res.writeHead(200).end(JSON.stringify({ data: ids.map((id) => ({ id })), models: ids.map((id) => ({ name: `models/${id}` })) }));
       return;
     }
     if (auth.key.includes('revoked')) {

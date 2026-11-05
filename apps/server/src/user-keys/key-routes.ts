@@ -15,7 +15,7 @@ import { parseBody } from '../api/validate';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
 import { HttpError } from '../http-error';
-import { AI_PROVIDERS, type AiProvider, MODELS, type ModelInfo, type ProviderBases, isListedModel } from '../llm/providers';
+import { AI_PROVIDERS, type AiProvider, MODELS, type ModelInfo, type ProviderBases, modelsFor } from '../llm/providers';
 import { checkKey, keyFormatOk } from './key-check';
 import { type ActiveChoice, type KeyEntry, type KeyPrefs, type OpenedKey, type UserKeyStore, pickActive } from './key-store';
 
@@ -26,7 +26,17 @@ export interface KeysResponse {
   prefs: KeyPrefs | null;
   /** What the Copilot would use now; null without an `ok` key. */
   active: ActiveChoice | null;
+  /** Per provider, the models its saved key may call (the app's whole list for a provider without a key). */
   models: Record<AiProvider, readonly ModelInfo[]>;
+}
+
+/** The model list of each provider for this account: narrowed to what its saved key may call. */
+function modelsOf(list: readonly KeyEntry[]): Record<AiProvider, readonly ModelInfo[]> {
+  const of = (provider: AiProvider): readonly ModelInfo[] => {
+    const entry = list.find((k) => k.provider === provider);
+    return entry ? modelsFor(provider, entry.models) : MODELS[provider];
+  };
+  return { openai: of('openai'), gemini: of('gemini'), anthropic: of('anthropic') };
 }
 
 const Provider = z.enum(AI_PROVIDERS);
@@ -69,7 +79,7 @@ export function keyRoutes({ config, db, now, keys, bases }: KeyRoutesOptions): R
 
   async function overview(userId: string): Promise<KeysResponse> {
     const [list, prefs] = await Promise.all([keys.list(userId), keys.prefs(userId)]);
-    return { available: keys.available, keys: list, prefs, active: keys.available ? pickActive(list, prefs) : null, models: MODELS };
+    return { available: keys.available, keys: list, prefs, active: keys.available ? pickActive(list, prefs) : null, models: modelsOf(list) };
   }
 
   router.get('/api/me/keys', session, async (_req, res) => {
@@ -81,11 +91,13 @@ export function keyRoutes({ config, db, now, keys, bases }: KeyRoutesOptions): R
     const provider = providerOf(req.params.provider);
     const { key } = parseBody(KeyBody, req.body);
     if (!keyFormatOk(provider, key)) throw new HttpError(400, 'KEY_FORMAT');
-    const verdict = await checkKey(bases, provider, key);
+    const { verdict, models } = await checkKey(bases, provider, key);
     if (verdict === 'rejected') throw new HttpError(400, 'KEY_REJECTED');
     if (verdict === 'no-credit') throw new HttpError(400, 'KEY_NO_CREDIT');
     if (verdict === 'unreachable') throw new HttpError(503, 'KEY_CHECK_FAILED');
-    res.set('Cache-Control', 'no-store').json(await keys.save(userId, provider, key));
+    // The key works but its project may call none of the models the app offers for that provider.
+    if (models !== null && models.length === 0) throw new HttpError(400, 'KEY_NO_MODEL');
+    res.set('Cache-Control', 'no-store').json(await keys.save(userId, provider, key, models));
   });
 
   router.delete('/api/me/keys/:provider', session, async (req, res) => {
@@ -96,7 +108,8 @@ export function keyRoutes({ config, db, now, keys, bases }: KeyRoutesOptions): R
   router.put('/api/me/key-prefs', session, async (req, res) => {
     const userId = userIdOf(res);
     const prefs = parseBody(PrefsBody, req.body);
-    if (!isListedModel(prefs.provider, prefs.model)) throw new HttpError(400, 'invalid-body');
+    const offered = modelsOf(await keys.list(userId))[prefs.provider];
+    if (!offered.some((m) => m.id === prefs.model)) throw new HttpError(400, 'invalid-body');
     await keys.setPrefs(userId, prefs);
     res.set('Cache-Control', 'no-store').json(await overview(userId));
   });

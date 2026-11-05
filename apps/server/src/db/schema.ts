@@ -425,6 +425,8 @@ export const userKeys = pgTable(
     nonce: text('nonce').notNull(),
     last4: text('last4').notNull(),
     status: userKeyStatus('status').notNull().default('ok'),
+    /** The app's models the provider lists for this key (checked when saved); null: not known, all are offered. */
+    models: jsonb('models').$type<string[]>(),
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     lastCheckedAt: timestamp('last_checked_at', { withTimezone: true }),

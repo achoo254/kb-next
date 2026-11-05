@@ -144,19 +144,28 @@ describe('failure classification', () => {
 
 describe('key check', () => {
   it('accepts a working key and tells a refused, empty or unreachable one apart, for every provider', async () => {
+    const verdict = async (bases: typeof fake.bases, provider: 'openai' | 'gemini' | 'anthropic', key: string) => (await checkKey(bases, provider, key)).verdict;
     for (const provider of ['openai', 'gemini', 'anthropic'] as const) {
-      expect(await checkKey(fake.bases, provider, KEYS[provider])).toBe('valid');
-      expect(await checkKey(fake.bases, provider, `${KEYS[provider]}-bad`)).toBe('rejected');
-      expect(await checkKey(fake.bases, provider, `${KEYS[provider]}-broke`)).toBe('no-credit');
+      expect(await verdict(fake.bases, provider, KEYS[provider])).toBe('valid');
+      expect(await verdict(fake.bases, provider, `${KEYS[provider]}-bad`)).toBe('rejected');
+      expect(await verdict(fake.bases, provider, `${KEYS[provider]}-broke`)).toBe('no-credit');
     }
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     try {
-      expect(await checkKey(fake.bases, 'openai', 'sk-test-flaky-key-000001')).toBe('unreachable');
-      expect(await checkKey({ openai: 'http://127.0.0.1:1', gemini: '', anthropic: '' }, 'openai', KEYS.openai)).toBe('unreachable');
+      expect(await verdict(fake.bases, 'openai', 'sk-test-flaky-key-000001')).toBe('unreachable');
+      expect(await verdict({ openai: 'http://127.0.0.1:1', gemini: '', anthropic: '' }, 'openai', KEYS.openai)).toBe('unreachable');
     } finally {
       error.mockRestore();
     }
-    expect(fake.requests.some((r) => r.method === 'GET' && r.path === '/v1beta/models?pageSize=1')).toBe(true);
+    expect(fake.requests.some((r) => r.method === 'GET' && r.path === '/v1beta/models?pageSize=1000')).toBe(true);
+  });
+
+  it('keeps the models the provider lists for the key, for every provider', async () => {
+    expect(await checkKey(fake.bases, 'openai', `${KEYS.openai}-only-gpt-4.1-mini`)).toEqual({ verdict: 'valid', models: ['gpt-4.1-mini'] });
+    expect(await checkKey(fake.bases, 'gemini', `${KEYS.gemini}-only-gemini-3.5-flash-lite`)).toEqual({ verdict: 'valid', models: ['gemini-3.5-flash-lite'] });
+    expect(await checkKey(fake.bases, 'anthropic', `${KEYS.anthropic}-only-claude-sonnet-5-5`)).toEqual({ verdict: 'valid', models: ['claude-sonnet-5-5'] });
+    expect(await checkKey(fake.bases, 'openai', `${KEYS.openai}-only-gpt-9`)).toEqual({ verdict: 'valid', models: [] });
+    expect(await checkKey(fake.bases, 'openai', KEYS.openai)).toEqual({ verdict: 'valid', models: null });
   });
 
   it('checks the shape of a key before calling anyone', () => {

@@ -33,8 +33,9 @@ export function defaultModel(provider: AiProvider): string {
   return MODELS[provider][0].id;
 }
 
-export function isListedModel(provider: AiProvider, model: string): boolean {
-  return MODELS[provider].some((m) => m.id === model);
+/** The app's models a key may call: those of `allowed` (in the app's order), or all of them while unknown (null). */
+export function modelsFor(provider: AiProvider, allowed: readonly string[] | null): ModelInfo[] {
+  return allowed === null ? [...MODELS[provider]] : MODELS[provider].filter((m) => allowed.includes(m.id));
 }
 
 /** API origins; tests point them at local fake servers. */
