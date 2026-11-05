@@ -45,3 +45,8 @@ hiện với tác giả cho tới khi bài được duyệt.
   bản mới. Lịch sử, so sánh và khôi phục: `/d/<id>/history` (board C17).
 - Ai sửa được: tác giả khi bài là nháp, riêng tư, bị yêu cầu sửa hay bị từ chối; quản trị luôn sửa được. Bài đang chờ
   duyệt hoặc đã đăng thì khoá với tác giả (sửa qua hàng duyệt ở phase 11).
+- Xoá: tác giả xoá được bài của mình chưa đăng (kể cả đang chờ duyệt, bị yêu cầu sửa); bài đã đăng chỉ quản trị xoá.
+  Bài nằm trong thùng rác của người đã xoá: quản trị xoá thì chỉ quản trị khôi phục. Sau 30 ngày `purgeTrash` xoá hẳn
+  bài cùng phiên bản, đoạn, link, yêu thích và hàng tệp, rồi trả tên tệp trên đĩa để job dọn xoá tệp.
+- Link `[[ ]]` tìm theo những gì **tác giả** của bài đọc được (quản trị sửa hộ cũng vậy), một truy vấn cho mọi tiêu đề,
+  chạy trước khi giữ khoá hàng.

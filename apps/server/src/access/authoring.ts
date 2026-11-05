@@ -8,14 +8,15 @@
  * sent back (`changes_requested`, `rejected`). A text waiting for review (`pending`) or published (`approved`) is
  * `locked` for its author: changing it goes through review (phase 11).
  */
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, lt, ne, or } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, lt, max, ne, or } from 'drizzle-orm';
 import { type BlockDiff, diffBlocks } from '../authoring/block-diff';
 import { bodyOf, chunksOf, composeMarkdown, contentHash, foldTitle, linkedTitles } from '../authoring/markdown-text';
 import { titleLine } from '../import/hoc-cloud/sections';
 import type { Db } from '../db/client';
-import { PLANET_COLOURS, chunks, documentVersions, documents, links } from '../db/schema';
+import { PLANET_COLOURS, chunks, documentVersions, documents, files, links } from '../db/schema';
 import { type DocumentRow, documentColumns } from './content';
 import { isUuid } from './ids';
+import { historyScope } from './history';
 import { documentAccess } from './reading';
 import type { Viewer } from './viewer';
 import { visibleTo } from './visibility';
@@ -103,52 +104,66 @@ function escapeLike(text: string): string {
 
 const ORIGIN_RANK: Record<DocumentRow['origin'], number> = { official: 0, community: 1, own: 2 };
 
+/** Who `[[ ]]` links of a document are resolved for: its author, never more (an admin's edit links what the author sees). */
+function authorViewer(authorId: string): Viewer {
+  return { kind: 'user', userId: authorId, isAdmin: false };
+}
+
 /**
- * The documents `[[ ]]` titles point at, among those the writer may read (a link never reaches what its writer
- * cannot open): an exact title first (case and diacritics aside), else a title holding the words as a whole, the
- * official, published, same-language and shortest one first. A title matching nothing gets no link (yet).
+ * The documents `[[ ]]` titles point at, among those the document's author may read (a link never reaches what its
+ * author cannot open): an exact title first (case and diacritics aside), else a title holding the words as a whole,
+ * the official, published, same-language and shortest one first. One query for every title, run before the save
+ * holds the document's row. A title matching nothing gets no link (yet).
  */
-async function resolveLinkTargets(tx: Tx, writer: Viewer, titles: readonly string[], self: Pick<DocumentRow, 'id' | 'lang'>): Promise<string[]> {
-  const wanted = titles.slice(0, MAX_LINK_TITLES).filter((t) => t.trim().length > 0);
+async function resolveLinkTargets(db: Db, authorId: string, titles: readonly string[], self: { id: string | null; lang: DocumentRow['lang'] }): Promise<string[]> {
+  const wanted = [...new Set(titles.slice(0, MAX_LINK_TITLES).map((t) => t.trim()).filter(Boolean))];
   if (wanted.length === 0) return [];
+  const rows = await db
+    .select({ id: documents.id, title: documents.title, origin: documents.origin, status: documents.status, lang: documents.lang })
+    .from(documents)
+    .where(
+      and(
+        visibleTo(authorViewer(authorId)),
+        self.id ? ne(documents.id, self.id) : undefined,
+        or(...wanted.map((title) => ilike(documents.title, `%${escapeLike(title)}%`))),
+      ),
+    )
+    .orderBy(asc(documents.createdAt))
+    .limit(LINK_CANDIDATES * wanted.length);
+  const folded = rows.map((row) => ({ row, fold: foldTitle(row.title) }));
   const targets = new Set<string>();
   for (const title of wanted) {
-    const rows = await tx
-      .select({ id: documents.id, title: documents.title, origin: documents.origin, status: documents.status, lang: documents.lang, createdAt: documents.createdAt })
-      .from(documents)
-      .where(and(visibleTo(writer), ne(documents.id, self.id), ilike(documents.title, `%${escapeLike(title.trim())}%`)))
-      .orderBy(asc(documents.createdAt))
-      .limit(LINK_CANDIDATES);
-    const folded = foldTitle(title);
-    const word = new RegExp(`(^|[^\\p{L}\\p{N}])${folded.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}\\p{N}])`, 'u');
-    const ranked = rows
-      .map((row) => ({ row, fold: foldTitle(row.title) }))
-      .filter(({ fold }) => fold === folded || word.test(fold))
+    const want = foldTitle(title);
+    const word = new RegExp(`(^|[^\\p{L}\\p{N}])${want.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}\\p{N}])`, 'u');
+    const best = folded
+      .filter(({ fold }) => fold === want || word.test(fold))
       .sort(
         (a, b) =>
-          Number(b.fold === folded) - Number(a.fold === folded) ||
+          Number(b.fold === want) - Number(a.fold === want) ||
           ORIGIN_RANK[a.row.origin] - ORIGIN_RANK[b.row.origin] ||
           Number(b.row.status === 'approved') - Number(a.row.status === 'approved') ||
           Number(b.row.lang === self.lang) - Number(a.row.lang === self.lang) ||
           a.row.title.length - b.row.title.length,
-      );
-    const best = ranked[0];
+      )[0];
     if (best) targets.add(best.row.id);
   }
   return [...targets];
 }
 
-/** The chunks and `[[ ]]` links of a document, rebuilt from its Markdown. */
-async function writeDerived(tx: Tx, writer: Viewer, doc: Pick<DocumentRow, 'id' | 'lang'>, markdown: string): Promise<void> {
+/** Rows per insert of chunks (Postgres takes at most 65 535 parameters a statement). */
+const CHUNK_BATCH = 1_000;
+
+/** The chunks and `[[ ]]` links of a document, rebuilt from its Markdown; `targets` from resolveLinkTargets. */
+async function writeDerived(tx: Tx, doc: Pick<DocumentRow, 'id' | 'lang'>, markdown: string, targets: readonly string[]): Promise<void> {
   await tx.delete(chunks).where(eq(chunks.documentId, doc.id));
-  const parts = chunksOf(markdown, doc.lang);
-  if (parts.length > 0) await tx.insert(chunks).values(parts.map((chunk, position) => ({ documentId: doc.id, position, ...chunk })));
+  const parts = chunksOf(markdown, doc.lang).map((chunk, position) => ({ documentId: doc.id, position, ...chunk }));
+  for (let start = 0; start < parts.length; start += CHUNK_BATCH) await tx.insert(chunks).values(parts.slice(start, start + CHUNK_BATCH));
   await tx.delete(links).where(and(eq(links.sourceId, doc.id), eq(links.kind, 'wikilink')));
-  const targets = await resolveLinkTargets(tx, writer, linkedTitles(markdown), doc);
-  if (targets.length > 0) {
+  const live = targets.filter((target) => target !== doc.id);
+  if (live.length > 0) {
     await tx
       .insert(links)
-      .values(targets.map((targetId) => ({ sourceId: doc.id, targetId, kind: 'wikilink' as const })))
+      .values(live.map((targetId) => ({ sourceId: doc.id, targetId, kind: 'wikilink' as const })))
       .onConflictDoNothing();
   }
 }
@@ -165,8 +180,9 @@ export interface NewDocument {
 
 /** A new draft of `author` (origin `own`, status `draft`: only its author and admins see it), with its version 1. */
 export async function createDocument(db: Db, author: UserViewer, input: NewDocument, now: Date): Promise<{ id: string; rev: Date }> {
+  const markdown = composeMarkdown(input.title, input.body);
+  const targets = await resolveLinkTargets(db, author.userId, linkedTitles(markdown), { id: null, lang: input.lang });
   return db.transaction(async (tx) => {
-    const markdown = composeMarkdown(input.title, input.body);
     const [row] = await tx
       .insert(documents)
       .values({
@@ -186,7 +202,7 @@ export async function createDocument(db: Db, author: UserViewer, input: NewDocum
       .returning({ id: documents.id, lang: documents.lang, updatedAt: documents.updatedAt });
     if (!row) throw new Error('document insert returned nothing');
     await tx.insert(documentVersions).values({ documentId: row.id, version: 1, markdown, editorId: author.userId, via: 'editor', createdAt: now, updatedAt: now });
-    await writeDerived(tx, author, row, markdown);
+    await writeDerived(tx, row, markdown, targets);
     return { id: row.id, rev: row.updatedAt };
   });
 }
@@ -218,6 +234,11 @@ export type SaveResult =
  */
 export async function saveDocument(db: Db, writer: Viewer, id: string, input: SaveInput, now: Date): Promise<SaveResult> {
   if (writer.kind !== 'user' || !isUuid(id)) return { kind: 'not-found' };
+  const markdown = composeMarkdown(input.title, input.body);
+  // The author and language never change: the links are found before the save takes the document's row.
+  const [owner] = await db.select({ authorId: documents.authorId, lang: documents.lang }).from(documents).where(eq(documents.id, id));
+  if (!owner) return { kind: 'not-found' };
+  const targets = await resolveLinkTargets(db, owner.authorId, linkedTitles(markdown), { id, lang: owner.lang });
   return db.transaction(async (tx): Promise<SaveResult> => {
     const [doc] = await tx.select(documentColumns).from(documents).where(eq(documents.id, id)).for('update');
     if (!doc || doc.deletedAt !== null) return { kind: 'not-found' };
@@ -229,7 +250,6 @@ export async function saveDocument(db: Db, writer: Viewer, id: string, input: Sa
     const latest = await latestVersion(tx, id);
     if (doc.type === 'office' || (latest !== null && latest.markdownOrNull === null)) return { kind: 'not-editable' };
 
-    const markdown = composeMarkdown(input.title, input.body);
     const planet = input.planet === undefined ? doc.planet : input.planet;
     const sameText = latest !== null && latest.markdown === markdown && doc.title === input.title.trim();
     if (sameText && input.restoredFrom === undefined) {
@@ -269,7 +289,7 @@ export async function saveDocument(db: Db, writer: Viewer, id: string, input: Sa
       .set({ title: input.title.trim(), contentHash: contentHash(markdown), planet, updatedAt: now })
       .where(eq(documents.id, id))
       .returning({ updatedAt: documents.updatedAt });
-    await writeDerived(tx, writer, doc, markdown);
+    await writeDerived(tx, doc, markdown, targets);
     return { kind: 'saved', rev: row?.updatedAt ?? now, version, changed: true };
   });
 }
@@ -279,14 +299,25 @@ export interface StoredVersion {
   markdown: string | null;
 }
 
-/** One version of a document the viewer may read; null when either is missing. */
+/**
+ * One version of a document the viewer may read; null when either is missing. A reader who is neither the author
+ * nor an admin reads only the current version (history.ts, `historyScope`): earlier drafts stay with their author.
+ */
 export async function findVersion(db: Db, viewer: Viewer, documentId: string, version: number): Promise<(StoredVersion & { editorId: string; updatedAt: Date }) | null> {
   if (!isUuid(documentId) || !Number.isInteger(version) || version < 1) return null;
+  const [doc] = await db
+    .select({ authorId: documents.authorId })
+    .from(documents)
+    .where(and(eq(documents.id, documentId), visibleTo(viewer)));
+  if (!doc) return null;
+  if (historyScope(viewer, doc) === 'public') {
+    const [latest] = await db.select({ version: max(documentVersions.version) }).from(documentVersions).where(eq(documentVersions.documentId, documentId));
+    if (latest?.version !== version) return null;
+  }
   const [row] = await db
     .select({ version: documentVersions.version, markdown: documentVersions.markdown, editorId: documentVersions.editorId, updatedAt: documentVersions.updatedAt })
     .from(documentVersions)
-    .innerJoin(documents, eq(documents.id, documentVersions.documentId))
-    .where(and(eq(documentVersions.documentId, documentId), eq(documentVersions.version, version), visibleTo(viewer)));
+    .where(and(eq(documentVersions.documentId, documentId), eq(documentVersions.version, version)));
   return row ?? null;
 }
 
@@ -312,39 +343,70 @@ export async function restoreVersion(db: Db, writer: Viewer, id: string, version
 
 export type TrashResult = 'ok' | 'not-found' | 'no-access';
 
-/** Moves a document to its author's trash (author or admin). The search sync then drops it from the indexes. */
+/**
+ * Moves a document to the trash, recording who did. An admin may delete any document; its author any of theirs that
+ * is not published (a published text leaves the Universe through an admin). The search sync then drops it.
+ */
 export async function trashDocument(db: Db, viewer: Viewer, id: string, now: Date): Promise<TrashResult> {
   const access = await documentAccess(db, viewer, id);
   if (access.kind === 'not-found') return 'not-found';
-  if (access.kind !== 'ok' || viewer.kind !== 'user' || (!viewer.isAdmin && access.doc.authorId !== viewer.userId)) return 'no-access';
-  await db.update(documents).set({ deletedAt: now }).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
-  return 'ok';
-}
-
-/** Takes a document out of the trash (its author, or an admin); `not-found` when it is not in the trash. */
-export async function restoreFromTrash(db: Db, viewer: Viewer, id: string): Promise<TrashResult> {
-  if (viewer.kind !== 'user' || !isUuid(id)) return 'not-found';
-  const [doc] = await db
-    .select({ authorId: documents.authorId })
-    .from(documents)
-    .where(and(eq(documents.id, id), isNotNull(documents.deletedAt)));
-  // Someone else's trash reads as nothing there: it does not reveal that the document exists.
-  if (!doc || (!viewer.isAdmin && doc.authorId !== viewer.userId)) return 'not-found';
-  await db.update(documents).set({ deletedAt: null }).where(eq(documents.id, id));
+  if (access.kind !== 'ok' || viewer.kind !== 'user') return 'no-access';
+  const own = access.doc.authorId === viewer.userId && access.doc.status !== 'approved';
+  if (!viewer.isAdmin && !own) return 'no-access';
+  await db.update(documents).set({ deletedAt: now, deletedBy: viewer.userId }).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
   return 'ok';
 }
 
 /**
- * Deletes for good the documents in the trash for TRASH_DAYS or more (their versions, chunks, links, favourites go
- * with them); returns their ids, for the search sync to drop. Run by the server's daily housekeeping.
+ * Takes a document out of the trash: whoever deleted it (its author for their own deletions), or an admin. What an
+ * admin deleted, its author cannot bring back. `not-found` when it is not in the viewer's reach.
  */
-export async function purgeTrash(db: Db, now: Date): Promise<string[]> {
+export async function restoreFromTrash(db: Db, viewer: Viewer, id: string): Promise<TrashResult> {
+  if (viewer.kind !== 'user' || !isUuid(id)) return 'not-found';
+  const [doc] = await db
+    .select({ deletedBy: documents.deletedBy })
+    .from(documents)
+    .where(and(eq(documents.id, id), isNotNull(documents.deletedAt)));
+  // Someone else's trash reads as nothing there: it does not reveal that the document exists.
+  if (!doc || (!viewer.isAdmin && doc.deletedBy !== viewer.userId)) return 'not-found';
+  await db.update(documents).set({ deletedAt: null, deletedBy: null }).where(eq(documents.id, id));
+  return 'ok';
+}
+
+export interface PurgeResult {
+  /** Documents deleted for good, for the search sync to drop. */
+  documentIds: string[];
+  /** Disk names of their stored files (Office), whose rows went with them: the caller removes the files. */
+  storageKeys: string[];
+}
+
+/**
+ * Deletes for good the documents in the trash for TRASH_DAYS or more: their versions, chunks, links and favourites
+ * go with them (cascade), and so do the rows of their stored files, whose disk names come back for the caller to
+ * unlink. Run by the server's daily housekeeping.
+ */
+export async function purgeTrash(db: Db, now: Date): Promise<PurgeResult> {
   const cutoff = new Date(now.getTime() - TRASH_DAYS * DAY_MS);
-  const rows = await db
-    .delete(documents)
-    .where(and(isNotNull(documents.deletedAt), lt(documents.deletedAt, cutoff)))
-    .returning({ id: documents.id });
-  return rows.map((r) => r.id);
+  return db.transaction(async (tx) => {
+    const doomed = tx
+      .select({ id: documents.id })
+      .from(documents)
+      .where(and(isNotNull(documents.deletedAt), lt(documents.deletedAt, cutoff)));
+    const fileRows = await tx.select({ id: files.id, storageKey: files.storageKey }).from(files).where(inArray(files.documentId, doomed));
+    const rows = await tx
+      .delete(documents)
+      .where(and(isNotNull(documents.deletedAt), lt(documents.deletedAt, cutoff)))
+      .returning({ id: documents.id });
+    // After the documents: their versions (which may point at these files) are gone by then.
+    if (fileRows.length > 0)
+      await tx.delete(files).where(
+        inArray(
+          files.id,
+          fileRows.map((f) => f.id),
+        ),
+      );
+    return { documentIds: rows.map((r) => r.id), storageKeys: fileRows.map((f) => f.storageKey) };
+  });
 }
 
 export interface LinkCandidate {

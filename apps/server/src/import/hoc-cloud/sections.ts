@@ -33,12 +33,23 @@ const HEADING = /^(#{1,3})\s+(.+?)\s*#*\s*$/;
 
 export function splitSections(markdown: string, overviewAnchor: string): Section[] {
   const sections: Section[] = [];
+  // The n-th heading with a base gets `${base}-${n}`, as anchors always were (imported texts keep theirs); when that is
+  // already some other heading's anchor ("Ví dụ", "Ví dụ", "Ví dụ 2"), the count goes on until one is free.
   const used = new Map<string, number>();
+  const taken = new Set<string>([overviewAnchor]);
   const uniqueAnchor = (base: string): string => {
     const seen = used.get(base) ?? 0;
     used.set(base, seen + 1);
-    return seen === 0 ? base : `${base}-${seen + 1}`;
+    let n = seen + 1;
+    let candidate = seen === 0 ? base : `${base}-${n}`;
+    while (taken.has(candidate)) {
+      n += 1;
+      candidate = `${base}-${n}`;
+    }
+    taken.add(candidate);
+    return candidate;
   };
+  used.set(overviewAnchor, 1);
   let current: { heading: string | null; anchor: string; headingLine: string | null; lines: string[] } = { heading: null, anchor: overviewAnchor, headingLine: null, lines: [] };
   used.set(overviewAnchor, 1);
   const flush = (): void => {

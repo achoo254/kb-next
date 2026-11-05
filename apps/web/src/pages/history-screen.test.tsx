@@ -39,6 +39,7 @@ function historyOf(patch: Partial<DocumentHistory> = {}): DocumentHistory {
       space: { slug: 'networking', nameVi: 'Networking', nameEn: 'Networking', tint: '#C4B5FD', glow: '#8B5CF6', kind: 'public' },
       collection: { id: 'c0', nameVi: 'Giao thức nền tảng', nameEn: 'Core protocols' },
     },
+    scope: 'full',
     canRestore: false,
     currentVersion: 4,
     events: EVENTS,
@@ -158,6 +159,17 @@ describe('HistoryScreen', () => {
     expect(screen.getByText('Bài mới có một phiên bản. Lưu thêm là so sánh được.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Duyệt' }));
     expect(screen.getByText('Chưa có hoạt động nào thuộc loại này.')).toBeTruthy();
+  });
+
+  it('shows another reader the published version only, and says why', async () => {
+    historyReply = () => answer(200, historyOf({ scope: 'public', events: [EVENTS[2], EVENTS[3]].filter((e): e is HistoryEvent => e !== undefined) }));
+    renderWithI18n(<HistoryScreen id={ID} />);
+    await screen.findByText('Duyệt phiên bản v4');
+    expect(rows()).toEqual(['Duyệt phiên bản v4', 'Đề xuất sửa: thêm đoạn lease và DHCP snooping']);
+    expect(screen.getByText('Phiên bản đang đăng')).toBeTruthy();
+    expect(document.querySelector('[data-id="history-only-one"]')?.textContent).toContain('chỉ tác giả và quản trị xem');
+    expect(screen.queryByRole('button', { name: /Khôi phục/ })).toBeNull();
+    expect(diffs).toEqual([]);
   });
 
   it('opens an older version’s text', async () => {

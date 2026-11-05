@@ -10,8 +10,9 @@
  *   403 `locked` (waiting for review or published: changes go through review), 409 `not-editable` (a stored file).
  * - PUT /api/documents/:id `{title, body, planet?, baseRev}` → SaveResponse; 409 `{error: 'stale', rev}` when
  *   another save landed since `baseRev` (the copy the writer started from), same 403/404/409 as above.
- * - DELETE /api/documents/:id → 204: to the trash (author or admin; 30 days, then deleted for good).
- *   POST /api/documents/:id/restore → 204: out of the trash (404 when not in the account's trash).
+ * - DELETE /api/documents/:id → 204: to the trash (30 days, then deleted for good). An admin deletes any document,
+ *   its author any of theirs that is not published (403 `no-access` otherwise).
+ *   POST /api/documents/:id/restore → 204: out of the trash, by whoever deleted it or an admin (404 otherwise).
  * - GET /api/documents/:id/links → `{backlinks, outgoing}`: readable documents linking to it and linked from it.
  * - GET /api/link-suggestions?q=&exclude= → `{documents}`: readable documents whose title holds `q` (the `[[` list).
  * - POST /api/me/space → `{space, created}`: the account's personal Space, made if missing.
@@ -55,7 +56,11 @@ const MAX_QUERY_CHARS = 120;
 
 const Slug = z.string().regex(/^[a-z0-9][a-z0-9-]{0,119}$/);
 const Uuid = z.uuid();
-const Title = z.string().max(MAX_TITLE_CHARS);
+// One line: a title with a line break would add headings to the stored text.
+const Title = z
+  .string()
+  .max(MAX_TITLE_CHARS)
+  .refine((title) => !/[\r\n]/.test(title));
 const Body = z.string().max(MAX_BODY_CHARS);
 const PlanetField = z.enum(PLANET_COLOURS);
 const Name = z.string().trim().min(1).max(80);
@@ -81,7 +86,8 @@ const SaveBody = z.strictObject({
 const SuggestQuery = z.object({ q: z.string().max(MAX_QUERY_CHARS).optional().default(''), exclude: Uuid.optional() });
 
 const PublicSpaceBody = z.strictObject({
-  slug: Slug,
+  // `personal-<account>` is the slug of that account's own Space (spaces-write.ts).
+  slug: Slug.refine((slug) => !slug.startsWith('personal-')),
   nameVi: Name,
   nameEn: Name,
   tint: Colour,
@@ -166,6 +172,8 @@ export function authoringRoutes({ config, db, now, sync }: AuthoringRoutesOption
   // Autosave writes on every pause in typing; creating and deleting are rarer.
   const saveLimit = perAccountLimit(120);
   const writeLimit = perAccountLimit(30);
+  // The `[[` list asks as the writer types.
+  const suggestLimit = perAccountLimit(120);
   const reader = async (req: Parameters<typeof readerOf>[0]): Promise<UserViewer> => asUser((await readerOf(req, { config, db, now })).viewer);
   const idOf = (req: { params: Record<string, unknown> }): string => {
     const id = req.params.id;
@@ -268,7 +276,7 @@ export function authoringRoutes({ config, db, now, sync }: AuthoringRoutesOption
     res.set('Cache-Control', 'no-store').json({ backlinks: pick(backlinks), outgoing: pick(outgoing) });
   });
 
-  router.get('/api/link-suggestions', auth, async (req, res) => {
+  router.get('/api/link-suggestions', auth, suggestLimit, async (req, res) => {
     const viewer = await reader(req);
     const { q, exclude } = parseQuery(SuggestQuery, req.query);
     const found = await suggestLinkTargets(db, viewer, q, SUGGESTIONS, exclude ?? null);

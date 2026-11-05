@@ -83,8 +83,9 @@ export function writeRoutes({ config, db, now, keys, bases, aiBudget }: WriteRou
     const gone = connectionSignal(req, res);
     const userId = userIdOf(res);
     const body = parseBody(WriteBody, req.body);
-    spendBudget(aiBudget, userId, 1);
+    // No key: refused before anything is spent of the AI budget.
     const key = await keyForTurn(keys, userId);
+    spendBudget(aiBudget, userId, 1);
     if (gone.aborted) return;
     const stream = openEventStream(res, gone);
     try {

@@ -30,6 +30,7 @@ import { signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
 import { MERGE_WINDOW_MS, TRASH_DAYS, purgeTrash } from '../access/authoring';
 import { findDocument } from '../access/content';
+import { sql } from 'drizzle-orm';
 import { seedDatabase, seedId } from '../db/seed-database';
 
 const SECRET = 'test-secret-'.padEnd(40, 'x');
@@ -201,10 +202,60 @@ describe('the trash', () => {
 
     await as('owner', () => trashDocument(note.id));
     const db = server.database.db;
-    expect(await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS - 1) * DAY))).not.toContain(note.id);
-    expect(await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS + 1) * DAY))).toContain(note.id);
+    expect((await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS - 1) * DAY))).documentIds).not.toContain(note.id);
+    expect((await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS + 1) * DAY))).documentIds).toContain(note.id);
     expect(await findDocument(db, { kind: 'user', userId: '00000000-0000-4000-8000-000000000000', isAdmin: true }, note.id)).toBeNull();
     expect((await as('owner', () => fetchTrash())).map((d) => d.id)).not.toContain(note.id);
+  });
+});
+
+describe('who deletes and who brings back', () => {
+  it('lets an author delete what is not published, and only an admin take back what an admin deleted', async () => {
+    // Waiting for review: the author may withdraw it, and bring it back.
+    await as('owner', () => trashDocument(seedId('document:arp-ndp')));
+    expect((await as('owner', () => fetchTrash())).map((d) => d.title)).toContain('So sánh ARP và NDP');
+    await as('owner', () => restoreFromTrash(seedId('document:arp-ndp')));
+    // Published: only an admin removes it from the Universe.
+    const published = await as('owner', () => createDocument({ title: 'Đã đăng' }));
+    await server.database.db.execute(sql`update documents set status = 'approved' where id = ${published.id}`);
+    expect(await as('owner', () => failure(trashDocument(published.id)))).toBe('no-access');
+
+    const note = await as('owner', () => createDocument({ title: 'Vi phạm' }));
+    await as('admin', () => trashDocument(note.id));
+    // The author's trash holds only what the author deleted; an admin's deletion is the admin's to undo.
+    expect((await as('owner', () => fetchTrash())).map((d) => d.id)).not.toContain(note.id);
+    expect(await as('owner', () => failure(restoreFromTrash(note.id)))).toBe('not-found');
+    expect((await as('admin', () => fetchTrash())).map((d) => d.id)).toContain(note.id);
+    await as('admin', () => restoreFromTrash(note.id));
+    expect((await as('owner', () => fetchEditable(note.id))).title).toBe('Vi phạm');
+  });
+});
+
+describe('what a save refuses and links', () => {
+  it('refuses a title with a line break, and a public Space taking a personal Space’s slug', async () => {
+    expect(await as('owner', () => failure(createDocument({ title: 'A\n\n## B' })))).toBe('invalid-body');
+    const res = await as('admin', () =>
+      globalThis.fetch('/api/spaces', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slug: 'personal-someone', nameVi: 'X', nameEn: 'X', tint: '#FFFFFF', glow: '#FFFFFF', art: '/art/x.webp', unitVi: 'bài', unitEn: 'docs' }),
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('saves headings that repeat, as numbered anchors (Ví dụ, Ví dụ, Ví dụ 2)', async () => {
+    const note = await as('owner', () => createDocument({ title: 'Ví dụ lặp', body: '## Ví dụ\n\na\n\n## Ví dụ\n\nb\n\n## Ví dụ 2\n\nc' }));
+    expect((await as('owner', () => fetchDocument(note.id))).chunks.map((c) => c.anchor)).toEqual(['vi-du', 'vi-du-2', 'vi-du-2-2']);
+  });
+
+  it('links [[ ]] as the author can read, also when an admin edits', async () => {
+    // Another member's private draft has the exact title; the admin could open it, the author cannot.
+    await as('other', () => createDocument({ title: 'Giao thức ARP mới' }));
+    const official = await as('admin', () => fetchEditable(seedId('document:k8s-build')));
+    await as('admin', () => saveDocument(official.id, { title: official.title, body: `${official.body}\n\nXem [[Giao thức ARP mới]] và [[Giao thức ARP]].`, baseRev: official.rev }));
+    const links = await as('admin', () => fetchDocumentLinks(official.id));
+    expect(links.outgoing.map((d) => d.title)).toEqual(['Giao thức ARP']);
   });
 });
 

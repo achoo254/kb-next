@@ -150,6 +150,7 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
       createdAt,
       updatedAt: doc.at ? createdAt : updatedAt(doc.key),
       deletedAt: null,
+      deletedBy: null,
       planet: doc.planet ?? null,
     };
     await db.insert(documents).values(values).onConflictDoUpdate({ target: documents.id, set: values });

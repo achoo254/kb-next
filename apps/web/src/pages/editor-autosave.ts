@@ -217,21 +217,35 @@ export class DocumentAutosave {
     await this.deps.deleteDraft(this.doc.id);
   }
 
-  /** Leaving the page: keep the copy and send what is pending with a request that outlives the page. */
+  /**
+   * Leaving the page (or its tab going to the back): keep the copy and send what is pending with a request that
+   * outlives the page. One request at a time, as for every save: while one is on its way it carries on (the copy in
+   * this browser covers the rest), so two saves from the same rev never race into a false "changed elsewhere".
+   */
   leave(): void {
     if (this.disposed || !this.dirty) return;
     this.keepDraft();
-    if (this.state.status === 'conflict' || !this.deps.online()) return;
+    if (this.inFlight || this.state.status === 'conflict' || !this.deps.online()) return;
+    if (this.saveTimer !== null) clearTimeout(this.saveTimer);
+    this.saveTimer = null;
+    this.inFlight = true;
     const edits = this.edits;
-    this.deps.save(this.doc.id, { ...this.read(), baseRev: this.rev }, true).then(
-      (saved) => {
-        this.rev = saved.rev;
-        this.savedEdits = edits;
-        if (!this.dirty) void this.deps.deleteDraft(this.doc.id);
-      },
-      // The browser copy stays: it is offered again when the document opens.
-      () => undefined,
-    );
+    this.deps
+      .save(this.doc.id, { ...this.read(), baseRev: this.rev }, true)
+      .then(
+        (saved) => {
+          this.rev = saved.rev;
+          this.savedEdits = edits;
+          this.set({ savedAt: saved.savedAt, version: saved.version, status: this.dirty ? 'typing' : 'saved' });
+          if (!this.dirty) void this.deps.deleteDraft(this.doc.id);
+        },
+        // The browser copy stays: it is offered again when the document opens, or sent by the next save.
+        () => undefined,
+      )
+      .finally(() => {
+        this.inFlight = false;
+        if (this.dirty && !this.disposed && this.state.status !== 'conflict') this.schedule(SAVE_DELAY_MS);
+      });
   }
 
   dispose(): void {

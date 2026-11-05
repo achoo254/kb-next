@@ -18,11 +18,14 @@ export interface WrittenChunk {
   text: string;
 }
 
-/** The stored Markdown of a title and body; a draft without a title has no title line. */
+/**
+ * The stored Markdown of a title and body; a draft without a title has no title line. Its body's opening `#` heading
+ * is kept as a `##` one: stored first, it would read back as the title and leave the body.
+ */
 export function composeMarkdown(title: string, body: string): string {
   const cleanTitle = title.trim();
   const cleanBody = body.replace(/\r\n?/g, '\n').trim();
-  if (!cleanTitle) return cleanBody;
+  if (!cleanTitle) return titleLine(cleanBody) === null ? cleanBody : cleanBody.replace(/^#(\s)/, '##$1');
   return cleanBody ? `# ${cleanTitle}\n\n${cleanBody}` : `# ${cleanTitle}`;
 }
 

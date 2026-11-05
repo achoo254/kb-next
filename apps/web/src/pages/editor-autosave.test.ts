@@ -157,6 +157,37 @@ describe('autosave', () => {
     expect(autosave.state.status).toBe('saved');
   });
 
+  it('never races its own saves: leaving while a save is on its way waits for it, and the next save starts from its rev', async () => {
+    const server = fakeServer();
+    let release: () => void = () => undefined;
+    const realSave = server.deps.save;
+    let calls = 0;
+    server.deps.save = vi.fn(async (id: string, request: SaveRequest, keepalive?: boolean) => {
+      // Only the first save is held on its way.
+      calls += 1;
+      if (calls === 1) await new Promise<void>((resolve) => (release = resolve));
+      return realSave(id, request, keepalive);
+    });
+    const autosave = new DocumentAutosave(DOC, DOC, (s) => states.push(s), 'clean', DOC.rev, server.deps);
+    autosave.edited(text('Một'));
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+    // The save is on its way; the tab goes to the back and the writer had typed more.
+    autosave.edited(text('Một hai'));
+    autosave.leave();
+    expect(server.deps.save).toHaveBeenCalledTimes(1);
+    release();
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS * 2);
+    expect(server.saved.map((s) => s.body)).toEqual(['Một', 'Một hai']);
+    expect(autosave.state.status).toBe('saved');
+    // Leaving with a keepalive save then typing on: the next save waits for it and uses its rev.
+    autosave.edited(text('Một hai ba'));
+    autosave.leave();
+    autosave.edited(text('Một hai ba bốn'));
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS * 2);
+    expect(server.saved.map((s) => s.body)).toEqual(['Một', 'Một hai', 'Một hai ba', 'Một hai ba bốn']);
+    expect(statuses()).not.toContain('conflict');
+  });
+
   it('sends what is pending when the page is left', async () => {
     const server = fakeServer();
     const autosave = new DocumentAutosave(DOC, DOC, (s) => states.push(s), 'clean', DOC.rev, server.deps);

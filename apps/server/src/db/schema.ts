@@ -184,6 +184,8 @@ export const documents = pgTable(
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    /** Who moved it to the trash: the author, or an admin (then only an admin takes it out again). */
+    deletedBy: uuid('deleted_by').references(() => users.id, { onDelete: 'set null' }),
     /** The colour of the document's planet (C02 "Hành tinh của bài", C08), one of PLANET_COLOURS; null: the default. */
     planet: text('planet'),
   },

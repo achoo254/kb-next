@@ -4,7 +4,9 @@ ALTER TABLE "document_versions" ADD COLUMN "ai_made" boolean DEFAULT false NOT N
 ALTER TABLE "document_versions" ADD COLUMN "summary" text;--> statement-breakpoint
 ALTER TABLE "document_versions" ADD COLUMN "restored_from" integer;--> statement-breakpoint
 ALTER TABLE "document_versions" ADD COLUMN "updated_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
+ALTER TABLE "documents" ADD COLUMN "deleted_by" uuid;--> statement-breakpoint
 ALTER TABLE "documents" ADD COLUMN "planet" text;--> statement-breakpoint
+ALTER TABLE "documents" ADD CONSTRAINT "documents_deleted_by_users_id_fk" FOREIGN KEY ("deleted_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "documents_deleted_at_idx" ON "documents" USING btree ("deleted_at") WHERE "documents"."deleted_at" is not null;--> statement-breakpoint
 -- Versions saved before this migration: their last save is when they were made; imported texts and AI translations
 -- say how they came to be.

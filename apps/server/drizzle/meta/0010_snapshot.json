@@ -1,5 +1,5 @@
 {
-  "id": "1160bb11-79e9-4673-bbfb-4b6514e8f2f0",
+  "id": "47799582-9631-465f-9317-af9491e514c0",
   "prevId": "5d169b10-229e-4321-a00d-723e54b2ecbd",
   "version": "7",
   "dialect": "postgresql",
@@ -963,6 +963,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "deleted_by": {
+          "name": "deleted_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "planet": {
           "name": "planet",
           "type": "text",
@@ -1107,6 +1113,19 @@
             "id"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "documents_deleted_by_users_id_fk": {
+          "name": "documents_deleted_by_users_id_fk",
+          "tableFrom": "documents",
+          "tableTo": "users",
+          "columnsFrom": [
+            "deleted_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

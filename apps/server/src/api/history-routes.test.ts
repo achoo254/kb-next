@@ -1,5 +1,6 @@
 /**
- * C17 on the seed's DHCP, through the web app's client (apps/web/src/api/history-api.ts): the board's timeline (AI
+ * C17 on the seed's DHCP, through the web app's client (apps/web/src/api/history-api.ts): what an ordinary reader sees
+ * (the current version and its approval only), the board's timeline as an admin sees it (AI
  * versions through the API, Linh asking for a source, Minh's proposed v4, the approval, Đạt hiding and showing the
  * text), the v3 ⇄ v4 difference, one version's text, and restoring: only who may edit restores, as a new version.
  */
@@ -49,12 +50,22 @@ afterAll(async () => {
 });
 
 describe('the history of DHCP', () => {
-  it('lists the board’s activity newest first, with who did it and how', async () => {
+  it('shows another reader only the current version and the approval: no drafts, reasons or hiding', async () => {
     const history = await as('member', () => fetchHistory(DHCP));
+    expect(history).toMatchObject({ scope: 'public', canRestore: false, currentVersion: 4 });
+    expect(history.events.map((e) => [e.kind, e.kind === 'version' ? e.version : e.kind === 'review' ? e.action : null])).toEqual([
+      ['review', 'approved'],
+      ['version', 4],
+    ]);
+    expect(await as('member', () => fetchVersion(DHCP, 4))).toMatchObject({ version: 4 });
+    await expect(as('member', () => fetchVersion(DHCP, 2))).rejects.toMatchObject({ code: 'not-found' });
+    await expect(as('member', () => fetchDiff(DHCP, 3, 4))).rejects.toMatchObject({ code: 'not-found' });
+  });
+
+  it('lists the board’s activity for an admin, newest first, with who did it and how', async () => {
+    const history = await as('admin', () => fetchHistory(DHCP));
     expect(history.document).toMatchObject({ title: 'Giao thức DHCP', space: { slug: 'networking' }, collection: { nameVi: 'Giao thức nền tảng' } });
-    expect(history.currentVersion).toBe(4);
-    // A reader may look but not restore.
-    expect(history.canRestore).toBe(false);
+    expect(history).toMatchObject({ scope: 'full', canRestore: true, currentVersion: 4 });
     const rows = history.events.map((e) => {
       const who = `${e.actor?.name ?? '?'}/${e.actor?.role ?? '?'}`;
       if (e.kind === 'version') return [e.at, who, `v${e.version}`, e.via, e.aiMade, e.proposal, e.summary];
@@ -74,7 +85,7 @@ describe('the history of DHCP', () => {
   });
 
   it('compares v3 with v4: the lease section and DHCP snooping added (+3 −1)', async () => {
-    const diff = await as('member', () => fetchDiff(DHCP, 3, 4));
+    const diff = await as('admin', () => fetchDiff(DHCP, 3, 4));
     expect([diff.added, diff.removed]).toEqual([3, 1]);
     expect(diff.lines.map((l) => [l.op, l.heading ? `## ${l.text}` : l.text.split(' ').slice(0, 5).join(' ')])).toEqual([
       ['same', 'Vì chưa có IP, máy'],
@@ -84,20 +95,22 @@ describe('the history of DHCP', () => {
       ['del', 'Một máy lạ trả lời'],
       ['add', 'Một máy lạ trả lời'],
     ]);
-    const v1 = await as('member', () => fetchVersion(DHCP, 1));
+    const v1 = await as('admin', () => fetchVersion(DHCP, 1));
     expect(v1).toMatchObject({ version: 1, editorName: 'Đạt', savedAt: '2026-10-28T02:12:00.000Z' });
     expect(v1.markdown).toMatch(/^# Giao thức DHCP\n\nMáy mới vào mạng chưa có IP/);
     expect(v1.markdown).not.toContain('## Broadcast là gì');
   });
 
   it('answers 404 for a version the document does not have', async () => {
-    await expect(as('member', () => fetchVersion(DHCP, 9))).rejects.toMatchObject({ code: 'not-found' });
-    await expect(as('member', () => fetchDiff(DHCP, 1, 9))).rejects.toMatchObject({ code: 'not-found' });
+    await expect(as('admin', () => fetchVersion(DHCP, 9))).rejects.toMatchObject({ code: 'not-found' });
+    await expect(as('admin', () => fetchDiff(DHCP, 1, 9))).rejects.toMatchObject({ code: 'not-found' });
   });
 
   it('restores only for who may edit, as a new version that keeps the history', async () => {
     await expect(as('member', () => restoreVersion(DHCP, 3))).rejects.toBeInstanceOf(ApiError);
-    await expect(as('member', () => restoreVersion(DHCP, 3))).rejects.toMatchObject({ code: 'no-access' });
+    // An earlier version a reader cannot see is not there for them; the current one they may not edit.
+    await expect(as('member', () => restoreVersion(DHCP, 3))).rejects.toMatchObject({ code: 'not-found' });
+    await expect(as('member', () => restoreVersion(DHCP, 4))).rejects.toMatchObject({ code: 'no-access' });
     const restored = await as('admin', () => restoreVersion(DHCP, 3));
     expect(restored.version).toBe(5);
     const history = await as('admin', () => fetchHistory(DHCP));

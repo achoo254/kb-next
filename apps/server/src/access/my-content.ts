@@ -3,7 +3,7 @@
  * favourites and its trash, and the latest review word on its texts. Lists hold only documents the account may
  * read (src/access/visibility.ts), its trash only its own.
  */
-import { and, desc, eq, inArray, isNotNull, max, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, max, or, sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { documentVersions, documents, favorites, readingProgress, reviewEvents } from '../db/schema';
 import { type DocumentRow, documentColumns, findDocument } from './content';
@@ -34,12 +34,12 @@ export async function listMyDocuments(db: Db, viewer: UserViewer, filter: MyDocu
     .orderBy(desc(documents.updatedAt), desc(documents.id));
 }
 
-/** The account's documents in the trash, last deleted first. */
+/** The documents the account deleted (what it can take out again), last deleted first. */
 export async function listTrash(db: Db, viewer: UserViewer): Promise<DocumentRow[]> {
   return db
     .select(documentColumns)
     .from(documents)
-    .where(and(eq(documents.authorId, viewer.userId), isNotNull(documents.deletedAt)))
+    .where(and(eq(documents.deletedBy, viewer.userId), isNotNull(documents.deletedAt)))
     .orderBy(desc(documents.deletedAt), desc(documents.id));
 }
 
@@ -125,8 +125,11 @@ export interface LatestReview {
   at: Date;
 }
 
-/** The latest review event of each given document the viewer may read (C08: why a text was sent back). */
-export async function latestReviews(db: Db, viewer: Viewer, ids: readonly string[]): Promise<Map<string, LatestReview>> {
+/**
+ * The latest review event of each given document that is the account's own (any, its trash included) or that it may
+ * read (C08: why a text was sent back).
+ */
+export async function latestReviews(db: Db, viewer: UserViewer, ids: readonly string[]): Promise<Map<string, LatestReview>> {
   const valid = [...new Set(ids.filter(isUuid))];
   if (valid.length === 0) return new Map();
   const rows = await db
@@ -139,7 +142,7 @@ export async function latestReviews(db: Db, viewer: Viewer, ids: readonly string
     })
     .from(reviewEvents)
     .innerJoin(documents, eq(documents.id, reviewEvents.documentId))
-    .where(and(inArray(reviewEvents.documentId, valid), visibleTo(viewer)))
+    .where(and(inArray(reviewEvents.documentId, valid), or(visibleTo(viewer), eq(documents.authorId, viewer.userId))))
     .orderBy(reviewEvents.documentId, desc(reviewEvents.createdAt), sql`${reviewEvents.id} desc`);
   return new Map(rows.map(({ documentId, ...review }) => [documentId, review]));
 }

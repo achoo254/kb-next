@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blocksOf, diffBlocks } from './block-diff';
+import { MAX_DIFF_CELLS, blocksOf, diffBlocks } from './block-diff';
 import { bodyOf, composeMarkdown, foldTitle, linkedTitles } from './markdown-text';
 
 describe('blocksOf', () => {
@@ -32,6 +32,18 @@ describe('diffBlocks', () => {
     expect(diffBlocks(before, after).lines.map((l) => l.op)).toEqual(['del', 'add', 'same', 'gap', 'same', 'del', 'add']);
   });
 
+  it('bounds its cost: a small text against a huge one is shown as replaced, past the common start and end', () => {
+    const small = Array.from({ length: 2_000 }, (_, i) => `a${i}`);
+    const huge = Array.from({ length: 66_000 }, (_, i) => `b${i}`);
+    expect(2_001 * 66_001).toBeGreaterThan(MAX_DIFF_CELLS);
+    const started = Date.now();
+    const diff = diffBlocks(['# T', ...small, 'end'].join('\n\n'), ['# T', ...huge, 'end'].join('\n\n'));
+    expect(Date.now() - started).toBeLessThan(2_000);
+    expect([diff.added, diff.removed]).toEqual([66_000, 2_000]);
+    expect(diff.lines[0]).toEqual({ op: 'same', text: 'T', heading: true });
+    expect(diff.lines.at(-1)).toEqual({ op: 'same', text: 'end', heading: false });
+  });
+
   it('shows nothing for two equal texts', () => {
     expect(diffBlocks('# A\n\nB', '# A\n\nB')).toEqual({ added: 0, removed: 0, lines: [] });
   });
@@ -44,6 +56,10 @@ describe('markdown-text', () => {
     expect(composeMarkdown('Only title', '  ')).toBe('# Only title');
     expect(bodyOf('# Máy mới\n\nBody\nline')).toBe('Body\nline');
     expect(bodyOf('No title here')).toBe('No title here');
+    // A draft without a title whose body opens with a `#` heading keeps that heading once stored and read back.
+    const stored = composeMarkdown('', '# Mục lục\n\nNội dung');
+    expect(stored).toBe('## Mục lục\n\nNội dung');
+    expect(bodyOf(stored)).toBe(stored);
   });
 
   it('lists each linked title once, outside code', () => {

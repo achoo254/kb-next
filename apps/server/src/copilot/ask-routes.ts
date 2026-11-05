@@ -229,8 +229,9 @@ export function askRoutes({ config, db, now, meili, jev, summaries, keys, bases,
     const gone = connectionSignal(req, res);
     const userId = userIdOf(res);
     const body = parseBody(AskBody, req.body);
-    spendBudget(aiBudget, userId, 1);
+    // No key: refused before anything is spent of the AI budget.
     const key = await keyForTurn(keys, userId);
+    spendBudget(aiBudget, userId, 1);
     const { viewer, lang } = await readerOf(req, { config, db, now });
     // An unknown scope is a 404 before the stream opens.
     const filter = await scopeFilter(viewer, body.scope);

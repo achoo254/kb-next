@@ -140,14 +140,14 @@ describe('migrations', () => {
 
       await migrate(db, { migrationsFolder: MIGRATIONS });
       const rows = await db
-        .select({ title: schema.documents.title, planet: schema.documents.planet, via: schema.documentVersions.via, aiMade: schema.documentVersions.aiMade, updatedAt: schema.documentVersions.updatedAt })
+        .select({ title: schema.documents.title, planet: schema.documents.planet, deletedBy: schema.documents.deletedBy, via: schema.documentVersions.via, aiMade: schema.documentVersions.aiMade, updatedAt: schema.documentVersions.updatedAt })
         .from(schema.documentVersions)
         .innerJoin(schema.documents, sql`${schema.documents.id} = ${schema.documentVersions.documentId}`);
       const at = new Date('2026-10-01T02:00:00Z');
       expect(rows.sort((a, b) => a.title.localeCompare(b.title))).toEqual([
-        { title: 'Imported', planet: null, via: 'import', aiMade: false, updatedAt: at },
-        { title: 'Translated', planet: null, via: 'translation', aiMade: true, updatedAt: at },
-        { title: 'Written', planet: null, via: 'editor', aiMade: false, updatedAt: at },
+        { title: 'Imported', planet: null, deletedBy: null, via: 'import', aiMade: false, updatedAt: at },
+        { title: 'Translated', planet: null, deletedBy: null, via: 'translation', aiMade: true, updatedAt: at },
+        { title: 'Written', planet: null, deletedBy: null, via: 'editor', aiMade: false, updatedAt: at },
       ]);
     } finally {
       await client.close();

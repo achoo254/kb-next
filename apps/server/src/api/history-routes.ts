@@ -2,10 +2,13 @@
  * Versions and activity of a document (C17). Every route needs a session and a document the viewer may read
  * (404 `not-found`, 403 `hidden` / `no-access`, like the reader).
  *
- * - GET /api/documents/:id/history → HistoryResponse: the document, whether the viewer may restore, its current
- *   version, and every event newest first: versions (who, how: editor / API / import / restore / translation, AI-made,
+ * - GET /api/documents/:id/history → HistoryResponse: the document, what the viewer may see of it (`scope`: the
+ *   author and admins everything; other readers the current version and approvals only, src/access/history.ts),
+ *   whether it may restore, its current version, and the events newest first: versions (who, how: editor / API / import / restore / translation, AI-made,
  *   a summary), review steps (approved, changes requested… with the reason) and visibility (hidden / shown again).
- * - GET /api/documents/:id/versions/:n → `{version, markdown, savedAt, editorName}`; 404 for a version it does not have.
+ * - GET /api/documents/:id/versions/:n → `{version, markdown, savedAt, editorName}`; 404 for a version it does not have
+ *   or the viewer may not see (another reader: any but the current one). Same for the diff.
+ * The three reads are limited to 60 a minute per account (429 `rate-limited`).
  * - GET /api/documents/:id/diff?from=&to= → `{from, to, added, removed, lines}` (src/authoring/block-diff.ts).
  * - POST /api/documents/:id/versions/:n/restore → `{rev, version}`: version n copied as a new version (the history
  *   keeps everything). Who may edit the document may restore (403 `no-access` / `locked` otherwise).
@@ -46,6 +49,8 @@ export type HistoryEvent =
 
 export interface HistoryResponse {
   document: { id: string; title: string; status: string; origin: string; space: SpaceBrief & { kind: 'public' | 'personal' }; collection: CollectionBrief | null };
+  /** `full`: the author or an admin, everything; `public`: another reader, the current version and approvals only. */
+  scope: 'full' | 'public';
   /** The viewer may restore an earlier version (may edit the document now). */
   canRestore: boolean;
   currentVersion: number;
@@ -66,6 +71,8 @@ export function historyRoutes({ config, db, now, sync }: HistoryRoutesOptions): 
   const router = express.Router();
   const auth = signedIn(config, db, now);
   const restoreLimit = perAccountLimit(30);
+  // Reading a history costs a few queries, a diff a comparison of two texts: bounded per account.
+  const readLimit = perAccountLimit(60);
   const reader = async (req: Parameters<typeof readerOf>[0]) => (await readerOf(req, { config, db, now })).viewer;
   const versionParam = (raw: unknown): number => {
     const parsed = Version.safeParse(raw);
@@ -73,7 +80,7 @@ export function historyRoutes({ config, db, now, sync }: HistoryRoutesOptions): 
     return parsed.data;
   };
 
-  router.get('/api/documents/:id/history', auth, async (req, res) => {
+  router.get('/api/documents/:id/history', auth, readLimit, async (req, res) => {
     const viewer = await reader(req);
     const doc = await openDocument(db, viewer, req.params.id);
     const activity = await documentActivity(db, viewer, doc.id);
@@ -85,8 +92,6 @@ export function historyRoutes({ config, db, now, sync }: HistoryRoutesOptions): 
     ];
     const actors = await actorsOf(db, config.adminSubs, actorIds);
     const actor = (id: string | null): HistoryActor | null => (id ? (actors.get(id) ?? null) : null);
-    /** The version current when a review happened: the latest one saved before it. */
-    const versionAt = (at: Date): number | null => activity.versions.filter((v) => v.createdAt <= at).at(-1)?.version ?? null;
     const events: HistoryEvent[] = [
       ...activity.versions.map((v): HistoryEvent => {
         const who = actor(v.editorId);
@@ -102,7 +107,7 @@ export function historyRoutes({ config, db, now, sync }: HistoryRoutesOptions): 
           proposal: v.editorId !== doc.authorId && who?.role !== 'admin',
         };
       }),
-      ...activity.reviews.map((r): HistoryEvent => ({ kind: 'review', at: r.createdAt.toISOString(), actor: actor(r.actorId), action: r.action, reason: r.reason, version: versionAt(r.createdAt) })),
+      ...activity.reviews.map((r): HistoryEvent => ({ kind: 'review', at: r.createdAt.toISOString(), actor: actor(r.actorId), action: r.action, reason: r.reason, version: r.version })),
       ...activity.visibility.map((v): HistoryEvent => ({ kind: 'visibility', at: v.createdAt.toISOString(), actor: actor(v.actorId), hidden: v.hidden })),
     ].sort((a, b) => b.at.localeCompare(a.at));
     const [[space], collections] = await Promise.all([spacesById(db, [doc.spaceId]), listCollectionsOf(db, [doc.spaceId])]);
@@ -117,14 +122,16 @@ export function historyRoutes({ config, db, now, sync }: HistoryRoutesOptions): 
         space: { ...spaceBrief(space), kind: space.kind },
         collection: collection ? collectionBrief(collection) : null,
       },
-      canRestore: editRight(viewer, doc) === 'ok',
+      scope: activity.scope,
+      // An Office file has no text to restore.
+      canRestore: editRight(viewer, doc) === 'ok' && doc.type !== 'office',
       currentVersion: activity.versions.at(-1)?.version ?? 0,
       events,
     };
     res.set('Cache-Control', 'no-store').json(body);
   });
 
-  router.get('/api/documents/:id/versions/:n', auth, async (req, res) => {
+  router.get('/api/documents/:id/versions/:n', auth, readLimit, async (req, res) => {
     const viewer = await reader(req);
     const doc = await openDocument(db, viewer, req.params.id);
     const found = await findVersion(db, viewer, doc.id, versionParam(req.params.n));
@@ -133,7 +140,7 @@ export function historyRoutes({ config, db, now, sync }: HistoryRoutesOptions): 
     res.set('Cache-Control', 'no-store').json({ version: found.version, markdown: found.markdown ?? '', savedAt: found.updatedAt.toISOString(), editorName: names.get(found.editorId) ?? null });
   });
 
-  router.get('/api/documents/:id/diff', auth, async (req, res) => {
+  router.get('/api/documents/:id/diff', auth, readLimit, async (req, res) => {
     const viewer = await reader(req);
     const doc = await openDocument(db, viewer, req.params.id);
     const { from, to } = parseQuery(DiffQuery, req.query);

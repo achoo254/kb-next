@@ -5,6 +5,8 @@ import { type ScreenTranslate, useScreenText } from './space-messages';
 export const historyVi = {
   'history.title': 'Phiên bản và hoạt động',
   'history.pickTwo': 'Chọn 2 phiên bản để so sánh',
+  'history.publicHint': 'Phiên bản đang đăng',
+  'history.publicNote': 'Bạn xem được phiên bản đang đăng và các lượt duyệt. Các bản trước, trao đổi khi duyệt và việc ẩn bài chỉ tác giả và quản trị xem.',
   'history.filters': 'Lọc hoạt động',
   'history.filter.all': 'Tất cả',
   'history.filter.content': 'Nội dung',
@@ -78,6 +80,8 @@ export type HistoryMessageKey = keyof typeof historyVi;
 export const historyEn: Record<HistoryMessageKey, string> = {
   'history.title': 'Versions and activity',
   'history.pickTwo': 'Pick 2 versions to compare',
+  'history.publicHint': 'The published version',
+  'history.publicNote': 'You can see the published version and its approvals. Earlier versions, review notes and hiding are for the author and admins.',
   'history.filters': 'Filter the activity',
   'history.filter.all': 'All',
   'history.filter.content': 'Content',

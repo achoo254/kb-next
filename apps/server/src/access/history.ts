@@ -1,8 +1,11 @@
 /**
  * The activity of a document (C17 "Phiên bản và hoạt động"): its versions (who saved, how, when), its review
  * trail, and when an admin took it off the Universe or put it back (audit log actions HIDE_ACTION / SHOW_ACTION on
- * target type `document`; whoever hides or shows a document writes them). Whoever may read the document may read its
- * history: nothing here is more private than the document itself.
+ * target type `document`; whoever hides or shows a document writes them).
+ *
+ * Who sees what (`historyScope`): the author and admins see everything. Any other reader of the document sees only
+ * its current version and its approvals: no earlier version's text (what the review had removed stays removed), no
+ * review reasons, no hiding or showing. findVersion (authoring.ts) applies the same rule to versions and diffs.
  */
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import type { Db } from '../db/client';
@@ -30,6 +33,8 @@ export interface ReviewActivity {
   actorId: string | null;
   reason: string | null;
   createdAt: Date;
+  /** The version current when it happened (the latest saved before it); null before any. */
+  version: number | null;
 }
 
 export interface VisibilityActivity {
@@ -38,20 +43,29 @@ export interface VisibilityActivity {
   createdAt: Date;
 }
 
+export type HistoryScope = 'full' | 'public';
+
+/** `full` for the document's author and admins; `public` for every other reader. */
+export function historyScope(viewer: Viewer, doc: { authorId: string }): HistoryScope {
+  return viewer.kind === 'user' && (viewer.isAdmin || viewer.userId === doc.authorId) ? 'full' : 'public';
+}
+
 export interface DocumentActivity {
+  scope: HistoryScope;
   versions: VersionActivity[];
   reviews: ReviewActivity[];
   visibility: VisibilityActivity[];
 }
 
-/** Everything that happened to a readable document, each list oldest first; null when the viewer may not read it. */
+/** What the viewer may see of a readable document's history, each list oldest first; null when it may not read it. */
 export async function documentActivity(db: Db, viewer: Viewer, id: string): Promise<DocumentActivity | null> {
   if (!isUuid(id)) return null;
   const [readable] = await db
-    .select({ id: documents.id })
+    .select({ authorId: documents.authorId })
     .from(documents)
     .where(and(eq(documents.id, id), visibleTo(viewer)));
   if (!readable) return null;
+  const scope = historyScope(viewer, readable);
   const [versions, reviews, audit] = await Promise.all([
     db
       .select({
@@ -78,7 +92,12 @@ export async function documentActivity(db: Db, viewer: Viewer, id: string): Prom
       .where(and(eq(auditLog.targetType, 'document'), eq(auditLog.targetId, id), inArray(auditLog.action, [HIDE_ACTION, SHOW_ACTION])))
       .orderBy(asc(auditLog.createdAt)),
   ]);
-  return { versions, reviews, visibility: audit.map((row) => ({ hidden: row.action === HIDE_ACTION, actorId: row.actorId, createdAt: row.createdAt })) };
+  const versionAt = (at: Date): number | null => versions.filter((v) => v.createdAt <= at).at(-1)?.version ?? null;
+  const allReviews = reviews.map((r) => ({ ...r, version: versionAt(r.createdAt) }));
+  if (scope === 'public') {
+    return { scope, versions: versions.slice(-1), reviews: allReviews.filter((r) => r.action === 'approved'), visibility: [] };
+  }
+  return { scope, versions, reviews: allReviews, visibility: audit.map((row) => ({ hidden: row.action === HIDE_ACTION, actorId: row.actorId, createdAt: row.createdAt })) };
 }
 
 export type ActorRole = 'admin' | 'reviewer' | 'member';

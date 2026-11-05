@@ -52,6 +52,8 @@ export const HistorySchema = z.object({
     space: z.extend(SpaceBriefSchema, { kind: z.enum(['public', 'personal']) }),
     collection: z.nullable(CollectionBriefSchema),
   }),
+  /** `full`: the author or an admin sees everything; `public`: another reader, the current version and approvals only. */
+  scope: z.enum(['full', 'public']),
   /** The viewer may restore an earlier version. */
   canRestore: z.boolean(),
   currentVersion: z.number(),

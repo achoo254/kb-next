@@ -23,8 +23,11 @@ export interface BlockDiff {
 
 /** Unchanged blocks kept before and after each change. */
 const CONTEXT = 1;
-/** Above this many blocks on both sides the diff stops comparing and shows everything as replaced (cost bound). */
-const MAX_BLOCKS = 2_000;
+/**
+ * The comparison table holds (blocks before) × (blocks after) cells; above this many (16 MB of them), what differs
+ * between the common start and end is shown as replaced instead of compared (a bound on memory and time per request).
+ */
+export const MAX_DIFF_CELLS = 4_000_000;
 
 const FENCE = /^\s*(`{3,}|~{3,})/;
 const HEADING = /^#{1,6}\s+/;
@@ -76,13 +79,24 @@ function line(op: 'same' | 'add' | 'del', block: string): DiffLine {
 
 /** Every block of `before` and `after` in order, each marked unchanged, removed or added (LCS on whole blocks). */
 function fullDiff(before: readonly string[], after: readonly string[]): DiffLine[] {
-  if (before.length > MAX_BLOCKS && after.length > MAX_BLOCKS) {
+  // The common start and end are unchanged whatever lies between: only the middle is compared.
+  let head = 0;
+  while (head < before.length && head < after.length && before[head] === after[head]) head += 1;
+  let tail = 0;
+  while (tail < before.length - head && tail < after.length - head && before[before.length - 1 - tail] === after[after.length - 1 - tail]) tail += 1;
+  const a = before.slice(head, before.length - tail);
+  const b = after.slice(head, after.length - tail);
+  const same = (blocks: readonly string[]): DiffLine[] => blocks.map((block) => line('same', block));
+  return [...same(before.slice(0, head)), ...middleDiff(a, b), ...same(before.slice(before.length - tail))];
+}
+
+function middleDiff(before: readonly string[], after: readonly string[]): DiffLine[] {
+  if ((before.length + 1) * (after.length + 1) > MAX_DIFF_CELLS) {
     return [...before.map((b) => line('del', b)), ...after.map((b) => line('add', b))];
   }
-  const rows = before.length + 1;
   const cols = after.length + 1;
   // lengths[i * cols + j]: LCS length of before[i..] and after[j..]
-  const lengths = new Uint32Array(rows * cols);
+  const lengths = new Uint32Array((before.length + 1) * cols);
   for (let i = before.length - 1; i >= 0; i -= 1) {
     for (let j = after.length - 1; j >= 0; j -= 1) {
       lengths[i * cols + j] =

@@ -269,7 +269,9 @@ function Comparison({ id, history, pair, onRestored }: { id: string; history: Do
           </div>
         </>
       ) : (
-        <p className="history-muted history-only-one">{t('history.onlyOne')}</p>
+        <p className="history-muted history-only-one" data-id="history-only-one">
+          {t(history.scope === 'public' ? 'history.publicNote' : 'history.onlyOne')}
+        </p>
       )}
       <div className="history-compare-foot">
         <span className="history-note">{restoreError ? <span role="alert">{t(restoreError)}</span> : t('history.note')}</span>
@@ -346,7 +348,7 @@ function HistoryBody({ history, onRestored }: { history: DocumentHistory; onRest
       <section className="history-panel history-timeline" aria-label={t('history.timeline')} data-id="history-timeline">
         <div className="history-head">
           <h1 className="history-title">{t('history.title')}</h1>
-          <span className="history-hint">{t('history.pickTwo')}</span>
+          <span className="history-hint">{t(history.scope === 'public' ? 'history.publicHint' : 'history.pickTwo')}</span>
         </div>
         <div className="history-filters" role="group" aria-label={t('history.filters')}>
           {HISTORY_FILTERS.map((f) => (

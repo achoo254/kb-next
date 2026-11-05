@@ -58,6 +58,7 @@ export const documentColumns = {
   createdAt: documents.createdAt,
   updatedAt: documents.updatedAt,
   deletedAt: documents.deletedAt,
+  deletedBy: documents.deletedBy,
   planet: documents.planet,
 };
 
