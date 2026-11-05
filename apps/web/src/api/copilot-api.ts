@@ -27,7 +27,7 @@ export const SCOPE_KINDS = ['universe', 'space', 'collection', 'document'] as co
 export type ScopeKind = (typeof SCOPE_KINDS)[number];
 export const COPILOT_TASKS = ['answer', 'explain', 'summarize'] as const;
 export type CopilotTask = (typeof COPILOT_TASKS)[number];
-export const STREAM_ERRORS = ['NO_ANSWER', 'USER_KEY_REJECTED', 'USER_KEY_NO_CREDIT', 'PROVIDER_FAILED', 'INTERNAL'] as const;
+export const STREAM_ERRORS = ['NO_ANSWER', 'USER_KEY_REJECTED', 'USER_KEY_NO_CREDIT', 'MODEL_UNAVAILABLE', 'PROVIDER_FAILED', 'INTERNAL'] as const;
 export type StreamErrorCode = (typeof STREAM_ERRORS)[number];
 /** The longest question and selection the server reads (characters). */
 export const MAX_QUESTION_CHARS = 1000;

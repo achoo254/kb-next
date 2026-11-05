@@ -339,6 +339,18 @@ function Failure({ turn, keys, actions, size }: { turn: CopilotTurn; keys: KeysL
       );
     case 'no-credit':
       return <NoCredit turn={turn} keys={keys} actions={actions} />;
+    case 'model-unavailable':
+      return (
+        <>
+          <StateRow art={<Art name="key-crystal" size={48} />} tone="warn" title={t('copilot.model.title', { provider: providerName(provider) })} text={t('copilot.model.text', { provider: providerName(provider) })} />
+          <SourceChips turn={turn} />
+          <div className="copilot-actions">
+            <Button variant="primary" size="lg" className="copilot-btn copilot-btn-grow" href={SHELL_PATHS.keys} dataId="copilot-change-model">
+              {t('copilot.changeModel')}
+            </Button>
+          </div>
+        </>
+      );
     case 'interrupted':
       return (
         <>

@@ -170,6 +170,26 @@ describe('CopilotScreen (C14)', () => {
     expect(screen.getByText('Writing answers · needs Own keys')).toBeTruthy();
   });
 
+  it('says the key cannot use the chosen model (provider 404) and sends the reader to pick another', async () => {
+    routes.keys = () => answer(200, KEYS_OPENAI);
+    routes.ask = () => eventStream([['error', { code: 'MODEL_UNAVAILABLE', provider: 'openai', last4: 'a1b2' }]]);
+    window.history.replaceState(null, '', '/copilot?q=DHCP');
+    renderWithI18n(<CopilotScreen />);
+    await waitFor(() => expect(state()).toBe('model-unavailable'));
+    expect(screen.getByText('Your OpenAI key cannot use this model')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Change model' }).getAttribute('href')).toBe('/settings/keys');
+  });
+
+  it('reads the keys again when the reader comes back to the tab (a key added meanwhile)', async () => {
+    let keys: KeysResponse = KEYS_NONE;
+    routes.keys = () => answer(200, keys);
+    renderWithI18n(<CopilotScreen />);
+    await screen.findByText('No key yet: add one for AI to write answers');
+    keys = KEYS_OPENAI;
+    document.dispatchEvent(new Event('visibilitychange'));
+    await waitFor(() => expect(screen.queryByText('No key yet: add one for AI to write answers')).toBeNull());
+  });
+
   it('switches to another working key when this one is out of credit (D), then asks again', async () => {
     const keys: KeysResponse = {
       ...KEYS_OPENAI,

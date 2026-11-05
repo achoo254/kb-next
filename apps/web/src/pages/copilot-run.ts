@@ -34,6 +34,7 @@ export type CopilotFailure =
   | 'no-answer'
   | 'key-rejected'
   | 'no-credit'
+  | 'model-unavailable'
   | 'interrupted'
   | 'not-sent'
   | 'no-key'
@@ -89,6 +90,7 @@ const STREAM_FAILURE: Record<StreamErrorCode, CopilotFailure> = {
   NO_ANSWER: 'no-answer',
   USER_KEY_REJECTED: 'key-rejected',
   USER_KEY_NO_CREDIT: 'no-credit',
+  MODEL_UNAVAILABLE: 'model-unavailable',
   PROVIDER_FAILED: 'interrupted',
   INTERNAL: 'interrupted',
 };
@@ -278,15 +280,26 @@ export function useAiKeys(): { load: KeysLoad; switchTo(provider: AiProvider): P
   const [load, setLoad] = useState<KeysLoad>({ status: 'loading' });
   useEffect(() => {
     let current = true;
-    fetchKeys().then(
-      (keys) => current && setLoad({ status: 'ready', keys }),
-      (error: unknown) => {
-        if (!(error instanceof ApiError)) console.error('keys load failed', error);
-        if (current) setLoad({ status: 'failed' });
-      },
-    );
+    const refresh = (): void => {
+      fetchKeys().then(
+        (keys) => current && setLoad({ status: 'ready', keys }),
+        (error: unknown) => {
+          if (!(error instanceof ApiError)) console.error('keys load failed', error);
+          // A failed refresh keeps the keys already shown; only the first load shows the failure.
+          if (current) setLoad((previous) => (previous.status === 'ready' ? previous : { status: 'failed' }));
+        },
+      );
+    };
+    // Keys are often added or changed in Key riêng (another tab) while this screen stays open: read them again when
+    // the reader comes back, so the key chip and status line never stay on "no key".
+    const onVisible = (): void => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    refresh();
+    document.addEventListener('visibilitychange', onVisible);
     return () => {
       current = false;
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
   const switchTo = useCallback(async (provider: AiProvider): Promise<boolean> => {

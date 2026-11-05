@@ -34,7 +34,7 @@ export const KEYS_PAGE = SHELL_PATHS.keys;
 type Setup = { status: 'loading' } | { status: 'failed'; error: ReaderFailure } | { status: 'ready'; view: DocumentView; keys: KeysResponse };
 
 /** Why a translation stopped short. */
-export type TranslateFailure = 'rejected' | 'noCredit' | 'unreadable' | 'provider' | 'rateLimited' | 'network' | 'notTranslatable' | 'tooLong' | 'other';
+export type TranslateFailure = 'rejected' | 'noCredit' | 'unreadable' | 'model' | 'provider' | 'rateLimited' | 'network' | 'notTranslatable' | 'tooLong' | 'other';
 
 export type Run =
   | { phase: 'idle' }
@@ -51,6 +51,7 @@ const FAILURE_TEXT: Record<TranslateFailure, TranslateMessageKey> = {
   rejected: 'translate.error.rejected',
   noCredit: 'translate.error.noCredit',
   unreadable: 'translate.error.unreadable',
+  model: 'translate.error.model',
   provider: 'translate.error.provider',
   rateLimited: 'translate.error.rateLimited',
   network: 'translate.error.network',
@@ -62,6 +63,7 @@ const FAILURE_TEXT: Record<TranslateFailure, TranslateMessageKey> = {
 export function streamFailure(code: StreamErrorCode): TranslateFailure {
   if (code === 'USER_KEY_REJECTED') return 'rejected';
   if (code === 'USER_KEY_NO_CREDIT') return 'noCredit';
+  if (code === 'MODEL_UNAVAILABLE') return 'model';
   return code === 'NO_ANSWER' ? 'other' : 'provider';
 }
 
@@ -360,7 +362,7 @@ function HeaderAction({ run, retry, stop, to }: { run: Run; retry(): void; stop(
       </Button>
     );
   if (run.phase === 'stopped' || run.phase === 'failed') {
-    const keyProblem = run.phase === 'failed' && (run.failure === 'rejected' || run.failure === 'noCredit' || run.failure === 'unreadable');
+    const keyProblem = run.phase === 'failed' && (run.failure === 'rejected' || run.failure === 'noCredit' || run.failure === 'unreadable' || run.failure === 'model');
     // Translating the same document again cannot get past these.
     const final = run.phase === 'failed' && (run.failure === 'notTranslatable' || run.failure === 'tooLong');
     return (

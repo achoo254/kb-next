@@ -7,7 +7,7 @@ import type { ProviderError } from '../llm/stream-text';
 import { safeErrorText } from '../log-error';
 import type { OpenedKey, UserKeyStore } from '../user-keys/key-store';
 
-export type ProviderErrorCode = 'USER_KEY_REJECTED' | 'USER_KEY_NO_CREDIT' | 'PROVIDER_FAILED';
+export type ProviderErrorCode = 'USER_KEY_REJECTED' | 'USER_KEY_NO_CREDIT' | 'MODEL_UNAVAILABLE' | 'PROVIDER_FAILED';
 
 export interface ProviderErrorEvent {
   code: ProviderErrorCode;
@@ -26,6 +26,15 @@ export async function reportProviderFailure(keys: UserKeyStore, userId: string, 
       console.error('could not mark the key after a provider failure', safeErrorText(markError));
     }
   }
-  const code: ProviderErrorCode = error.kind === 'rejected' ? 'USER_KEY_REJECTED' : error.kind === 'no-credit' ? 'USER_KEY_NO_CREDIT' : 'PROVIDER_FAILED';
-  return { code, provider: key.provider, last4: key.last4 };
+  return { code: errorCode(error), provider: key.provider, last4: key.last4 };
+}
+
+/**
+ * A 404 from the provider means the chosen model is not there for this key (a project without access to it, or a
+ * model the provider retired): the key itself works, so it is not marked and the user is told to pick another model.
+ */
+function errorCode(error: ProviderError): ProviderErrorCode {
+  if (error.kind === 'rejected') return 'USER_KEY_REJECTED';
+  if (error.kind === 'no-credit') return 'USER_KEY_NO_CREDIT';
+  return error.status === 404 ? 'MODEL_UNAVAILABLE' : 'PROVIDER_FAILED';
 }
