@@ -385,6 +385,13 @@
   color: var(--c-text-muted);
 }
 
+.keys-use-privacy {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--c-text-muted);
+}
+
 .keys-radios {
   margin: 0;
   padding: 0;

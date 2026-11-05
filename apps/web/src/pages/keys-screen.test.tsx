@@ -87,7 +87,7 @@ describe('KeysScreen', () => {
     expect(where.getAttribute('href')).toBe('https://aistudio.google.com/apikey');
     expect(where.getAttribute('rel')).toBe('noopener noreferrer');
 
-    expect(screen.getByText('Questions and source passages are sent to the provider you pick under “Which key to use”.')).toBeTruthy();
+    expect(screen.getByText('Questions and source passages are sent to the provider you pick above.')).toBeTruthy();
     const use = screen.getByRole('region', { name: 'Which key to use' });
     const radios = within(use).getAllByRole('radio');
     expect(radios.map((radio) => [(radio as HTMLInputElement).checked, (radio as HTMLInputElement).disabled])).toEqual([

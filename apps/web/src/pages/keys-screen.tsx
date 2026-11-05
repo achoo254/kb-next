@@ -326,6 +326,8 @@ function UsePanel({ data, onChange }: { data: KeysResponse; onChange(data: KeysR
           ))}
         </span>
       </div>
+      {/* Not on the board: where the questions go, next to the choice that decides it (phase 7 asks for it). */}
+      <p className="keys-use-privacy">{t('keys.privacy')}</p>
     </RimPanel>
   );
 }
@@ -440,7 +442,6 @@ export function KeysScreen(): ReactNode {
           <header className="keys-head">
             <h1 className="keys-title">{appText('screen.F03')}</h1>
             <p className="keys-lead">{t('keys.lead')}</p>
-            <p className="keys-lead">{t('keys.privacy')}</p>
           </header>
           {load.status === 'loading' && <KeysLoading />}
           {load.status === 'failed' && (

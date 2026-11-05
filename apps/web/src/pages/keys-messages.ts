@@ -25,7 +25,7 @@ export const PROVIDERS: Readonly<Record<AiProvider, ProviderInfo>> = {
 
 export const keysVi = {
   'keys.lead': 'Key được mã hoá, không ai xem lại được. Không có key: vẫn tìm được nhờ Jev.',
-  'keys.privacy': 'Câu hỏi và các đoạn nguồn được gửi tới nhà cung cấp bạn chọn ở “Dùng key nào”.',
+  'keys.privacy': 'Câu hỏi và các đoạn nguồn được gửi tới nhà cung cấp bạn chọn ở trên.',
   'keys.providers': 'Key của bạn',
   'keys.loading': 'Đang tải key của bạn',
   'keys.pick': 'Chọn {provider}',
@@ -85,7 +85,7 @@ export type KeysMessageKey = keyof typeof keysVi;
 
 export const keysEn: Record<KeysMessageKey, string> = {
   'keys.lead': 'Keys are encrypted and nobody can read them back. Without a key, Jev still finds things for you.',
-  'keys.privacy': 'Questions and source passages are sent to the provider you pick under “Which key to use”.',
+  'keys.privacy': 'Questions and source passages are sent to the provider you pick above.',
   'keys.providers': 'Your keys',
   'keys.loading': 'Loading your keys',
   'keys.pick': 'Choose {provider}',
