@@ -59,7 +59,11 @@ export function useReading(panelRef: RefObject<HTMLElement | null>, { documentId
   }, [anchorsKey, readAnchor]);
   const [moved, setMoved] = useState<{ key: string; anchor: string | null } | null>(null);
   const current = moved?.key === anchorsKey ? moved.anchor : opening;
-  const setCurrent = useCallback((anchor: string | null) => setMoved({ key: anchorsKey, anchor }), [anchorsKey]);
+  // Same section, same state: scrolling inside a section must not re-render the whole article.
+  const setCurrent = useCallback(
+    (anchor: string | null) => setMoved((prev) => (prev?.key === anchorsKey && prev.anchor === anchor ? prev : { key: anchorsKey, anchor })),
+    [anchorsKey],
+  );
   const currentRef = useRef<string | null>(null);
   useEffect(() => {
     currentRef.current = current;
@@ -114,7 +118,13 @@ export function useReading(panelRef: RefObject<HTMLElement | null>, { documentId
     const panel = panelRef.current;
     if (!panel) return;
     const list = anchorsKey === '' ? [] : anchorsKey.split('\n');
+    // At most one measure per frame: a smooth scroll fires many events per frame, each would read every section.
+    let frame: number | null = null;
     function onScroll(): void {
+      if (frame === null) frame = window.requestAnimationFrame(measure);
+    }
+    function measure(): void {
+      frame = null;
       if (!panel) return;
       const atEnd = panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 2;
       let here = list[0] ?? null;
@@ -134,7 +144,10 @@ export function useReading(panelRef: RefObject<HTMLElement | null>, { documentId
       if (timer.current === null) timer.current = window.setTimeout(flush, SAVE_DELAY_MS);
     }
     panel.addEventListener('scroll', onScroll, { passive: true });
-    return () => panel.removeEventListener('scroll', onScroll);
+    return () => {
+      panel.removeEventListener('scroll', onScroll);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
   }, [anchorsKey, passagesKey, panelRef, flush, setCurrent]);
 
   // Leaving the page or the document saves what is pending.

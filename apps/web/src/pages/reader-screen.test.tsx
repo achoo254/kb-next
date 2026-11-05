@@ -321,8 +321,9 @@ describe('ReaderScreen', () => {
     vi.useFakeTimers();
     fireEvent.scroll(panel);
     fireEvent.scroll(panel);
+    // Scrolling is measured on the next animation frame, then the save waits SAVE_DELAY_MS.
     await act(async () => {
-      vi.advanceTimersByTime(SAVE_DELAY_MS);
+      vi.advanceTimersByTime(SAVE_DELAY_MS + 20);
     });
     vi.useRealTimers();
     await waitFor(() => expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/progress'))).toHaveLength(1));

@@ -131,8 +131,18 @@ function ReaderFailed({ error, onRetry }: { error: ReaderFailure; onRetry(): Pro
 function TableOfContents({ view, current, onGo }: { view: DocumentView; current: string | null; onGo(anchor: string): void }): ReactNode {
   const { t } = useReaderText();
   const entries = [...view.toc.map((entry) => ({ anchor: entry.anchor, label: entry.title ?? t('reader.overview'), level: entry.level })), { anchor: COMMENTS_ANCHOR, label: t('reader.comments'), level: 2 }];
+  const listRef = useRef<HTMLOListElement>(null);
+  // Keep the lit entry in view inside the list (it scrolls on its own); only the list moves, never the page.
+  useEffect(() => {
+    const list = listRef.current;
+    const lit = list?.querySelector<HTMLElement>('a[aria-current="location"]');
+    if (!list || !lit) return;
+    const top = lit.offsetTop - list.offsetTop;
+    if (top < list.scrollTop) list.scrollTop = top;
+    else if (top + lit.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = top + lit.offsetHeight - list.clientHeight;
+  }, [current]);
   return (
-    <ol className="reader-toc-list">
+    <ol ref={listRef} className="reader-toc-list">
       {entries.map((entry) => (
         <li key={entry.anchor} data-level={entry.level}>
           <a

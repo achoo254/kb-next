@@ -60,6 +60,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* A long table of contents scrolls inside its frame instead of running past it. */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .reader-toc-list a {

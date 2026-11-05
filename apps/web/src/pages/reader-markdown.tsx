@@ -9,7 +9,7 @@
  * (or `[[Tiêu đề|chữ]]`) the server resolved to a document the reader may open is a link to it; any other stays as
  * written.
  */
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -163,7 +163,7 @@ interface ReaderMarkdownProps {
   wikilinks?: ReadonlyMap<string, string>;
 }
 
-export function ReaderMarkdown({ markdown, wikilinks }: ReaderMarkdownProps): ReactNode {
+function ReaderMarkdownView({ markdown, wikilinks }: ReaderMarkdownProps): ReactNode {
   const rehypePlugins = useMemo(() => (wikilinks && wikilinks.size > 0 ? [rehypeWarnings, rehypeWikilinks(wikilinks)] : [rehypeWarnings]), [wikilinks]);
   return (
     <Markdown remarkPlugins={PLUGINS} rehypePlugins={rehypePlugins} components={COMPONENTS} skipHtml>
@@ -171,3 +171,7 @@ export function ReaderMarkdown({ markdown, wikilinks }: ReaderMarkdownProps): Re
     </Markdown>
   );
 }
+
+/** Memoised: the reader re-renders as the current section changes, and parsing every passage again each time made
+ * jumping through the table of contents stutter. */
+export const ReaderMarkdown = memo(ReaderMarkdownView);
