@@ -473,9 +473,13 @@
   font: 700 10px var(--font-sans);
 }
 
+/* The last row keeps the pad's three columns: the zoom level on the left, ↓ in the middle under ↑ and "Vừa". */
 .graph-zoom-level {
   grid-column: 1 / span 3;
-  text-align: center;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  justify-items: center;
   font: 600 11px var(--font-display);
   color: var(--c-text-muted);
 }
