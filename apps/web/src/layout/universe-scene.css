@@ -33,8 +33,23 @@
   color: var(--white);
   text-decoration: none;
   pointer-events: auto;
-  /* the glow breathes; with reduced motion the orb stays unlit, as on the boards' still export */
-  animation: kf-scene-breathe 5s ease-in-out infinite;
+  /* the halo below sits behind the orb's art, not behind the whole scene */
+  isolation: isolate;
+}
+
+/* One soft violet halo behind the orb that breathes slowly. Only its opacity moves: animating stacked violet and
+   cyan drop-shadows blended into a green ring and repainted a large area every frame, which read as flicker. With
+   reduced motion the orb stays unlit, as on the boards' still export. */
+.kf-scene-orb::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--violet-500) 55%, transparent) 30%, color-mix(in srgb, var(--violet-600) 18%, transparent) 55%, transparent 72%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  animation: kf-scene-breathe 10s ease-in-out infinite;
 }
 
 .kf-scene-orb:focus-visible {
@@ -95,11 +110,10 @@
 @keyframes kf-scene-breathe {
   0%,
   100% {
-    filter: var(--glow-orb);
+    opacity: 0.6;
   }
   50% {
-    filter: drop-shadow(0 0 50px color-mix(in srgb, var(--violet-600) 95%, transparent))
-      drop-shadow(0 0 110px color-mix(in srgb, var(--cyan-400) 40%, transparent));
+    opacity: 0.75;
   }
 }
 
