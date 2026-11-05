@@ -294,6 +294,27 @@ Một lần (và mỗi lần nâng bản editor), theo [office-editor.md](office
 Kiểm: mở một docx ở C11, bấm "Mở để sửa", sửa, "Lưu" thì C17 có phiên bản mới; tắt mạng, sửa, lưu (báo "Đã lưu trên
 máy"), bật mạng thì bản đó lên server (H04 `/sync` hết hàng chờ).
 
+## Sao lưu và khôi phục
+
+Hằng ngày 02:40, `/etc/cron.d/kb-backup` chạy [`infra/backup-kb.sh`](../infra/backup-kb.sh) (bản trên server:
+`/var/www/kb/infra/backup-kb.sh`, root 700): dump database `kb` (`pg_dump --format=custom`) và nén thư mục
+`/var/lib/kb/files` vào `/var/backups/kb/` (root 700), giữ 14 ngày. Log: `/var/log/kb-backup.log`. Script không tự chép
+lên server khi deploy: sửa xong thì chép tay như lúc cài.
+
+Khôi phục (đã thử 05/11/2026 vào database tạm, số bài, tài khoản, tệp, đoạn khớp bản đang chạy):
+
+```sh
+f=$(ls -t /var/backups/kb/kb-db-*.dump | head -1)
+systemctl stop kb-server
+sudo -u postgres dropdb kb && sudo -u postgres createdb -O kb kb
+sudo -u postgres pg_restore --no-owner --role=kb -d kb < "$f"     # đọc qua stdin: tệp là root 600
+tar -C /var/lib/kb -xzf "$(ls -t /var/backups/kb/kb-files-*.tar.gz | head -1)"
+chown -R kb:nginx /var/lib/kb/files
+systemctl start kb-server   # rồi dựng lại chỉ mục: mục "Meilisearch"
+```
+
+Tệp bí mật của Key riêng (`/etc/kb-keys/`) không nằm trong bản sao lưu này (xem mục "Key riêng").
+
 ## Deploy tự động (CI)
 
 **Mỗi lần push lên `main` là tự deploy.** `ci` (lint, typecheck, test, build) xanh thì `deploy.yml` chạy: job `build`
