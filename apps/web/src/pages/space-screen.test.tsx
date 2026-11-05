@@ -116,8 +116,8 @@ describe('SpaceScreen', () => {
 
     const views = screen.getByRole('navigation', { name: 'Ways to view the Space' });
     expect(within(views).getByRole('link', { name: 'Overview' }).getAttribute('aria-current')).toBe('page');
-    expect(within(views).getByRole('link', { name: 'Canvas' }).getAttribute('href')).toBe('/canvas');
-    expect(within(views).getByRole('link', { name: 'Graph' }).getAttribute('href')).toBe('/graph');
+    expect(within(views).getByRole('link', { name: 'Canvas' }).getAttribute('href')).toBe('/canvas?space=networking');
+    expect(within(views).getByRole('link', { name: 'Graph' }).getAttribute('href')).toBe('/graph?space=networking');
 
     const docs = screen.getByRole('region', { name: /Core protocols/ });
     const titles = within(docs)

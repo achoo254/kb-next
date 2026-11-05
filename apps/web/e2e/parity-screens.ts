@@ -1,4 +1,5 @@
 import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
+import { C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
 
 /**
  * The screens the parity check compares with their mock board (design/mock-png/<board>.png), with the route that
@@ -37,9 +38,10 @@ export interface ParityScreen {
  * results (search-boards.ts: E2E has neither Meilisearch nor a Jev key), and on C12 /api/spaces the board's five
  * Spaces of the filter; `keys-f03` / `translate-f04`: /api/me/keys answers the board's three keys, and on F04 the
  * document and the translation stream are the board's, held mid-stream (ai-boards.ts: E2E has no AI provider);
- * `copilot-c14`: the board's keys, Copilot history and finished answer; `ask-c11`: the board's keys and AI card answer.
+ * `copilot-c14`: the board's keys, Copilot history and finished answer; `ask-c11`: the board's keys and AI card answer;
+ * `canvas-c15`: Jev's suggested connection of the board (graph-canvas-boards.ts: E2E has no Jev key).
  */
-export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04' | 'copilot-c14' | 'ask-c11';
+export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04' | 'copilot-c14' | 'ask-c11' | 'canvas-c15';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -96,6 +98,19 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'F04-Translate', path: `/d/${F04_DOCUMENT_ID}/translate`, signedIn: true, status: 'built', mocks: ['translate-f04'] },
   // Copilot (C14) asked from the DHCP text about the Space, its answer finished; its eight states (F02) side by side.
   { board: 'C14-Copilot', path: C14_PATH, signedIn: true, status: 'built', mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },
+  // The Graph of Networking from the seed's documents and links, DHCP picked (its neighbours lit, the panel open).
+  // maxDiff: d3-force places the real graph's nodes, not the board's hand-placed 20; docs/mock-deviations.md.
+  {
+    board: 'C13-Graph',
+    path: '/graph?space=networking',
+    signedIn: true,
+    status: 'built',
+    maxDiff: 0.08,
+    click: `[data-id="graph-node-${C13_DHCP_ID}"]`,
+    waitFor: '[data-id="graph-detail"]',
+  },
+  // The seed's canvas "DHCP từ A đến Z", its lab card picked, with Jev's suggested connection.
+  { board: 'C15-Canvas', path: `/canvas/${C15_CANVAS_ID}`, signedIn: true, status: 'built', mocks: ['canvas-c15'], click: '[data-id="canvas-card-lab"]', waitFor: '[data-id="canvas-suggest"]' },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The UI kit (dev server only, apps/web/src/dev-kit).

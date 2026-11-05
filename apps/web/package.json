@@ -17,6 +17,7 @@
     "@fontsource/inter": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
     "@react-three/fiber": "^9.8.2",
+    "d3-force": "^3.0.1",
     "mermaid": "^12.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@testing-library/react": "^16.3.3",
+    "@types/d3-force": "^3.0.10",
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

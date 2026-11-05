@@ -25,11 +25,13 @@ describe('AppShell', () => {
     const hrefs = within(rail)
       .getAllByRole('link')
       .map((link) => link.getAttribute('href'));
-    expect(hrefs).toEqual(['/u', '/graph', '/me', '/search', '/copilot', '/s/networking', '/me', '/settings']);
+    // The Graph and Canvas of the current Space.
+    expect(hrefs).toEqual(['/u', '/graph?space=networking', '/me', '/search', '/copilot', '/s/networking', '/me', '/settings']);
     expect(within(rail).getByRole('link', { name: 'Graph' }).getAttribute('aria-current')).toBe('page');
 
     const views = screen.getByRole('navigation', { name: 'Views' });
     expect(within(views).getByRole('link', { name: 'Docs' }).getAttribute('href')).toBe('/d/abc');
+    expect(within(views).getByRole('link', { name: 'Canvas' }).getAttribute('href')).toBe('/canvas?space=networking');
     expect(within(views).getByRole('link', { name: 'Graph' }).getAttribute('aria-current')).toBe('page');
     expect(within(views).getByRole('link', { name: 'Orbit' }).getAttribute('aria-current')).toBeNull();
 

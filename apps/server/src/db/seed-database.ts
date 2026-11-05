@@ -6,8 +6,9 @@
 import { createHash } from 'node:crypto';
 import { inArray, sql } from 'drizzle-orm';
 import type { Db } from './client';
-import { chunks, collections, comments, documentVersions, documents, links, readingProgress, reviewEvents, spaces, users } from './schema';
+import { canvases, chunks, collections, comments, documentVersions, documents, links, readingProgress, reviewEvents, spaces, users } from './schema';
 import {
+  SEED_CANVAS,
   SEED_COMMENTS,
   SEED_DOCUMENTS,
   SEED_FIRST_CREATED,
@@ -179,11 +180,13 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
   await db
     .insert(links)
     .values(
-      SEED_LINKS.map(([source, target, kind, label]) => ({
+      SEED_LINKS.map(([source, target, kind, label], order) => ({
         sourceId: seedId(`document:${source}`),
         targetId: seedId(`document:${target}`),
         kind,
         label,
+        // A second apart in list order: the order links are listed in (C11's backlinks, C13's neighbours).
+        createdAt: new Date(SEED_FIRST_CREATED.getTime() + order * 1000),
       })),
     )
     .onConflictDoNothing();
@@ -196,6 +199,22 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
     const row = { id: seedId(`comment:${key}`), documentId: seedId(`document:${documentKey}`), authorId: userId(author), body, createdAt: at, updatedAt: at, deletedAt: null };
     await db.insert(comments).values(row).onConflictDoUpdate({ target: comments.id, set: row });
   }
+  const canvas = {
+    id: seedId(`canvas:${SEED_CANVAS.key}`),
+    ownerId: owner.id,
+    title: SEED_CANVAS.title,
+    data: {
+      spaceId: seedId(`space:${SEED_CANVAS.space}`),
+      canvas: {
+        rev: 0,
+        cards: SEED_CANVAS.cards.map(({ doc, ...card }) => (doc ? { ...card, documentId: seedId(`document:${doc}`) } : card)),
+        connections: SEED_CANVAS.connections.map(([from, to]) => ({ id: `${from}-${to}`, from, to })),
+      },
+    },
+    createdAt: SEED_LATEST_UPDATE,
+    updatedAt: SEED_LATEST_UPDATE,
+  };
+  await db.insert(canvases).values(canvas).onConflictDoUpdate({ target: canvases.id, set: canvas });
   // Keep the planner's statistics current after a bulk load (cheap at this size).
   await db.execute(sql`analyze`);
   return { spaces: SEED_SPACES.length, documents: SEED_DOCUMENTS.length, ownerId: owner.id };

@@ -221,7 +221,8 @@ describe('GET /api/documents/:id', () => {
     ]);
     expect(body.chunks[0]).toMatchObject({ anchor: 'tong-quan', heading: null });
     expect(body.chunks[0]?.markdown).toContain('1. **Discover** Hét lên cả mạng xin IP');
-    expect(body.outgoing.map((l) => l.document.title).sort()).toEqual(['Ghi chú: DHCP giả mạo', 'Giao thức ARP']);
+    // ARP twice: the `[[ ]]` link and the Graph's "dẫn tới" relation (C13); Subnet from the text, Packet Journey related.
+    expect(body.outgoing.map((l) => l.document.title).sort()).toEqual(['Ghi chú: DHCP giả mạo', 'Giao thức ARP', 'Giao thức ARP', 'Subnet & CIDR']);
     // The owner's private note links here too, but another member never learns of it.
     expect(body.backlinks.map((l) => l.document.title).sort()).toEqual(['Giao thức ARP', 'Máy mới vào mạng']);
     expect(body.backlinks.find((l) => l.kind === 'relation')).toMatchObject({ label: 'bước 1', document: { type: 'journey' } });
@@ -230,8 +231,9 @@ describe('GET /api/documents/:id', () => {
       ['Giao thức ARP', 75],
       ['Ghi chú: DHCP giả mạo', 68],
       ['Máy mới vào mạng', 60],
-      ['Tìm hiểu giao thức DNS', 34],
-      ['Tìm hiểu HTTP', 20],
+      // Below the three C11 shows: Subnet linked from DHCP's text, DNS sharing ARP and the journey as neighbours.
+      ['Subnet & CIDR', 50],
+      ['Tìm hiểu giao thức DNS', 44],
     ]);
     // Four versions, newest first; Linh approved the latest (C11 "v4", "Đã duyệt bởi Linh").
     expect(body.versions.map((v) => [v.version, v.editorName])).toEqual([

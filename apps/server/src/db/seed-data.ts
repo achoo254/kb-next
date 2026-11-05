@@ -365,6 +365,26 @@ export const SEED_LINKS: Array<[string, string, 'wikilink' | 'relation', string 
   ['syslog', 'dns', 'wikilink', null],
   ['syslog', 'tcp-udp', 'wikilink', null],
   ['victorialogs', 'tcp-udp', 'wikilink', null],
+  // The edges of C13 (Networking's graph and the texts it reaches). None points at DHCP, so C11's backlinks stay
+  // the board's three; Subnet and Packet Journey hang off DHCP's own links instead.
+  ['dhcp', 'subnet', 'wikilink', null],
+  ['dhcp', 'arp', 'relation', 'dẫn tới'],
+  ['arp', 'dns', 'relation', 'dẫn tới'],
+  ['dns', 'http', 'relation', 'dẫn tới'],
+  ['tcp-udp', 'http', 'relation', 'cần trước'],
+  ['icmp', 'arp', 'relation', 'liên quan'],
+  ['dhcp', 'osi', 'relation', 'liên quan'],
+  ['osi', 'http', 'relation', 'liên quan'],
+  ['http3', 'http', 'relation', 'liên quan'],
+  // Across the other Spaces only: Networking's related Spaces (C10) stay Linux and Observability.
+  ['syslog', 'boot', 'relation', 'liên quan'],
+  ['boot', 'swap', 'relation', 'liên quan'],
+  ['victorialogs', 'syslog', 'relation', 'liên quan'],
+  ['swap', 'docker-basics', 'relation', 'liên quan'],
+  ['docker-basics', 'docker-compose', 'relation', 'dẫn tới'],
+  ['docker-basics', 'k8s-arch', 'relation', 'cần trước'],
+  ['k8s-arch', 'k8s-build', 'relation', 'dẫn tới'],
+  ['k8s-arch', 'victorialogs', 'relation', 'liên quan'],
 ];
 
 /**
@@ -404,3 +424,41 @@ export const SEED_COMMENTS: Array<[string, string, SeedAuthor, number, string]> 
   ['relay-question', 'dhcp', 'minh', 2, '@Linh mạng khác subnet thì DHCP relay chạy thế nào?'],
   ['relay-answer', 'dhcp', 'linh', 1, 'Router chuyển tiếp gói Discover tới server. Mình sẽ thêm một đoạn về relay.'],
 ];
+
+/** A Canvas card of the seed (C15): `doc` names a seed document for a document card. */
+export interface SeedCanvasCard {
+  id: string;
+  kind: 'document' | 'note' | 'idea' | 'risk' | 'answer' | 'diagram' | 'link';
+  x: number;
+  y: number;
+  w: number;
+  title: string;
+  body?: string;
+  steps?: string[];
+  doc?: string;
+  url?: string;
+}
+
+/** The owner's canvas of board C15, in Networking: its cards at the board's places and its six connections. */
+export const SEED_CANVAS: { key: string; title: string; space: string; cards: SeedCanvasCard[]; connections: Array<[string, string]> } = {
+  key: 'dhcp-a-z',
+  title: 'DHCP từ A đến Z',
+  space: 'net',
+  cards: [
+    { id: 'idea', kind: 'idea', x: 250, y: 190, w: 220, title: 'Vì sao máy mới phải hét lên cả mạng?' },
+    { id: 'lab', kind: 'document', x: 560, y: 300, w: 300, title: 'Giao thức DHCP', doc: 'dhcp' },
+    { id: 'diag', kind: 'diagram', x: 960, y: 170, w: 240, title: 'DORA 4 bước', steps: ['D', 'O', 'R', 'A'] },
+    { id: 'file', kind: 'document', x: 980, y: 470, w: 230, title: 'lab-notes.docx', doc: 'lab-notes' },
+    { id: 'q', kind: 'answer', x: 300, y: 520, w: 240, title: 'Chưa có IP nên chỉ broadcast được tới 255.255.255.255.', body: 'Nguồn: Lab DHCP § Discover' },
+    { id: 'risk', kind: 'risk', x: 640, y: 610, w: 200, title: 'DHCP giả mạo' },
+    { id: 'url', kind: 'link', x: 780, y: 200, w: 200, title: 'RFC 2131 · DHCP', url: 'https://datatracker.ietf.org/doc/html/rfc2131' },
+  ],
+  connections: [
+    ['idea', 'lab'],
+    ['lab', 'diag'],
+    ['lab', 'file'],
+    ['q', 'lab'],
+    ['lab', 'risk'],
+    ['url', 'diag'],
+  ],
+};

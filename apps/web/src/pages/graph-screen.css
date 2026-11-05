@@ -1,0 +1,929 @@
+/* The Graph (design/mock/C13-Graph.dc.html): the stage and the node panel at the board's coordinates inside <main>. */
+
+.graph-screen {
+  position: relative;
+  min-height: 900px;
+}
+
+.graph-screen ul,
+.graph-screen ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.graph-muted {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.graph-small {
+  font-size: 12px;
+}
+
+.graph-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+/* ── breadcrumb: the Space's views, Graph lit ── */
+
+.graph-views {
+  margin-left: 22px;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 18px;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+}
+
+.graph-views a,
+.graph-views span {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  color: var(--c-text);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.graph-views [aria-current="page"] {
+  background: var(--rim-active-bg);
+  border: 1px solid var(--rim-active-border);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--violet-500) 60%, transparent);
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* ── the stage ── */
+
+/* Sáng: the board only draws the dark stage; the light theme uses the light rim panel. */
+:root[data-theme="light"] .graph-section {
+  background: var(--rim-bg);
+}
+
+.graph-section {
+  position: absolute;
+  left: 112px;
+  top: 122px;
+  width: 976px;
+  height: 652px;
+  box-sizing: border-box;
+  border-radius: 28px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--graph-stage-top) 62%, transparent) 0%, color-mix(in srgb, var(--graph-stage-bottom) 74%, transparent) 100%);
+  border: 1.5px solid var(--rim-border);
+  box-shadow:
+    inset 0 0 30px light-dark(color-mix(in srgb, var(--violet-500) 10%, transparent), color-mix(in srgb, var(--violet-500) 32%, transparent)),
+    inset 0 0 3px color-mix(in srgb, var(--purple-200) 55%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 22%, transparent),
+    0 0 32px color-mix(in srgb, var(--violet-600) 30%, transparent);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.graph-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.graph-world-clip {
+  position: absolute;
+  left: -30px;
+  top: 16px;
+  width: 1040px;
+  height: 620px;
+  touch-action: none;
+}
+
+.graph-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1040px;
+  height: 620px;
+  transform-origin: 520px 310px;
+  transition: transform 0.6s var(--ease-fly);
+}
+
+.graph-edges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.graph-edge {
+  opacity: 0.85;
+  transition: opacity 0.4s;
+}
+
+.graph-edge[data-dim="true"] {
+  opacity: 0.08;
+}
+
+.graph-edge[data-on="true"] {
+  opacity: 1;
+}
+
+.graph-edge-line {
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.graph-edge[data-type="leads-to"] .graph-edge-line {
+  stroke-width: 2;
+  filter: drop-shadow(0 0 3px var(--edge-glow, var(--violet-500)));
+}
+
+.graph-edge[data-type="prerequisite"] .graph-edge-line {
+  stroke: var(--amber-200);
+  stroke-dasharray: 6 4;
+}
+
+.graph-related-stop {
+  stop-color: light-dark(var(--light-muted), var(--violet-300));
+  stop-opacity: 0.6;
+}
+
+.graph-related-stop-end {
+  stop-opacity: 0.12;
+}
+
+.graph-edge-hit {
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+}
+
+@keyframes graph-edge-run {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+.graph-edge-dot {
+  fill: var(--violet-50);
+  filter: drop-shadow(0 0 4px var(--edge-glow, var(--violet-500)));
+  offset-rotate: 0deg;
+  animation: graph-edge-run linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graph-edge-dot {
+    display: none;
+  }
+
+  .graph-world {
+    transition: none;
+  }
+}
+
+.graph-edge-label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 8px;
+  background: light-dark(var(--c-surface-solid), color-mix(in srgb, var(--night-inset) 92%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-300) 50%, transparent);
+  color: var(--c-text);
+  pointer-events: none;
+}
+
+/* ── nodes: orbs tinted by their Space (--node-tint, --node-glow from the data) ── */
+
+.graph-node {
+  position: absolute;
+  transition: opacity 0.4s;
+}
+
+.graph-node[data-dim="true"] {
+  opacity: 0.18;
+}
+
+.graph-node-orb {
+  display: block;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid light-dark(color-mix(in srgb, var(--light-text) 35%, transparent), color-mix(in srgb, var(--white) 55%, transparent));
+  cursor: pointer;
+  background: radial-gradient(circle at 36% 30%, var(--white) 0%, var(--node-tint) 24%, var(--node-glow) 62%, var(--graph-node-core) 100%);
+  box-shadow:
+    inset 0 0 8px color-mix(in srgb, var(--white) 45%, transparent),
+    0 0 12px var(--node-glow),
+    0 0 26px color-mix(in srgb, var(--violet-400) 28%, transparent);
+  transition: transform 0.25s var(--ease-out-back);
+}
+
+.graph-node-orb[data-official="false"] {
+  border-style: dashed;
+}
+
+.graph-node-orb:hover:not([aria-pressed="true"]) {
+  transform: scale(1.12);
+}
+
+@keyframes graph-ring {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px var(--cyan-400),
+      0 0 24px color-mix(in srgb, var(--cyan-400) 60%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px var(--cyan-400),
+      0 0 40px color-mix(in srgb, var(--cyan-400) 90%, transparent);
+  }
+}
+
+.graph-node[data-selected="true"] .graph-node-orb {
+  border-width: 3px;
+  border-color: var(--cyan-400);
+  box-shadow:
+    inset 0 0 8px color-mix(in srgb, var(--white) 45%, transparent),
+    0 0 26px var(--node-glow),
+    0 0 52px color-mix(in srgb, var(--sky-300) 55%, transparent);
+  animation: graph-ring 2s ease-in-out infinite;
+}
+
+.graph-node-name {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 5px;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-text);
+  text-shadow: 0 1px 6px light-dark(color-mix(in srgb, var(--white) 90%, transparent), color-mix(in srgb, var(--ink) 80%, transparent));
+  pointer-events: none;
+}
+
+.graph-node[data-selected="true"] .graph-node-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@keyframes graph-ghost {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
+.graph-ghost {
+  position: absolute;
+  border-radius: 50%;
+  background: light-dark(color-mix(in srgb, var(--violet-700) 16%, transparent), color-mix(in srgb, var(--violet-300) 22%, transparent));
+  animation: graph-ghost 1.6s ease-in-out infinite;
+}
+
+/* ── filters, legend, zoom, minimap (small glass boxes over the stage) ── */
+
+.graph-filters {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  right: 200px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.graph-filter-label {
+  margin-right: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.graph-chip {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 17px;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.55;
+}
+
+.graph-chip[aria-pressed="true"] {
+  background: light-dark(color-mix(in srgb, var(--violet-700) 10%, transparent), color-mix(in srgb, var(--white) 6%, transparent));
+  opacity: 1;
+}
+
+.graph-chip-dot {
+  width: 10px;
+  height: 10px;
+}
+
+.graph-source {
+  margin-left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.graph-source select {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 17px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-solid);
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+}
+
+.graph-legend,
+.graph-zoom,
+.graph-minimap {
+  position: absolute;
+  background: light-dark(var(--c-surface), color-mix(in srgb, var(--night-row) 70%, transparent));
+  border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 5%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.graph-legend {
+  right: 14px;
+  top: 14px;
+  width: 168px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.graph-legend-head {
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.graph-legend-gap {
+  margin-top: 4px;
+}
+
+.graph-legend-note {
+  color: var(--c-text-muted);
+}
+
+.graph-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.graph-legend-line {
+  width: 30px;
+  height: 2px;
+}
+
+.graph-legend-line[data-type="leads-to"] {
+  background: linear-gradient(90deg, var(--violet-300), var(--sky-300));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--sky-300) 70%, transparent);
+}
+
+.graph-legend-line[data-type="prerequisite"] {
+  background: repeating-linear-gradient(90deg, var(--amber-500) 0 6px, transparent 6px 10px);
+}
+
+.graph-legend-line[data-type="related"] {
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--violet-300) 15%, transparent),
+    color-mix(in srgb, var(--violet-300) 70%, transparent),
+    color-mix(in srgb, var(--violet-300) 15%, transparent)
+  );
+}
+
+.graph-legend-ring {
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--c-text);
+}
+
+.graph-legend-ring[data-dashed="true"] {
+  border-style: dashed;
+}
+
+.graph-zoom {
+  left: 14px;
+  bottom: 14px;
+  padding: 6px;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.graph-zoom button {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--c-text);
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.graph-zoom .graph-zoom-key {
+  background: light-dark(color-mix(in srgb, var(--violet-700) 10%, transparent), color-mix(in srgb, var(--white) 6%, transparent));
+  font: 700 18px var(--font-display);
+}
+
+.graph-zoom .graph-zoom-fit {
+  border: 1.5px solid var(--rim-active-border);
+  background: var(--rim-active-bg);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--violet-500) 60%, transparent);
+  color: var(--white);
+  font: 700 10px var(--font-sans);
+}
+
+.graph-zoom-level {
+  grid-column: 1 / span 3;
+  text-align: center;
+  font: 600 11px var(--font-display);
+  color: var(--c-text-muted);
+}
+
+.graph-zoom .graph-zoom-down {
+  height: 28px;
+  border-radius: 10px;
+}
+
+.graph-minimap {
+  right: 14px;
+  bottom: 14px;
+  width: 180px;
+  height: 108px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.graph-minimap-dot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.graph-minimap-dot[data-dim="true"] {
+  opacity: 0.2;
+}
+
+.graph-minimap-view {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.5px solid var(--c-accent);
+  border-radius: 4px;
+}
+
+/* ── states over the stage ── */
+
+.graph-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.graph-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 360px;
+  padding: 22px;
+  border-radius: 24px;
+  text-align: center;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  animation: kf-pop 0.4s ease-out both;
+}
+
+.graph-card-title {
+  margin: 0;
+  font: 700 20px var(--font-display);
+}
+
+.graph-loading {
+  width: auto;
+  gap: 8px;
+  padding: 16px 22px;
+  border-radius: 20px;
+}
+
+.graph-loading .graph-card-title {
+  font-size: 18px;
+}
+
+.graph-progress {
+  width: 200px;
+  height: 6px;
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg, var(--sky-300), var(--violet-400)) 0 0 / 64% 100% no-repeat,
+    color-mix(in srgb, var(--violet-300) 18%, transparent);
+}
+
+.graph-ring {
+  width: 64px;
+  height: 64px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px dashed var(--c-text-muted);
+}
+
+.graph-primary {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  border: none;
+  background: linear-gradient(180deg, var(--bubble-top), var(--bubble-bottom));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--white) 25%, transparent),
+    0 6px 20px color-mix(in srgb, var(--bubble-bottom) 45%, transparent);
+  color: var(--white);
+  font: 700 13px var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* ── the node panel: as on the board, a long neighbour list pushes "Khám phá liên quan" below the panel's rim (the
+   page scrolls) rather than into a scroll box of its own ── */
+
+.graph-panel {
+  position: absolute;
+  left: 1104px;
+  top: 122px;
+  width: 312px;
+  height: 652px;
+  box-sizing: border-box;
+  border-radius: 28px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.graph-panel-spacer {
+  flex: 1;
+}
+
+.graph-pick,
+.graph-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.graph-detail {
+  gap: 12px;
+  animation: kf-pop 0.4s ease-out both;
+}
+
+.graph-pick-title {
+  margin: 0;
+  font: 700 20px var(--font-display);
+}
+
+.graph-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.graph-detail-orb {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, var(--white) 0%, var(--node-tint) 24%, var(--node-glow) 62%, var(--graph-node-core) 100%);
+  box-shadow:
+    inset 0 0 8px color-mix(in srgb, var(--white) 45%, transparent),
+    0 0 18px var(--node-glow),
+    0 0 34px var(--node-tint);
+}
+
+.graph-detail-names {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.graph-detail-title {
+  margin: 0;
+  font: 700 19px/1.15 var(--font-display);
+}
+
+.graph-detail-meta {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.graph-origin {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: light-dark(color-mix(in srgb, var(--violet-700) 10%, transparent), color-mix(in srgb, var(--violet-600) 32%, transparent));
+  color: light-dark(var(--violet-900), var(--violet-200));
+  border: 1px solid light-dark(color-mix(in srgb, var(--violet-700) 35%, transparent), color-mix(in srgb, var(--violet-400) 50%, transparent));
+}
+
+.graph-origin[data-origin="community"] {
+  background: light-dark(color-mix(in srgb, var(--light-accent) 10%, transparent), color-mix(in srgb, var(--cyan-400) 16%, transparent));
+  color: light-dark(var(--light-accent), var(--cyan-300));
+  border-color: light-dark(color-mix(in srgb, var(--light-accent) 35%, transparent), color-mix(in srgb, var(--cyan-400) 45%, transparent));
+}
+
+.graph-origin[data-origin="private"] {
+  background: color-mix(in srgb, var(--glow-personal) 16%, transparent);
+  color: light-dark(var(--c-text), var(--tint-personal));
+  border-color: color-mix(in srgb, var(--glow-personal) 45%, transparent);
+}
+
+.graph-origin[data-origin="pending"] {
+  background: color-mix(in srgb, var(--amber-500) 16%, transparent);
+  color: var(--c-warn-text);
+  border-color: color-mix(in srgb, var(--amber-500) 45%, transparent);
+}
+
+.graph-detail-line {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.graph-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.graph-stat {
+  flex: 1;
+  padding: 10px;
+  border-radius: 14px;
+  background: light-dark(color-mix(in srgb, var(--violet-700) 10%, transparent), color-mix(in srgb, var(--white) 6%, transparent));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.graph-stat-value {
+  font: 700 20px var(--font-display);
+}
+
+.graph-stat-label {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.graph-detail-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.graph-open,
+.graph-ask {
+  flex: 1;
+  height: 44px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.graph-open {
+  background: linear-gradient(180deg, var(--bubble-top), var(--bubble-bottom));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--white) 25%, transparent),
+    0 6px 20px color-mix(in srgb, var(--bubble-bottom) 45%, transparent);
+  color: var(--white);
+  font-weight: 700;
+}
+
+.graph-ask {
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid light-dark(var(--c-border), color-mix(in srgb, var(--white) 14%, transparent));
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.graph-ask svg {
+  color: var(--c-primary);
+}
+
+.graph-section-title {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.graph-neighbours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.graph-neighbour {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.graph-neighbour-pick {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 16px;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.graph-neighbour-rel {
+  color: var(--c-text-muted);
+  font-weight: 500;
+}
+
+.graph-unlink {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── "Khám phá liên quan": the reading path and Jev's suggested edges ── */
+
+.graph-explore {
+  padding: 14px;
+  border-radius: 18px;
+  background: light-dark(color-mix(in srgb, var(--light-success) 7%, transparent), color-mix(in srgb, var(--emerald-500) 10%, transparent));
+  border: 1px solid light-dark(color-mix(in srgb, var(--light-success) 35%, transparent), color-mix(in srgb, var(--emerald-500) 40%, transparent));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.graph-explore-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-success-text);
+}
+
+.graph-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.graph-path li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.graph-path-step {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 15px;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.graph-explore-note {
+  margin: 0;
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.graph-warn {
+  color: var(--c-warn-text);
+}
+
+.graph-follow,
+.graph-suggest {
+  height: 40px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--white) 6%, transparent);
+  border: 1px solid light-dark(var(--c-border), color-mix(in srgb, var(--white) 14%, transparent));
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.graph-suggest svg {
+  color: var(--c-success-text);
+}
+
+.graph-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.graph-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.graph-suggestion-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.graph-suggestion-score {
+  color: var(--c-success-text);
+  font: 700 12px var(--font-display);
+}
+
+.graph-suggestion-accept {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1.5px solid color-mix(in srgb, var(--emerald-200) 90%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--emerald-500) 85%, var(--white)), color-mix(in srgb, var(--emerald-500) 45%, var(--ink)));
+  color: var(--white);
+  font: 700 12px var(--font-sans);
+  cursor: pointer;
+}

@@ -3,7 +3,9 @@ import helmet from 'helmet';
 import { sql } from 'drizzle-orm';
 import { AccountBudget } from './api/account-limit';
 import { activityRoutes } from './api/activity-routes';
+import { CANVAS_BODY_LIMIT, canvasRoutes } from './api/canvas-routes';
 import { contentRoutes } from './api/content-routes';
+import { graphRoutes } from './api/graph-routes';
 import { meRoutes } from './api/me-routes';
 import { authRoutes } from './auth/auth-routes';
 import { backchannelLogoutRoute } from './auth/backchannel-logout';
@@ -58,8 +60,8 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
 
 /**
  * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
- * (/api/me), the reading API (Spaces, documents, recent), search, the account's own AI keys, the Copilot and AI
- * translation (both on those keys). The web app is static (nginx in production, Vite in dev).
+ * (/api/me), the reading API (Spaces, documents, recent), the Graph and Canvas, search, the account's own AI keys,
+ * the Copilot and AI translation (both on those keys). The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
@@ -87,11 +89,15 @@ export function createApp({
   app.use(backchannelLogoutRoute({ config, db, idp, now }));
 
   app.use(requireSameOrigin(config.publicOrigin));
+  // A canvas (its cards and connections) is saved whole: a larger body than the rest of the API takes.
+  app.use('/api/canvases', express.json({ limit: CANVAS_BODY_LIMIT }));
   app.use(express.json({ limit: '32kb' }));
   app.use(authRoutes({ config, db, idp, now }));
   app.use(meRoutes({ config, db, now }));
   app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
   app.use(activityRoutes({ config, db, now }));
+  app.use(graphRoutes({ config, db, now, jev, summaries }));
+  app.use(canvasRoutes({ config, db, now, jev }));
   app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));
   // Own AI keys and what runs on them; nothing here has a server AI key (Jev aside).
   const keys = new UserKeyStore(db, userKeysSecret, now);

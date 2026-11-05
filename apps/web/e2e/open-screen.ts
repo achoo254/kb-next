@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import type { ParityMock, ParityScreen } from './parity-screens';
 import { C11_STREAM, C14_HISTORY, C14_STREAM, F03_KEYS, F04_DOCUMENT, F04_DOCUMENT_ID, F04_STREAM } from './ai-boards';
+import { C15_SUGGESTION } from './graph-canvas-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
 import { signInAt } from './sign-in';
 
@@ -48,6 +49,7 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
     if (mocks.includes(mock)) await page.route('**/api/ask', (route) => route.fulfill({ status: 200, contentType: 'text/event-stream', body }));
   }
   if (mocks.includes('copilot-c14')) await page.route('**/api/copilot/history', (route) => route.fulfill({ json: C14_HISTORY }));
+  if (mocks.includes('canvas-c15')) await page.route('**/api/canvases/*/suggestion', (route) => route.fulfill({ json: C15_SUGGESTION }));
   if (mocks.includes('translate-f04')) {
     await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
     await page.route(`**/api/documents/${F04_DOCUMENT_ID}`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: F04_DOCUMENT }) : route.fallback()));

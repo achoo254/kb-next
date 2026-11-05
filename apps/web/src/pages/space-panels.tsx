@@ -92,8 +92,8 @@ export function SpaceHeader({ detail, locale, t }: { detail: SpaceDetail; locale
         <a href={`/s/${encodeURIComponent(space.slug)}`} aria-current="page">
           {t('space.view.overview')}
         </a>
-        <a href={SHELL_PATHS.canvas}>{t('space.view.canvas')}</a>
-        <a href={SHELL_PATHS.graph}>{t('space.view.graph')}</a>
+        <a href={`${SHELL_PATHS.canvas}?${new URLSearchParams({ space: space.slug }).toString()}`}>{t('space.view.canvas')}</a>
+        <a href={`${SHELL_PATHS.graph}?${new URLSearchParams({ space: space.slug }).toString()}`}>{t('space.view.graph')}</a>
       </nav>
       <a className="space-copilot" href={copilotHref(undefined, { scope: { kind: 'space', id: space.slug } })} data-id="space-copilot">
         <Icon name="sparkles" size={16} />

@@ -1,0 +1,760 @@
+/* The Canvas (design/mock/C15-Canvas.dc.html): the board fills <main>; the tools, minimap and zoom sit at the board's
+   coordinates. The cards keep the board's dark glass in both themes (their text is light on it). */
+
+.canvas-shell .app-shell-crumbs a {
+  font-weight: 400;
+}
+
+.canvas-shell .app-shell-crumb-current {
+  font-weight: 600;
+}
+
+.canvas-screen {
+  position: relative;
+  height: 900px;
+  overflow: hidden;
+}
+
+.canvas-loading {
+  position: absolute;
+  left: 112px;
+  top: 140px;
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.canvas-error {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* the glass of the board's small boxes (.rsm) */
+.canvas-glass,
+.canvas-actions,
+.canvas-suggest {
+  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--violet-300) 45%, transparent);
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--violet-500) 30%, transparent),
+    0 0 14px color-mix(in srgb, var(--violet-600) 25%, transparent);
+  backdrop-filter: blur(16px);
+  color-scheme: dark;
+  color: var(--c-text);
+}
+
+/* ── the board: dots, world, connections ── */
+
+.canvas-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(light-dark(color-mix(in srgb, var(--violet-700) 18%, transparent), color-mix(in srgb, var(--violet-300) 16%, transparent)) 1.2px, transparent 1.2px);
+  cursor: default;
+  touch-action: none;
+}
+
+.canvas-screen[data-tool="pan"] .canvas-grid,
+.canvas-grid[data-panning="true"] {
+  cursor: grabbing;
+}
+
+.canvas-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform-origin: 0 0;
+  transition: transform 0.25s ease-out;
+  pointer-events: none;
+}
+
+.canvas-links {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+
+.canvas-link line {
+  stroke-width: 1.5;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 4px var(--link-colour));
+}
+
+.canvas-link-mid {
+  stop-color: color-mix(in srgb, var(--purple-200) 90%, transparent);
+}
+
+@keyframes canvas-link-run {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+.canvas-link-dot {
+  fill: var(--violet-50);
+  filter: drop-shadow(0 0 4px var(--link-colour));
+  offset-rotate: 0deg;
+  animation: canvas-link-run linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-link-dot {
+    display: none;
+  }
+
+  .canvas-world {
+    transition: none;
+  }
+}
+
+/* ── cards (--card-tint, --card-rim per kind) ── */
+
+.canvas-card {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font: inherit;
+  text-align: left;
+  color: var(--dark-text);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--night-rim-top) 86%, transparent) 0%, color-mix(in srgb, var(--night-rim-bottom) 92%, transparent) 100%);
+  border: 1.5px solid color-mix(in srgb, var(--card-rim) 70%, transparent);
+  box-shadow:
+    inset 0 0 22px color-mix(in srgb, var(--card-rim) 32%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 22%, transparent),
+    0 0 22px color-mix(in srgb, var(--card-rim) 30%, transparent);
+  backdrop-filter: blur(16px);
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  transition: box-shadow 0.2s;
+}
+
+.canvas-card[data-selected="true"],
+.canvas-card[data-connecting="true"] {
+  border-color: var(--cyan-300);
+  box-shadow:
+    inset 0 0 22px color-mix(in srgb, var(--card-rim) 32%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 22%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--cyan-400) 55%, transparent),
+    0 0 30px color-mix(in srgb, var(--cyan-400) 55%, transparent);
+}
+
+.canvas-screen[data-tool="connect"] .canvas-card {
+  cursor: crosshair;
+}
+
+.canvas-card-kind {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 11px var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--card-tint);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--card-rim) 70%, transparent);
+}
+
+.canvas-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.canvas-card[data-size="lg"] .canvas-card-title {
+  font-size: 20px;
+}
+
+.canvas-card[data-size="sm"] .canvas-card-title {
+  font-size: 14px;
+}
+
+.canvas-card-sub {
+  font-size: 12px;
+  color: var(--dark-sub);
+}
+
+.canvas-card-preview {
+  height: 96px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--night-inset) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-400) 18%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.canvas-card-orb {
+  width: 60px;
+  height: 60px;
+  flex: none;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--violet-600), var(--cyan-400), var(--violet-600));
+  box-shadow: 0 0 24px color-mix(in srgb, var(--violet-600) 80%, transparent);
+  animation: kf-spin 12s linear infinite;
+}
+
+.canvas-card-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 150px;
+  font: 700 12px var(--font-display);
+  color: var(--violet-300);
+}
+
+.canvas-card-sections span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvas-card-sections span:nth-child(2) {
+  color: var(--cyan-300);
+}
+
+.canvas-card-steps {
+  display: grid;
+  gap: 4px;
+  font: 700 13px var(--font-display);
+  text-align: center;
+  color: var(--cyan-200);
+}
+
+.canvas-card-steps span {
+  padding: 6px 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--cyan-500) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cyan-300) 50%, transparent);
+}
+
+/* ── the bar over the picked card ── */
+
+.canvas-actions {
+  position: absolute;
+  height: 50px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+  animation: kf-pop 0.25s ease-out both;
+}
+
+.canvas-action {
+  height: 38px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 19px;
+  border: none;
+  background: none;
+  color: var(--dark-text);
+  font: 600 13px var(--font-sans);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.canvas-action[aria-disabled="true"] {
+  cursor: default;
+}
+
+.canvas-action-main {
+  padding: 0 14px;
+  background: var(--rim-active-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--violet-300) 45%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 35%, transparent),
+    0 0 16px color-mix(in srgb, var(--violet-500) 75%, transparent);
+  color: var(--white);
+}
+
+/* ── chrome of the board: hint, top links, Jev's suggestion, tools, minimap, zoom ── */
+
+.canvas-hint,
+.canvas-notice {
+  position: absolute;
+  left: 112px;
+  top: 118px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-sub);
+  pointer-events: none;
+}
+
+.canvas-notice {
+  top: 138px;
+  color: var(--c-success-text);
+}
+
+.canvas-top {
+  position: absolute;
+  right: 28px;
+  top: 80px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.canvas-top-link {
+  height: 44px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  font: 600 13px var(--font-sans);
+  text-decoration: none;
+  color: var(--c-text);
+  background: light-dark(var(--c-surface), color-mix(in srgb, var(--night-inset) 60%, transparent));
+  border: 1px solid light-dark(var(--c-border), color-mix(in srgb, var(--white) 16%, transparent));
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+
+.canvas-top-link:hover {
+  border-color: color-mix(in srgb, var(--violet-300) 60%, transparent);
+}
+
+.canvas-top-main {
+  padding: 0 20px;
+  background: var(--rim-active-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--violet-300) 45%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--white) 35%, transparent),
+    0 0 16px color-mix(in srgb, var(--violet-500) 75%, transparent);
+  color: var(--white);
+}
+
+.canvas-top-main[aria-disabled="true"] {
+  cursor: default;
+}
+
+@keyframes canvas-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.canvas-suggest {
+  position: absolute;
+  left: 600px;
+  top: 128px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 24px;
+  border-color: color-mix(in srgb, var(--emerald-200) 60%, transparent);
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--emerald-500) 25%, transparent),
+    0 0 16px color-mix(in srgb, var(--emerald-500) 30%, transparent);
+  color: var(--dark-success-text);
+  animation: canvas-float 3s ease-in-out infinite;
+}
+
+.canvas-suggest-text {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.canvas-suggest-accept {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 19px;
+  border: 1.5px solid color-mix(in srgb, var(--emerald-200) 90%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--emerald-500) 45%, transparent) 0%, color-mix(in srgb, var(--emerald-500) 30%, var(--ink)) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--white) 30%, transparent),
+    0 0 12px color-mix(in srgb, var(--emerald-500) 55%, transparent);
+  color: var(--white);
+  font: 700 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.canvas-suggest-dismiss {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--dark-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-tools {
+  position: absolute;
+  left: 104px;
+  top: 200px;
+  width: 58px;
+  padding: 10px 0;
+  box-sizing: border-box;
+  border-radius: 29px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.canvas-tool {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--dark-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-tool[aria-pressed="true"] {
+  background: var(--rim-active-bg);
+  border-color: var(--rim-active-border);
+  box-shadow:
+    inset 0 0 12px color-mix(in srgb, var(--violet-300) 40%, transparent),
+    0 0 14px color-mix(in srgb, var(--violet-500) 70%, transparent);
+  color: var(--white);
+}
+
+.canvas-tool:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.canvas-undo {
+  border: none;
+}
+
+.canvas-tools-rule {
+  width: 28px;
+  height: 1px;
+  margin: 4px 0;
+  background: color-mix(in srgb, var(--violet-300) 35%, transparent);
+}
+
+.canvas-minimap {
+  position: absolute;
+  right: 28px;
+  top: 648px;
+  width: 200px;
+  height: 124px;
+  box-sizing: border-box;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.canvas-minimap-card {
+  position: absolute;
+  border-radius: 3px;
+}
+
+.canvas-minimap-view {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.5px solid var(--cyan-400);
+  border-radius: 4px;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cyan-400) 60%, transparent);
+}
+
+.canvas-zoom {
+  position: absolute;
+  right: 28px;
+  top: 788px;
+  height: 50px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.canvas-zoom button {
+  width: 44px;
+  height: 40px;
+  border-radius: 20px;
+  border: none;
+  background: none;
+  color: var(--dark-text);
+  cursor: pointer;
+  font: 700 18px var(--font-sans);
+}
+
+.canvas-zoom .canvas-zoom-level {
+  width: auto;
+  min-width: 60px;
+  font: 600 13px var(--font-display);
+}
+
+/* ── the save state after the breadcrumb ── */
+
+.canvas-save {
+  margin-left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--c-success-text);
+}
+
+.canvas-save-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orbit-tint-obs);
+  box-shadow: 0 0 8px var(--orbit-tint-obs);
+}
+
+.canvas-save[data-status="pending"],
+.canvas-save[data-status="saving"] {
+  color: var(--c-text-muted);
+}
+
+.canvas-save[data-status="pending"] .canvas-save-dot,
+.canvas-save[data-status="saving"] .canvas-save-dot {
+  background: var(--violet-300);
+  box-shadow: none;
+}
+
+.canvas-save[data-status="failed"],
+.canvas-save[data-status="offline"],
+.canvas-save[data-status="stale"] {
+  color: var(--c-warn-text);
+}
+
+.canvas-save[data-status="failed"] .canvas-save-dot,
+.canvas-save[data-status="offline"] .canvas-save-dot,
+.canvas-save[data-status="stale"] .canvas-save-dot {
+  background: var(--amber-500);
+  box-shadow: 0 0 8px var(--amber-500);
+}
+
+.canvas-save-action {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 14px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+/* ── empty board ── */
+
+.canvas-empty {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  box-sizing: border-box;
+  padding: 24px;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.canvas-empty-ring {
+  width: 64px;
+  height: 64px;
+  box-sizing: border-box;
+  border-radius: 18px;
+  border: 2px dashed var(--c-text-muted);
+}
+
+.canvas-empty-title {
+  margin: 0;
+  font: 700 20px var(--font-display);
+}
+
+.canvas-empty-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.canvas-empty-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── dialogs ── */
+
+.canvas-dialog-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.canvas-dialog-text {
+  height: 96px;
+  padding: 10px 14px;
+  resize: vertical;
+}
+
+.canvas-dialog-select {
+  height: 40px;
+}
+
+.canvas-dialog-muted {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.canvas-dialog-connections ul,
+.canvas-dialog-documents {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.canvas-dialog-connections li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.canvas-dialog-documents {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.canvas-dialog-document {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* ── /canvas: the list ── */
+
+.canvas-list {
+  position: relative;
+  min-height: 900px;
+}
+
+.canvas-list-panel {
+  position: absolute;
+  left: 112px;
+  top: 122px;
+  width: 760px;
+  box-sizing: border-box;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.canvas-list-title {
+  margin: 0;
+  font: 700 28px var(--font-display);
+}
+
+.canvas-list-lead,
+.canvas-list-muted,
+.canvas-list-message {
+  margin: 0;
+  font-size: 14px;
+  color: var(--c-text-muted);
+}
+
+.canvas-list-message {
+  color: var(--c-warn-text);
+}
+
+.canvas-list-create {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.canvas-list-create .kf-field {
+  flex: 1;
+}
+
+.canvas-list-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.canvas-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.canvas-list-link {
+  flex: 1;
+  min-height: 56px;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  background: var(--well-bg);
+  box-shadow: var(--well-shadow);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.canvas-list-name {
+  font-weight: 700;
+}
+
+.canvas-list-meta {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}

@@ -50,10 +50,16 @@ interface AppShellProps {
   children?: ReactNode;
 }
 
+/** The Graph or Canvas of the Space `spaceHref` opens (`/s/<slug>`), else of no Space in particular. */
+export function spaceViewHref(base: string, spaceHref: string): string {
+  const slug = /^\/s\/([A-Za-z0-9_-]+)$/.exec(spaceHref)?.[1];
+  return slug ? `${base}?${new URLSearchParams({ space: slug }).toString()}` : base;
+}
+
 function railItems(t: Translate, spaceHref: string): LensRailItem[] {
   return [
     { id: 'universe', label: t('shell.rail.universe'), href: SHELL_PATHS.universe, icon: 'home', spaceAfter: 6 },
-    { id: 'graph', label: t('shell.rail.graph'), href: SHELL_PATHS.graph, icon: 'graph', spaceAfter: 22 },
+    { id: 'graph', label: t('shell.rail.graph'), href: spaceViewHref(SHELL_PATHS.graph, spaceHref), icon: 'graph', spaceAfter: 22 },
     { id: 'create', label: t('shell.rail.create'), href: SHELL_PATHS.mine, icon: 'plus', kind: 'create', spaceAfter: 8 },
     { id: 'search', label: t('shell.rail.search'), href: SHELL_PATHS.search, icon: 'search' },
     { id: 'copilot', label: t('shell.rail.copilot'), href: SHELL_PATHS.copilot, icon: 'sparkles' },
@@ -63,11 +69,11 @@ function railItems(t: Translate, spaceHref: string): LensRailItem[] {
   ];
 }
 
-function viewItems(t: Translate, docHref: string): ViewNavItem[] {
+function viewItems(t: Translate, docHref: string, spaceHref: string): ViewNavItem[] {
   return [
     { id: 'orbit', label: t('shell.view.orbit'), href: SHELL_PATHS.universe, icon: 'orbit' },
-    { id: 'graph', label: t('shell.view.graph'), href: SHELL_PATHS.graph, icon: 'graph' },
-    { id: 'canvas', label: t('shell.view.canvas'), href: SHELL_PATHS.canvas, icon: 'canvas' },
+    { id: 'graph', label: t('shell.view.graph'), href: spaceViewHref(SHELL_PATHS.graph, spaceHref), icon: 'graph' },
+    { id: 'canvas', label: t('shell.view.canvas'), href: spaceViewHref(SHELL_PATHS.canvas, spaceHref), icon: 'canvas' },
     { id: 'docs', label: t('shell.view.docs'), href: docHref, icon: 'docs' },
   ];
 }
@@ -165,7 +171,7 @@ export function AppShell({
     <UniverseBackdrop veil={veil} stars={stars} className={[`app-shell board-frame`, palette.open ? 'app-shell-palette' : '', className ?? ''].filter(Boolean).join(' ')}>
       <div className="app-shell-chrome">
         <BrandLogo />
-        <ViewNav label={t('shell.views')} items={viewItems(t, docHref)} activeId={view ?? ''} className="app-shell-nav" />
+        <ViewNav label={t('shell.views')} items={viewItems(t, docHref, spaceHref)} activeId={view ?? ''} className="app-shell-nav" />
         <TopActions inboxHref={SHELL_PATHS.inbox} unread={unread} searchHref={SHELL_PATHS.search} onCommand={palette.toggle} commandOpen={palette.open} className="app-shell-top" />
         <LensRail label={t('shell.rail')} items={railItems(t, spaceHref)} activeId={rail} account={account} className="app-shell-rail" />
         {breadcrumb && breadcrumb.length > 0 && <Breadcrumb items={breadcrumb} label={t('shell.breadcrumb')} action={crumbAction} />}

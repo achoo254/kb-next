@@ -29,7 +29,8 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C12', titleKey: 'screen.C12', access: 'signed-in', pattern: /^\/search$/ },
   { code: 'C14', titleKey: 'screen.C14', access: 'signed-in', pattern: /^\/copilot$/ },
   { code: 'C13', titleKey: 'screen.C13', access: 'signed-in', pattern: /^\/graph$/ },
-  { code: 'C15', titleKey: 'screen.C15', access: 'signed-in', pattern: /^\/canvas$/ },
+  // /canvas lists the account's canvases (and creates one), /canvas/:id opens one.
+  { code: 'C15', titleKey: 'screen.C15', access: 'signed-in', pattern: new RegExp(`^/canvas(?:/${segment})?$`) },
   { code: 'C08', titleKey: 'screen.C08', access: 'signed-in', pattern: /^\/me$/ },
   { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },

@@ -184,6 +184,11 @@
   --stage-glass-low: #281864;
   --stage-glass-bottom: #1e1250;
 
+  /* the Graph's stage (board C13: rgb 20 15 52 → 10 8 30) and the dark core of its node orbs */
+  --graph-stage-top: #140f34;
+  --graph-stage-bottom: #0a081e;
+  --graph-node-core: #140a36;
+
   /* Crystal tints (KIT §0): light tint = icon stroke, deep tint = glow. Each Space carries one. */
   --tint-net: #c4b5fd;
   --glow-net: #8b5cf6;
