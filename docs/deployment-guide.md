@@ -72,7 +72,7 @@ chép thành file env của `apps/server`.
 | `MEILI_MASTER_KEY` | khoá ngẫu nhiên sinh trên server (≥ 16 ký tự, nên `openssl rand -hex 32`); container `kb-meili` đọc cùng dòng này |
 | `HOC_CLOUD_URL` | không cần đặt: lệnh nhập Học Cloud mặc định đọc `https://hoc-cloud.inetdev.io.vn` (API công khai) |
 | `TYPESAFE_API_KEY` | không bắt buộc: key TypeSafe cho Jev (chọn chú thích dưới pha lê ở Universe). Không đặt thì chú thích là "<số> bài" |
-| `USER_KEYS_SECRET_PATH` | `/etc/kb/user-keys-secret` (mục Key riêng). Không bắt buộc: không đặt, thiếu tệp hay tệp sai thì Key riêng, Copilot và dịch bằng AI tắt (503), phần còn lại vẫn chạy |
+| `USER_KEYS_SECRET_PATH` | `/etc/kb-keys/user-keys-secret` (mục Key riêng). Không bắt buộc: không đặt, thiếu tệp hay tệp sai thì Key riêng, Copilot và dịch bằng AI tắt (503), phần còn lại vẫn chạy |
 | `KB_SEED` | không đặt: chỉ dùng khi dev/E2E (`mock` nạp dữ liệu mẫu lúc khởi động); production từ chối khởi động nếu có |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
@@ -134,27 +134,31 @@ không lộ key. API chỉ trả 4 ký tự cuối; key không vào log. Câu tr
 Server đọc tệp lúc khởi động. Thiếu tệp, khác 32 byte hay quyền rộng hơn 600 thì tính năng tắt (API trả 503
 `USER_KEYS_DISABLED`) và server vẫn chạy; log khởi động ghi `own AI keys: on` hoặc lý do tắt. Service chạy bằng user
 `kb` nên tệp thuộc `kb:kb`, quyền 600 (không dùng `root:kb` 640 như `production.env`: server từ chối mọi quyền của
-nhóm hay người khác).
+nhóm hay người khác). Tệp nằm trong thư mục riêng `/etc/kb-keys` (`kb:kb` 700), không nằm trong `/etc/kb`: thư mục đó
+là `root:root` 700 (systemd đọc `production.env` bằng root), user `kb` không vào được và server báo `EACCES` (gặp lúc
+bật lần đầu, 05/11/2026).
 
-**Lần đầu** (không ghi đè tệp đã có: tạo lại là mọi key đã lưu không giải mã được nữa):
+**Lần đầu** (không ghi đè tệp đã có: tạo lại là mọi key đã lưu không giải mã được nữa; đã làm 05/11/2026):
 
 ```sh
 # trên server, quyền root
-if [ -e /etc/kb/user-keys-secret ]; then
+install -d -o kb -g kb -m 700 /etc/kb-keys
+if [ -e /etc/kb-keys/user-keys-secret ]; then
   echo "đã có tệp bí mật: giữ nguyên"
 else
-  (umask 077 && head -c 32 /dev/urandom > /etc/kb/user-keys-secret)
-  chown kb:kb /etc/kb/user-keys-secret
-  chmod 600 /etc/kb/user-keys-secret
+  (umask 077 && head -c 32 /dev/urandom > /etc/kb-keys/user-keys-secret)
+  chown kb:kb /etc/kb-keys/user-keys-secret
+  chmod 600 /etc/kb-keys/user-keys-secret
 fi
-stat -c '%U:%G %a %s' /etc/kb/user-keys-secret   # kb:kb 600 32
-grep -q '^USER_KEYS_SECRET_PATH=' /etc/kb/production.env || echo 'USER_KEYS_SECRET_PATH=/etc/kb/user-keys-secret' >>/etc/kb/production.env
+stat -c '%U:%G %a %s' /etc/kb-keys/user-keys-secret   # kb:kb 600 32
+grep -q '^USER_KEYS_SECRET_PATH=' /etc/kb/production.env || echo 'USER_KEYS_SECRET_PATH=/etc/kb-keys/user-keys-secret' >>/etc/kb/production.env
 systemctl restart kb-server
 journalctl -u kb-server -n 30 --no-pager | grep 'own AI keys'
 ```
 
 **Sao lưu:** chép tệp bí mật ra nơi riêng, tách khỏi bản sao lưu database (thư mục env trên iCloud,
-`ENV production/kb-next/`). Không in nội dung tệp ra màn hình hay log. Mất hoặc đổi tệp thì các key đã lưu thành
+`ENV production/kb-next/user-keys-secret`; đã chép 05/11/2026, sha256 khớp bản trên server). Không in nội dung tệp ra
+màn hình hay log. Mất hoặc đổi tệp thì các key đã lưu thành
 `unreadable` và người dùng phải nhập lại; không có cách khôi phục từ database.
 
 **Kiểm sau deploy:** đăng nhập rồi mở `/api/me/keys`: `available` là `true`.
