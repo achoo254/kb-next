@@ -1,8 +1,16 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
 const LOOPBACK_HOSTS = ['127.0.0.1', 'localhost', '[::1]'];
 export const DEFAULT_ISSUER = 'https://auth.hoandat.com';
 export const DEFAULT_CLIENT_ID = 'kb-web';
+/** Apache Tika server on the same host (loopback), shared with other apps. */
+export const DEFAULT_TIKA_URL = 'http://127.0.0.1:9998';
+/** Uploaded files in production: outside the web root, owned by the user running `kb-server`. */
+export const PRODUCTION_FILES_DIR = '/var/lib/kb/files';
+/** Uploaded files on a developer's machine: next to the dev PGlite directory (`.data/`, gitignored). */
+export const DEV_FILES_DIR = fileURLToPath(new URL('../../../.data/files', import.meta.url));
 
 /** An env line with nothing after `=` counts as not set. */
 const emptyIsUnset = (value: unknown): unknown => (value === '' ? undefined : value);
@@ -32,6 +40,10 @@ const Env = z.object({
    * the wrong size or too open: own keys are off (the Copilot answers 503) and the server still runs.
    */
   USER_KEYS_SECRET_PATH: z.preprocess(emptyIsUnset, z.string().min(1).optional()),
+  /** Apache Tika server that extracts the text of uploaded files (and OCRs scanned pages); loopback, or https. */
+  TIKA_URL: z.preprocess(emptyIsUnset, z.url().default(DEFAULT_TIKA_URL)),
+  /** Directory of uploaded files (`<FILES_DIR>/<storageKey>`); default /var/lib/kb/files in production, .data/files otherwise. */
+  FILES_DIR: z.preprocess(emptyIsUnset, z.string().min(1).optional()),
   /** `mock`: load the dev seed (the mock's Spaces and documents) at startup, for E2E. Refused in production. */
   KB_SEED: z.preprocess(emptyIsUnset, z.enum(['mock']).optional()),
   /** IdP sub that owns the seed's personal Space and private documents (KB_SEED and `pnpm seed`). */
@@ -88,6 +100,10 @@ export interface ServerConfig {
   keySaveLimitPerMinute: number;
   /** Load the dev seed at startup as this owner (KB_SEED=mock); null otherwise. Never set in production. */
   startupSeed: { ownerSub: string } | null;
+  /** Base URL of the Tika server (no trailing slash). */
+  tikaUrl: string;
+  /** Absolute directory holding uploaded files by their storage key. */
+  filesDir: string;
 }
 
 /** The seed's owner when SEED_OWNER_SUB is unset: the seed admin. */
@@ -122,6 +138,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (Boolean(e.MEILI_URL) !== Boolean(e.MEILI_MASTER_KEY)) {
     throw new Error('Invalid server env: MEILI_URL and MEILI_MASTER_KEY go together');
   }
+  const tikaUrl = new URL(e.TIKA_URL);
+  // File contents travel to Tika: in the clear only to this host.
+  if (tikaUrl.protocol !== 'https:' && (tikaUrl.protocol !== 'http:' || !LOOPBACK_HOSTS.includes(tikaUrl.hostname))) {
+    throw new Error('Invalid server env: TIKA_URL must be loopback http or https');
+  }
+  if (e.FILES_DIR && !path.isAbsolute(e.FILES_DIR)) throw new Error('Invalid server env: FILES_DIR must be an absolute path');
   // The code exchange is only as trustworthy as the TLS it travels over.
   if (e.AUTH_CLIENT_SECRET && env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
     throw new Error('Invalid server env: NODE_TLS_REJECT_UNAUTHORIZED=0 is not allowed with sign-in');
@@ -150,5 +172,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     askLimitPerMinute: 20,
     keySaveLimitPerMinute: 5,
     startupSeed: e.KB_SEED === 'mock' ? { ownerSub: e.SEED_OWNER_SUB ?? DEFAULT_SEED_OWNER_SUB } : null,
+    tikaUrl: tikaUrl.href.replace(/\/$/, ''),
+    filesDir: e.FILES_DIR ?? (production ? PRODUCTION_FILES_DIR : DEV_FILES_DIR),
   };
 }

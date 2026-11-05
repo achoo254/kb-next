@@ -25,6 +25,7 @@ trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02
 Ảnh AI trong `apps/web/public/art/`: xem [`CREDITS.md`](CREDITS.md). Deploy: [`docs/deployment-guide.md`](docs/deployment-guide.md).
 Kiểm giống mock: [`docs/parity-testing.md`](docs/parity-testing.md); chỗ buộc phải khác mock: [`docs/mock-deviations.md`](docs/mock-deviations.md).
 Trình soạn bài (C02, TipTap, Markdown, tự lưu và offline): [`docs/editor.md`](docs/editor.md).
+Trích chữ và OCR tệp tải lên (Tika, chọn trang OCR, cờ chất lượng, hàng đợi): [`docs/text-extraction.md`](docs/text-extraction.md).
 
 ## Chạy
 

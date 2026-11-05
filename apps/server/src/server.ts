@@ -1,9 +1,10 @@
-import { createApp } from './app';
+import { createApp, jevWithUsage } from './app';
 import { loadConfig } from './config';
 import { purgeExpiredSessions } from './auth/session-store';
 import { openConfiguredDatabase } from './db/client';
 import { seedMockCaptions } from './captions/seed-captions';
 import { seedDatabase } from './db/seed-database';
+import { startExtraction } from './extract';
 import { safeErrorText } from './log-error';
 import { startSearch } from './search/search-service';
 import { startTrashPurge } from './authoring/trash-purge';
@@ -43,6 +44,16 @@ await housekeeping();
 const housekeepingTimer = setInterval(() => void housekeeping(), HOUSEKEEPING_INTERVAL_MS);
 housekeepingTimer.unref();
 
+// Text extraction of uploaded files: one file at a time through Tika, resuming what a restart interrupted. Tika being
+// down does not stop the server: jobs wait and retry.
+const extraction = await startExtraction({
+  config,
+  db: database.db,
+  jev: config.typesafeApiKey ? jevWithUsage(config.typesafeApiKey, database.db, () => new Date()) : null,
+  sync: search?.sync ?? null,
+});
+console.log(`text extraction: Tika at ${config.tikaUrl}, files in ${config.filesDir}`);
+
 // The trash keeps a deleted document 30 days (C08): purged at start, then daily. Not on the mock seed (dev/E2E): its
 // trash is dated on the boards' fixed day (03/11/2026), which the real clock would purge out from under them.
 const trashPurge = config.startupSeed ? null : startTrashPurge(database.db, search?.sync ?? null);
@@ -65,6 +76,7 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
   console.log(`${signal}: closing`);
   clearInterval(housekeepingTimer);
   trashPurge?.stop();
+  extraction.close();
   search?.close();
   server.close();
   try {

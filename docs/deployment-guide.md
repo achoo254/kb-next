@@ -12,6 +12,7 @@ hay user máy chủ vào đây; dùng alias SSH (`SSH_TARGET`) và placeholder n
 | Web (React + Vite, tĩnh) | `/var/www/kb/current/apps/web/dist`, nginx phục vụ trực tiếp |
 | API (Node, Express 5, một file bundle) | systemd `kb-server`, loopback `127.0.0.1:5320`, Node 22 ở `/opt/node22`, `MemoryHigh=300M`, `MemoryMax=400M` |
 | Tìm kiếm | Meilisearch riêng của kb, container Docker `kb-meili` (bản ghim `v1.56.1`), loopback `127.0.0.1:5322`, `--memory=512m`, dữ liệu `/var/lib/kb/meili` (mục Meilisearch) |
+| Trích chữ tệp tải lên | Apache Tika 2.9.3 dùng chung trên `.65` (loopback `127.0.0.1:9998`, có Tesseract `vie`/`eng`), gọi từ ngay process `kb-server`, một tệp một lúc ([text-extraction.md](text-extraction.md)) |
 | Database | Postgres dùng chung trên `.65`, database `kb`, role `kb` (dòng `host kb kb 127.0.0.1/32 scram-sha-256` trong `pg_hba.conf`); migration chạy khi server khởi động |
 | Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/healthz` sang API |
 | Đăng nhập | client `kb-web` trên `auth.hoandat.com` (mục Đăng nhập) |
@@ -79,6 +80,8 @@ chép thành file env của `apps/server`.
 | `HOC_CLOUD_URL` | không cần đặt: lệnh nhập Học Cloud mặc định đọc `https://hoc-cloud.inetdev.io.vn` (API công khai) |
 | `TYPESAFE_API_KEY` | không bắt buộc: key TypeSafe cho Jev (chọn chú thích dưới pha lê ở Universe). Không đặt thì chú thích là "<số> bài" |
 | `USER_KEYS_SECRET_PATH` | `/etc/kb-keys/user-keys-secret` (mục Key riêng). Không bắt buộc: không đặt, thiếu tệp hay tệp sai thì Key riêng, Copilot và dịch bằng AI tắt (503), phần còn lại vẫn chạy |
+| `TIKA_URL` | không cần đặt: mặc định `http://127.0.0.1:9998` (Tika dùng chung); `http` chỉ được trên loopback |
+| `FILES_DIR` | không cần đặt: mặc định `/var/lib/kb/files` (tệp tải lên, đọc để trích chữ; [text-extraction.md](text-extraction.md)) |
 | `KB_SEED` | không đặt: chỉ dùng khi dev/E2E (`mock` nạp dữ liệu mẫu lúc khởi động); production từ chối khởi động nếu có |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
@@ -176,6 +179,18 @@ cung cấp. Production luôn đặt `TYPESAFE_API_KEY`.
 **Chỉ mục có thêm `collectionId`** (lọc phạm vi Collection của Copilot ngay trong Meilisearch): sau lần deploy đầu
 tiên có trường này, chạy lệnh dựng lại chỉ mục ở mục Meilisearch một lần. Chưa dựng lại thì hỏi trong phạm vi
 Collection chỉ còn tìm theo nghĩa (đoạn cũ trong chỉ mục chưa có `collectionId`).
+
+## Trích chữ tệp tải lên
+
+Tệp tải lên (docx, xlsx, pptx, pdf, md, tối đa 25 MB) đi qua dây chuyền trích chữ trong process `kb-server`: Tika dùng
+chung trên `.65` đọc chữ có sẵn và OCR trang quét bằng Tesseract `vie+eng`, kb chấm chất lượng, chia đoạn, Jev gợi ý
+Collection, rồi lập chỉ mục. Một tệp một lúc, tối đa 3 lượt, trạng thái ở bảng `extract_jobs`; khởi động lại thì chạy
+tiếp các job dở. Chi tiết (thông số Tika, cách chọn trang OCR, cờ chất lượng, mã lỗi, hợp đồng cho API tải lên):
+[text-extraction.md](text-extraction.md).
+
+Log khởi động ghi `text extraction: Tika at <TIKA_URL>, files in <FILES_DIR>`. Tika không phản hồi thì API vẫn chạy:
+job chờ rồi thử lại, log `extract: file <id> will retry (tika-unavailable …)`. Không restart hay đổi cấu hình Tika khi
+chưa kiểm RAM trống của máy: các app khác cũng dùng nó.
 
 ## Nhập nội dung Học Cloud
 

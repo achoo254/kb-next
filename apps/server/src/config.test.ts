@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadConfig } from './config';
+import { DEV_FILES_DIR, PRODUCTION_FILES_DIR, loadConfig } from './config';
 
 const SECRET = 's'.repeat(40);
 
@@ -105,5 +105,28 @@ describe('server config', () => {
       askLimitPerMinute: 20,
       keySaveLimitPerMinute: 5,
     });
+  });
+
+  it('reaches Tika on loopback by default, over http only on loopback', () => {
+    expect(loadConfig({}).tikaUrl).toBe('http://127.0.0.1:9998');
+    expect(loadConfig({ TIKA_URL: 'http://localhost:9999/' }).tikaUrl).toBe('http://localhost:9999');
+    expect(loadConfig({ TIKA_URL: 'https://tika.example' }).tikaUrl).toBe('https://tika.example');
+    expect(() => loadConfig({ TIKA_URL: 'http://tika.example:9998' })).toThrow(/TIKA_URL/);
+  });
+
+  it('keeps uploaded files under FILES_DIR, /var/lib/kb/files in production and .data/files in dev', () => {
+    const prod = {
+      NODE_ENV: 'production',
+      PUBLIC_URL: 'https://kb.hoandat.com',
+      DATABASE_URL: 'postgres://kb@127.0.0.1/kb',
+      AUTH_CLIENT_SECRET: SECRET,
+      MEILI_URL: 'http://127.0.0.1:7700',
+      MEILI_MASTER_KEY: SECRET,
+    };
+    expect(loadConfig(prod).filesDir).toBe(PRODUCTION_FILES_DIR);
+    expect(loadConfig({}).filesDir).toBe(DEV_FILES_DIR);
+    expect(DEV_FILES_DIR).toMatch(/[/\\]\.data[/\\]files$/);
+    expect(loadConfig({ FILES_DIR: '/srv/kb-files' }).filesDir).toBe('/srv/kb-files');
+    expect(() => loadConfig({ FILES_DIR: 'relative/files' })).toThrow(/FILES_DIR/);
   });
 });

@@ -600,3 +600,90 @@ export const jevUsageDaily = pgTable(
   },
   (table) => [primaryKey({ columns: [table.day, table.purpose] })],
 );
+
+export const extractStatus = pgEnum('extract_status', ['queued', 'running', 'waiting', 'done', 'failed']);
+
+/** The steps of an uploaded file's processing, in the order C16 shows them. */
+export const EXTRACT_STEPS = ['upload', 'ocr', 'structure', 'chunk', 'classify', 'index'] as const;
+export type ExtractStepName = (typeof EXTRACT_STEPS)[number];
+export type ExtractStepState = 'pending' | 'running' | 'done' | 'failed' | 'skipped';
+
+/**
+ * What the reader can do about a problem (C16 shows it in the reader's language): `rescan` a page more clearly,
+ * `export-text-pdf` from the source program instead of scanning, `remove-password`, `resave-file` (open and save
+ * again), `convert-format` (to docx, xlsx, pptx, pdf or md), `smaller-file` (under 25 MB), `upload-again`,
+ * `retry-later`.
+ */
+export type ExtractFixHint =
+  | 'rescan'
+  | 'export-text-pdf'
+  | 'remove-password'
+  | 'resave-file'
+  | 'convert-format'
+  | 'smaller-file'
+  | 'upload-again'
+  | 'retry-later';
+
+/** A page whose OCR text was too poor to index: left out of the chunks, flagged on C16 with what to do. */
+export interface LowQualityPage {
+  page: number;
+  /** 0–1, the page's quality score. */
+  score: number;
+  hint: ExtractFixHint;
+}
+
+/** What a finished step tells C16; each field belongs to the step that sets it. */
+export interface ExtractStepDetail {
+  /** ocr: pages of the file, pages sent to OCR, and the mean quality of the OCR pages (null when none). */
+  pages?: number;
+  ocrPages?: number[];
+  quality?: number | null;
+  lowQualityPages?: LowQualityPage[];
+  /** structure: how the file was read (`pdf`, `office`, `markdown`). */
+  format?: 'pdf' | 'office' | 'markdown';
+  /** chunk and index: passages made / written. */
+  chunks?: number;
+  /** Why a step was skipped (`no-scanned-pages`, `jev-off`, `jev-failed`, `superseded`, `search-off`…). */
+  reason?: string;
+}
+
+export interface ExtractStep {
+  step: ExtractStepName;
+  state: ExtractStepState;
+  detail?: ExtractStepDetail;
+}
+
+/** Jev's suggestions for where an uploaded file goes (C16 "Jev gợi ý"), pending until the owner accepts them. */
+export interface ExtractSuggestions {
+  status: 'pending' | 'accepted' | 'dismissed';
+  /** The Collection Jev chose among those of the owner's visible Spaces, with its probability; null: none fitted. */
+  collection: { collectionId: string; spaceId: string; probability: number } | null;
+  /** Candidate tags Jev judged fitting (probability ≥ 0.5), most likely first. */
+  tags: Array<{ tag: string; probability: number }>;
+}
+
+/**
+ * Text extraction of an uploaded file (src/extract/): one row per file, processed one file at a time by the server's
+ * in-process queue, which picks up `queued` rows (and `waiting` ones whose `nextAttemptAt` has come) at start and
+ * after each job. `steps` is the C16 pipeline, `attempts` the runs so far (3 at most), `errorCode` and `errorHint`
+ * the last failure. Never holds the file's text.
+ */
+export const extractJobs = pgTable(
+  'extract_jobs',
+  {
+    fileId: uuid('file_id')
+      .primaryKey()
+      .references(() => files.id, { onDelete: 'cascade' }),
+    status: extractStatus('status').notNull().default('queued'),
+    steps: jsonb('steps').$type<ExtractStep[]>().notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    errorCode: text('error_code'),
+    errorHint: text('error_hint').$type<ExtractFixHint>(),
+    suggestions: jsonb('suggestions').$type<ExtractSuggestions>(),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (table) => [index('extract_jobs_status_idx').on(table.status, table.createdAt)],
+);
