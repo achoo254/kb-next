@@ -3,10 +3,13 @@ import helmet from 'helmet';
 import { sql } from 'drizzle-orm';
 import { AccountBudget } from './api/account-limit';
 import { activityRoutes } from './api/activity-routes';
+import { DOCUMENT_BODY_LIMIT, authoringRoutes } from './api/authoring-routes';
 import { CANVAS_BODY_LIMIT, canvasRoutes } from './api/canvas-routes';
 import { contentRoutes } from './api/content-routes';
 import { graphRoutes } from './api/graph-routes';
+import { historyRoutes } from './api/history-routes';
 import { meRoutes } from './api/me-routes';
+import { myContentRoutes } from './api/my-content-routes';
 import { authRoutes } from './auth/auth-routes';
 import { backchannelLogoutRoute } from './auth/backchannel-logout';
 import { type IdpMetadata, idpMetadata } from './auth/idp-metadata';
@@ -16,6 +19,7 @@ import type { Db } from './db/client';
 import { SpaceCaptions } from './captions/space-captions';
 import { askRoutes } from './copilot/ask-routes';
 import { translateRoutes } from './copilot/translate-routes';
+import { WRITE_BODY_LIMIT, writeRoutes } from './copilot/write-routes';
 import { HttpError } from './http-error';
 import { JevClient, type JevJudge, type JevUsageLog } from './jev/jev-client';
 import { JevUsageStore } from './jev/jev-usage';
@@ -60,8 +64,9 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
 
 /**
  * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
- * (/api/me), the reading API (Spaces, documents, recent), the Graph and Canvas, search, the account's own AI keys,
- * the Copilot and AI translation (both on those keys). The web app is static (nginx in production, Vite in dev).
+ * (/api/me), the reading API (Spaces, documents, recent), writing (documents, versions, trash, favourites, Spaces and
+ * Collections), the Graph and Canvas, search, the account's own AI keys, the Copilot, AI translation and AI writing
+ * (all three on those keys). The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
@@ -91,11 +96,17 @@ export function createApp({
   app.use(requireSameOrigin(config.publicOrigin));
   // A canvas (its cards and connections) is saved whole: a larger body than the rest of the API takes.
   app.use('/api/canvases', express.json({ limit: CANVAS_BODY_LIMIT }));
+  // A document (the editor's save) and the draft AI writing reads are larger too.
+  app.use('/api/documents', express.json({ limit: DOCUMENT_BODY_LIMIT }));
+  app.use('/api/write', express.json({ limit: WRITE_BODY_LIMIT }));
   app.use(express.json({ limit: '32kb' }));
   app.use(authRoutes({ config, db, idp, now }));
   app.use(meRoutes({ config, db, now }));
   app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
   app.use(activityRoutes({ config, db, now }));
+  app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
+  app.use(historyRoutes({ config, db, now, sync: search?.sync ?? null }));
+  app.use(myContentRoutes({ config, db, now }));
   app.use(graphRoutes({ config, db, now, jev, summaries }));
   app.use(canvasRoutes({ config, db, now, jev }));
   app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));
@@ -105,6 +116,7 @@ export function createApp({
   app.use(keyRoutes({ config, db, now, keys, bases: aiBases }));
   app.use(askRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries, keys, bases: aiBases, aiBudget }));
   app.use(translateRoutes({ config, db, now, keys, bases: aiBases, sync: search?.sync ?? null, aiBudget }));
+  app.use(writeRoutes({ config, db, now, keys, bases: aiBases, aiBudget }));
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'not-found')));
 

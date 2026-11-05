@@ -184,6 +184,8 @@ export const documents = pgTable(
     createdAt: createdAt(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    /** The colour of the document's planet (C02 "Hành tinh của bài", C08), one of PLANET_COLOURS; null: the default. */
+    planet: text('planet'),
   },
   (table) => [
     index('documents_space_id_idx').on(table.spaceId),
@@ -191,8 +193,13 @@ export const documents = pgTable(
     index('documents_author_id_idx').on(table.authorId),
     index('documents_status_hidden_idx').on(table.status, table.hidden),
     index('documents_translation_group_id_idx').on(table.translationGroupId),
+    // The trash purge looks only at documents in the trash.
+    index('documents_deleted_at_idx').on(table.deletedAt).where(sql`${table.deletedAt} is not null`),
   ],
 );
+
+/** The planet colours a document may take (C02 "Hành tinh của bài"); the web maps each to its tokens. */
+export const PLANET_COLOURS = ['violet', 'teal', 'cyan', 'amber', 'emerald', 'pink'] as const;
 
 /**
  * Stored files: `storageKey` is the random name on the server's disk (the original name is only metadata), with
@@ -216,7 +223,18 @@ export const files = pgTable(
   (table) => [index('files_owner_id_idx').on(table.ownerId), index('files_document_id_idx').on(table.documentId)],
 );
 
-/** Each saved version of a document (C17): markdown, or a stored file (Office). `version` counts from 1. */
+/**
+ * How a version came to be: written in the editor (C02), sent through the admin API, imported, restored from an
+ * earlier version (C17), or an AI translation (F04).
+ */
+export const versionVia = pgEnum('version_via', ['editor', 'api', 'import', 'restore', 'translation']);
+
+/**
+ * Each saved version of a document (C17): markdown, or a stored file (Office). `version` counts from 1. Saves from
+ * the editor by the same person within two minutes of a version's `createdAt` update that version (`updatedAt` is its
+ * last save) instead of adding one. `aiMade`: its text was written by AI; `summary`: the change in a few words, when
+ * given; `restoredFrom`: the version a restore copied.
+ */
 export const documentVersions = pgTable(
   'document_versions',
   {
@@ -230,7 +248,12 @@ export const documentVersions = pgTable(
     editorId: uuid('editor_id')
       .notNull()
       .references(() => users.id),
+    via: versionVia('via').notNull().default('editor'),
+    aiMade: boolean('ai_made').notNull().default(false),
+    summary: text('summary'),
+    restoredFrom: integer('restored_from'),
     createdAt: createdAt(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     unique('document_versions_document_version_unique').on(table.documentId, table.version),

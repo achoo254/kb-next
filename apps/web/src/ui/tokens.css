@@ -213,6 +213,26 @@
   --orbit-tint-weekly: #e879f9;
   --orbit-tint-personal: #f472b6;
 
+  /* the planet colours of a document (board C02 "Hành tinh của bài"): body, highlight, shadow side */
+  --planet-violet: #7c3aed;
+  --planet-violet-hi: #c4b5fd;
+  --planet-violet-deep: #2e1065;
+  --planet-teal: #06b6d4;
+  --planet-teal-hi: #a5f3fc;
+  --planet-teal-deep: #164e63;
+  --planet-cyan: #22d3ee;
+  --planet-cyan-hi: #cffafe;
+  --planet-cyan-deep: #155e75;
+  --planet-amber: #f59e0b;
+  --planet-amber-hi: #fde68a;
+  --planet-amber-deep: #78350f;
+  --planet-emerald: #10b981;
+  --planet-emerald-hi: #a7f3d0;
+  --planet-emerald-deep: #064e3b;
+  --planet-pink: #ec4899;
+  --planet-pink-hi: #fbcfe8;
+  --planet-pink-deep: #831843;
+
   /* the hero title gradient (Inter 700) */
   --hero-1: #7dd3fc;
   --hero-2: #60a5fa;

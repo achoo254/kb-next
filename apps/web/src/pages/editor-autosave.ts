@@ -1,0 +1,309 @@
+/**
+ * Autosave of the editor (C02, board Interaction: "Tự lưu sau 800ms ngừng gõ", ⌘S saves at once). Every edit is
+ * copied into this browser (IndexedDB, editor-drafts.ts) within a moment, and sent to the server 800 ms after typing
+ * pauses, with the `rev` the text started from. The states of the board's save chip:
+ * - `typing`: edited since the last save, waiting for the pause ("Đang gõ…");
+ * - `saving`: on its way ("Đang lưu…");
+ * - `saved`: the server has this text ("Đã lưu 21:24");
+ * - `offline`: no connection; the text waits in this browser and goes as soon as the connection is back
+ *   ("Offline · lưu trên máy");
+ * - `failed`: the server refused or failed ("Lỗi lưu" + "Thử lại");
+ * - `conflict`: someone saved this document elsewhere since this copy started (another tab or device): nothing is
+ *   overwritten until the writer chooses to keep this copy or load the server's.
+ * Leaving the page sends what is pending with a request that outlives it; a copy the server never got is offered
+ * again the next time the document opens.
+ */
+import { useEffect, useState } from 'react';
+import { ApiError, NETWORK_ERROR } from '../api/api-client';
+import { type EditableDocument, type Planet, type SaveRequest, type SaveResult, fetchEditable, saveDocument } from '../api/authoring-api';
+import { type EditorDraft, deleteDraft, readDraft, writeDraft } from './editor-drafts';
+
+export const SAVE_DELAY_MS = 800;
+/** The browser copy is written this long after an edit (and at once on leaving). */
+export const DRAFT_DELAY_MS = 250;
+/** The browser says it is online but the server did not answer: try again after this long. */
+export const RETRY_MS = 15_000;
+
+export type SaveStatus = 'saved' | 'typing' | 'saving' | 'offline' | 'failed' | 'conflict';
+
+export interface Snapshot {
+  title: string;
+  body: string;
+  planet: Planet | null;
+}
+
+export interface AutosaveState {
+  status: SaveStatus;
+  /** When the server last saved this text (ISO). */
+  savedAt: string;
+  version: number;
+}
+
+export interface AutosaveDeps {
+  save(id: string, request: SaveRequest, keepalive?: boolean): Promise<SaveResult>;
+  fetchDoc(id: string): Promise<EditableDocument>;
+  writeDraft(draft: EditorDraft): Promise<boolean>;
+  deleteDraft(id: string): Promise<void>;
+  online(): boolean;
+}
+
+const LIVE_DEPS: AutosaveDeps = {
+  save: saveDocument,
+  fetchDoc: fetchEditable,
+  writeDraft,
+  deleteDraft,
+  online: () => typeof navigator === 'undefined' || navigator.onLine,
+};
+
+function sameText(a: Snapshot, b: Snapshot): boolean {
+  return a.title === b.title && a.body === b.body && a.planet === b.planet;
+}
+
+/** The chip of a document as it opens: saved, or the state of the copy this browser opened instead. */
+export function initialAutosaveState(doc: EditableDocument, opened: OpenedAs): AutosaveState {
+  const status: SaveStatus = opened === 'clean' ? 'saved' : opened === 'unsaved' ? 'typing' : opened;
+  return { status, savedAt: doc.savedAt, version: doc.version };
+}
+
+/** The autosave of one open document; the screen calls `edited` on every change and renders `state`. */
+export class DocumentAutosave {
+  private rev: string;
+  private read: () => Snapshot;
+  /** Edits made so far, and how many of them the server has. */
+  private edits = 0;
+  private savedEdits = 0;
+  private inFlight = false;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
+  private draftTimer: ReturnType<typeof setTimeout> | null = null;
+  private disposed = false;
+  state: AutosaveState;
+
+  constructor(
+    private readonly doc: EditableDocument,
+    start: Snapshot,
+    private readonly onChange: (state: AutosaveState) => void,
+    /** `unsaved`: the copy opened is newer than the server's (restored from this browser); `conflict`: it started from an older rev. */
+    opened: 'clean' | 'unsaved' | 'conflict' | 'offline' = 'clean',
+    baseRev: string = doc.rev,
+    private readonly deps: AutosaveDeps = LIVE_DEPS,
+  ) {
+    this.rev = baseRev;
+    this.read = () => start;
+    this.state = initialAutosaveState(doc, opened);
+    if (opened !== 'clean') this.edits = 1;
+    this.opened = opened;
+  }
+
+  private readonly opened: 'clean' | 'unsaved' | 'conflict' | 'offline';
+
+  /** Starts what the opened copy needs: a newer copy from this browser is sent at once; an offline one is tried soon. */
+  begin(): void {
+    if (this.opened === 'unsaved') this.schedule(0);
+    // Opened from this browser's copy because the server did not answer: try it once things settle.
+    if (this.opened === 'offline') this.schedule(SAVE_DELAY_MS);
+  }
+
+  private set(patch: Partial<AutosaveState>): void {
+    if (this.disposed) return;
+    this.state = { ...this.state, ...patch };
+    this.onChange(this.state);
+  }
+
+  private schedule(delay: number): void {
+    if (this.saveTimer !== null) clearTimeout(this.saveTimer);
+    this.saveTimer = setTimeout(() => {
+      this.saveTimer = null;
+      void this.save();
+    }, delay);
+  }
+
+  private draftOf(snapshot: Snapshot): EditorDraft {
+    return { id: this.doc.id, ...snapshot, baseRev: this.rev, editedAt: Date.now(), doc: this.doc };
+  }
+
+  private keepDraft(): void {
+    if (this.draftTimer !== null) clearTimeout(this.draftTimer);
+    this.draftTimer = null;
+    void this.deps.writeDraft(this.draftOf(this.read()));
+  }
+
+  /** A change in the editor; `read` gives its text when it is needed (serializing on every key would be wasteful). */
+  edited(read: () => Snapshot): void {
+    if (this.disposed) return;
+    this.read = read;
+    this.edits += 1;
+    if (this.draftTimer !== null) clearTimeout(this.draftTimer);
+    this.draftTimer = setTimeout(() => this.keepDraft(), DRAFT_DELAY_MS);
+    if (this.state.status === 'conflict') return;
+    if (!this.deps.online()) {
+      this.set({ status: 'offline' });
+      return;
+    }
+    if (this.state.status !== 'saving') this.set({ status: 'typing' });
+    this.schedule(SAVE_DELAY_MS);
+  }
+
+  get dirty(): boolean {
+    return this.edits !== this.savedEdits;
+  }
+
+  /** Sends the text now (the pause ended, ⌘S, "Thử lại", back online). */
+  async save(): Promise<void> {
+    if (this.saveTimer !== null) clearTimeout(this.saveTimer);
+    this.saveTimer = null;
+    if (this.disposed || this.inFlight || !this.dirty || this.state.status === 'conflict') return;
+    if (!this.deps.online()) {
+      this.keepDraft();
+      this.set({ status: 'offline' });
+      return;
+    }
+    this.inFlight = true;
+    const edits = this.edits;
+    const snapshot = this.read();
+    this.set({ status: 'saving' });
+    try {
+      const saved = await this.deps.save(this.doc.id, { ...snapshot, baseRev: this.rev });
+      this.rev = saved.rev;
+      this.savedEdits = edits;
+      this.set({ savedAt: saved.savedAt, version: saved.version, status: this.dirty ? 'typing' : 'saved' });
+      if (this.dirty) this.schedule(SAVE_DELAY_MS);
+      else {
+        if (this.draftTimer !== null) clearTimeout(this.draftTimer);
+        this.draftTimer = null;
+        await this.deps.deleteDraft(this.doc.id);
+      }
+    } catch (error) {
+      this.keepDraft();
+      if (error instanceof ApiError && error.code === 'stale') this.set({ status: 'conflict' });
+      else if (error instanceof ApiError && error.code === NETWORK_ERROR) {
+        this.set({ status: 'offline' });
+        // No `online` event will come when the browser never noticed the loss (the server or the way to it is down).
+        if (this.deps.online()) this.schedule(RETRY_MS);
+      } else {
+        if (!(error instanceof ApiError)) console.error('document save failed', error);
+        this.set({ status: 'failed' });
+      }
+    } finally {
+      this.inFlight = false;
+    }
+  }
+
+  /** Back online: what waited goes now. */
+  reconnected(): void {
+    if (this.state.status === 'offline' || (this.dirty && this.state.status !== 'conflict')) {
+      this.set({ status: 'typing' });
+      void this.save();
+    }
+  }
+
+  /** Conflict: keep this copy, over what the server has now. */
+  async overwrite(): Promise<void> {
+    try {
+      const current = await this.deps.fetchDoc(this.doc.id);
+      this.rev = current.rev;
+      this.set({ status: 'typing' });
+      await this.save();
+    } catch (error) {
+      if (!(error instanceof ApiError)) console.error('document reload failed', error);
+      this.set({ status: error instanceof ApiError && error.code === NETWORK_ERROR ? 'offline' : 'failed' });
+    }
+  }
+
+  /** Conflict: drop this copy (the screen then opens the server's text). */
+  async discard(): Promise<void> {
+    this.disposed = true;
+    if (this.saveTimer !== null) clearTimeout(this.saveTimer);
+    if (this.draftTimer !== null) clearTimeout(this.draftTimer);
+    await this.deps.deleteDraft(this.doc.id);
+  }
+
+  /** Leaving the page: keep the copy and send what is pending with a request that outlives the page. */
+  leave(): void {
+    if (this.disposed || !this.dirty) return;
+    this.keepDraft();
+    if (this.state.status === 'conflict' || !this.deps.online()) return;
+    const edits = this.edits;
+    this.deps.save(this.doc.id, { ...this.read(), baseRev: this.rev }, true).then(
+      (saved) => {
+        this.rev = saved.rev;
+        this.savedEdits = edits;
+        if (!this.dirty) void this.deps.deleteDraft(this.doc.id);
+      },
+      // The browser copy stays: it is offered again when the document opens.
+      () => undefined,
+    );
+  }
+
+  dispose(): void {
+    this.leave();
+    this.disposed = true;
+    if (this.saveTimer !== null) clearTimeout(this.saveTimer);
+    if (this.draftTimer !== null) clearTimeout(this.draftTimer);
+  }
+}
+
+export type OpenedAs = 'clean' | 'unsaved' | 'conflict' | 'offline';
+
+export interface OpenedDocument {
+  doc: EditableDocument;
+  start: Snapshot;
+  openedAs: OpenedAs;
+  /** The rev the start text was edited from. */
+  baseRev: string;
+}
+
+/**
+ * Opens a document for editing: the server's text, or this browser's newer copy (`unsaved`: it started from the
+ * server's current rev; `conflict`: the server changed since; `offline`: the server cannot be reached).
+ */
+export async function openForEditing(id: string, deps: { fetchDoc(id: string): Promise<EditableDocument>; readDraft(id: string): Promise<EditorDraft | null>; deleteDraft(id: string): Promise<void> } = { fetchDoc: fetchEditable, readDraft, deleteDraft }): Promise<OpenedDocument> {
+  let doc: EditableDocument;
+  try {
+    doc = await deps.fetchDoc(id);
+  } catch (error) {
+    const draft = error instanceof ApiError && error.code === NETWORK_ERROR ? await deps.readDraft(id) : null;
+    if (!draft) throw error;
+    return { doc: draft.doc, start: { title: draft.title, body: draft.body, planet: draft.planet }, openedAs: 'offline', baseRev: draft.baseRev };
+  }
+  const server: Snapshot = { title: doc.title, body: doc.body, planet: doc.planet };
+  const draft = await deps.readDraft(id);
+  if (!draft) return { doc, start: server, openedAs: 'clean', baseRev: doc.rev };
+  const copy: Snapshot = { title: draft.title, body: draft.body, planet: draft.planet };
+  if (sameText(copy, server)) {
+    await deps.deleteDraft(id);
+    return { doc, start: server, openedAs: 'clean', baseRev: doc.rev };
+  }
+  return { doc, start: copy, openedAs: draft.baseRev === doc.rev ? 'unsaved' : 'conflict', baseRev: draft.baseRev };
+}
+
+/** The autosave of the open document as React state; saves pending work on leaving and when the connection returns. */
+export function useDocumentAutosave(opened: OpenedDocument): { state: AutosaveState; autosave: DocumentAutosave } {
+  const [state, setState] = useState<AutosaveState>(() => initialAutosaveState(opened.doc, opened.openedAs));
+  // One autosave per opened document (the screen remounts for another one); it starts nothing until the effect runs.
+  const [autosave] = useState(() => new DocumentAutosave(opened.doc, opened.start, setState, opened.openedAs, opened.baseRev));
+
+  useEffect(() => {
+    autosave.begin();
+    const onOnline = (): void => autosave.reconnected();
+    const onOffline = (): void => {
+      if (autosave.dirty) void autosave.save();
+    };
+    const onHidden = (): void => {
+      if (document.visibilityState === 'hidden') autosave.leave();
+    };
+    const onLeave = (): void => autosave.leave();
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    window.addEventListener('pagehide', onLeave);
+    document.addEventListener('visibilitychange', onHidden);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+      window.removeEventListener('pagehide', onLeave);
+      document.removeEventListener('visibilitychange', onHidden);
+      autosave.leave();
+    };
+  }, [autosave]);
+
+  return { state, autosave };
+}

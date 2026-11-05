@@ -180,6 +180,10 @@ export interface SeedDocument {
   author: SeedAuthor;
   /** [anchor, heading, text]; a null heading is the overview before the first heading (anchor `tong-quan`). */
   chunks: Array<[string, string | null, string]>;
+  /** When it was written and last saved (ISO); default: the seed's spread of times (SEED_FIRST_CREATED, recency). */
+  at?: string;
+  /** Its planet colour (C02 "Hành tinh của bài"). */
+  planet?: 'violet' | 'teal' | 'cyan' | 'amber' | 'emerald' | 'pink';
 }
 
 const official = { origin: 'official', status: 'approved', author: 'dat' } as const;
@@ -346,6 +350,24 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
     key: 'k8s-intro', space: 'me', collection: null, title: 'k8s-intro.pptx', type: 'office', ...mine,
     chunks: [['slide-1', 'Slide 1', 'Giới thiệu Kubernetes: pod, deployment, service.']],
   },
+  // The owner's draft of board C02, last saved 20/10 21:24 (Asia/Saigon): long before the other texts, so the
+  // Universe's recent lists (C09) stay as they were. "Xem thêm [[" is a link being written.
+  {
+    key: 'new-host-ip', space: 'me', collection: null, title: 'Máy mới xin IP thế nào', type: 'note', origin: 'own', status: 'draft', author: 'owner',
+    at: '2026-10-20T14:24:00Z', planet: 'violet',
+    chunks: [
+      [
+        'tong-quan',
+        null,
+        [
+          'Máy mới vào mạng chưa có IP. Nó phải hỏi cả mạng bằng broadcast, theo 4 bước gọi là DORA.',
+          '1. **Discover**\n2. **Offer**\n3. **Request**\n4. **Acknowledge**',
+          '> [!WARNING]\n> Mạng có DHCP giả mạo thì máy bạn có thể nhận nhầm gateway.',
+          'Xem thêm [[',
+        ].join('\n\n'),
+      ],
+    ],
+  },
 ];
 
 /** [source, target, kind, label] by document key. */
@@ -399,12 +421,62 @@ export const SEED_LATEST_UPDATE = new Date('2026-11-03T14:05:00Z');
  */
 export const SEED_FIRST_CREATED = new Date('2026-10-01T02:00:00Z');
 
+/** A version of a seed document with history: who saved it, when (ISO), how, and its text. */
+export interface SeedVersion {
+  editor: SeedAuthor;
+  at: string;
+  via: 'editor' | 'api';
+  aiMade: boolean;
+  summary: string | null;
+  /** The document's chunks it had, by anchor, or [anchor, the text it had then]; null: the full text. */
+  sections: Array<string | [string, string]> | null;
+}
+
+/** A review step or a change of visibility of a seed document (C17). */
+export interface SeedReview {
+  by: SeedAuthor;
+  at: string;
+  action: 'submitted' | 'approved' | 'changes_requested' | 'rejected';
+  reason: string | null;
+}
+
+export interface SeedVisibility {
+  by: SeedAuthor;
+  at: string;
+  hidden: boolean;
+}
+
 /**
- * Edit history beyond the first version: [document key, editor, hours before SEED_LATEST_UPDATE] per later version,
- * oldest first, and who approved the latest one. C11's DHCP is at v4, approved by Linh ("Đã duyệt bởi Linh").
+ * The history of DHCP as board C17 shows it (times in UTC; the board's are Asia/Saigon, 7 hours ahead): three
+ * versions made by AI through the API, Linh asking for a source, Minh's proposed v4 (the lease section and DHCP
+ * snooping), Linh approving it, and Đạt hiding the text then showing it again. C11 reads the same history: v4,
+ * "Linh duyệt 03/11 · 4 phiên bản".
  */
-export const SEED_HISTORY: Array<{ key: string; versions: Array<[SeedAuthor, number]>; approvedBy: SeedAuthor }> = [
-  { key: 'dhcp', versions: [['linh', 240], ['dat', 120], ['dat', 0]], approvedBy: 'linh' },
+export const SEED_HISTORY: Array<{ key: string; versions: SeedVersion[]; reviews: SeedReview[]; visibility: SeedVisibility[] }> = [
+  {
+    key: 'dhcp',
+    versions: [
+      { editor: 'dat', at: '2026-10-28T02:12:00Z', via: 'api', aiMade: true, summary: null, sections: ['tong-quan'] },
+      { editor: 'dat', at: '2026-10-29T13:40:00Z', via: 'api', aiMade: true, summary: null, sections: ['tong-quan', ['broadcast-la-gi', 'Máy mới hỏi router để lấy IP.']] },
+      {
+        editor: 'dat',
+        at: '2026-10-31T07:05:00Z',
+        via: 'api',
+        aiMade: true,
+        summary: null,
+        sections: ['tong-quan', 'broadcast-la-gi', ['rui-ro-dhcp-gia-mao', 'Một máy lạ trả lời nhanh hơn có thể đưa gateway sai.']],
+      },
+      { editor: 'minh', at: '2026-11-02T14:30:00Z', via: 'editor', aiMade: false, summary: 'thêm đoạn lease và DHCP snooping', sections: null },
+    ],
+    reviews: [
+      { by: 'linh', at: '2026-11-02T02:00:00Z', action: 'changes_requested', reason: 'thiếu nguồn cho đoạn broadcast' },
+      { by: 'linh', at: '2026-11-03T03:02:00Z', action: 'approved', reason: null },
+    ],
+    visibility: [
+      { by: 'dat', at: '2026-11-03T14:12:00Z', hidden: true },
+      { by: 'dat', at: '2026-11-03T14:40:00Z', hidden: false },
+    ],
+  },
 ];
 export const SEED_RECENT_FIRST = ['dhcp', 'k8s-arch'];
 

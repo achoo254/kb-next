@@ -52,7 +52,9 @@ describe('dev seed', () => {
     expect(await caption('observability')).toBe(1);
     expect(await caption('docker')).toBe(3);
     expect(await caption('weekly')).toBe(5);
-    expect(await caption('personal')).toBe(3);
+    // "3 tệp · riêng tư": the three files; the draft note of C02 sits beside them.
+    expect(await caption('personal', 'office')).toBe(3);
+    expect(await caption('personal', 'note')).toBe(1);
 
     // A guest sees neither the personal Space nor the private and pending notes.
     const guestSpaces = await listSpaces(database.db, GUEST);

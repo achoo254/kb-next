@@ -71,6 +71,13 @@
       "when": 1793842506816,
       "tag": "0009_user-key-models",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793847597976,
+      "tag": "0010_planets-and-version-history",
+      "breakpoints": true
     }
   ]
 }

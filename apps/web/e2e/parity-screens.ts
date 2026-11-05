@@ -1,5 +1,5 @@
 import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
-import { C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
+import { C02_CLOCK, C02_DRAFT_ID, C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
 
 /**
  * The screens the parity check compares with their mock board (design/mock-png/<board>.png), with the route that
@@ -39,9 +39,10 @@ export interface ParityScreen {
  * Spaces of the filter; `keys-f03` / `translate-f04`: /api/me/keys answers the board's three keys, and on F04 the
  * document and the translation stream are the board's, held mid-stream (ai-boards.ts: E2E has no AI provider);
  * `copilot-c14`: the board's keys, Copilot history and finished answer; `ask-c11`: the board's keys and AI card answer;
- * `canvas-c15`: Jev's suggested connection of the board (graph-canvas-boards.ts: E2E has no Jev key).
+ * `canvas-c15`: Jev's suggested connection of the board (graph-canvas-boards.ts: E2E has no Jev key); `keys-c02`: the
+ * board's OpenAI key ••••a1b2 for the editor's AI writing chip (E2E has no secret file to store keys).
  */
-export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04' | 'copilot-c14' | 'ask-c11' | 'canvas-c15';
+export type ParityMock = 'onboarded' | 'spaces-pending' | 'spaces-without-texts' | 'search-c12' | 'search-f01' | 'keys-f03' | 'translate-f04' | 'copilot-c14' | 'ask-c11' | 'canvas-c15' | 'keys-c02';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -111,6 +112,10 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   },
   // The seed's canvas "DHCP từ A đến Z", its lab card picked, with Jev's suggested connection.
   { board: 'C15-Canvas', path: `/canvas/${C15_CANVAS_ID}`, signedIn: true, status: 'built', mocks: ['canvas-c15'], click: '[data-id="canvas-card-lab"]', waitFor: '[data-id="canvas-suggest"]' },
+  // The owner's draft of C02 in the editor, saved at 21:24 that day, with the board's own key for AI writing.
+  { board: 'C02-Editor', path: `/d/${C02_DRAFT_ID}/edit`, signedIn: true, status: 'built', mocks: ['keys-c02'], clock: C02_CLOCK, waitFor: '[data-id="editor-key"]' },
+  // The history of DHCP (C17): its AI versions, the review, Minh's v4, hiding and showing; v3 and v4 compared.
+  { board: 'C17-Timeline', path: `/d/${C13_DHCP_ID}/history`, signedIn: true, status: 'built', waitFor: '[data-id="history-lines"][data-state="ready"]' },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The UI kit (dev server only, apps/web/src/dev-kit).

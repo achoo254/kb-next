@@ -257,6 +257,19 @@ h3.reader-heading {
   color: var(--c-text-sub);
 }
 
+/* the warning box the editor (C02) writes as `> [!WARNING]` */
+.reader-passage .reader-callout {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--amber-500) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-500) 50%, transparent);
+  color: var(--c-warn-text);
+}
+
+.reader-passage .reader-callout p {
+  margin: 0;
+}
+
 .reader-passage table {
   border-collapse: collapse;
   font-size: 14px;

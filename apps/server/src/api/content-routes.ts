@@ -8,7 +8,7 @@ import express, { type Router } from 'express';
 import { type CollectionRow, type DocumentRow, type SpaceRow, findLatestVersion, listChunks, listDocuments, listLinks, listSpaces } from '../access/content';
 import { headingsOf, linksTouching, progressOf } from '../access/participation';
 import {
-  findApproverId,
+  findApproval,
   findDocumentsByIds,
   linkedSpaceCounts,
   listCollectionsOf,
@@ -32,7 +32,6 @@ import {
   type SpaceCard,
   type TocEntry,
   collectionBrief,
-  documentSummary,
   langsOf,
   pickIn,
   pickTexts,
@@ -41,6 +40,7 @@ import {
   tableOfContents,
 } from './content-views';
 import { neighbours, relevance, spaceRelevance, termsOf } from './relevance';
+import { summarize } from './summaries';
 import { openDocument, readerOf } from './request-context';
 import { type SpaceMember, type SpacePermissions, spaceMembers, spacePermissions } from './space-members';
 
@@ -89,6 +89,8 @@ export interface DocumentResponse {
     createdAt: string;
     readingMinutes: number;
     reviewedBy: string | null;
+    /** When it was last approved (C11 "Linh duyệt 03/11"); null when never. */
+    reviewedAt: string | null;
     /** Anchor of the passage the signed-in viewer read last (resume there); null for a guest or not started. */
     readAnchor: string | null;
     collection: CollectionBrief | null;
@@ -139,21 +141,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
     });
   }
 
-  /** Summaries of documents, in order, with their authors, Spaces and the viewer's reading progress. */
-  async function summaries(viewer: Viewer, picked: ReadonlyArray<{ doc: DocumentRow; langs: Lang[] }>): Promise<DocumentSummary[]> {
-    const ids = picked.map((p) => p.doc.id);
-    const authors = await userNames(
-      db,
-      picked.map((p) => p.doc.authorId),
-    );
-    const spaces = new Map((await spacesById(db, [...new Set(picked.map((p) => p.doc.spaceId))])).map((s) => [s.id, s]));
-    const progress = viewer.kind === 'user' ? await progressOf(db, viewer.userId, ids) : null;
-    return picked.flatMap(({ doc, langs }) => {
-      const space = spaces.get(doc.spaceId);
-      const read = progress ? (progress.get(doc.id)?.progress ?? 0) : null;
-      return space ? [documentSummary(doc, langs, space, authors.get(doc.authorId) ?? null, read)] : [];
-    });
-  }
+  const summaries = (viewer: Viewer, picked: ReadonlyArray<{ doc: DocumentRow; langs: Lang[] }>): Promise<DocumentSummary[]> => summarize(db, viewer, picked);
 
   /**
    * Texts related to `doc`, most related first: the readable texts of its Space and those it links with (`linked`),
@@ -248,12 +236,12 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
     const doc = pickIn(members, lang);
     const langs = langsOf(members);
 
-    const [chunkRows, latest, linkRows, versions, approverId, spaceRows, collectionRows] = await Promise.all([
+    const [chunkRows, latest, linkRows, versions, approval, spaceRows, collectionRows] = await Promise.all([
       listChunks(db, viewer, doc.id),
       findLatestVersion(db, viewer, doc.id),
       listLinks(db, viewer, doc.id),
       listVersionSummaries(db, viewer, doc.id),
-      findApproverId(db, viewer, doc.id),
+      findApproval(db, viewer, doc.id),
       spacesById(db, [doc.spaceId]),
       listCollectionsOf(db, [doc.spaceId]),
     ]);
@@ -275,7 +263,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
 
     const related = await relatedDocuments(viewer, lang, doc, others);
 
-    const names = await userNames(db, [doc.authorId, ...(versions ?? []).map((v) => v.editorId), ...(approverId ? [approverId] : [])]);
+    const names = await userNames(db, [doc.authorId, ...(versions ?? []).map((v) => v.editorId), ...(approval ? [approval.actorId] : [])]);
     const [summary] = await summaries(viewer, [{ doc, langs }]);
     const progress = viewer.kind === 'user' ? (await progressOf(db, viewer.userId, [doc.id])).get(doc.id) : undefined;
     if (!summary) throw new Error('document summary missing');
@@ -288,7 +276,8 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
         sourceUrl: doc.sourceUrl,
         createdAt: doc.createdAt.toISOString(),
         readingMinutes: readingMinutes(chunks.map((c) => c.text)),
-        reviewedBy: approverId ? (names.get(approverId) ?? null) : null,
+        reviewedBy: approval ? (names.get(approval.actorId) ?? null) : null,
+        reviewedAt: approval ? approval.at.toISOString() : null,
         readAnchor: progress?.anchor ?? null,
         collection: collection ? collectionBrief(collection) : null,
         space: { ...spaceBrief(space), art: space.art, kind: space.kind },

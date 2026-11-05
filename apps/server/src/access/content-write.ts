@@ -183,7 +183,7 @@ export async function writeImport(
       };
       if (!stored.has(doc.id)) {
         await tx.insert(documents).values({ id: doc.id, ...fields, origin: 'official', status: 'approved', hidden: false, authorId: input.authorId });
-        await tx.insert(documentVersions).values({ documentId: doc.id, version: 1, markdown: doc.markdown, editorId: input.authorId });
+        await tx.insert(documentVersions).values({ documentId: doc.id, version: 1, markdown: doc.markdown, editorId: input.authorId, via: 'import' });
         result.created.push(doc.id);
         changed.push(doc);
       } else if (stored.get(doc.id) !== doc.contentHash) {
@@ -192,7 +192,7 @@ export async function writeImport(
           .select({ version: max(documentVersions.version) })
           .from(documentVersions)
           .where(eq(documentVersions.documentId, doc.id));
-        await tx.insert(documentVersions).values({ documentId: doc.id, version: (latest?.version ?? 0) + 1, markdown: doc.markdown, editorId: input.authorId });
+        await tx.insert(documentVersions).values({ documentId: doc.id, version: (latest?.version ?? 0) + 1, markdown: doc.markdown, editorId: input.authorId, via: 'import' });
         result.updated.push(doc.id);
         changed.push(doc);
       } else {

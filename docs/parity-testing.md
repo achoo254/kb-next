@@ -45,7 +45,7 @@ E2E chậm (dựng web, API, IdP giả rồi mở trình duyệt), nên chỉ ch
   một phần tử hiện ra (màn đang tải không bao giờ yên mạng); `clock` cố định giờ trình duyệt cho màn có thời gian tương đối;
   `keys`/`type` gõ phím (mở palette ⌘K), `select` chọn một đoạn chữ và `click` bấm một nút (C11: chọn câu broadcast rồi
   bấm "Giải thích"). Câu trả lời AI (C11, C14) là luồng `/api/ask` ghi sẵn trong `apps/web/e2e/ai-boards.ts` vì E2E không
-  có nhà cung cấp AI.
+  có nhà cung cấp AI. C02 trả `/api/me/keys` bằng key của board (`keys-c02`) vì E2E không lưu được key thật.
 - Board ghép nhiều trạng thái của một màn cạnh nhau (S02, X02, F02) được so trên trang kit `/dev/kit/…` dựng từ chính
   component của màn đó, mỗi trạng thái một ô như board.
 - Làm xong một màn: đổi `status` sang `built`, seed dữ liệu giống mock cho màn đó, chạy lại. Vượt ngưỡng thì sửa màn;

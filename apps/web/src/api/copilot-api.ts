@@ -70,10 +70,10 @@ const CitationSchema = z.object({ n: z.number(), supported: z.boolean() });
 export type CitationCheck = z.infer<typeof CitationSchema>;
 
 const StatusSchema = z.object({ stage: z.enum(['searching', 'writing']), jev: z.enum(['ok', 'off']), found: z.number() });
-const ErrorSchema = z.object({ code: z.enum(STREAM_ERRORS), provider: z.optional(Provider), last4: z.optional(z.string()) });
+export const StreamErrorSchema = z.object({ code: z.enum(STREAM_ERRORS), provider: z.optional(Provider), last4: z.optional(z.string()) });
 
 /** One event of a stream whose event names and data schemas are `S`. */
-type EventOf<S extends Record<string, z.ZodMiniType>> = { [K in keyof S & string]: { event: K; data: z.infer<S[K]> } }[keyof S & string];
+export type EventOf<S extends Record<string, z.ZodMiniType>> = { [K in keyof S & string]: { event: K; data: z.infer<S[K]> } }[keyof S & string];
 
 const AskEventSchemas = {
   status: StatusSchema,
@@ -81,7 +81,7 @@ const AskEventSchemas = {
   delta: z.object({ text: z.string() }),
   check: z.object({ citations: z.array(CitationSchema) }),
   done: z.object({ questionId: z.string(), provider: Provider, model: z.string(), last4: z.string() }),
-  error: ErrorSchema,
+  error: StreamErrorSchema,
 };
 export type AskEvent = EventOf<typeof AskEventSchemas>;
 
@@ -90,7 +90,7 @@ const TranslateEventSchemas = {
   paragraph: z.object({ index: z.number(), text: z.string() }),
   /** The saved draft: open `/d/<documentId>`. */
   done: z.object({ documentId: z.string() }),
-  error: ErrorSchema,
+  error: StreamErrorSchema,
 };
 export type TranslateEvent = EventOf<typeof TranslateEventSchemas>;
 
@@ -131,7 +131,7 @@ async function* readEventStream(res: Response): AsyncGenerator<{ event: string; 
 }
 
 /** Each event checked against the schema of its name; an unknown name is skipped (a newer server). */
-async function* typedEvents<S extends Record<string, z.ZodMiniType>>(res: Response, schemas: S): AsyncGenerator<EventOf<S>> {
+export async function* typedEvents<S extends Record<string, z.ZodMiniType>>(res: Response, schemas: S): AsyncGenerator<EventOf<S>> {
   for await (const { event, data } of readEventStream(res)) {
     if (!Object.hasOwn(schemas, event)) continue;
     const schema = schemas[event];

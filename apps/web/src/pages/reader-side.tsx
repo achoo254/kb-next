@@ -159,7 +159,8 @@ export function Versions({ view }: { view: DocumentView }): ReactNode {
   const latest = view.versions[0];
   if (!latest) return null;
   const count = view.versions.length;
-  const date = shortDate(locale, latest.createdAt);
+  // "Linh duyệt 03/11": the day of the approval; "Sửa lần cuối …": the day of the latest version.
+  const date = shortDate(locale, (view.document.reviewedBy ? view.document.reviewedAt : null) ?? latest.createdAt);
   const summary = view.document.reviewedBy ? t('reader.versionsReviewed', { name: view.document.reviewedBy, date, count }) : t('reader.versionsEdited', { date, count });
   return (
     <section className="reader-card reader-versions" data-id="reader-versions">

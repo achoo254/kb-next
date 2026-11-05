@@ -48,7 +48,7 @@ export type Me = z.infer<typeof MeSchema>;
 const CaptionSchema = z.object({ vi: z.string(), en: z.string() });
 export type Caption = z.infer<typeof CaptionSchema>;
 
-const SpaceBriefSchema = z.object({ slug: z.string(), nameVi: z.string(), nameEn: z.string(), tint: z.string(), glow: z.string() });
+export const SpaceBriefSchema = z.object({ slug: z.string(), nameVi: z.string(), nameEn: z.string(), tint: z.string(), glow: z.string() });
 export type SpaceBrief = z.infer<typeof SpaceBriefSchema>;
 
 /** A Space as a crystal: C09's Universe, C10's header and its related Spaces. */
@@ -64,7 +64,7 @@ const SpaceCardSchema = z.extend(SpaceBriefSchema, {
 });
 export type SpaceCard = z.infer<typeof SpaceCardSchema>;
 
-const CollectionBriefSchema = z.object({ id: z.string(), nameVi: z.string(), nameEn: z.string() });
+export const CollectionBriefSchema = z.object({ id: z.string(), nameVi: z.string(), nameEn: z.string() });
 export type CollectionBrief = z.infer<typeof CollectionBriefSchema>;
 
 /** C09: a crystal with the names of its collections (the focus card). */
@@ -72,7 +72,7 @@ const SpaceListItemSchema = z.extend(SpaceCardSchema, { collections: z.array(Col
 export type SpaceListItem = z.infer<typeof SpaceListItemSchema>;
 
 /** A document in a list (C10 rows, recent cards, links, related): one per text, in the reader's language. */
-const DocumentSummarySchema = z.object({
+export const DocumentSummarySchema = z.object({
   id: z.string(),
   title: z.string(),
   type: z.enum(DOCUMENT_TYPES),
@@ -161,6 +161,8 @@ const ReaderDocumentSchema = z.extend(DocumentSummarySchema, {
   readingMinutes: z.number(),
   /** Who approved it last ("Đã duyệt bởi Đạt"); null when nobody did. */
   reviewedBy: z.nullable(z.string()),
+  /** When it was approved last ("Linh duyệt 03/11"); null when never. */
+  reviewedAt: z.optional(z.nullable(Time)),
   /** The passage the signed-in reader read last: scroll there to resume; null for a guest or not started. */
   readAnchor: z.nullable(z.string()),
   collection: z.nullable(CollectionBriefSchema),

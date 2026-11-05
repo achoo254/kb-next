@@ -152,17 +152,17 @@ export async function listVersionSummaries(db: Db, viewer: Viewer, documentId: s
     .orderBy(desc(documentVersions.version));
 }
 
-/** Who approved a readable document last (its review trail), or null when nobody did or it is not readable. */
-export async function findApproverId(db: Db, viewer: Viewer, documentId: string): Promise<string | null> {
+/** Who approved a readable document last and when (its review trail), or null when nobody did or it is not readable. */
+export async function findApproval(db: Db, viewer: Viewer, documentId: string): Promise<{ actorId: string; at: Date } | null> {
   if (!isUuid(documentId)) return null;
   const [row] = await db
-    .select({ actorId: reviewEvents.actorId })
+    .select({ actorId: reviewEvents.actorId, at: reviewEvents.createdAt })
     .from(reviewEvents)
     .innerJoin(documents, eq(documents.id, reviewEvents.documentId))
     .where(and(eq(reviewEvents.documentId, documentId), eq(reviewEvents.action, 'approved'), isNotNull(reviewEvents.actorId), visibleTo(viewer)))
     .orderBy(desc(reviewEvents.createdAt))
     .limit(1);
-  return row?.actorId ?? null;
+  return row?.actorId ? { actorId: row.actorId, at: row.at } : null;
 }
 
 /**

@@ -8,11 +8,14 @@ import { SessionProvider } from './layout/session-context';
 import type { BackdropVeil } from './ui/universe-backdrop';
 import { CanvasRoute } from './pages/canvas-screen';
 import { CopilotScreen } from './pages/copilot-screen';
+import { EditorScreen } from './pages/editor-screen';
 import { ErrorScreen } from './pages/error-screen';
 import { GraphScreen } from './pages/graph-screen';
+import { HistoryScreen } from './pages/history-screen';
 import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
+import { NewNote } from './pages/new-note';
 import { ReaderScreen } from './pages/reader-screen';
 import { SearchScreen } from './pages/search-screen';
 import { SpaceScreen } from './pages/space-screen';
@@ -40,6 +43,8 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   C13: { rail: 'graph', view: 'graph' },
   C14: { rail: 'copilot' },
   C15: { rail: 'spaces', view: 'canvas' },
+  C02: { rail: 'create', view: 'docs', veil: 'strong' },
+  C17: { rail: 'spaces', view: 'docs', veil: 'strong' },
   C08: { rail: 'mine', veil: 'strong' },
   C20: { veil: 'strong' },
   H03: { rail: 'settings', veil: 'strong' },
@@ -86,6 +91,10 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <SpaceScreen slug={routeParam(route, path)} />;
     case 'C11':
       return <ReaderScreen id={routeParam(route, path)} />;
+    case 'C02':
+      return path === '/new' ? <NewNote /> : <EditorScreen id={routeParam(route, path)} />;
+    case 'C17':
+      return <HistoryScreen id={routeParam(route, path)} />;
     case 'C12':
       return <SearchScreen />;
     case 'C13':

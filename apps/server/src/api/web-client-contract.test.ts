@@ -75,7 +75,7 @@ describe('web client ↔ reading API', () => {
     expect(spaces).toHaveLength(7);
     const space = await fetchSpace('networking', 'en');
     expect(space.collections).toHaveLength(4);
-    expect((await fetchSpace(`personal-${ownerId}`)).uncollected).toHaveLength(3);
+    expect((await fetchSpace(`personal-${ownerId}`)).uncollected).toHaveLength(4);
 
     const reader = await fetchDocument(seedId('document:dhcp'));
     expect(reader.document.title).toBe('Giao thức DHCP');

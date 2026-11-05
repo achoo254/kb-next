@@ -105,6 +105,23 @@ const ICONS = {
   /* C14 answer vote (the thumbs-down is this one turned over) */
   thumb: { body: <path d="M7 11v9H4v-9zM7 11l4-8a2 2 0 0 1 3 2l-1 5h6a2 2 0 0 1 2 2l-2 7a2 2 0 0 1-2 1H7" />, cap: 'round', join: 'round' },
   'doc-plus': { body: <path d="M6 3h8l4 4v14H6zM12 11v6M9 14h6" />, stroke: 2.2, cap: 'round' },
+  /* C02 editor: undo and redo of its top bar, preview, the "/" blocks and the AI writing actions */
+  'undo-arrow': { body: <path d="M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3" />, cap: 'round' },
+  'redo-arrow': { body: <path d="M15 14l5-5-5-5M20 9H9a5 5 0 0 0 0 10h3" />, cap: 'round' },
+  eye: { body: <><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></> },
+  'block-paragraph': { body: <path d="M4 6h16M4 12h16M4 18h10" />, cap: 'round', join: 'round' },
+  'block-heading': { body: <path d="M5 5v14M15 5v14M5 12h10" />, cap: 'round', join: 'round' },
+  'block-list': { body: <path d="M9 6h11M9 12h11M9 18h11M4 6h.1M4 12h.1M4 18h.1" />, cap: 'round', join: 'round' },
+  'block-image': { body: <path d="M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4" />, cap: 'round', join: 'round' },
+  'block-diagram': { body: <path d="M5 4h6v5H5zM13 15h6v5h-6zM8 9v4h8v2" />, cap: 'round', join: 'round' },
+  'block-table': { body: <path d="M4 5h16v14H4zM4 10h16M4 15h16M10 5v14" />, cap: 'round', join: 'round' },
+  'block-office': { body: <path d="M6 3h8l4 4v14H6zM14 3v4h4" />, cap: 'round', join: 'round' },
+  'arrow-right': { body: <path d="M4 12h12M12 6l6 6-6 6" />, cap: 'round', join: 'round' },
+  shorten: { body: <path d="M4 7h16M4 12h10M4 17h6" />, cap: 'round', join: 'round' },
+  question: { body: <path d="M12 18h.01M9 9a3 3 0 1 1 4 2.8c-.6.3-1 .9-1 1.6V14" />, cap: 'round', join: 'round' },
+  'arrow-up-right': { body: <path d="M7 17L17 7M9 7h8v8" />, cap: 'round' },
+  /* C17: the two versions compared */
+  swap: { body: <path d="M7 7h12l-3-3M17 17H5l3 3" />, cap: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

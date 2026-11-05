@@ -58,6 +58,7 @@ export const documentColumns = {
   createdAt: documents.createdAt,
   updatedAt: documents.updatedAt,
   deletedAt: documents.deletedAt,
+  planet: documents.planet,
 };
 
 /** Spaces a viewer sees on the Universe: every public Space, plus the viewer's own personal one. */

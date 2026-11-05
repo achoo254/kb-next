@@ -76,7 +76,8 @@ describe('GET /api/spaces', () => {
     expect(net?.collections.map((c) => c.nameVi)).toEqual(['Giao thức nền tảng', 'Web', 'Địa chỉ', 'Hành trình gói tin']);
     // No TYPESAFE_API_KEY in tests: the plain count.
     expect(net?.caption).toEqual({ vi: '12 bài', en: '12 docs' });
-    expect(body.spaces.at(-1)).toMatchObject({ kind: 'personal', slug: `personal-${ownerId}`, documentCount: 3 });
+    // Three files and the draft note of C02.
+    expect(body.spaces.at(-1)).toMatchObject({ kind: 'personal', slug: `personal-${ownerId}`, documentCount: 4 });
   });
 
   it('shows a guest and another member only the public Spaces and published documents', async () => {
@@ -177,7 +178,7 @@ describe('GET /api/spaces/:slug', () => {
     const slug = `personal-${ownerId}`;
     const mine = await get<SpaceDetailResponse>(`/api/spaces/${slug}`, owner);
     expect(mine.status).toBe(200);
-    expect(mine.body.uncollected.map((d) => d.title)).toEqual(['lab-notes.docx', 'subnet.xlsx', 'k8s-intro.pptx']);
+    expect(mine.body.uncollected.map((d) => d.title)).toEqual(['lab-notes.docx', 'subnet.xlsx', 'k8s-intro.pptx', 'Máy mới xin IP thế nào']);
     for (const cookie of [stranger, admin, undefined]) {
       const res = await get<unknown>(`/api/spaces/${slug}`, cookie);
       expect(res.status).toBe(403);
@@ -235,14 +236,16 @@ describe('GET /api/documents/:id', () => {
       ['Subnet & CIDR', 50],
       ['Tìm hiểu giao thức DNS', 44],
     ]);
-    // Four versions, newest first; Linh approved the latest (C11 "v4", "Đã duyệt bởi Linh").
+    // Four versions, newest first (C17: three by AI through the API, Minh's v4); Linh approved v4 on 03/11 (C11 "v4",
+    // "Linh duyệt 03/11").
     expect(body.versions.map((v) => [v.version, v.editorName])).toEqual([
-      [4, 'Đạt'],
+      [4, 'Minh'],
       [3, 'Đạt'],
-      [2, 'Linh'],
+      [2, 'Đạt'],
       [1, 'Đạt'],
     ]);
-    expect(body.versions[0]?.createdAt).toBe('2026-11-03T14:05:00.000Z');
+    expect(body.versions[0]?.createdAt).toBe('2026-11-02T14:30:00.000Z');
+    expect(body.document.reviewedAt).toBe('2026-11-03T03:02:00.000Z');
     // Another member has not started it; a guest has no progress at all.
     expect(body.document).toMatchObject({ readProgress: 0, readAnchor: null });
     const guest = await get<DocumentResponse>(`/api/documents/${doc('dhcp')}`);

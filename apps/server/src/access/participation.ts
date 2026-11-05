@@ -164,7 +164,9 @@ export async function headingsOf(db: Db, viewer: Viewer, documentIds: readonly s
     .select({ documentId: chunks.documentId, heading: chunks.heading })
     .from(chunks)
     .innerJoin(documents, eq(documents.id, chunks.documentId))
-    .where(and(inArray(chunks.documentId, ids), visibleTo(viewer)));
+    .where(and(inArray(chunks.documentId, ids), visibleTo(viewer)))
+    // In reading order: a card or a score that takes the first headings takes the document's first ones.
+    .orderBy(asc(chunks.documentId), asc(chunks.position));
   for (const row of rows) {
     if (row.heading === null) continue;
     const list = result.get(row.documentId);

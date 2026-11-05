@@ -4,7 +4,8 @@
  * like), and outside links open in a new tab without access to this page.
  *
  * One reading rule of the boards: an ordered list whose every item starts with a bold term ("1. **Discover** Hét lên
- * cả mạng xin IP") is a list of steps, drawn as step cards with the term's first letter (C11's DORA diagram).
+ * cả mạng xin IP") is a list of steps, drawn as step cards with the term's first letter (C11's DORA diagram). A quote
+ * opening with `[!WARNING]` (as the editor, C02, writes its warning box) is drawn as that warning.
  */
 import type { ReactNode } from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
@@ -84,11 +85,34 @@ const COMPONENTS: Components = {
   },
 };
 
+const WARNING_MARK = /^\[!WARNING\][ \t]*\n?/;
+
+/** A quote opening with `[!WARNING]` becomes the warning box (`div.reader-callout`, a note), without the mark. */
+export function rehypeWarnings() {
+  const visit = (node: Element | ElementContent): void => {
+    if (!isElement(node)) return;
+    if (node.tagName === 'blockquote') {
+      const paragraph = node.children.find((child): child is Element => isElement(child));
+      const first = paragraph?.children[0];
+      if (paragraph?.tagName === 'p' && first?.type === 'text' && WARNING_MARK.test(first.value)) {
+        first.value = first.value.replace(WARNING_MARK, '');
+        node.tagName = 'div';
+        node.properties = { ...node.properties, className: ['reader-callout'], role: 'note' };
+      }
+    }
+    for (const child of node.children) visit(child);
+  };
+  return (tree: { children: ElementContent[] }): void => {
+    for (const child of tree.children) visit(child);
+  };
+}
+
 const PLUGINS = [remarkGfm];
+const REHYPE_PLUGINS = [rehypeWarnings];
 
 export function ReaderMarkdown({ markdown }: { markdown: string }): ReactNode {
   return (
-    <Markdown remarkPlugins={PLUGINS} components={COMPONENTS} skipHtml>
+    <Markdown remarkPlugins={PLUGINS} rehypePlugins={REHYPE_PLUGINS} components={COMPONENTS} skipHtml>
       {markdown}
     </Markdown>
   );

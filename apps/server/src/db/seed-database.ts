@@ -4,9 +4,10 @@
  * adding copies. No CLI code here: the production bundle imports this module.
  */
 import { createHash } from 'node:crypto';
-import { inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import type { Db } from './client';
-import { canvases, chunks, collections, comments, documentVersions, documents, links, readingProgress, reviewEvents, spaces, users } from './schema';
+import { HIDE_ACTION, SHOW_ACTION } from '../access/history';
+import { auditLog, canvases, chunks, collections, comments, documentVersions, documents, links, readingProgress, reviewEvents, spaces, users } from './schema';
 import {
   SEED_CANVAS,
   SEED_COMMENTS,
@@ -21,15 +22,28 @@ import {
   SEED_USERS,
   type SeedAuthor,
   type SeedDocument,
+  type SeedVersion,
 } from './seed-data';
 
 const TEN_MINUTES = 10 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
 
-/** A document's Markdown from its title and its first `count` chunks (all by default); the overview has no heading line. */
-function documentMarkdown(doc: SeedDocument, count = doc.chunks.length): string {
-  const sections = doc.chunks.slice(0, count).map(([, heading, text]) => (heading === null ? text : `## ${heading}\n\n${text}`));
+/** A document's Markdown from its title and its chunks; the overview has no heading line. */
+function documentMarkdown(doc: SeedDocument, chunkList: SeedDocument['chunks'] = doc.chunks): string {
+  const sections = chunkList.map(([, heading, text]) => (heading === null ? text : `## ${heading}\n\n${text}`));
   return [`# ${doc.title}`, ...sections].join('\n\n');
+}
+
+/** The Markdown of an earlier version: the chunks it had (by anchor), some with the text they had then. */
+function versionMarkdown(doc: SeedDocument, version: SeedVersion): string {
+  if (version.sections === null) return documentMarkdown(doc);
+  const chunkList = version.sections.map((section): SeedDocument['chunks'][number] => {
+    const [anchor, text] = typeof section === 'string' ? [section, null] : section;
+    const chunk = doc.chunks.find(([a]) => a === anchor);
+    if (!chunk) throw new Error(`seed version of ${doc.key}: no chunk ${anchor}`);
+    return [chunk[0], chunk[1], text ?? chunk[2]];
+  });
+  return documentMarkdown(doc, chunkList);
 }
 
 /** The seed documents' keys, most recently updated first (see SEED_RECENT_FIRST). */
@@ -117,7 +131,7 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
   for (const [order, doc] of SEED_DOCUMENTS.entries()) {
     const id = seedId(`document:${doc.key}`);
     const markdown = documentMarkdown(doc);
-    const createdAt = new Date(SEED_FIRST_CREATED.getTime() + order * HOUR);
+    const createdAt = doc.at ? new Date(doc.at) : new Date(SEED_FIRST_CREATED.getTime() + order * HOUR);
     const collectionId = doc.collection === null ? null : collectionIds.get(doc.space)?.[doc.collection];
     if (collectionId === undefined) throw new Error(`seed document ${doc.key}: no collection ${doc.collection}`);
     const values = {
@@ -134,34 +148,52 @@ export async function seedDatabase(db: Db, ownerSub: string, now: Date = new Dat
       contentHash: createHash('sha256').update(markdown).digest('hex'),
       sortOrder: order,
       createdAt,
-      updatedAt: updatedAt(doc.key),
+      updatedAt: doc.at ? createdAt : updatedAt(doc.key),
       deletedAt: null,
+      planet: doc.planet ?? null,
     };
     await db.insert(documents).values(values).onConflictDoUpdate({ target: documents.id, set: values });
-    // Version 1 by the author; a document with history (SEED_HISTORY) grows a section per version up to the full text.
+    // Version 1 by the author when it was written; a document with history (SEED_HISTORY) has its versions as listed.
     const history = SEED_HISTORY.find((h) => h.key === doc.key);
-    const later = history?.versions ?? [];
-    const total = 1 + later.length;
-    const editions: Array<{ editorId: string; at: Date }> = [
-      { editorId: values.authorId, at: createdAt },
-      ...later.map(([editor, hoursBefore]) => ({ editorId: userId(editor), at: new Date(SEED_LATEST_UPDATE.getTime() - hoursBefore * HOUR) })),
-    ];
+    const editions: Array<{ editorId: string; at: Date; via: 'editor' | 'api'; aiMade: boolean; summary: string | null; markdown: string }> = history
+      ? history.versions.map((v) => ({ editorId: userId(v.editor), at: new Date(v.at), via: v.via, aiMade: v.aiMade, summary: v.summary, markdown: versionMarkdown(doc, v) }))
+      : [{ editorId: values.authorId, at: createdAt, via: 'editor', aiMade: false, summary: null, markdown }];
     for (const [index, edition] of editions.entries()) {
       const number = index + 1;
-      const shown = Math.max(1, doc.chunks.length - (total - number));
       const version = {
         id: seedId(`version:${doc.key}:${number}`),
         documentId: id,
         version: number,
-        markdown: number === total ? markdown : documentMarkdown(doc, shown),
+        markdown: edition.markdown,
         editorId: edition.editorId,
+        via: edition.via,
+        aiMade: edition.aiMade,
+        summary: edition.summary,
+        restoredFrom: null,
         createdAt: edition.at,
+        updatedAt: edition.at,
       };
       await db.insert(documentVersions).values(version).onConflictDoUpdate({ target: documentVersions.id, set: version });
     }
+    // The review trail and visibility changes are the listed ones only (an older seed wrote others).
     if (history) {
-      const review = { id: seedId(`review:${doc.key}`), documentId: id, actorId: userId(history.approvedBy), action: 'approved' as const, createdAt: SEED_LATEST_UPDATE };
+      await db.delete(reviewEvents).where(eq(reviewEvents.documentId, id));
+      await db.delete(auditLog).where(and(eq(auditLog.targetType, 'document'), eq(auditLog.targetId, id)));
+    }
+    for (const [index, step] of (history?.reviews ?? []).entries()) {
+      const review = { id: seedId(`review:${doc.key}:${index}`), documentId: id, actorId: userId(step.by), action: step.action, reason: step.reason, createdAt: new Date(step.at) };
       await db.insert(reviewEvents).values(review).onConflictDoUpdate({ target: reviewEvents.id, set: review });
+    }
+    for (const [index, change] of (history?.visibility ?? []).entries()) {
+      const entry = {
+        id: seedId(`audit:${doc.key}:visibility:${index}`),
+        actorId: userId(change.by),
+        action: change.hidden ? HIDE_ACTION : SHOW_ACTION,
+        targetType: 'document',
+        targetId: id,
+        createdAt: new Date(change.at),
+      };
+      await db.insert(auditLog).values(entry).onConflictDoUpdate({ target: auditLog.id, set: entry });
     }
   }
   await db.delete(chunks).where(inArray(chunks.documentId, documentIds));

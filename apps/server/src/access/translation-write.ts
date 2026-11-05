@@ -78,7 +78,7 @@ export async function saveAiTranslation(db: Db, input: AiTranslation): Promise<s
       if (!row) throw new Error('translation insert returned nothing');
       id = row.id;
     }
-    await tx.insert(documentVersions).values({ documentId: id, version, markdown: input.markdown, editorId: input.authorId });
+    await tx.insert(documentVersions).values({ documentId: id, version, markdown: input.markdown, editorId: input.authorId, via: 'translation', aiMade: true });
     if (input.chunks.length > 0) {
       await tx.insert(chunks).values(input.chunks.map((chunk, position) => ({ documentId: id, position, ...chunk })));
     }

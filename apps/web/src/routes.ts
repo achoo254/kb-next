@@ -25,6 +25,10 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C09', titleKey: 'screen.C09', access: 'signed-in', pattern: /^\/u$/ },
   { code: 'C10', titleKey: 'screen.C10', access: 'signed-in', pattern: new RegExp(`^/s/${segment}$`) },
   { code: 'C11', titleKey: 'screen.C11', access: 'signed-in', pattern: new RegExp(`^/d/${segment}$`) },
+  // The editor of a document, and /new, which creates a note and opens it there.
+  { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/edit$`) },
+  { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: /^\/new$/ },
+  { code: 'C17', titleKey: 'screen.C17', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/history$`) },
   { code: 'F04', titleKey: 'screen.F04', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/translate$`) },
   { code: 'C12', titleKey: 'screen.C12', access: 'signed-in', pattern: /^\/search$/ },
   { code: 'C14', titleKey: 'screen.C14', access: 'signed-in', pattern: /^\/copilot$/ },

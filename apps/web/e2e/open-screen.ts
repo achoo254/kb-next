@@ -41,7 +41,7 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
   }
   // C12's Space filter lists the board's five Spaces, matching its results.
   if (mocks.includes('search-c12')) await page.route('**/api/spaces', (route) => route.fulfill({ json: C12_SPACES }));
-  if (mocks.includes('keys-f03') || mocks.includes('copilot-c14') || mocks.includes('ask-c11')) await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
+  if (mocks.includes('keys-f03') || mocks.includes('copilot-c14') || mocks.includes('ask-c11') || mocks.includes('keys-c02')) await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
   for (const [mock, body] of [
     ['copilot-c14', C14_STREAM],
     ['ask-c11', C11_STREAM],
