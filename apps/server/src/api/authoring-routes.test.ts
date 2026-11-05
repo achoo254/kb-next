@@ -204,7 +204,7 @@ describe('the trash', () => {
     const db = server.database.db;
     expect((await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS - 1) * DAY))).documentIds).not.toContain(note.id);
     expect((await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS + 1) * DAY))).documentIds).toContain(note.id);
-    expect(await findDocument(db, { kind: 'user', userId: '00000000-0000-4000-8000-000000000000', isAdmin: true }, note.id)).toBeNull();
+    expect(await findDocument(db, { kind: 'user', userId: '00000000-0000-4000-8000-000000000000', isAdmin: true, canReview: true }, note.id)).toBeNull();
     expect((await as('owner', () => fetchTrash())).map((d) => d.id)).not.toContain(note.id);
   });
 });

@@ -1,0 +1,631 @@
+/* "Trạm điều khiển" (design/mock/H03-Settings.dc.html). The board draws the station in a stage moved by (78, 10) and
+   scaled by .944; .h03-stage does the same, so every card sits at the board's own coordinates. The stage lets clicks
+   through to the shell's chrome; only its cards and links take them. */
+
+.h03-star {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--c-star);
+  pointer-events: none;
+}
+
+.h03-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform-origin: 0 0;
+  transform: translate(78px, 10px) scale(0.944);
+  color: var(--c-text);
+  pointer-events: none;
+}
+
+.h03-stage a,
+.h03-stage button,
+.h03-stage section {
+  pointer-events: auto;
+}
+
+.h03-title {
+  position: absolute;
+  left: 24px;
+  top: 58px;
+  margin: 0;
+  font: 700 28px var(--font-display);
+  line-height: normal;
+}
+
+.h03-back {
+  position: absolute;
+  right: 270px;
+  top: 18px;
+  height: 46px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 23px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.h03-line {
+  position: absolute;
+  left: 720px;
+  top: 440px;
+  height: 2px;
+  transform-origin: 0 50%;
+  color: color-mix(in srgb, var(--violet-300) 45%, transparent);
+  background: repeating-linear-gradient(90deg, currentColor 0 8px, transparent 8px 14px);
+  animation: h03-flow 1.2s linear infinite;
+}
+
+@keyframes h03-flow {
+  to {
+    background-position: 24px 0;
+  }
+}
+
+.h03-ring {
+  position: absolute;
+  left: 600px;
+  top: 320px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--violet-300) 50%, transparent);
+  animation: kf-spin 20s linear infinite;
+}
+
+.h03-ring-dot {
+  position: absolute;
+  left: 112px;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cyan-400);
+  box-shadow: 0 0 14px var(--cyan-400);
+}
+
+.h03-orb {
+  position: absolute;
+  left: 640px;
+  top: 360px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, var(--violet-200) 0%, var(--violet-400) 20%, var(--violet-600) 50%, var(--violet-deep) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--white);
+}
+
+.h03-orb-initial {
+  font: 700 44px var(--font-display);
+  text-shadow: 0 2px 12px color-mix(in srgb, var(--violet-deep) 90%, transparent);
+}
+
+.h03-orb-name {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--violet-deep) 90%, transparent);
+}
+
+/* ── The cards ── */
+
+.h03-card {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text);
+}
+
+.h03-account {
+  left: 120px;
+  top: 100px;
+  width: 360px;
+  gap: 12px;
+}
+
+.h03-look {
+  left: 960px;
+  top: 100px;
+  width: 360px;
+  gap: 14px;
+}
+
+.h03-view {
+  left: 80px;
+  top: 420px;
+  width: 340px;
+  gap: 12px;
+}
+
+.h03-offline {
+  left: 1020px;
+  top: 420px;
+  width: 340px;
+  gap: 12px;
+}
+
+.h03-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.h03-label-plain {
+  font-weight: 400;
+}
+
+.h03-note {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.h03-fill {
+  flex: 1;
+}
+
+.h03-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.h03-avatar {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  box-sizing: content-box;
+  border-radius: 50%;
+  background: var(--violet-600);
+  border: 2px solid var(--violet-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  object-fit: cover;
+  color: var(--white);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.h03-who-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.h03-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.h03-email {
+  font-size: 13px;
+  color: var(--c-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.h03-apps {
+  display: flex;
+  gap: 8px;
+}
+
+.h03-app {
+  --tone: var(--cyan-400);
+  flex: 1;
+  height: 64px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--violet-400) 30%, transparent);
+  background: color-mix(in srgb, var(--c-bg2) 60%, transparent);
+  color: var(--c-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font: 600 11px var(--font-sans);
+  text-decoration: none;
+}
+
+.h03-app[data-tone="emerald"] {
+  --tone: var(--emerald-500);
+}
+
+.h03-app[data-tone="amber"] {
+  --tone: var(--amber-500);
+}
+
+.h03-app[data-tone="pink"] {
+  --tone: var(--planet-pink);
+}
+
+.h03-app-orb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--white), var(--tone) 60%);
+  box-shadow: 0 0 10px var(--tone);
+}
+
+.h03-staff {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--violet-600) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-400) 45%, transparent);
+  color: var(--c-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.h03-staff-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--violet-600) 50%, transparent);
+}
+
+.h03-pair {
+  display: flex;
+  gap: 6px;
+}
+
+.h03-choice {
+  flex: 1;
+  height: 46px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--violet-400) 35%, transparent);
+  background: transparent;
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.h03-choice[aria-pressed="true"],
+.h03-choice[aria-checked="true"] {
+  background: var(--c-primary);
+  border-color: var(--violet-300);
+  color: var(--white);
+}
+
+.h03-lang {
+  font: 700 14px var(--font-display);
+}
+
+.h03-theme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: 600 13px var(--font-sans);
+}
+
+.h03-motion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.h03-motion-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.h03-motion-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.h03-switch {
+  position: relative;
+  width: 60px;
+  height: 34px;
+  flex: none;
+  padding: 0;
+  border: none;
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--white) 18%, transparent);
+  cursor: pointer;
+}
+
+.h03-switch[aria-checked="true"] {
+  background: var(--cyan-400);
+}
+
+.h03-knob {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--white);
+  transition: left 0.25s;
+}
+
+.h03-switch[aria-checked="true"] .h03-knob {
+  left: 30px;
+}
+
+.h03-motion-on {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--cyan-400) 14%, transparent);
+  color: var(--c-accent);
+}
+
+.h03-views {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.h03-view-choice {
+  height: 96px;
+  border-radius: 18px;
+  border: 1.5px solid color-mix(in srgb, var(--violet-400) 30%, transparent);
+  background: transparent;
+  color: var(--c-text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: 700 14px var(--font-sans);
+}
+
+.h03-view-choice[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  border-color: var(--violet-300);
+}
+
+.h03-view-orbit {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.h03-view-orbit > span:first-child {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--violet-600);
+  box-shadow: 0 0 12px var(--violet-600);
+}
+
+.h03-view-orbit > span:last-child {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px dashed var(--violet-300);
+}
+
+.h03-view-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 40px;
+}
+
+.h03-view-list > span {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--violet-300);
+}
+
+.h03-view-list > span:nth-child(2) {
+  width: 80%;
+}
+
+.h03-view-list > span:nth-child(3) {
+  width: 90%;
+}
+
+.h03-used {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.h03-used-size {
+  font: 700 30px var(--font-display);
+}
+
+.h03-used .h03-note {
+  font-size: 13px;
+}
+
+.h03-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--white) 10%, transparent);
+  overflow: hidden;
+}
+
+.h03-bar > span {
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--cyan-400), var(--violet-600));
+  transition: width 0.6s;
+}
+
+.h03-clear {
+  height: 46px;
+  border-radius: 23px;
+  border: 1px solid color-mix(in srgb, var(--amber-500) 60%, transparent);
+  background: none;
+  color: var(--c-warn-text);
+  font: 600 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.h03-row {
+  top: 690px;
+  width: 340px;
+  padding: 18px 20px;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.h03-keys {
+  left: 280px;
+}
+
+.h03-logout {
+  left: 820px;
+}
+
+.h03-row-icon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--violet-600) 40%, transparent);
+  color: var(--violet-100);
+}
+
+.h03-logout .h03-row-icon {
+  background: color-mix(in srgb, var(--red-500) 20%, transparent);
+  color: var(--red-300);
+}
+
+.h03-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.h03-row-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* Not on the board: deleting one's data, quiet under the station, away from the everyday controls. */
+.h03-delete {
+  position: absolute;
+  left: 600px;
+  top: 800px;
+  width: 240px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  color: var(--c-danger-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.h03-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  z-index: 5;
+  transform: translateX(-50%);
+}
+
+.h03-delete-list {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--c-text);
+}
+
+.h03-delete-list dt {
+  font-weight: 700;
+}
+
+.h03-delete-list dd {
+  margin: 0 0 6px;
+  color: var(--c-text-muted);
+}
+
+.h03-delete-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.h03-delete-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--c-danger);
+}
+
+.h03-delete-type {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.h03-delete-input {
+  height: 44px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-solid);
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+  letter-spacing: 1px;
+}
+
+.h03-delete-error {
+  font-size: 13px;
+  color: var(--c-danger-text);
+}
+
+.h03-delete-done {
+  font-size: 13px;
+  color: var(--c-success-text);
+}

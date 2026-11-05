@@ -54,8 +54,16 @@ describe('signed in through the hoandat.com account', () => {
     expect(await (await api(server, '/api/session', { cookie: session })).json()).toEqual({
       signedIn: true,
       signInAvailable: true,
-      // `id`: the account's own id (the browser keeps each account's offline drafts apart by it).
-      user: { id: expect.stringMatching(/^[0-9a-f-]{36}$/), name: 'Nguyễn Văn A', email: 'a@example.com', picture: 'https://lh3.googleusercontent.com/a/photo' },
+      // `id`: the account's own id (the browser keeps each account's offline drafts apart by it); the display
+      // settings paint the app at once (H03).
+      user: {
+        id: expect.stringMatching(/^[0-9a-f-]{36}$/),
+        name: 'Nguyễn Văn A',
+        email: 'a@example.com',
+        picture: 'https://lh3.googleusercontent.com/a/photo',
+        theme: 'system',
+        reducedMotion: false,
+      },
     });
     const logout = await api(server, '/auth/logout', { method: 'POST', cookie: session });
     expect(logout.status).toBe(204);

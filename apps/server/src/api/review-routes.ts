@@ -1,6 +1,7 @@
 /**
  * The review lifecycle on the web session (src/access/review.ts, src/review/moderation.ts). Every route needs a
- * session (401 `sign-in-required`); the /api/moderation routes need an admin (403 `admin-only`).
+ * session (401 `sign-in-required`). The review queue and its decisions need a reviewer or an admin (403
+ * `reviewer-only`); published texts need an admin (403 `admin-only`): src/access/roles.ts.
  *
  * Author (C06, C08, C04):
  * - POST /api/documents/:id/submit `{space?, collection?, tags?, lang?}` → SubmitResponse: sends a draft, a private
@@ -12,10 +13,12 @@
  * - POST /api/documents/:id/private `{space?, collection?, tags?, lang?}` → `{status: 'private'}`: C04 "Riêng tư";
  *   a text waiting leaves the queue. 409 `published` for an approved text.
  *
- * Admins (A01, A02):
+ * Reviewers and admins (A01):
  * - GET /api/moderation/queue → `{documents: ReviewQueueItem[]}`.
  * - POST /api/moderation/documents/:id/decision `{decision, reason?}` → `{id, status, origin}`; `reason` (1–1000
- *   characters) is required to request changes or reject. 409 `not-pending`.
+ *   characters) is required to request changes or reject. 409 `not-pending`; 403 `own-text` for a reviewer (not an
+ *   admin) deciding on their own text.
+ * Admins (A02):
  * - GET /api/moderation/published?origin=&visibility=&q= → `{documents: PublishedItem[]}`.
  * - PATCH /api/moderation/documents/:id `{hidden?, title?, tags?, space?, collection?}` → PublishedItem (its `opens`
  *   and `aiMade` are not recomputed: the list keeps what it had). Published texts only, all or nothing: 409
@@ -25,7 +28,7 @@
 import express, { type Request, type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
-import { type AdminViewer, REVIEW_DECISIONS, isAdminViewer, listPublished, listReviewQueue } from '../access/review';
+import { type AdminViewer, REVIEW_DECISIONS, type ReviewerViewer, isAdminViewer, isReviewerViewer, listPublished, listReviewQueue } from '../access/review';
 import type { Viewer } from '../access/viewer';
 import { MAX_TITLE_CHARS } from '../authoring/markdown-text';
 import { HttpError } from '../http-error';
@@ -104,6 +107,11 @@ export function reviewRoutes({ config, db, now, sync, jev, meili }: ReviewRoutes
     if (!isAdminViewer(viewer)) throw new HttpError(403, 'admin-only');
     return viewer;
   };
+  const reviewer = async (req: Request): Promise<ReviewerViewer> => {
+    const viewer = await user(req);
+    if (!isReviewerViewer(viewer)) throw new HttpError(403, 'reviewer-only');
+    return viewer;
+  };
 
   router.post('/api/documents/:id/submit', auth, submitLimit, async (req, res) => {
     const viewer = await user(req);
@@ -126,12 +134,12 @@ export function reviewRoutes({ config, db, now, sync, jev, meili }: ReviewRoutes
   });
 
   router.get('/api/moderation/queue', auth, adminLimit, async (req, res) => {
-    const viewer = await admin(req);
+    const viewer = await reviewer(req);
     res.set('Cache-Control', 'no-store').json({ documents: await queueItems(db, viewer, await listReviewQueue(db, viewer)) });
   });
 
   router.post('/api/moderation/documents/:id/decision', auth, adminLimit, async (req, res) => {
-    const viewer = await admin(req);
+    const viewer = await reviewer(req);
     const body = parseBody(DecisionBody, req.body);
     const doc = await decide(deps, viewer, idParam(req), body.decision, body.reason ?? null);
     res.json({ id: doc.id, status: doc.status, origin: doc.origin });

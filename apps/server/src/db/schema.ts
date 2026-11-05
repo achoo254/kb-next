@@ -26,13 +26,21 @@ const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull(
 
 export const uiLang = pgEnum('ui_lang', ['vi', 'en']);
 export const uiTheme = pgEnum('ui_theme', ['dark', 'light', 'system']);
-/** Admins are not a role: they are the IdP subs listed in the server config (ADMIN_SUBS). */
-export const userRole = pgEnum('user_role', ['member', 'reviewer']);
+/**
+ * The workspace role an admin grants (C19): `member` reads and writes, `reviewer` also decides the review queue (A01),
+ * `admin` runs the workspace. The IdP subs in ADMIN_SUBS are admins whatever their row says (bootstrap admins: no
+ * one demotes them from the app); src/access/roles.ts is the one place that resolves an account's role.
+ */
+export const userRole = pgEnum('user_role', ['member', 'reviewer', 'admin']);
+export const USER_ROLES = userRole.enumValues;
 
 /**
  * An account of the hoandat.com IdP that signed in here: its `sub`, and the name, email and picture its userinfo
  * gave at the latest sign-in (scope `openid profile email`), shown in the account menu. The three are null for an
- * account whose userinfo gave none. `lang` and `theme` are the account's settings (C19).
+ * account whose userinfo gave none. `lang`, `theme` and `reducedMotion` are the account's settings (H03).
+ * `removedAt`: an admin took the account out of the workspace (C19 "Gỡ"); it cannot sign in until restored.
+ * `deletedAt`: the account deleted its data (H03); the row stays as a nameless tombstone (its `sub` replaced) so the
+ * published texts it chose to leave and the audit trail keep an author, and the IdP account starts afresh next time.
  */
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -43,7 +51,10 @@ export const users = pgTable('users', {
   lang: uiLang('lang').notNull().default('vi'),
   theme: uiTheme('theme').notNull().default('system'),
   role: userRole('role').notNull().default('member'),
+  reducedMotion: boolean('reduced_motion').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  removedAt: timestamp('removed_at', { withTimezone: true }),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
   /** When the account finished or skipped the first-visit steps (S03); null until then. */
   onboardedAt: timestamp('onboarded_at', { withTimezone: true }),
   /** Slugs of the Spaces the account picked as its interests during onboarding (S03), in the order picked. */
@@ -669,7 +680,11 @@ export const journeyProgress = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.stepId] }), index('journey_progress_step_id_idx').on(table.stepId)],
 );
 
-/** Audit trail (C19): who did what to which record. `detail` never holds secrets or document text. */
+/**
+ * Audit trail (C19 "Nhật ký kiểm toán"): who did what to which record. `detail` never holds secrets or document
+ * text. Actions are named in src/workspace/audit.ts (members, invites, tokens, sign-ins, data deletion) and
+ * src/access/history.ts (hiding and showing a text).
+ */
 export const auditLog = pgTable(
   'audit_log',
   {
@@ -682,6 +697,30 @@ export const auditLog = pgTable(
     createdAt: createdAt(),
   },
   (table) => [index('audit_log_created_at_idx').on(table.createdAt), index('audit_log_actor_id_idx').on(table.actorId)],
+);
+
+/** The role an invite link grants: never `admin` (an admin is made by another admin, in C19). */
+export const inviteRole = pgEnum('invite_role', ['member', 'reviewer']);
+
+/**
+ * Invite links (C19 "Mời bằng link"): like share links, only the sha256 of the token is stored, with its last four
+ * characters; the token is shown once, when made. A link lets any number of hoandat accounts in until it expires
+ * (`expiresAt`) or an admin revokes it; accepting it (signed in) raises the account to `role`, never lowers it.
+ */
+export const inviteLinks = pgTable(
+  'invite_links',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    tokenHash: text('token_hash').notNull().unique(),
+    last4: text('last4').notNull(),
+    role: inviteRole('role').notNull().default('member'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    acceptedCount: integer('accepted_count').notNull().default(0),
+    createdAt: createdAt(),
+  },
+  (table) => [index('invite_links_created_at_idx').on(table.createdAt)],
 );
 
 /**

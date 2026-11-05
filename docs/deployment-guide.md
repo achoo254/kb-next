@@ -78,7 +78,7 @@ chép thành file env của `apps/server`.
 | `AUTH_ISSUER` | `https://auth.hoandat.com` |
 | `AUTH_CLIENT_ID` | `kb-web` |
 | `AUTH_CLIENT_SECRET` | secret của client `kb-web`, cùng giá trị với `KB_WEB_CLIENT_SECRET` trên IdP (≥ 32 ký tự) |
-| `ADMIN_SUBS` | `sub` IdP của các quản trị, cách nhau bằng dấu phẩy (không có đường tự nâng quyền) |
+| `ADMIN_SUBS` | `sub` IdP của các quản trị gốc, cách nhau bằng dấu phẩy (không ai hạ được từ app; họ cấp vai trò cho người khác ở C19, không có đường tự nâng quyền) |
 | `MEILI_URL` | `http://127.0.0.1:5322` |
 | `MEILI_MASTER_KEY` | khoá ngẫu nhiên sinh trên server (≥ 16 ký tự, nên `openssl rand -hex 32`); container `kb-meili` đọc cùng dòng này |
 | `HOC_CLOUD_URL` | không cần đặt: lệnh nhập Học Cloud mặc định đọc `https://hoc-cloud.inetdev.io.vn` (API công khai) |

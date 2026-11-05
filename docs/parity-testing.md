@@ -51,7 +51,9 @@ E2E chậm (dựng web, API, IdP giả rồi mở trình duyệt), nên chỉ ch
   bằng 5 tệp của board (`imports-c16`), H04 nạp sẵn IndexedDB của trình duyệt bằng bản nháp và ghi chú của board rồi cắt
   mạng (`offline-h04`, `offline`); dữ liệu ở `apps/web/e2e/office-boards.ts`. A01–A03 trả `/api/me` như của quản trị
   (`admin`; tài khoản E2E không phải quản trị) và API quản trị bằng dữ liệu của board (`admin-a01`, `admin-a02`,
-  `admin-a03`, `apps/web/e2e/admin-boards.ts`); C20 dùng 7 thông báo seed của chủ seed. C04, C05 trả bản nháp của board
+  `admin-a03`, `apps/web/e2e/admin-boards.ts`); H03 trả `/api/me` như của quản trị ở giao diện Tối (`settings-h03`) cùng
+  key của board, C19 trả bốn thành viên của board và link mời vừa tạo trong lúc chụp (`workspace-c19`,
+  `apps/web/e2e/settings-boards.ts`); C20 dùng 7 thông báo seed của chủ seed. C04, C05 trả bản nháp của board
   (xếp ở Networking, có các mục DORA và thẻ) và danh sách Space (`publish-c04`), C18 trả trang chia sẻ của bài DHCP
   (`share-c18`), H02 trả link mở khi chưa đăng nhập (`open-h02`); dữ liệu ở `apps/web/e2e/share-boards.ts` (E2E không
   hiện lại được token).

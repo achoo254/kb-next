@@ -9,6 +9,7 @@ import { c08Documents } from './mine-boards';
 import { mockImportsC16, mockUploadC03, seedOfflineH04 } from './office-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
 import { C04_DOCUMENT, C04_SPACES, H02_PREVIEW, H02_TOKEN, PUBLISH_DOCUMENT_ID, c18Share } from './share-boards';
+import { C19_INVITE, C19_MEMBERS, H03_ME } from './settings-boards';
 import { signInAt } from './sign-in';
 
 /**
@@ -32,8 +33,21 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
       const response = await route.fetch();
       if (!response.ok()) return route.fulfill({ response });
       const me = (await response.json()) as Record<string, unknown>;
-      return route.fulfill({ response, json: { ...me, isAdmin: true } });
+      return route.fulfill({ response, json: { ...me, role: 'admin', isAdmin: true, canReview: true } });
     });
+  }
+  if (mocks.includes('settings-h03')) {
+    await page.route('**/api/me', async (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      const response = await route.fetch();
+      if (!response.ok()) return route.fulfill({ response });
+      const me = (await response.json()) as Record<string, unknown>;
+      return route.fulfill({ response, json: { ...me, ...H03_ME } });
+    });
+  }
+  if (mocks.includes('workspace-c19')) {
+    await page.route('**/api/workspace/members', (route) => route.fulfill({ json: C19_MEMBERS }));
+    await page.route('**/api/workspace/invite', (route) => (route.request().method() === 'POST' ? route.fulfill({ status: 201, json: C19_INVITE }) : route.fulfill({ json: { invite: null } })));
   }
   if (mocks.includes('admin-a01')) {
     await page.route('**/api/moderation/queue', (route) => route.fulfill({ json: A01_QUEUE }));

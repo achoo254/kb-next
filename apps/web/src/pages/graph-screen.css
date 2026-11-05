@@ -935,3 +935,7 @@
   font: 700 12px var(--font-sans);
   cursor: pointer;
 }
+
+:root[data-motion="reduce"] .graph-edge-dot {
+  display: none;
+}

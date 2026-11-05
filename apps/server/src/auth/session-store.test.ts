@@ -52,15 +52,15 @@ describe('account profile', () => {
     const t0 = new Date('2026-10-29T00:00:00Z');
     const first = { name: 'A', email: 'a@example.com', picture: 'https://lh3.googleusercontent.com/a' };
     const id = await upsertUser(db, 'account-profile', first, t0);
-    expect(await findProfile(db, id)).toEqual(first);
+    expect(await findProfile(db, id)).toMatchObject(first);
     expect(await upsertUser(db, 'account-profile', null, t0)).toBe(id);
-    expect(await findProfile(db, id)).toEqual(first);
+    expect(await findProfile(db, id)).toMatchObject(first);
     const second = { name: 'B', email: null, picture: null };
     expect(await upsertUser(db, 'account-profile', second, t0)).toBe(id);
-    expect(await findProfile(db, id)).toEqual(second);
+    expect(await findProfile(db, id)).toMatchObject(second);
     // An account that signed in before profiles were asked for has none yet.
     const old = await upsertUser(db, 'account-old', null, t0);
-    expect(await findProfile(db, old)).toEqual({ name: null, email: null, picture: null });
+    expect(await findProfile(db, old)).toMatchObject({ name: null, email: null, picture: null });
   });
 });
 

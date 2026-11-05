@@ -113,6 +113,13 @@
       "when": 1793877876070,
       "tag": "0015_journey-steps-and-progress",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793882994564,
+      "tag": "0016_workspace-roles-invites-and-account-deletion",
+      "breakpoints": true
     }
   ]
 }

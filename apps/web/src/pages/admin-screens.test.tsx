@@ -89,7 +89,7 @@ beforeEach(() => {
       const method = init?.method ?? 'GET';
       const body: unknown = init?.body ? JSON.parse(String(init.body)) : null;
       if (method !== 'GET') calls.push({ method, url, body });
-      if (url === '/api/me') return answer(200, { name: 'Đạt', email: null, picture: null, lang: 'vi', theme: 'dark', role: 'member', isAdmin: admin, onboardedAt: NOW.toISOString(), interests: [] });
+      if (url === '/api/me') return answer(200, { name: 'Đạt', email: null, picture: null, lang: 'vi', theme: 'dark', reducedMotion: false, role: admin ? 'admin' : 'member', isAdmin: admin, canReview: admin, roleLocked: admin, onboardedAt: NOW.toISOString(), interests: [] });
       if (url === '/api/moderation/queue') return answer(200, { documents: queue });
       if (url.startsWith('/api/moderation/documents/') && url.endsWith('/decision')) return answer(200, { id: 'q1', status: 'rejected', origin: 'own' });
       if (url === '/api/moderation/published') return answer(200, { documents: PUBLISHED });

@@ -10,6 +10,7 @@ import { findLatestVersion } from '../access/content';
 import { findDocumentsByIds, listCollectionsOf, spacesById, userNames } from '../access/reading';
 import {
   type AdminViewer,
+  type ReviewerViewer,
   type Placement,
   type PublishedEntry,
   type QueueEntry,
@@ -33,7 +34,7 @@ import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
 import { HttpError } from '../http-error';
 import type { JevJudge } from '../jev/jev-client';
-import { adminUserIds, clearSubmittedNotices, nameOf, notifyAfter, unreadSubmittedNotice } from '../notifications/notification-store';
+import { reviewerUserIds, clearSubmittedNotices, nameOf, notifyAfter, unreadSubmittedNotice } from '../notifications/notification-store';
 import { safeErrorText } from '../log-error';
 import type { IndexSync } from '../search/index-sync';
 import type { MeiliClient } from '../search/meili-client';
@@ -113,7 +114,7 @@ function refuseSubmit(kind: string, status?: string): never {
 
 /**
  * Sends the author's text for review: the access rule, then Jev's pre-review (bounded; failing or off leaves the
- * scores out), a word to every admin, and the search sync.
+ * scores out), a word to every reviewer and admin, and the search sync.
  */
 export async function submitText(deps: ModerationDeps, viewer: UserViewer, id: string, input: PublishSettings): Promise<SubmitResponse> {
   const { db, now } = deps;
@@ -127,9 +128,9 @@ export async function submitText(deps: ModerationDeps, viewer: UserViewer, id: s
   await notifyAfter(
     db,
     async () => {
-      // An admin who has not read the notice of this text's previous submission gets no second one.
+      // A reviewer who has not read the notice of this text's previous submission gets no second one.
       const told = await unreadSubmittedNotice(db, id);
-      const admins = (await adminUserIds(db, deps.config.adminSubs)).filter((adminId) => adminId !== viewer.userId && !told.has(adminId));
+      const admins = (await reviewerUserIds(db, deps.config.adminSubs)).filter((adminId) => adminId !== viewer.userId && !told.has(adminId));
       if (admins.length === 0) return [];
       const by = await nameOf(db, viewer.userId);
       return admins.map((userId) => ({ userId, documentId: id, payload: { kind: 'review' as const, title: result.doc.title, action: 'submitted' as const, reason: null, by } }));
@@ -162,21 +163,22 @@ export async function keepTextPrivate(deps: ModerationDeps, viewer: UserViewer, 
   return result.doc;
 }
 
-/** An admin's verdict, told to the author with its reason. */
-export async function decide(deps: ModerationDeps, admin: AdminViewer, id: string, decision: ReviewDecision, reason: string | null): Promise<DocumentRow> {
+/** A reviewer's or an admin's verdict, told to the author with its reason. */
+export async function decide(deps: ModerationDeps, reviewer: ReviewerViewer, id: string, decision: ReviewDecision, reason: string | null): Promise<DocumentRow> {
   const { db, now } = deps;
-  const result = await decideReview(db, admin, id, decision, reason, now());
+  const result = await decideReview(db, reviewer, id, decision, reason, now());
   if (result.kind === 'not-found') throw new HttpError(404, 'not-found');
+  if (result.kind === 'own-text') throw new HttpError(403, 'own-text');
   if (result.kind === 'not-pending') throw new HttpError(409, 'not-pending');
   deps.sync?.enqueue([id]);
-  if (result.doc.authorId !== admin.userId) {
+  if (result.doc.authorId !== reviewer.userId) {
     await notifyAfter(
       db,
       async () => [
         {
           userId: result.doc.authorId,
           documentId: id,
-          payload: { kind: 'review', title: result.doc.title, action: decision, reason: decision === 'approved' ? null : reason, by: await nameOf(db, admin.userId) },
+          payload: { kind: 'review', title: result.doc.title, action: decision, reason: decision === 'approved' ? null : reason, by: await nameOf(db, reviewer.userId) },
         },
       ],
       now(),
@@ -297,13 +299,13 @@ async function placesOf(db: Db, docs: readonly DocumentRow[]): Promise<{ spaces:
   return { spaces: new Map(spaces.map((s) => [s.id, s])), collections: new Map(collections.map((c) => [c.id, c])), authors };
 }
 
-export async function queueItems(db: Db, admin: AdminViewer, entries: readonly QueueEntry[]): Promise<ReviewQueueItem[]> {
+export async function queueItems(db: Db, reviewer: ReviewerViewer, entries: readonly QueueEntry[]): Promise<ReviewQueueItem[]> {
   const places = await placesOf(
     db,
     entries.map((e) => e.doc),
   );
   const repeated = entries.flatMap((e) => (e.jev?.duplicateOf ? [e.jev.duplicateOf] : []));
-  const titles = new Map((await findDocumentsByIds(db, admin, repeated)).map((d) => [d.id, d.title]));
+  const titles = new Map((await findDocumentsByIds(db, reviewer, repeated)).map((d) => [d.id, d.title]));
   return entries.flatMap(({ doc, submittedAt, jev }) => {
     const space = places.spaces.get(doc.spaceId);
     if (!space) return [];

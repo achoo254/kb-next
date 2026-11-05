@@ -24,6 +24,7 @@ describe('loginView', () => {
     expect(loginView(OUT, '?return=%2Fu&go=1', false)).toEqual({ card: 'gate', opening: true });
     expect(loginView(OUT, '?login=fail', false)).toEqual({ card: 'failed', reason: 'fail' });
     expect(loginView(OUT, '?login=busy&go=1', false)).toEqual({ card: 'failed', reason: 'busy' });
+    expect(loginView(OUT, '?login=removed', false)).toEqual({ card: 'failed', reason: 'removed' });
     expect(loginView(CLOSED, '', false)).toEqual({ card: 'failed', reason: 'unavailable' });
     expect(loginView(IN, '?login=fail', false)).toEqual({ card: 'opening' });
     expect(loginView({ status: 'loading' }, '?go=1', false)).toEqual({ card: 'gate', opening: true });

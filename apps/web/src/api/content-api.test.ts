@@ -10,6 +10,9 @@ const ME = {
   theme: 'system',
   role: 'member',
   isAdmin: false,
+  canReview: false,
+  roleLocked: false,
+  reducedMotion: false,
   onboardedAt: null,
   interests: [],
 };

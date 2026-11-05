@@ -41,8 +41,11 @@ describe('GET /api/me', () => {
       picture: null,
       lang: 'vi',
       theme: 'system',
+      reducedMotion: false,
       role: 'member',
       isAdmin: false,
+      canReview: false,
+      roleLocked: false,
       onboardedAt: null,
       interests: [],
     });
@@ -52,7 +55,7 @@ describe('GET /api/me', () => {
     idp.setSub('admin-sub');
     try {
       const admin = await signIn(server);
-      expect(await (await api(server, '/api/me', { cookie: admin })).json()).toMatchObject({ isAdmin: true });
+      expect(await (await api(server, '/api/me', { cookie: admin })).json()).toMatchObject({ role: 'admin', isAdmin: true, canReview: true, roleLocked: true });
     } finally {
       idp.setSub('reader-a');
     }
@@ -67,8 +70,16 @@ describe('PATCH /api/me', () => {
     expect(await (await api(server, '/api/me', { method: 'PATCH', cookie: session, body: json({ lang: 'en' }) })).json()).toMatchObject({ lang: 'en', theme: 'dark' });
   });
 
+  it('turns reduced motion on and off, and the session tells it for the first paint', async () => {
+    const on = await api(server, '/api/me', { method: 'PATCH', cookie: session, body: json({ reducedMotion: true }) });
+    expect(await on.json()).toMatchObject({ reducedMotion: true });
+    expect(await (await api(server, '/api/session', { cookie: session })).json()).toMatchObject({ user: { theme: 'dark', reducedMotion: true } });
+    const off = await api(server, '/api/me', { method: 'PATCH', cookie: session, body: json({ reducedMotion: false }) });
+    expect(await off.json()).toMatchObject({ reducedMotion: false });
+  });
+
   it('rejects an empty change, unknown values and unknown fields', async () => {
-    for (const body of [{}, { lang: 'fr' }, { theme: 'blue' }, { lang: 'vi', role: 'reviewer' }]) {
+    for (const body of [{}, { lang: 'fr' }, { theme: 'blue' }, { reducedMotion: 'yes' }, { lang: 'vi', role: 'reviewer' }]) {
       const res = await api(server, '/api/me', { method: 'PATCH', cookie: session, body: json(body) });
       expect(res.status, JSON.stringify(body)).toBe(400);
       expect(await res.json()).toEqual({ error: 'invalid-body' });

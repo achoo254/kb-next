@@ -5,6 +5,7 @@ import { C08_CLOCK } from './mine-boards';
 import { JOURNEY_ID } from './journey-boards';
 import { C18_CLOCK, H02_TOKEN, PUBLISH_DOCUMENT_ID } from './share-boards';
 import { C03_FILES } from './office-boards';
+import { C19_CLOCK } from './settings-boards';
 
 /**
  * The screens the parity check compares with their mock board (design/mock-png/<board>.png), with the route that
@@ -60,7 +61,9 @@ export interface ParityScreen {
  * `share-c18`: the DHCP text's sharing with its 7-day link and history; `open-h02`: a share link opened signed out
  * (share-boards.ts: E2E cannot show a token again, and the seed's draft has no sections or tags); `journey-c07` /
  * `journey-flow`: the journey "Máy mới vào mạng" of the boards, built (its steps, Jev's next steps, the documents to
- * pick) and run two steps in (journey-boards.ts: the seed's journey walks other steps, and E2E has no Jev key).
+ * pick) and run two steps in (journey-boards.ts: the seed's journey walks other steps, and E2E has no Jev key);
+ * `settings-h03`: /api/me as an admin's in the dark theme (H03); `workspace-c19`: the board's four members and an
+ * invite link made in the shot (settings-boards.ts: the E2E account is an ordinary member).
  */
 export type ParityMock =
   | 'onboarded'
@@ -87,7 +90,9 @@ export type ParityMock =
   | 'share-c18'
   | 'open-h02'
   | 'journey-c07'
-  | 'journey-flow';
+  | 'journey-flow'
+  | 'settings-h03'
+  | 'workspace-c19';
 
 /**
  * 45 days after the seed's latest update (03/11/2026): the Universe's stage then shows "Cần cập nhật · Đã 45 ngày" for
@@ -194,6 +199,19 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'A01-AdminReview', path: '/admin', signedIn: true, status: 'built', mocks: ['admin', 'admin-a01'], clock: A01_CLOCK, waitFor: '.a01-block[data-n="2"]' },
   { board: 'A02-AdminContent', path: '/admin/content', signedIn: true, status: 'built', mocks: ['admin', 'admin-a02'], waitFor: '[data-id="content-detail"]' },
   { board: 'A03-AdminApi', path: '/admin/api', signedIn: true, status: 'built', mocks: ['admin', 'admin-a03'], clock: A03_CLOCK, waitFor: '.a03-line[data-tone="danger"]' },
+  // Personal settings (H03) of an admin in the dark theme with the board's OpenAI key; workspace settings (C19) on
+  // the board's four members, the invite link just made.
+  { board: 'H03-Settings', path: '/settings', signedIn: true, status: 'built', mocks: ['settings-h03', 'keys-f03'], clock: C19_CLOCK, waitFor: '[data-id="settings-staff"]' },
+  {
+    board: 'C19-Settings',
+    path: '/admin/settings',
+    signedIn: true,
+    status: 'built',
+    mocks: ['admin', 'workspace-c19'],
+    clock: C19_CLOCK,
+    click: '[data-id="ws-invite-make"]',
+    waitFor: '[data-id="ws-invite-copy"]',
+  },
   // The first-visit dialog at its first step (`?tour=1` opens it for an onboarded account too), over the Universe.
   { board: 'S03-Onboarding', path: '/u?tour=1', signedIn: true, status: 'built', clock: UNIVERSE_CLOCK },
   // The journey builder (C07) on the board's five steps, step 2 picked, with Jev's next steps; its run (Flow) two steps

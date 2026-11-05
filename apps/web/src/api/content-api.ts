@@ -30,14 +30,25 @@ export type ReadError = (typeof READ_ERRORS)[number];
 /** ISO 8601 time with offset, as the server sends dates. */
 const Time = z.iso.datetime({ offset: true });
 
+/** Workspace roles (C19 "Vai trò & quyền"): Thành viên, Người duyệt, Quản trị. */
+export const WORKSPACE_ROLES = ['member', 'reviewer', 'admin'] as const;
+export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number];
+
 const MeSchema = z.object({
   name: z.nullable(z.string()),
   email: z.nullable(z.string()),
   picture: z.nullable(z.string()),
   lang: Lang,
   theme: z.enum(THEMES),
-  role: z.enum(['member', 'reviewer']),
+  /** App-level reduced motion (H03), on top of the system's setting. */
+  reducedMotion: z.boolean(),
+  /** The workspace role the account acts with (C19). */
+  role: z.enum(WORKSPACE_ROLES),
   isAdmin: z.boolean(),
+  /** May decide the review queue (A01): an admin or a reviewer. */
+  canReview: z.boolean(),
+  /** A bootstrap admin (the server's ADMIN_SUBS): its role is not changed from the app. */
+  roleLocked: z.boolean(),
   /** null until the account finishes or skips onboarding (S03): show it on the first visit to /u. */
   onboardedAt: z.nullable(Time),
   /** Slugs of the Spaces picked during onboarding. */
@@ -244,8 +255,8 @@ export function fetchMe(): Promise<Me> {
   return getJson(MeSchema, '/api/me');
 }
 
-/** Changes the account's language and/or theme (C19); answers the updated account. */
-export function updateMe(change: { lang?: Lang; theme?: Theme }): Promise<Me> {
+/** Changes the account's language, theme and/or reduced motion (H03); answers the updated account. */
+export function updateMe(change: { lang?: Lang; theme?: Theme; reducedMotion?: boolean }): Promise<Me> {
   return getJson(MeSchema, '/api/me', { method: 'PATCH', body: JSON.stringify(change) });
 }
 

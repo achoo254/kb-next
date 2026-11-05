@@ -6,7 +6,15 @@ import { apiFetch } from './api-client';
  * The signed-in account as the IdP named it at the latest sign-in; any field may be null. `id`: the account's id in
  * KnowFlow (what this browser's offline Office drafts are kept under).
  */
-const SessionUserSchema = z.object({ id: z.optional(z.string()), name: z.nullable(z.string()), email: z.nullable(z.string()), picture: z.nullable(z.string()) });
+const SessionUserSchema = z.object({
+  id: z.optional(z.string()),
+  name: z.nullable(z.string()),
+  email: z.nullable(z.string()),
+  picture: z.nullable(z.string()),
+  /** The account's display settings (H03), applied as soon as the session is known. */
+  theme: z.optional(z.enum(['dark', 'light', 'system'])),
+  reducedMotion: z.optional(z.boolean()),
+});
 export type SessionUser = z.infer<typeof SessionUserSchema>;
 
 const SessionSchema = z.object({ signedIn: z.boolean(), signInAvailable: z.boolean(), user: z.optional(SessionUserSchema) });

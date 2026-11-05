@@ -1,0 +1,767 @@
+/* "Cài đặt workspace" (design/mock/C19-Settings.dc.html) at the board's coordinates: the column at 104,84 runs to 28px
+   from the right; panels are the rim glass of the boards. Also the invite card (/i/<token>). */
+
+.ws-screen {
+  position: absolute;
+  left: 104px;
+  top: 84px;
+  right: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: var(--c-text);
+}
+
+.kf-gradient-title.ws-title {
+  margin: 0;
+  padding-bottom: 0;
+  letter-spacing: -0.8px;
+  line-height: normal;
+}
+
+.ws-lead {
+  font-size: 14px;
+}
+
+.ws-muted {
+  color: var(--c-text-muted);
+}
+
+.ws-small {
+  font-size: 12px;
+}
+
+.ws-13 {
+  font-size: 13px;
+}
+
+.ws-14 {
+  font-size: 14px;
+}
+
+.ws-16 {
+  font-size: 16px;
+}
+
+.ws-17 {
+  font-size: 17px;
+}
+
+.ws-strong {
+  font-weight: 700;
+}
+
+.ws-semi {
+  font-weight: 600;
+}
+
+.ws-fill {
+  flex: 1;
+  min-width: 0;
+}
+
+.ws-glass {
+  box-sizing: content-box;
+  border-radius: 24px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* The tab pill (board: a dark well with the active tab in the rim button look). */
+.kf-tabs.ws-tabs[data-variant] {
+  align-self: flex-start;
+  gap: 6px;
+  padding: 5px;
+  border-radius: 24px;
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.kf-tabs.ws-tabs[data-variant] .kf-tab {
+  box-sizing: content-box;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  color: var(--c-text-muted);
+  font: 600 13px var(--font-sans);
+}
+
+.kf-tabs.ws-tabs[data-variant] .kf-tab[aria-selected="true"] {
+  background: var(--rim-active-bg);
+  border-color: var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+/* ── Members ── */
+
+.ws-members-tab {
+  display: flex;
+  gap: 16px;
+}
+
+.ws-members {
+  flex: 1;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ws-count {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.ws-member {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--admin-row);
+}
+
+.ws-member[data-removed] {
+  opacity: 0.7;
+}
+
+.ws-avatar {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--violet-600);
+  color: var(--white);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ws-avatar[data-tone="cyan"] {
+  background: var(--cyan-700);
+}
+
+.ws-avatar[data-tone="amber"] {
+  background: var(--amber-700);
+}
+
+.ws-avatar[data-tone="emerald"] {
+  background: var(--emerald-700);
+}
+
+.ws-avatar-sm {
+  width: 32px;
+  height: 32px;
+  font-size: 13px;
+}
+
+.ws-member-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ws-member-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.ws-role {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--violet-600) 22%, transparent);
+  color: var(--violet-200);
+}
+
+.ws-role[data-role="admin"] {
+  background: color-mix(in srgb, var(--amber-500) 20%, transparent);
+  color: var(--c-warn-text);
+}
+
+.ws-role[data-role="reviewer"] {
+  background: color-mix(in srgb, var(--cyan-400) 18%, transparent);
+  color: var(--cyan-300);
+}
+
+.ws-role[data-role="removed"] {
+  background: color-mix(in srgb, var(--red-500) 18%, transparent);
+  color: var(--red-300);
+}
+
+.ws-outline {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--c-border);
+  background: none;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.ws-remove {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: none;
+  background: none;
+  color: var(--c-warn-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.ws-outline:disabled,
+.ws-remove:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ws-primary {
+  border-radius: 12px;
+  background: var(--rim-button-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow: var(--rim-button-shadow);
+  color: var(--white);
+  font: 700 13px var(--font-sans);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.ws-warn {
+  background: var(--c-warn);
+  border: 1.5px solid var(--c-warn);
+  color: var(--c-on-warn);
+  font: 700 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.ws-pill {
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 23px;
+  font-size: 14px;
+}
+
+.ws-ghost,
+.ws-link-button {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  color: var(--c-link);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.ws-error {
+  font-size: 13px;
+  color: var(--c-danger-text);
+}
+
+.ws-failed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+/* ── Invite by link ── */
+
+.ws-invite {
+  width: 380px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ws-invite-title {
+  font: 700 20px var(--font-display);
+}
+
+.ws-invite-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 50px;
+  padding: 0 6px 0 14px;
+  border-radius: 16px;
+  background: var(--admin-row);
+  border: 1px solid var(--c-border);
+}
+
+.ws-invite-url {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ws-invite-btn {
+  height: 40px;
+  padding: 0 14px;
+}
+
+.ws-invite-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ws-invite-role {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ws-invite-role select {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-solid);
+  color: var(--c-text);
+  font: 500 14px var(--font-sans);
+}
+
+/* ── The role dialog ── */
+
+.ws-role-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ws-role-option {
+  min-height: 48px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 2px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ws-role-option[aria-checked="true"] {
+  border-color: var(--c-primary);
+  background: color-mix(in srgb, var(--violet-600) 18%, transparent);
+}
+
+/* The board's toast: top right, a success rim. */
+.ws-toast {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 5;
+  width: 380px;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--c-surface-solid);
+  border: 1px solid var(--c-success);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--dialog-shadow);
+}
+
+.ws-toast[data-tone="error"] {
+  border-color: var(--c-danger);
+}
+
+.ws-toast-icon {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--emerald-500) 20%, transparent);
+  color: var(--c-success-text);
+  font-weight: 700;
+}
+
+.ws-toast[data-tone="error"] .ws-toast-icon {
+  background: color-mix(in srgb, var(--red-500) 20%, transparent);
+  color: var(--c-danger-text);
+}
+
+.ws-toast-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ws-toast-close {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--c-text-muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* ── Roles & rights ── */
+
+.ws-matrix {
+  max-width: 900px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ws-matrix-head,
+.ws-matrix-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  align-items: center;
+}
+
+.ws-matrix-head {
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.ws-matrix-row {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--admin-row);
+  font-size: 14px;
+}
+
+.ws-matrix-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.ws-matrix-cell[data-yes] {
+  color: var(--c-success-text);
+}
+
+/* ── Sign-in, integrations, API ── */
+
+.ws-row-panels {
+  display: flex;
+  gap: 16px;
+  max-width: 1000px;
+}
+
+.ws-row-panels > .ws-panel {
+  flex: 1;
+}
+
+.ws-panel {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ws-panel-title {
+  font: 700 20px var(--font-display);
+}
+
+.ws-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ws-hd {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 30%, var(--violet-300), var(--violet-600) 60%, var(--violet-deep));
+  color: var(--white);
+  font: 700 18px var(--font-display);
+}
+
+.ws-state {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--emerald-500) 18%, transparent);
+  color: var(--c-success-text);
+}
+
+.ws-state > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ws-state[data-state="off"],
+.ws-state[data-state="checking"] {
+  background: color-mix(in srgb, var(--violet-600) 22%, transparent);
+  color: var(--c-text-muted);
+}
+
+.ws-state[data-state="down"] {
+  background: color-mix(in srgb, var(--red-500) 18%, transparent);
+  color: var(--c-danger-text);
+}
+
+.ws-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  font-size: 13px;
+}
+
+.ws-fact {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--admin-row);
+}
+
+.ws-policy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--admin-row);
+}
+
+.ws-switch {
+  position: relative;
+  width: 52px;
+  height: 30px;
+  flex: none;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--violet-400) 30%, transparent);
+}
+
+.ws-switch[aria-checked="true"] {
+  background: var(--c-primary);
+}
+
+.ws-switch > span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--white);
+}
+
+.ws-switch[aria-checked="true"] > span {
+  left: 25px;
+}
+
+.ws-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1000px;
+}
+
+.ws-grid .ws-panel {
+  padding: 18px;
+  gap: 10px;
+}
+
+.ws-int-orb {
+  --tone: var(--violet-600);
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--white), var(--tone) 55%);
+  box-shadow: 0 0 18px var(--tone);
+}
+
+.ws-int-orb[data-tone="emerald"] {
+  --tone: var(--emerald-500);
+}
+
+.ws-int-orb[data-tone="amber"] {
+  --tone: var(--amber-500);
+}
+
+.ws-int-orb[data-tone="cyan"] {
+  --tone: var(--cyan-500);
+}
+
+.ws-check {
+  align-self: flex-start;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.ws-api {
+  max-width: 760px;
+}
+
+.ws-key {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--amber-500) 20%, transparent);
+  color: var(--c-warn-text);
+}
+
+.ws-endpoints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ws-endpoints > span {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  background: var(--admin-row);
+  font: 600 12px var(--font-display);
+}
+
+.ws-open-api {
+  align-self: flex-start;
+  height: 44px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+/* ── Audit log ── */
+
+.ws-audit-panel {
+  max-width: 1000px;
+  padding: 18px;
+  gap: 12px;
+}
+
+.ws-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ws-filter {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 19px;
+  border: 1px solid var(--c-border);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.ws-filter[aria-pressed="true"] {
+  background: var(--rim-active-bg);
+  border-color: var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+.ws-audit-body {
+  display: flex;
+  gap: 16px;
+}
+
+.ws-audit-rail {
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--violet-400), var(--cyan-400));
+}
+
+.ws-audit {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.ws-audit-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--admin-row);
+}
+
+.ws-audit-time {
+  width: 52px;
+  flex: none;
+  font: 700 13px var(--font-display);
+  color: var(--c-text-muted);
+}
+
+.ws-cat {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── The invite card (/i/<token>) ── */
+
+.invite-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}

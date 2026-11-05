@@ -15,6 +15,7 @@ import { meRoutes } from './api/me-routes';
 import { myContentRoutes } from './api/my-content-routes';
 import { notificationRoutes } from './api/notification-routes';
 import { reviewRoutes } from './api/review-routes';
+import { workspaceRoutes } from './api/workspace-routes';
 import { authRoutes } from './auth/auth-routes';
 import { backchannelLogoutRoute } from './auth/backchannel-logout';
 import { type IdpMetadata, idpMetadata } from './auth/idp-metadata';
@@ -80,8 +81,9 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
  * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, knowledge
  * journeys (builder and run), search,
  * the account's own AI keys, the Copilot, AI translation and AI writing
- * (all three on those keys), review (sending for review, the admins' queue and published texts), the inbox, and the
- * admin API (token, docs/admin-api.md), share links and their preview page (/l/<token>). The web app is static (nginx in production, Vite in dev).
+ * (all three on those keys), review (sending for review, the reviewers' queue and published texts), the inbox, the
+ * admin API (token, docs/admin-api.md), workspace settings (members, roles, invites, audit), share links and their
+ * preview page (/l/<token>). The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
   config,
@@ -125,7 +127,7 @@ export function createApp({
   app.use('/api/write', express.json({ limit: WRITE_BODY_LIMIT }));
   app.use(express.json({ limit: '32kb' }));
   app.use(authRoutes({ config, db, idp, now }));
-  app.use(meRoutes({ config, db, now }));
+  app.use(meRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
   app.use(activityRoutes({ config, db, now }));
   app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
@@ -135,6 +137,8 @@ export function createApp({
   app.use(reviewRoutes({ config, db, now, sync: search?.sync ?? null, jev, meili: search?.meili ?? null }));
   app.use(notificationRoutes({ config, db, now }));
   app.use(adminTokenRoutes({ config, db, now }));
+  // Workspace settings (C19, admins): members and roles, invite links, the audit trail; accepting an invite.
+  app.use(workspaceRoutes({ config, db, now, idp, sync: search?.sync ?? null, meili: search?.meili ?? null, jev }));
   // Share links: made and managed by the author (C18), opened by anyone holding one (H02).
   app.use(shareRoutes({ config, db, now, sync: search?.sync ?? null }));
   // Stored files: uploads (multipart, streamed to disk, never parsed as JSON), downloads, editor saves.

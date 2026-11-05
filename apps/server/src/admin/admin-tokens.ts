@@ -1,8 +1,8 @@
 /**
  * Admin API tokens (A03) and the log of admin API calls. A token is `kf_admin_` and 43 random base64url characters
  * (256 bits); only its sha256 is stored, its last four characters are kept to tell tokens apart, and it is shown
- * once, when made; making one revokes the others. A revoked token never works again. A call acts as the admin who made the token, and only while
- * that account is still an admin (ADMIN_SUBS).
+ * once, when made; making one revokes the others. A revoked token never works again. A call acts as the admin who made
+ * the token, and only while that account is still an admin (src/access/roles.ts) and in the workspace.
  */
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { and, desc, eq, isNull, lt } from 'drizzle-orm';
@@ -81,6 +81,9 @@ export interface TokenHolder {
   /** The admin the token acts as. */
   userId: string;
   sub: string;
+  role: (typeof users.$inferSelect)['role'];
+  /** Its maker was removed from the workspace or deleted its data: the token acts as no one. */
+  gone: boolean;
 }
 
 /**
@@ -91,14 +94,23 @@ export async function useToken(db: Db, presented: string, now: Date): Promise<To
   if (!TOKEN_SHAPE.test(presented)) return null;
   const hash = hashToken(presented);
   const [row] = await db
-    .select({ id: adminTokens.id, hash: adminTokens.tokenHash, revokedAt: adminTokens.revokedAt, userId: users.id, sub: users.sub })
+    .select({
+      id: adminTokens.id,
+      hash: adminTokens.tokenHash,
+      revokedAt: adminTokens.revokedAt,
+      userId: users.id,
+      sub: users.sub,
+      role: users.role,
+      removedAt: users.removedAt,
+      deletedAt: users.deletedAt,
+    })
     .from(adminTokens)
     .innerJoin(users, eq(users.id, adminTokens.createdBy))
     .where(eq(adminTokens.tokenHash, hash));
   if (!row || row.revokedAt !== null) return null;
   if (!timingSafeEqual(Buffer.from(row.hash, 'hex'), Buffer.from(hash, 'hex'))) return null;
   await db.update(adminTokens).set({ lastUsedAt: now }).where(eq(adminTokens.id, row.id));
-  return { tokenId: row.id, userId: row.userId, sub: row.sub };
+  return { tokenId: row.id, userId: row.userId, sub: row.sub, role: row.role, gone: row.removedAt !== null || row.deletedAt !== null };
 }
 
 export interface ApiCall {

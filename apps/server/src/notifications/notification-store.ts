@@ -4,8 +4,9 @@
  * is a snapshot of what its message says (the title then, who acted, the reason): an author's own text, never
  * someone else's private one.
  */
-import { and, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, count, desc, eq, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import { withRole } from '../access/roles';
 import type { Db } from '../db/client';
 import { safeErrorText } from '../log-error';
 import { type NotificationKind, NOTIFICATION_KINDS, notifications, users } from '../db/schema';
@@ -84,10 +85,9 @@ export async function clearSubmittedNotices(db: Db, documentId: string): Promise
     .where(and(eq(notifications.documentId, documentId), eq(notifications.kind, 'review'), isNull(notifications.readAt), sql`${notifications.payload}->>'action' = 'submitted'`));
 }
 
-/** The ids of the accounts whose IdP sub is an admin's (ADMIN_SUBS) and who have signed in here. */
-export async function adminUserIds(db: Db, adminSubs: ReadonlySet<string>): Promise<string[]> {
-  if (adminSubs.size === 0) return [];
-  const rows = await db.select({ id: users.id }).from(users).where(inArray(users.sub, [...adminSubs]));
+/** The ids of the accounts who decide the review queue (admins and reviewers, src/access/roles.ts). */
+export async function reviewerUserIds(db: Db, adminSubs: ReadonlySet<string>): Promise<string[]> {
+  const rows = await db.select({ id: users.id }).from(users).where(withRole(adminSubs, ['admin', 'reviewer']));
   return rows.map((r) => r.id);
 }
 

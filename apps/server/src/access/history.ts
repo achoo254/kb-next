@@ -11,6 +11,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { auditLog, documentVersions, documents, reviewEvents, users } from '../db/schema';
 import { isUuid } from './ids';
+import { type WorkspaceRole, effectiveRole } from './roles';
 import type { Viewer } from './viewer';
 import { visibleTo } from './visibility';
 
@@ -100,12 +101,12 @@ export async function documentActivity(db: Db, viewer: Viewer, id: string): Prom
   return { scope, versions, reviews: allReviews, visibility: audit.map((row) => ({ hidden: row.action === HIDE_ACTION, actorId: row.actorId, createdAt: row.createdAt })) };
 }
 
-export type ActorRole = 'admin' | 'reviewer' | 'member';
+export type ActorRole = WorkspaceRole;
 
-/** Names and roles of the accounts in a history (admins by ADMIN_SUBS, reviewers by their role). */
+/** Names and roles of the accounts in a history (src/access/roles.ts). */
 export async function actorsOf(db: Db, adminSubs: ReadonlySet<string>, ids: readonly string[]): Promise<Map<string, { name: string | null; role: ActorRole }>> {
   const valid = [...new Set(ids.filter(isUuid))];
   if (valid.length === 0) return new Map();
   const rows = await db.select({ id: users.id, name: users.name, sub: users.sub, role: users.role }).from(users).where(inArray(users.id, valid));
-  return new Map(rows.map((row) => [row.id, { name: row.name, role: adminSubs.has(row.sub) ? 'admin' : row.role }]));
+  return new Map(rows.map((row) => [row.id, { name: row.name, role: effectiveRole(adminSubs, row) }]));
 }

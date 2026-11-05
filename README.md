@@ -31,6 +31,8 @@ Tải tệp, Trung tâm nhập, trình sửa Office nhúng và đồng bộ offl
 Xuất bản, gửi duyệt, link chia sẻ, hàng duyệt và quản lý bài của quản trị, thông báo, API đăng bài bằng token quản trị
 (C04–C06, C18, H02, C20, A01–A03):
 [`docs/admin-api.md`](docs/admin-api.md).
+Cài đặt cá nhân và workspace, vai trò (Quản trị, Người duyệt, Thành viên), mời bằng link, nhật ký kiểm toán, giao diện
+Sáng/Tối, xoá dữ liệu của tôi (H03, C19): [`docs/settings-and-roles.md`](docs/settings-and-roles.md).
 
 ## Chạy
 
@@ -54,7 +56,7 @@ Lần đầu `pnpm meili` tải binary Meilisearch (khoảng 350 MB) vào `.data
 ghim trong [`scripts/meili-binary.ts`](scripts/meili-binary.ts). Server đọc `MEILI_URL`, `MEILI_MASTER_KEY` từ file env
 (mẫu trong [`.env.example`](.env.example), khoá dev mặc định khớp với `pnpm meili`); không đặt thì server vẫn chạy, chỉ
 tắt đồng bộ chỉ mục. Muốn Space "Vũ trụ của bạn" và các bài riêng tư thuộc tài khoản dev của mình: chạy
-`SEED_OWNER_SUB=<sub của bạn> pnpm seed`. Quản trị: `ADMIN_SUBS` (danh sách `sub`, cách nhau bằng dấu phẩy).
+`SEED_OWNER_SUB=<sub của bạn> pnpm seed`. Quản trị gốc: `ADMIN_SUBS` (danh sách `sub`, cách nhau bằng dấu phẩy); quản trị và người duyệt khác cấp ở C19.
 
 Đăng nhập khi dev: chép [`.env.example`](.env.example) thành file env của `apps/server`, đặt `AUTH_CLIENT_ID=kb-web-dev`
 và `AUTH_CLIENT_SECRET` (lấy từ thư mục env ngoài repo). Không đặt thì app vẫn chạy, các trang cần đăng nhập dừng ở

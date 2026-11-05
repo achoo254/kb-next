@@ -56,7 +56,11 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },
   { code: 'F03', titleKey: 'screen.F03', access: 'signed-in', pattern: /^\/settings\/keys$/ },
-  // The admin station (admins only; others get X02 403): published texts, the API and its tokens, the review queue.
+  // An invite link (C19 "Mời bằng link"): signed in through the IdP first, then accepted here.
+  { code: 'Invite', titleKey: 'screen.Invite', access: 'signed-in', pattern: new RegExp(`^/i/${segment}$`) },
+  // The admin station (admins only; others get X02 403): workspace settings, published texts, the API and its tokens;
+  // the review queue (admins and reviewers).
+  { code: 'C19', titleKey: 'screen.C19', access: 'signed-in', pattern: /^\/admin\/settings$/ },
   { code: 'A02', titleKey: 'screen.A02', access: 'signed-in', pattern: /^\/admin\/content$/ },
   { code: 'A03', titleKey: 'screen.A03', access: 'signed-in', pattern: /^\/admin\/api$/ },
   { code: 'A01', titleKey: 'screen.A01', access: 'signed-in', pattern: /^\/admin(\/[A-Za-z0-9_/-]*)?$/ },

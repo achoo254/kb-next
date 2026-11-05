@@ -8,6 +8,7 @@ import { ApiError } from '../api/api-client';
 import { type DocumentView, fetchDocument } from '../api/content-api';
 import { type ReviewDecision, type ReviewQueueItem, decideReview, fetchReviewQueue } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { useStaffRole } from '../layout/staff-role';
 import { ILLUSTRATIONS } from '../ui/art';
 import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
@@ -84,6 +85,7 @@ function checksOf(t: ScreenTranslate<AdminMessageKey>, item: ReviewQueueItem): A
 
 export function AdminReviewScreen(): ReactNode {
   const { t, locale } = useAdminText();
+  const staffRole = useStaffRole();
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [filter, setFilter] = useState<Filter>('all');
   const [picked, setPicked] = useState<string | null>(null);
@@ -157,7 +159,8 @@ export function AdminReviewScreen(): ReactNode {
           },
           (error: unknown) => {
             const gone = error instanceof ApiError && (error.code === 'not-pending' || error.code === 'not-found');
-            setToast({ tone: 'error', message: gone ? t('review.done.gone') : t('review.done.failed') });
+            const own = error instanceof ApiError && error.code === 'own-text';
+            setToast({ tone: 'error', message: own ? t('review.done.ownText') : gone ? t('review.done.gone') : t('review.done.failed') });
             return gone;
           },
         )
@@ -254,9 +257,12 @@ export function AdminReviewScreen(): ReactNode {
             <span className="a01-empty-orb" aria-hidden="true" />
             <span className="a01-empty-title">{t('review.empty.title')}</span>
             <span className="a01-empty-text">{t('review.empty.text')}</span>
-            <Button variant="rim" size="xl" href={SHELL_PATHS.adminContent}>
-              {t('review.empty.action')}
-            </Button>
+            {/* Published texts (A02) are for admins: a reviewer has nowhere to go from here. */}
+            {staffRole === 'admin' && (
+              <Button variant="rim" size="xl" href={SHELL_PATHS.adminContent}>
+                {t('review.empty.action')}
+              </Button>
+            )}
           </div>
         )}
 

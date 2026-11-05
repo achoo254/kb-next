@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { eq, inArray, lt, lte, or } from 'drizzle-orm';
+import { and, eq, inArray, isNull, lt, lte, or } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { sessions, users } from '../db/schema';
 
@@ -38,9 +38,18 @@ export async function upsertUser(db: Db, sub: string, profile: AccountProfile | 
   return existing.id;
 }
 
-/** The stored profile of a user, for the header's account menu. */
-export async function findProfile(db: Db, userId: string): Promise<AccountProfile | null> {
-  const [row] = await db.select({ name: users.name, email: users.email, picture: users.picture }).from(users).where(eq(users.id, userId));
+/** What the web app needs at once: the profile for the account menu and the display settings for the first paint. */
+export interface SessionProfile extends AccountProfile {
+  theme: (typeof users.$inferSelect)['theme'];
+  reducedMotion: boolean;
+}
+
+/** The stored profile and display settings of a live account; null for one removed or deleted. */
+export async function findProfile(db: Db, userId: string): Promise<SessionProfile | null> {
+  const [row] = await db
+    .select({ name: users.name, email: users.email, picture: users.picture, theme: users.theme, reducedMotion: users.reducedMotion })
+    .from(users)
+    .where(and(eq(users.id, userId), isNull(users.removedAt), isNull(users.deletedAt)));
   return row ?? null;
 }
 
@@ -58,13 +67,21 @@ export async function createSession(db: Db, userId: string, now: Date, idpSid: s
   return token;
 }
 
-/** The live session of a token; expired ones (absolute or idle) are deleted. */
+/**
+ * The live session of a token; expired ones (absolute or idle) are deleted, and so is a session of an account that was
+ * removed from the workspace or deleted its data (a session opened in a race with either is worth nothing).
+ */
 export async function findSession(db: Db, token: string, now: Date): Promise<SessionRow | null> {
   const id = hashToken(token);
-  const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
-  if (!session) return null;
+  const [found] = await db
+    .select({ session: sessions, removedAt: users.removedAt, deletedAt: users.deletedAt })
+    .from(sessions)
+    .innerJoin(users, eq(users.id, sessions.userId))
+    .where(eq(sessions.id, id));
+  if (!found) return null;
+  const { session } = found;
   const idleExpired = now.getTime() - session.lastSeenAt.getTime() > SESSION_IDLE_MS;
-  if (session.expiresAt.getTime() <= now.getTime() || idleExpired) {
+  if (session.expiresAt.getTime() <= now.getTime() || idleExpired || found.removedAt !== null || found.deletedAt !== null) {
     await db.delete(sessions).where(eq(sessions.id, id));
     return null;
   }

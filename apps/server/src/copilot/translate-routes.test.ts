@@ -79,7 +79,7 @@ function paragraphs(events: readonly StreamEvent[]): string[] {
 describe('AI translation', () => {
   it('streams the translation paragraph by paragraph and saves a draft only the translator can open', async () => {
     const db = server.database.db;
-    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false };
+    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false, canReview: false };
     const original = await findDocument(db, author, DHCP);
     // An approved text by another account, which the translator may only read.
     expect(original).toMatchObject({ status: 'approved', translationGroupId: null });
@@ -170,7 +170,7 @@ describe('AI translation after review', () => {
     await useKey('AIza-Rt5Yu7Io9Pa2Sd4Fg6Hj-GOOD');
     const first = await translate(seedId('document:dns'), 'en');
     const documentId = (first.events.at(-1)?.data as { documentId: string }).documentId;
-    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false };
+    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false, canReview: false };
     const before = await findLatestVersion(server.database.db, author, documentId);
 
     await useKey('AIza-Rt5Yu7Io9-capped-0010');
@@ -205,7 +205,7 @@ describe('AI translation after review', () => {
 
   it('makes one draft when the same text is translated twice at once', async () => {
     const db = server.database.db;
-    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false };
+    const author = { kind: 'user' as const, userId: translatorId, isAdmin: false, canReview: false };
     const source = await findDocument(db, author, seedId('document:icmp'));
     if (!source) throw new Error('no ICMP lab');
     const write = (title: string) => saveAiTranslation(db, { source, authorId: translatorId, lang: 'en', title, markdown: `# ${title}`, chunks: [] });

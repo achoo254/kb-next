@@ -111,7 +111,7 @@ describe('sending for review', () => {
     // The author's own list says only "pending"; scores never reach a member.
     const mine = await as('owner', () => fetchMyDocuments());
     expect(mine.find((d) => d.id === DRAFT)).toMatchObject({ status: 'pending' });
-    expect(await as('owner', () => failure(fetchReviewQueue()))).toBe('admin-only');
+    expect(await as('owner', () => failure(fetchReviewQueue()))).toBe('reviewer-only');
 
     const inbox = await as('admin', () => fetchInbox());
     expect(inbox.notifications[0]?.payload).toMatchObject({ kind: 'review', action: 'submitted', title: 'Máy mới xin IP thế nào', by: 'Chủ Nhà' });
@@ -157,7 +157,7 @@ describe('sending for review', () => {
 describe('an admin’s verdict', () => {
   it('needs a reason to send back, which only the author and admins read', async () => {
     expect(await as('admin', () => failure(decideReview(SENT_BACK, 'changes_requested')))).toBe('invalid-body');
-    expect(await as('owner', () => failure(decideReview(SENT_BACK, 'approved')))).toBe('admin-only');
+    expect(await as('owner', () => failure(decideReview(SENT_BACK, 'approved')))).toBe('reviewer-only');
     await as('admin', () => decideReview(SENT_BACK, 'changes_requested', 'Thêm link RFC 793 nhé.'));
 
     const told = (await as('owner', () => fetchInbox({ kind: 'review' }))).notifications[0];

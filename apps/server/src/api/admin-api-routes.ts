@@ -13,21 +13,24 @@
  *   published text only (409 `not-approved` before any change), all of the patch or none of it.
  * - GET /api/admin/review → `{documents: ReviewQueueItem[]}`: the review queue with Jev's pre-review.
  * Errors: 401 `token-required` (no header), 401 `invalid-token` (malformed, unknown, revoked, or its admin is no
- * longer one), 400 `invalid-body`, 404 `not-found`, 409 `not-approved`.
+ * longer one or left the workspace), 400 `invalid-body`, 404 `not-found`, 409 `not-approved`.
  *
  * Token management is on the web session, admins only (A03): GET /api/moderation/tokens → `{tokens}`; POST
  * `{label}` → 201 `{token, info}` (the token is in this answer only; the live ones are revoked); DELETE /api/moderation/tokens/:id → 204 (404
- * when there is no such live token); GET /api/moderation/calls → `{calls}` (the latest 20).
+ * when there is no such live token); GET /api/moderation/calls → `{calls}` (the latest 20). Making and revoking a token
+ * are written to the audit log (C19).
  */
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response, type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { createDocument } from '../access/authoring';
 import { type AdminViewer, isAdminViewer, listReviewQueue } from '../access/review';
+import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
 import { MAX_BODY_CHARS, bodyOf } from '../authoring/markdown-text';
 import { HttpError } from '../http-error';
 import { safeErrorText } from '../log-error';
+import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import { titleLine } from '../import/hoc-cloud/sections';
 import { type ModerationDeps, cleanTags, queueItems, resolvePlacement, updatePost } from '../review/moderation';
 import { perAccountLimit, signedIn } from './account-limit';
@@ -116,10 +119,10 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     if (!match?.[1]) return next(new HttpError(401, 'invalid-token'));
     useToken(db, match[1], now()).then(
       (holder) => {
-        if (!holder || !config.adminSubs.has(holder.sub)) return next(new HttpError(401, 'invalid-token'));
+        if (!holder || holder.gone || effectiveRole(config.adminSubs, holder) !== 'admin') return next(new HttpError(401, 'invalid-token'));
         callOf(res).tokenId = holder.tokenId;
         res.removeHeader('WWW-Authenticate');
-        admins.set(res, { kind: 'user', userId: holder.userId, isAdmin: true });
+        admins.set(res, { kind: 'user', userId: holder.userId, isAdmin: true, canReview: true });
         next();
       },
       (error: unknown) => next(error),
@@ -227,14 +230,18 @@ export function adminTokenRoutes({ config, db, now }: RequestContextDeps): Route
   router.post('/api/moderation/tokens', auth, limit, async (req, res) => {
     const viewer = await admin(req);
     const body = parseBody(TokenBody, req.body);
-    const { token, info } = await createToken(db, viewer.userId, body.label, now());
+    const at = now();
+    const { token, info } = await createToken(db, viewer.userId, body.label, at);
+    await recordAudit(db, { actorId: viewer.userId, action: AUDIT_ACTIONS.tokenCreated, targetType: 'token', targetId: info.id }, at);
     res.status(201).set('Cache-Control', 'no-store').json({ token, info: view(info) });
   });
 
   router.delete('/api/moderation/tokens/:id', auth, limit, async (req, res) => {
-    await admin(req);
+    const viewer = await admin(req);
     const id = idParam(req);
-    if (!z.uuid().safeParse(id).success || !(await revokeToken(db, id, now()))) throw new HttpError(404, 'not-found');
+    const at = now();
+    if (!z.uuid().safeParse(id).success || !(await revokeToken(db, id, at))) throw new HttpError(404, 'not-found');
+    await recordAudit(db, { actorId: viewer.userId, action: AUDIT_ACTIONS.tokenRevoked, targetType: 'token', targetId: id }, at);
     res.status(204).end();
   });
 

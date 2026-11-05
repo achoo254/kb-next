@@ -1,13 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDocument, createLink, createSpace, createUser } from '../../test/content-fixtures';
 import { type DbHandle, openPglite } from '../db/client';
-import { DOCUMENT_STATUSES } from '../db/schema';
+import { eq } from 'drizzle-orm';
+import { DOCUMENT_STATUSES, users } from '../db/schema';
 import { findDocument, findLatestVersion, listChunks, listCollections, listDocuments, listLinks, listSpaces } from './content';
 import { GUEST, type Viewer, viewerFor } from './viewer';
 import { canRead } from './visibility';
 
 /**
- * The read rule as a table: guest, author, another account and an admin, against every status, hidden or not.
+ * The read rule as a table: guest, author, another account, a reviewer, an admin by ADMIN_SUBS and one by role, and
+ * a removed account, against every status, hidden or not.
  * Every read path of src/access/ must agree with it, and with the plain `canRead`.
  */
 const ADMIN_SUB = 'admin:matrix';
@@ -17,7 +19,8 @@ let authorId: string;
 let spaceId: string;
 let hubId: string;
 let deletedId: string;
-const viewers: Record<'guest' | 'author' | 'other' | 'admin', Viewer> = { guest: GUEST, author: GUEST, other: GUEST, admin: GUEST };
+type ViewerName = 'guest' | 'author' | 'other' | 'reviewer' | 'admin' | 'roleAdmin' | 'removed';
+const viewers: Record<ViewerName, Viewer> = { guest: GUEST, author: GUEST, other: GUEST, reviewer: GUEST, admin: GUEST, roleAdmin: GUEST, removed: GUEST };
 const cases: Array<{ id: string; status: (typeof DOCUMENT_STATUSES)[number]; hidden: boolean }> = [];
 
 beforeAll(async () => {
@@ -26,10 +29,19 @@ beforeAll(async () => {
   authorId = await createUser(db);
   const otherId = await createUser(db);
   const adminId = await createUser(db, ADMIN_SUB);
+  const reviewerId = await createUser(db);
+  const roleAdminId = await createUser(db);
+  const removedId = await createUser(db);
+  await db.update(users).set({ role: 'reviewer' }).where(eq(users.id, reviewerId));
+  await db.update(users).set({ role: 'admin' }).where(eq(users.id, roleAdminId));
+  await db.update(users).set({ role: 'admin', removedAt: new Date() }).where(eq(users.id, removedId));
   const admins = new Set([ADMIN_SUB]);
   viewers.author = await viewerFor(db, admins, authorId);
   viewers.other = await viewerFor(db, admins, otherId);
+  viewers.reviewer = await viewerFor(db, admins, reviewerId);
   viewers.admin = await viewerFor(db, admins, adminId);
+  viewers.roleAdmin = await viewerFor(db, admins, roleAdminId);
+  viewers.removed = await viewerFor(db, admins, removedId);
   spaceId = await createSpace(db);
   // An approved document by someone else that links to every case, so links can be checked from a readable end.
   hubId = await createDocument(db, { spaceId, authorId: otherId, title: 'hub', texts: ['hub'] });
@@ -48,15 +60,25 @@ afterAll(async () => {
   await database.close();
 });
 
-function expected(viewerName: keyof typeof viewers, status: string, hidden: boolean): boolean {
-  if (viewerName === 'admin' || viewerName === 'author') return true;
+function expected(viewerName: ViewerName, status: string, hidden: boolean): boolean {
+  if (viewerName === 'admin' || viewerName === 'roleAdmin' || viewerName === 'author') return true;
+  if (viewerName === 'reviewer' && status === 'pending') return true;
   return status === 'approved' && !hidden;
 }
 
 describe('viewerFor', () => {
-  it('makes an admin only of a sub listed in ADMIN_SUBS', () => {
-    expect(viewers.admin).toMatchObject({ kind: 'user', isAdmin: true });
-    expect(viewers.author).toMatchObject({ kind: 'user', isAdmin: false });
+  it('makes an admin of a sub listed in ADMIN_SUBS or of an account given the role', () => {
+    expect(viewers.admin).toMatchObject({ kind: 'user', isAdmin: true, canReview: true });
+    expect(viewers.roleAdmin).toMatchObject({ kind: 'user', isAdmin: true, canReview: true });
+    expect(viewers.author).toMatchObject({ kind: 'user', isAdmin: false, canReview: false });
+  });
+
+  it('lets a reviewer review without making it an admin', () => {
+    expect(viewers.reviewer).toMatchObject({ kind: 'user', isAdmin: false, canReview: true });
+  });
+
+  it('reads a removed account as a guest, whatever its role', () => {
+    expect(viewers.removed).toEqual(GUEST);
   });
 
   it('reads an unknown or malformed account as a guest', async () => {
@@ -66,7 +88,7 @@ describe('viewerFor', () => {
   });
 });
 
-describe.each(Object.keys(viewers) as Array<keyof typeof viewers>)('%s', (viewerName) => {
+describe.each(Object.keys(viewers) as ViewerName[])('%s', (viewerName) => {
   it.each(DOCUMENT_STATUSES.flatMap((status) => [false, true].map((hidden) => ({ status, hidden }))))(
     'status $status, hidden $hidden',
     async ({ status, hidden }) => {
@@ -107,7 +129,7 @@ describe('personal Spaces', () => {
     const db = database.db;
     const personalId = await createSpace(db, 'personal-of-author', authorId);
     await createDocument(db, { spaceId: personalId, authorId, status: 'private', texts: ['mine'] });
-    for (const name of ['guest', 'other', 'admin'] as const) {
+    for (const name of ['guest', 'other', 'reviewer', 'admin', 'roleAdmin'] as const) {
       expect((await listSpaces(db, viewers[name])).some((s) => s.id === personalId)).toBe(false);
       expect(await listCollections(db, viewers[name], personalId)).toBeNull();
     }

@@ -3,7 +3,7 @@
  *
  *   draft | private | changes_requested | rejected  --submit (author)-->  pending
  *   pending  --withdraw (author)-->  draft
- *   pending  --decide (admin)-->  approved | changes_requested | rejected (the last two with a reason)
+ *   pending  --decide (admin or reviewer)-->  approved | changes_requested | rejected (the last two with a reason)
  *   approved  --hide / show (admin)-->  approved, hidden or not
  *
  * Texts the admin API publishes skip the queue (authoring.ts `createDocument` with a publication). Every step writes
@@ -11,7 +11,7 @@
  * reason: the author and admins only (C08 lists the author's own texts, history.ts hides reasons from other readers,
  * the notification goes to the author).
  */
-import { and, asc, count, desc, eq, gte, ilike, inArray, isNull, lt, notExists, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, ilike, inArray, isNull, lt, ne, notExists, sql } from 'drizzle-orm';
 import { bodyOf } from '../authoring/markdown-text';
 import type { Db } from '../db/client';
 import { type JevPreReview, auditLog, documentVersions, documents, notifications, readingProgress, reviewEvents } from '../db/schema';
@@ -23,11 +23,17 @@ import { revokeAllLinks } from './share-links';
 import { canRead } from './visibility';
 
 type UserViewer = Extract<Viewer, { kind: 'user' }>;
-export type AdminViewer = UserViewer & { isAdmin: true };
+export type AdminViewer = UserViewer & { isAdmin: true; canReview: true };
+/** An admin or a reviewer: who decides the review queue (A01). */
+export type ReviewerViewer = UserViewer & { canReview: true };
 export type DocumentStatus = DocumentRow['status'];
 
 export function isAdminViewer(viewer: Viewer): viewer is AdminViewer {
   return viewer.kind === 'user' && viewer.isAdmin;
+}
+
+export function isReviewerViewer(viewer: Viewer): viewer is ReviewerViewer {
+  return viewer.kind === 'user' && viewer.canReview;
 }
 
 /** The steps an author may send a text for review from. */
@@ -165,25 +171,27 @@ export async function keepPrivate(db: Db, viewer: UserViewer, id: string, input:
   });
 }
 
-export type DecisionResult = { kind: 'decided'; doc: DocumentRow } | { kind: 'not-found' } | { kind: 'not-pending'; status: DocumentStatus };
+export type DecisionResult = { kind: 'decided'; doc: DocumentRow } | { kind: 'not-found' } | { kind: 'not-pending'; status: DocumentStatus } | { kind: 'own-text' };
 
 /**
- * An admin's verdict on a pending text (A01): approved (a member's own text becomes "Cộng đồng"), changes requested
- * or rejected, with the reason the author reads.
+ * A reviewer's or an admin's verdict on a pending text (A01): approved (a member's own text becomes "Cộng đồng"), changes requested
+ * or rejected, with the reason the author reads. A reviewer who is not an admin never decides on their own text
+ * (`own-text`): a second person always looks at it.
  */
-export async function decideReview(db: Db, admin: AdminViewer, id: string, decision: ReviewDecision, reason: string | null, now: Date): Promise<DecisionResult> {
+export async function decideReview(db: Db, reviewer: ReviewerViewer, id: string, decision: ReviewDecision, reason: string | null, now: Date): Promise<DecisionResult> {
   if (!isUuid(id)) return { kind: 'not-found' };
   return db.transaction(async (tx): Promise<DecisionResult> => {
     const doc = await lockLive(tx, id);
     if (!doc) return { kind: 'not-found' };
+    if (!reviewer.isAdmin && doc.authorId === reviewer.userId) return { kind: 'own-text' };
     if (doc.status !== 'pending') return { kind: 'not-pending', status: doc.status };
     const origin = decision === 'approved' && doc.origin === 'own' ? 'community' : doc.origin;
     // Approval is when the text goes out as it stands: its 180 days without a change (the stale check) start now.
     const updatedAt = decision === 'approved' ? now : doc.updatedAt;
     await tx.update(documents).set({ status: decision, origin, updatedAt }).where(eq(documents.id, id));
-    await tx.insert(reviewEvents).values({ documentId: id, actorId: admin.userId, action: decision, reason: decision === 'approved' ? null : reason, createdAt: now });
+    await tx.insert(reviewEvents).values({ documentId: id, actorId: reviewer.userId, action: decision, reason: decision === 'approved' ? null : reason, createdAt: now });
     // Sent back or rejected: no link of an earlier publication may open the text again.
-    if (decision !== 'approved') await revokeAllLinks(tx, id, admin.userId, now);
+    if (decision !== 'approved') await revokeAllLinks(tx, id, reviewer.userId, now);
     return { kind: 'decided', doc: { ...doc, status: decision, origin, updatedAt } };
   });
 }
@@ -253,12 +261,15 @@ export interface QueueEntry {
   jev: JevPreReview | null;
 }
 
-/** The review queue (A01, GET /api/admin/review): pending texts, the latest sent first, with Jev's pre-review. */
-export async function listReviewQueue(db: Db, _admin: AdminViewer): Promise<QueueEntry[]> {
+/**
+ * The review queue (A01, GET /api/admin/review): pending texts, the latest sent first, with Jev's pre-review. A
+ * reviewer who is not an admin does not see their own texts (someone else decides on them).
+ */
+export async function listReviewQueue(db: Db, reviewer: ReviewerViewer): Promise<QueueEntry[]> {
   const docs = await db
     .select(documentColumns)
     .from(documents)
-    .where(and(eq(documents.status, 'pending'), isNull(documents.deletedAt)));
+    .where(and(eq(documents.status, 'pending'), isNull(documents.deletedAt), reviewer.isAdmin ? undefined : ne(documents.authorId, reviewer.userId)));
   if (docs.length === 0) return [];
   const events = await db
     .selectDistinctOn([reviewEvents.documentId], { documentId: reviewEvents.documentId, at: reviewEvents.createdAt, jev: reviewEvents.jevScores })

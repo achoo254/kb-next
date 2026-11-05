@@ -2,15 +2,18 @@
  * Sign-in with a hoandat.com account (BFF): /auth/login sends the browser to auth-next (Code + PKCE, scope
  * `openid profile email`), /auth/callback exchanges the code server-side with client_secret_basic, reads the
  * account's name, email and picture from userinfo with the access token (then drops the token) and opens the
- * app's own session; POST /auth/logout ends it. GET /api/session tells the web app whether it is signed in, and
- * as whom (the header's account menu).
+ * app's own session (refused, `?login=removed`, for an account an admin removed from the workspace; each sign-in is
+ * written to the audit log); POST /auth/logout ends it. GET /api/session tells the web app whether it is signed in,
+ * as whom (the header's account menu) and with which display settings (theme, reduced motion: H03).
  */
 import express, { type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
+import { mayHoldSession } from '../access/workspace-members';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
 import { safeErrorText } from '../log-error';
+import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import type { Discovery, IdpMetadata } from './idp-metadata';
 import { codeChallenge, identityFromIdToken, newLoginState, openState, profileFromUserinfo, safeReturnPath, sealState } from './oidc-login';
 import { clearSessionCookie, readCookie, readSessionToken, setSessionCookie } from './session-cookie';
@@ -60,7 +63,7 @@ async function fetchProfile(doc: Discovery, accessToken: string | undefined, sub
 }
 
 /** `?login=<result>` on the return path, so the page can say what happened. */
-function withLoginResult(path: string, result: 'fail' | 'unavailable' | 'busy'): string {
+function withLoginResult(path: string, result: 'fail' | 'unavailable' | 'busy' | 'removed'): string {
   const url = new URL(path, 'http://app.invalid');
   url.searchParams.set('login', result);
   return `${url.pathname}${url.search}${url.hash}`;
@@ -152,11 +155,20 @@ export function authRoutes({ config, db, idp, now }: AuthRoutesOptions): Router 
       const profile = await fetchProfile(doc, body.data?.access_token, identity.sub);
       const at = now();
       const userId = await upsertUser(db, identity.sub, profile, at);
+      // An account an admin took out of the workspace (C19 "Gỡ") gets no session until it is put back: the sign-in
+      // page says why (any other page would only send it back there).
+      if (!(await mayHoldSession(db, userId))) {
+        res.redirect(withLoginResult('/login', 'removed'));
+        return;
+      }
       // Signing in again replaces the browser's previous session; expired rows of anyone go too.
       const previous = readSessionToken(req, config);
       if (previous) await deleteSessionByToken(db, previous);
       await purgeExpiredSessions(db, at);
       setSessionCookie(res, config, await createSession(db, userId, at, identity.sid));
+      await recordAudit(db, { actorId: userId, action: AUDIT_ACTIONS.signedIn, targetType: 'user', targetId: userId }, at).catch((error: unknown) =>
+        console.error('sign-in audit failed', safeErrorText(error)),
+      );
       res.redirect(state.returnTo);
     } catch (error) {
       console.warn('sign-in failed', safeErrorText(error));

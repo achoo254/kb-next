@@ -296,6 +296,9 @@
   --light-veil-strong: linear-gradient(180deg, rgb(247 245 255 / 0.8), rgb(236 232 255 / 0.9));
   --dark-veil-radial: radial-gradient(ellipse 80% 55% at 55% 30%, rgb(6 4 26 / 0.6), rgb(6 4 26 / 0.86));
   --light-veil-radial: radial-gradient(ellipse 80% 55% at 55% 30%, rgb(247 245 255 / 0.6), rgb(236 232 255 / 0.86));
+  /* H03: the settings station, lighter around its orb. */
+  --dark-veil-station: radial-gradient(ellipse 70% 60% at 55% 45%, rgb(6 4 26 / 0.55), rgb(6 4 26 / 0.82));
+  --light-veil-station: radial-gradient(ellipse 70% 60% at 55% 45%, rgb(247 245 255 / 0.62), rgb(236 232 255 / 0.88));
   --dark-veil-fade: linear-gradient(180deg, rgb(6 4 26 / 0.5), rgb(6 4 26 / 0.78));
   --light-veil-fade: linear-gradient(180deg, rgb(247 245 255 / 0.5), rgb(236 232 255 / 0.78));
 
@@ -404,6 +407,7 @@
   --c-veil: var(--dark-veil);
   --c-veil-strong: var(--dark-veil-strong);
   --c-veil-radial: var(--dark-veil-radial);
+  --c-veil-station: var(--dark-veil-station);
   --c-veil-fade: var(--dark-veil-fade);
   --c-tile-bg: var(--dark-tile-bg);
   --c-tile-veil: var(--dark-tile-veil);
@@ -414,6 +418,7 @@
   --c-veil: var(--light-veil);
   --c-veil-strong: var(--light-veil-strong);
   --c-veil-radial: var(--light-veil-radial);
+  --c-veil-station: var(--light-veil-station);
   --c-veil-fade: var(--light-veil-fade);
   --c-tile-bg: var(--light-tile-bg);
   --c-tile-veil: var(--light-tile-veil);
@@ -429,6 +434,7 @@
     --c-veil: var(--light-veil);
     --c-veil-strong: var(--light-veil-strong);
     --c-veil-radial: var(--light-veil-radial);
+    --c-veil-station: var(--light-veil-station);
     --c-veil-fade: var(--light-veil-fade);
     --c-tile-bg: var(--light-tile-bg);
     --c-tile-veil: var(--light-tile-veil);

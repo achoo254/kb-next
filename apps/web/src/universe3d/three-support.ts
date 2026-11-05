@@ -1,14 +1,12 @@
 /**
- * Whether the Universe may run in 3D on this device (board Z02): not when the system asks for reduced motion, not
- * without WebGL. The frame rate is watched once it runs (fps-guard.ts).
+ * Whether the Universe may run in 3D on this device (board Z02): not when the system or the app's own switch (H03)
+ * asks for reduced motion, not without WebGL. The frame rate is watched once it runs (fps-guard.ts).
  */
+import { prefersReducedMotion } from '../ui/display-prefs';
+
 export type Fallback2dReason = 'reduced-motion' | 'no-webgl' | 'fps' | 'context-lost' | 'load-failed';
 
 export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-
-export function prefersReducedMotion(): boolean {
-  return typeof window.matchMedia === 'function' && window.matchMedia(REDUCED_MOTION_QUERY).matches;
-}
 
 export function hasWebGL(): boolean {
   try {

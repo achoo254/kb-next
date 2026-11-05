@@ -276,6 +276,29 @@ export async function makeRoom(bytes: number, keep: string | null = null): Promi
   return usage + bytes <= usable;
 }
 
+/**
+ * Drops the account's synced copies (H03 "Xoá bộ nhớ đệm"): only caches, they download again when opened. A draft,
+ * a conflict or a failed save is never dropped (each is checked again in the deleting transaction). How many went.
+ */
+export async function clearSyncedCopies(userId: string): Promise<number> {
+  let cleared = 0;
+  for (const candidate of (await listEntries(userId)).filter((entry) => entry.state === 'synced')) {
+    let dropped = false;
+    await mutate(candidate.key, (current) => {
+      if (!current || current.state !== 'synced') return null;
+      dropped = true;
+      return 'delete';
+    });
+    if (dropped) cleared += 1;
+  }
+  return cleared;
+}
+
+/** Drops every record of the account, drafts included: its data was deleted on the server (H03). */
+export async function forgetAccountFiles(userId: string): Promise<void> {
+  for (const entry of await listEntries(userId)) await mutate(entry.key, () => 'delete');
+}
+
 export interface ServerCopy {
   userId: string;
   documentId: string;

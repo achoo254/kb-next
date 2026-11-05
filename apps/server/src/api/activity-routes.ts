@@ -7,6 +7,7 @@ import express, { type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { addComment, anchorsOf, discussionParticipants, isOpenForComments, listComments, saveProgress } from '../access/participation';
+import { effectiveRole } from '../access/roles';
 import type { Viewer } from '../access/viewer';
 import { HttpError } from '../http-error';
 import { safeErrorText } from '../log-error';
@@ -80,7 +81,7 @@ export function activityRoutes(deps: RequestContextDeps): Router {
         body: c.body,
         createdAt: c.createdAt.toISOString(),
         updatedAt: c.updatedAt.toISOString(),
-        author: { name: c.authorName, picture: c.authorPicture, role: config.adminSubs.has(c.authorSub) ? 'admin' : c.authorRole },
+        author: { name: c.authorName, picture: c.authorPicture, role: effectiveRole(config.adminSubs, { sub: c.authorSub, role: c.authorRole }) },
         mine: viewer.kind === 'user' && viewer.userId === c.authorId,
       })),
     };

@@ -758,3 +758,7 @@
   font-size: 12px;
   color: var(--c-text-muted);
 }
+
+:root[data-motion="reduce"] .canvas-link-dot {
+  display: none;
+}

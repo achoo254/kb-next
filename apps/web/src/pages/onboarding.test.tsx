@@ -16,6 +16,9 @@ const ME = {
   theme: 'system',
   role: 'member',
   isAdmin: false,
+  canReview: false,
+  roleLocked: false,
+  reducedMotion: false,
   onboardedAt: '2026-11-04T08:00:00.000+07:00',
   interests: ['linux'],
 };

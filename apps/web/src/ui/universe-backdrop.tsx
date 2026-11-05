@@ -30,9 +30,10 @@ const MOBILE_MEDIA = '(max-width: 640px)';
 
 /**
  * How strongly the landscape is veiled: `scene` is C09's (the Universe screens), `strong` keeps reading and editing
- * screens readable (KIT §2), `radial` and `fade` are the veils of the kit boards (X01/X03 and Interaction).
+ * screens readable (KIT §2), `radial` and `fade` are the veils of the kit boards (X01/X03 and Interaction), `station`
+ * the lighter centre of the settings station (H03).
  */
-export type BackdropVeil = 'scene' | 'strong' | 'radial' | 'fade';
+export type BackdropVeil = 'scene' | 'strong' | 'radial' | 'fade' | 'station';
 
 interface UniverseBackdropProps {
   veil?: BackdropVeil;

@@ -10,6 +10,7 @@ import { type SpaceListItem, fetchSpaces } from '../api/content-api';
 import { type PostPatch, type PublishedItem, fetchPublished, updatePublished } from '../api/review-api';
 import { AppShell } from '../layout/app-shell';
 import { Button } from '../ui/button';
+import { readDefaultView } from '../ui/display-prefs';
 import { Icon } from '../ui/icon';
 import { Loader } from '../ui/loader';
 import { Toast } from '../ui/toast';
@@ -121,7 +122,7 @@ export function AdminContentScreen(): ReactNode {
   const [source, setSource] = useState<Source>('all');
   const [state, setState] = useState<State>('all');
   const [query, setQuery] = useState('');
-  const [view, setView] = useState<'galaxy' | 'list'>('galaxy');
+  const [view, setView] = useState<'galaxy' | 'list'>(() => (readDefaultView() === 'list' ? 'list' : 'galaxy'));
   const [picked, setPicked] = useState<string | null>(null);
   const [bulk, setBulk] = useState(false);
   const [chosen, setChosen] = useState<ReadonlySet<string>>(new Set());

@@ -109,7 +109,7 @@ function escapeLike(text: string): string {
 
 /** Who `[[ ]]` links of a document are resolved for: its author, never more (an admin's edit links what the author sees). */
 function authorViewer(authorId: string): Viewer {
-  return { kind: 'user', userId: authorId, isAdmin: false };
+  return { kind: 'user', userId: authorId, isAdmin: false, canReview: false };
 }
 
 /**
@@ -426,20 +426,26 @@ export async function purgeOwnTrash(db: Db, viewer: UserViewer, id: string | nul
 }
 
 async function purgeWhere(db: Db, condition: ReturnType<typeof and>): Promise<PurgeResult> {
-  return db.transaction(async (tx) => {
-    const doomed = tx.select({ id: documents.id }).from(documents).where(condition);
-    const fileRows = await tx.select({ id: files.id, storageKey: files.storageKey }).from(files).where(inArray(files.documentId, doomed));
-    const rows = await tx.delete(documents).where(condition).returning({ id: documents.id });
-    // After the documents: their versions (which may point at these files) are gone by then.
-    if (fileRows.length > 0)
-      await tx.delete(files).where(
-        inArray(
-          files.id,
-          fileRows.map((f) => f.id),
-        ),
-      );
-    return { documentIds: rows.map((r) => r.id), storageKeys: fileRows.map((f) => f.storageKey) };
-  });
+  return db.transaction(async (tx) => deleteDocumentsWhere(tx, condition));
+}
+
+/**
+ * Deletes for good the documents matching `condition` inside the caller's transaction (their versions, chunks, links
+ * and favourites cascade) and the rows of their stored files, whose disk names come back for the caller to unlink.
+ */
+export async function deleteDocumentsWhere(tx: Tx, condition: ReturnType<typeof and>): Promise<PurgeResult> {
+  const doomed = tx.select({ id: documents.id }).from(documents).where(condition);
+  const fileRows = await tx.select({ id: files.id, storageKey: files.storageKey }).from(files).where(inArray(files.documentId, doomed));
+  const rows = await tx.delete(documents).where(condition).returning({ id: documents.id });
+  // After the documents: their versions (which may point at these files) are gone by then.
+  if (fileRows.length > 0)
+    await tx.delete(files).where(
+      inArray(
+        files.id,
+        fileRows.map((f) => f.id),
+      ),
+    );
+  return { documentIds: rows.map((r) => r.id), storageKeys: fileRows.map((f) => f.storageKey) };
 }
 
 export interface LinkCandidate {

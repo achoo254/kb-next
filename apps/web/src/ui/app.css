@@ -181,3 +181,11 @@ button:focus-visible {
     transition: none !important;
   }
 }
+
+/* The app's own "Giảm chuyển động" (H03, display-prefs.ts), on top of the system's setting. */
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation: none !important;
+  transition: none !important;
+}

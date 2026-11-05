@@ -3,8 +3,8 @@
  * taking it back (C06, C08, C04), and the admins' screens on the web session: the review queue with Jev's
  * pre-review (A01), published texts with hiding and showing (A02), admin tokens and the call log (A03).
  *
- * Errors (ApiError.code): `sign-in-required` (401); `admin-only` (403) on the admin calls; `not-found` (404),
- * `no-access` (403); `title-required` / `body-required` (400: what to fix before sending); `already-pending` /
+ * Errors (ApiError.code): `sign-in-required` (401); `reviewer-only` (403) on the review queue and its decisions,
+ * `admin-only` (403) on the other admin calls; `not-found` (404), `no-access` (403); `title-required` / `body-required` (400: what to fix before sending); `already-pending` /
  * `not-submittable` (409); `not-pending` (409: decided or withdrawn meanwhile); `not-approved` (409: hiding a text
  * that is not published); `unknown-collection` / `invalid-body` (400); `rate-limited` (429); `network` (offline).
  */

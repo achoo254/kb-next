@@ -24,8 +24,8 @@ duyệt", bài khác chuyển về C04). C05 (`/d/:id/preview`) xem trước bà
 
 API cho web (phiên đăng nhập): `POST /api/documents/:id/submit` `{space?, collection?, tags?, lang?}`, `POST
 /api/documents/:id/private` (cùng thân; "Lưu riêng tư": bài đang chờ thì ra khỏi hàng duyệt, bài đã duyệt trả 409
-`published`), `POST /api/documents/:id/withdraw`; quản trị: `GET /api/moderation/queue`, `POST /api/moderation/documents/:id/decision`
-`{decision, reason?}`, `GET /api/moderation/published`, `PATCH /api/moderation/documents/:id`. Chi tiết mã lỗi ở đầu
+`published`), `POST /api/documents/:id/withdraw`; người duyệt và quản trị (403 `reviewer-only` với người khác): `GET
+/api/moderation/queue`, `POST /api/moderation/documents/:id/decision` `{decision, reason?}`; chỉ quản trị: `GET /api/moderation/published`, `PATCH /api/moderation/documents/:id`. Chi tiết mã lỗi ở đầu
 `apps/server/src/api/review-routes.ts`.
 
 ## Thông báo (C20)
@@ -70,7 +70,8 @@ lỗi ở đầu `apps/server/src/api/share-routes.ts`.
 Dành cho pipeline đăng bài chạy ở server khác. Xác thực bằng token quản trị, không dùng phiên web, không cần `Origin`.
 
 - Token tạo ở A03 (`/admin/api`): `kf_admin_` + 43 ký tự ngẫu nhiên, hiện **một lần**; server chỉ lưu sha256 và 4 ký
-  tự cuối. Tạo token mới thì token cũ bị thu hồi. Token chỉ dùng được khi người tạo còn trong `ADMIN_SUBS`.
+  tự cuối. Tạo token mới thì token cũ bị thu hồi. Token chỉ dùng được khi người tạo còn là quản trị
+  (gốc trong `ADMIN_SUBS` hoặc theo vai trò, [`settings-and-roles.md`](settings-and-roles.md)) và chưa bị gỡ khỏi workspace.
 - Giới hạn 60 lần gọi mỗi phút mỗi IP (cả lần gọi sai token), quá thì 429 `rate-limited`.
 - Mỗi lần gọi **đã xác thực** được ghi (phương thức, đường dẫn, mã trả về, mã lỗi, bài liên quan; không ghi token hay
   nội dung); lần gọi thiếu hay sai token chỉ bị giới hạn tần suất, không ghi. Việc dọn hằng ngày xoá dòng quá 30 ngày;

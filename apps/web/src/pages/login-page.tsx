@@ -7,7 +7,7 @@ import { AuthGateCard, type OpeningStage, type SignInFailure, SignInFailedCard, 
 import './login-page.css';
 
 /** The `?login=` results the server sends back to /login (apps/server auth-routes.ts). */
-const FAILURES: Record<string, SignInFailure> = { fail: 'fail', unavailable: 'unavailable', busy: 'busy' };
+const FAILURES: Record<string, SignInFailure> = { fail: 'fail', unavailable: 'unavailable', busy: 'busy', removed: 'removed' };
 
 /** `?go=1`: open the gate at once (the landing's sign-in button); without it /login waits for a click. */
 const GO_PARAM = 'go';

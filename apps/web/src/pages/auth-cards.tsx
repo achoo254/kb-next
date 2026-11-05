@@ -108,12 +108,13 @@ export function UniverseOpeningCard({ stage, kicker }: { stage: OpeningStage; ki
 }
 
 /** Why signing in did not go through (the server's `?login=` of /login, or sign-in closed). */
-export type SignInFailure = 'fail' | 'unavailable' | 'busy';
+export type SignInFailure = 'fail' | 'unavailable' | 'busy' | 'removed';
 
 const FAILURE_TEXT: Record<SignInFailure, { title: MessageKey; text: MessageKey }> = {
   fail: { title: 'auth.failed.title', text: 'auth.failed.fail' },
   unavailable: { title: 'auth.failed.unavailableTitle', text: 'auth.failed.unavailable' },
   busy: { title: 'auth.failed.busyTitle', text: 'auth.failed.busy' },
+  removed: { title: 'auth.failed.removedTitle', text: 'auth.failed.removed' },
 };
 
 interface SignInFailedCardProps {

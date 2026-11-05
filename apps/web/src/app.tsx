@@ -6,6 +6,7 @@ import { AppShell, type RailId, type ViewId } from './layout/app-shell';
 import { ScreenPage } from './layout/screen-page';
 import { SessionProvider } from './layout/session-context';
 import { UnreadProvider } from './layout/unread-context';
+import { applyPrefs } from './ui/display-prefs';
 import type { BackdropVeil } from './ui/universe-backdrop';
 import { AdminApiScreen } from './pages/admin-api-screen';
 import { AdminContentScreen } from './pages/admin-content-screen';
@@ -20,6 +21,7 @@ import { GraphScreen } from './pages/graph-screen';
 import { HistoryScreen } from './pages/history-screen';
 import { ImportScreen } from './pages/import-screen';
 import { InboxScreen } from './pages/inbox-screen';
+import { InviteScreen } from './pages/invite-screen';
 import { JourneyBuilderScreen, NewJourney } from './pages/journey-builder';
 import { JourneyRunScreen } from './pages/journey-run';
 import { KeysScreen } from './pages/keys-screen';
@@ -31,6 +33,7 @@ import { PreviewScreen } from './pages/preview-screen';
 import { PublishScreen } from './pages/publish-screen';
 import { ReaderScreen } from './pages/reader-screen';
 import { SearchScreen } from './pages/search-screen';
+import { SettingsScreen } from './pages/settings-screen';
 import { ShareScreen } from './pages/share-screen';
 import { SharedOpenScreen } from './pages/shared-open-screen';
 import { SubmitScreen } from './pages/submit-screen';
@@ -40,6 +43,7 @@ import { TranslateScreen } from './pages/translate-screen';
 import { UniverseEntry } from './pages/universe-entry';
 import { UniverseScreen } from './pages/universe-screen';
 import { UploadScreen } from './pages/upload-screen';
+import { WorkspaceScreen } from './pages/workspace-screen';
 import { type ScreenRoute, matchRoute, routePath } from './routes';
 
 /** Whether the screen can show now: public screens always, the others once the session says signed in. */
@@ -75,6 +79,7 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   A01: { veil: 'strong' },
   A02: { veil: 'strong' },
   A03: { veil: 'strong' },
+  C19: { veil: 'strong' },
   C06: { rail: 'mine' },
 };
 
@@ -156,9 +161,19 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <ShareScreen id={routeParam(route, path)} />;
     case 'C20':
       return <InboxScreen />;
+    case 'H03':
+      return <SettingsScreen />;
+    case 'Invite':
+      return <InviteScreen token={routeParam(route, path)} />;
+    case 'C19':
+      return (
+        <AdminGate code="C19">
+          <WorkspaceScreen />
+        </AdminGate>
+      );
     case 'A01':
       return (
-        <AdminGate code="A01">
+        <AdminGate code="A01" need="review">
           <AdminReviewScreen />
         </AdminGate>
       );
@@ -228,6 +243,14 @@ export function App({ pathname }: { pathname: string }): ReactNode {
   useEffect(() => {
     document.title = `${t(route.titleKey)} · ${brand.appName}`;
   }, [route, t]);
+
+  // The account's theme and reduced motion (H03) as the server keeps them: every screen follows at once.
+  const sessionUser = session.status === 'ready' && session.signedIn ? session.user : undefined;
+  const sessionTheme = sessionUser?.theme;
+  const sessionMotion = sessionUser?.reducedMotion;
+  useEffect(() => {
+    if (sessionTheme !== undefined) applyPrefs({ theme: sessionTheme, reducedMotion: sessionMotion ?? false });
+  }, [sessionTheme, sessionMotion]);
 
   useEffect(() => {
     if (route.access === 'signed-in' && session.status === 'ready' && !session.signedIn) {

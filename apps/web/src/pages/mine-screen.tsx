@@ -28,6 +28,7 @@ import { type SpaceListItem, fetchSpaces } from '../api/content-api';
 import { withdrawSubmission } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { Button } from '../ui/button';
+import { readDefaultView } from '../ui/display-prefs';
 import { Modal } from '../ui/modal';
 import { Tabs } from '../ui/tabs';
 import { Toast } from '../ui/toast';
@@ -162,7 +163,7 @@ export function MineScreen(): ReactNode {
   const { t } = useMineText();
   const { load, retry, refresh } = useMineData();
   const [tab, setTab] = useState<MineTab>('universe');
-  const [view, setView] = useState<'orbit' | 'list'>('orbit');
+  const [view, setView] = useState<'orbit' | 'list'>(readDefaultView);
   const [filters, setFilters] = useState<Filters>(NO_FILTER);
   const [picked, setPicked] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>(null);

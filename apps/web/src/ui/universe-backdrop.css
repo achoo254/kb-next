@@ -35,6 +35,10 @@
   background: var(--c-veil-radial);
 }
 
+.universe[data-veil="station"] .universe-veil {
+  background: var(--c-veil-station);
+}
+
 .universe[data-veil="fade"] .universe-veil {
   background: var(--c-veil-fade);
 }

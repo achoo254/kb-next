@@ -18,10 +18,11 @@ export const SHELL_PATHS = {
   upload: '/upload',
   imports: '/import',
   sync: '/sync',
-  /** The admin station: the review queue (A01), published texts (A02), the API and its tokens (A03). */
+  /** The admin station: the review queue (A01), published texts (A02), the API and its tokens (A03), the workspace (C19). */
   adminReview: '/admin',
   adminContent: '/admin/content',
   adminApi: '/admin/api',
+  workspace: '/admin/settings',
 } as const;
 
 /** Sending a text for review (C06). */

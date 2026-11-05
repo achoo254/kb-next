@@ -1,11 +1,12 @@
 /**
  * C10 "Thành viên & quyền": who takes part in a Space and what the viewer may do there, from real data. A public
- * Space's members are the authors of its published documents plus the admins ("Quản trị", ADMIN_SUBS) and reviewers
- * ("Người duyệt"); a personal Space has its owner only.
+ * Space's members are the authors of its published documents plus the admins ("Quản trị") and reviewers
+ * ("Người duyệt", src/access/roles.ts); a personal Space has its owner only.
  */
 import { eq } from 'drizzle-orm';
 import type { SpaceRow } from '../access/content';
 import { spaceContributors, staffAccounts } from '../access/participation';
+import { type WorkspaceRole, effectiveRole } from '../access/roles';
 import type { Viewer } from '../access/viewer';
 import type { Db } from '../db/client';
 import { users } from '../db/schema';
@@ -38,7 +39,7 @@ export async function spaceMembers(db: Db, adminSubs: ReadonlySet<string>, space
     return owner ? [{ ...owner, role: 'owner', documentCount: 0 }] : [];
   }
   const people = new Map<string, SpaceMember & { first: number }>();
-  const roleOf = (sub: string, role: 'member' | 'reviewer'): MemberRole => (adminSubs.has(sub) ? 'admin' : role);
+  const roleOf = (sub: string, role: WorkspaceRole): MemberRole => effectiveRole(adminSubs, { sub, role });
   for (const c of await spaceContributors(db, space.id)) {
     people.set(c.userId, { name: c.name, picture: c.picture, role: roleOf(c.sub, c.role), documentCount: c.documents, first: c.firstContribution.getTime() });
   }
@@ -55,12 +56,11 @@ function compareFirst(a: number, b: number): number {
   return a === b ? 0 : a < b ? -1 : 1;
 }
 
-export async function spacePermissions(db: Db, viewer: Viewer, space: SpaceRow): Promise<SpacePermissions> {
+export async function spacePermissions(_db: Db, viewer: Viewer, space: SpaceRow): Promise<SpacePermissions> {
   if (viewer.kind === 'guest') return { canCreate: false, canReview: false, canAdmin: false };
   if (space.kind === 'personal') {
     const own = space.ownerId === viewer.userId;
     return { canCreate: own, canReview: false, canAdmin: own };
   }
-  const [row] = await db.select({ role: users.role }).from(users).where(eq(users.id, viewer.userId));
-  return { canCreate: true, canReview: viewer.isAdmin || row?.role === 'reviewer', canAdmin: viewer.isAdmin };
+  return { canCreate: true, canReview: viewer.canReview, canAdmin: viewer.isAdmin };
 }
