@@ -100,6 +100,15 @@ describe('layout', () => {
     expect((x('a') + x('b') + x('c')) / 3).toBeLessThan((x('d') + x('e')) / 2);
   });
 
+  it('centres a graph of one Space instead of leaving the right side empty', () => {
+    // Seen on prod 05/11/2026: Networking alone sat in the left half of the stage.
+    const one = ['a', 'b', 'c'].map((id) => ({ id, space: 'networking', degree: 1 }));
+    const placed = [...layoutGraph(one, [{ source: 'a', target: 'b' }, { source: 'b', target: 'c' }], spaceSpots([{ slug: 'networking', personal: false }], 'networking')).values()];
+    const xs = placed.map((p) => p.x);
+    const middle = (Math.min(...xs) + Math.max(...xs)) / 2;
+    expect(Math.abs(middle - WORLD.width / 2)).toBeLessThan(5);
+  });
+
   it('sizes nodes by their links, up to a cap', () => {
     expect(nodeRadius(0)).toBe(12);
     expect(nodeRadius(6)).toBe(36);

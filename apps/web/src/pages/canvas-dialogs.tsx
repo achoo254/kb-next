@@ -114,7 +114,7 @@ export function EditCardDialog({ t, card, shownTitle, connections, titleOf, onSa
         )}
         {card.kind === 'diagram' && <TextField label={t('canvas.dialog.steps')} value={steps} onChange={(e) => setSteps(e.target.value)} variant="compact" />}
         {card.kind === 'link' && <TextField label={t('canvas.dialog.url')} type="url" value={url} onChange={(e) => setUrl(e.target.value)} error={urlError} variant="compact" />}
-        <div className="canvas-dialog-connections">
+        <div className="kf-field canvas-dialog-connections" data-variant="compact">
           <span className="kf-field-label">{t('canvas.dialog.connections')}</span>
           {mine.length === 0 ? (
             <span className="canvas-dialog-muted">{t('canvas.dialog.noConnections')}</span>

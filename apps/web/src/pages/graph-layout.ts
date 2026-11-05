@@ -84,6 +84,7 @@ export function spaceSpots(spaces: ReadonlyArray<{ slug: string; personal: boole
 
 /**
  * Lays the graph out and fits it to WORLD (scaled down when it would not fit, never up). Same input, same output.
+ * A graph of one Space only is centred: the spots keep the right side for other Spaces, which would stay empty.
  */
 export function layoutGraph(
   nodes: readonly LayoutNode[],
@@ -127,11 +128,14 @@ export function layoutGraph(
     .stop();
   simulation.tick(TICKS);
 
-  return fit(sim);
+  return fit(sim, new Set(nodes.map((n) => n.space)).size === 1);
 }
 
-/** The positions scaled (down only) and moved to sit inside WORLD with room for the names. */
-function fit(sim: readonly SimNode[]): Map<string, PlacedNode> {
+/**
+ * The positions scaled (down only) and moved to sit inside WORLD with room for the names; `centre` puts them in the
+ * middle of the room instead of near where the forces left them.
+ */
+function fit(sim: readonly SimNode[], centre: boolean): Map<string, PlacedNode> {
   const placed = new Map<string, PlacedNode>();
   if (sim.length === 0) return placed;
   const xs = sim.map((n) => n.x ?? 0);
@@ -145,12 +149,14 @@ function fit(sim: readonly SimNode[]): Map<string, PlacedNode> {
   // Inside the room when it fits as is; else centred in it.
   const shiftX = (value: number): number => {
     const width = (maxX - minX) * scale;
-    const left = width <= room.w ? Math.min(Math.max(minX, MARGIN_X), MARGIN_X + room.w - width) : MARGIN_X;
+    const kept = Math.min(Math.max(minX, MARGIN_X), MARGIN_X + room.w - width);
+    const left = width <= room.w ? (centre ? MARGIN_X + (room.w - width) / 2 : kept) : MARGIN_X;
     return left + (value - minX) * scale;
   };
   const shiftY = (value: number): number => {
     const height = (maxY - minY) * scale;
-    const top = height <= room.h ? Math.min(Math.max(minY, MARGIN_TOP), MARGIN_TOP + room.h - height) : MARGIN_TOP;
+    const kept = Math.min(Math.max(minY, MARGIN_TOP), MARGIN_TOP + room.h - height);
+    const top = height <= room.h ? (centre ? MARGIN_TOP + (room.h - height) / 2 : kept) : MARGIN_TOP;
     return top + (value - minY) * scale;
   };
   for (const n of sim) placed.set(n.id, { id: n.id, x: Math.round(shiftX(n.x ?? 0)), y: Math.round(shiftY(n.y ?? 0)), r: n.r });

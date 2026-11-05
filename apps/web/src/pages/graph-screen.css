@@ -607,6 +607,10 @@
   border: 1.5px solid var(--rim-border);
   box-shadow: var(--rim-shadow);
   backdrop-filter: blur(18px);
+  /* Jev's suggestions can make it taller than the board's panel: it scrolls instead of cutting them off. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
 .graph-panel-spacer {
