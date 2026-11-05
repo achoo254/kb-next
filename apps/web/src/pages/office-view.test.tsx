@@ -81,8 +81,12 @@ function fromEditor(frame: HTMLIFrameElement, data: unknown, from = EDITOR, sour
 }
 
 async function ready(frame: HTMLIFrameElement, posted: Posted[]): Promise<void> {
-  fromEditor(frame, { type: 'document:ready' });
-  await waitFor(() => expect(posted.map((p) => p.type)).toEqual(['document:open-buffer']));
+  // The frame shows before its listener is attached (an effect), so "ready" is sent until it is heard, as a real
+  // editor's late load always is; the view ignores every "ready" after the first.
+  await waitFor(() => {
+    if (posted.length === 0) fromEditor(frame, { type: 'document:ready' });
+    expect(posted.map((p) => p.type)).toEqual(['document:open-buffer']);
+  });
   fromEditor(frame, { type: 'document:opened', id: posted[0]?.id });
   await waitFor(() => expect((screen.getByRole('button', { name: 'Lưu' }) as HTMLButtonElement).disabled).toBe(false));
 }
