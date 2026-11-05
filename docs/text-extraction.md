@@ -29,7 +29,7 @@ Các request kb gửi (`PUT /tika`, `Accept: text/html`):
 | Việc | Header |
 |---|---|
 | Đọc chữ có sẵn (Office, PDF có lớp chữ) | `X-Tika-OCRskipOcr: true`; PDF thêm `X-Tika-PDFOcrStrategy: no_ocr` |
-| OCR trang PDF | `X-Tika-PDFOcrStrategy: ocr_only`, `X-Tika-OCRLanguage: vie+eng`, `X-Tika-OCRoutputType: hocr` |
+| OCR trang PDF | `X-Tika-PDFOcrStrategy: ocr_only`, `X-Tika-OCRLanguage: vie` (không thêm `eng`: đo trên .65 ngày 05/11/2026, `vie+eng` làm mất dấu ở ảnh mờ, 6 lỗi so với 3, chậm hơn 40%; bản `tessdata_best` không ít lỗi hơn mà chậm hơn 60%), `X-Tika-OCRoutputType: hocr` |
 | Đoán loại tệp khi MIME đã lưu không rõ | `PUT /detect/stream` |
 
 Tika trả XHTML: PDF có một `<div class="page">` cho mỗi trang; OCR ở dạng hOCR nên mỗi từ kèm độ tin cậy `x_wconf`

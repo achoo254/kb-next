@@ -188,7 +188,7 @@ Collection chỉ còn tìm theo nghĩa (đoạn cũ trong chỉ mục chưa có 
 ## Trích chữ tệp tải lên
 
 Tệp tải lên (docx, xlsx, pptx, pdf, md, tối đa 25 MB) đi qua dây chuyền trích chữ trong process `kb-server`: Tika dùng
-chung trên `.65` đọc chữ có sẵn và OCR trang quét bằng Tesseract `vie+eng`, kb chấm chất lượng, chia đoạn, Jev gợi ý
+chung trên `.65` đọc chữ có sẵn và OCR trang quét bằng Tesseract `vie`, kb chấm chất lượng, chia đoạn, Jev gợi ý
 Collection, rồi lập chỉ mục. Một tệp một lúc, tối đa 3 lượt, trạng thái ở bảng `extract_jobs`; khởi động lại thì chạy
 tiếp các job dở. Chi tiết (thông số Tika, cách chọn trang OCR, cờ chất lượng, mã lỗi, hợp đồng cho API tải lên):
 [text-extraction.md](text-extraction.md).

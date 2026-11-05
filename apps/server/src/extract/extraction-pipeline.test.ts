@@ -172,7 +172,7 @@ describe('PDF', () => {
     expect(started.synced).toEqual([documentId]);
   });
 
-  it('OCRs a scanned PDF in Vietnamese and English through Tika and indexes what it read', async () => {
+  it('OCRs a scanned PDF in Vietnamese through Tika and indexes what it read', async () => {
     scriptTika({ ocr: [{ text: VIETNAMESE_OCR, confidence: 88 }, { text: VIETNAMESE_OCR, confidence: 90 }] });
     const started = await start();
     const { fileId, documentId } = await upload('scan-ghi-chu-mang.pdf', 'application/pdf', await makePdf([{ image: 1 }, { image: 1 }]));
@@ -184,7 +184,7 @@ describe('PDF', () => {
     expect(status.steps[1]?.detail?.quality).toBeGreaterThan(0.8);
     // Both pages in one OCR request; no text-layer request (no page has one).
     expect(tika.calls).toHaveLength(1);
-    expect(tika.ocrCalls()[0]?.headers['x-tika-ocrlanguage']).toBe('vie+eng');
+    expect(tika.ocrCalls()[0]?.headers['x-tika-ocrlanguage']).toBe('vie');
     expect((await chunksOf(documentId)).map((c) => [c.anchor, c.text])).toEqual([
       ['trang-1', VIETNAMESE_OCR],
       ['trang-2', VIETNAMESE_OCR],

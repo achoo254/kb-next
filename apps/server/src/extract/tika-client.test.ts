@@ -29,14 +29,14 @@ async function failure(promise: Promise<unknown>): Promise<ExtractionError> {
 }
 
 describe('TikaClient', () => {
-  it('asks for XHTML without any OCR by default, and for Vietnamese and English hOCR when told', async () => {
+  it('asks for XHTML without any OCR by default, and for Vietnamese hOCR when told', async () => {
     const client = new TikaClient(tika.url);
     expect(await client.html(bytes, 'application/pdf')).toContain('<p>ok</p>');
     await client.html(bytes, 'application/pdf', { ocr: true });
     const [plain, ocr] = tika.calls;
     expect(plain).toMatchObject({ method: 'PUT', path: '/tika' });
     expect(plain?.headers).toMatchObject({ accept: 'text/html', 'content-type': 'application/pdf', 'x-tika-ocrskipocr': 'true', 'x-tika-pdfocrstrategy': 'no_ocr' });
-    expect(ocr?.headers).toMatchObject({ 'x-tika-pdfocrstrategy': 'ocr_only', 'x-tika-ocrlanguage': 'vie+eng', 'x-tika-ocroutputtype': 'hocr' });
+    expect(ocr?.headers).toMatchObject({ 'x-tika-pdfocrstrategy': 'ocr_only', 'x-tika-ocrlanguage': 'vie', 'x-tika-ocroutputtype': 'hocr' });
     expect(ocr?.headers['x-tika-ocrskipocr']).toBeUndefined();
     expect(plain?.body.length).toBe(4);
   });
