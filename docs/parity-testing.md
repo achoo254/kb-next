@@ -19,6 +19,19 @@ C09-Universe (pending): 61.42% of pixels differ (ceiling 3%)
 Báo cáo kèm ảnh chụp của app (`<board>-actual.png`) và ảnh khác biệt (`<board>-diff.png`, pixel khác tô đỏ):
 `apps/web/test-results/`, hoặc `pnpm exec playwright show-report` khi chạy với reporter html.
 
+## Khi nào chạy
+
+E2E chậm (dựng web, API, IdP giả rồi mở trình duyệt), nên chỉ chạy đúng màn vừa sửa, một lần trước khi commit
+(chủ dự án chốt 05/11/2026):
+
+- Lọc theo board: `pnpm e2e --project parity -g F03`. Không chạy cả bộ `pnpm e2e` hay cả project `parity` để "kiểm
+  lây" các màn không đụng tới.
+- Trạng thái, luồng bấm, lỗi API của màn kiểm bằng vitest (`*.test.tsx`), không viết thêm spec Playwright cho từng
+  trạng thái. Spec Playwright riêng chỉ khi điều cần kiểm không làm được trong jsdom (bố cục thật, cuộn, cỡ cửa sổ).
+- Sửa component dùng chung của kit: chạy board kit (`DesignSystem`, `Interaction`) cùng một màn tiêu biểu, không chạy
+  hết các màn dùng nó.
+- CI không chạy e2e (lint, typecheck, unit test, build).
+
 ## Quy tắc
 
 - Project `parity` của [`apps/web/e2e/playwright.config.ts`](../apps/web/e2e/playwright.config.ts): viewport bằng
