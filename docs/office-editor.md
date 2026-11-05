@@ -62,7 +62,7 @@ thêm `frame-src` cho tên miền đó.
   `/var/www/kb-office/current` là `dist/` của bản build; `x2t.wasm.br` gửi kèm `Content-Encoding: br` và không nén lại;
   `fonts/` là `font/ttf`; `sw.js` không cache). `deploy.sh setup` không cài tệp này: chép tay vào
   `/etc/nginx/conf.d/`, `nginx -t`, reload (mục Triển khai editor).
-- Chỉ kb nhúng được: header `Content-Security-Policy: frame-ancestors https://kb.hoandat.com`. CSP của chính editor nằm
+- Chỉ kb nhúng được: header `Content-Security-Policy: frame-ancestors 'self' https://kb.hoandat.com` (`'self'` vì editor tự nhúng khung con cùng origin của nó). CSP của chính editor nằm
   sẵn trong thẻ `<meta>` của `editor.html` (`script-src 'self' 'wasm-unsafe-eval'`, `worker-src 'self' blob:`,
   `frame-src 'self' blob:`); không thêm CSP header nào chặn `wasm-unsafe-eval`.
 - CSP của kb ([`infra/nginx/kb.hoandat.com.conf`](../infra/nginx/kb.hoandat.com.conf)) có
@@ -259,3 +259,11 @@ Phase 10 dùng editor như sau (mã ở [`apps/web/src/pages/office-view.tsx`](.
 - Tên miền riêng đã chốt (05/11/2026): thêm một bản ghi DNS và một server block phải giữ khớp với CSP của kb.
 - Offline chỉ chắc với loại file đã mở khi có mạng (mục Offline).
 - Spike chỉ thử file nhỏ tự tạo và mẫu pptx của vendor; chưa thử file 25 MB, file có ảnh nhiều, file CJK, Safari.
+
+## Ghi nhận khi nghiệm thu trên prod (05/11/2026)
+
+- Lần đầu nhúng, khung editor trống với biểu tượng "bị chặn": editor tự nhúng khung con cùng origin, nên
+  `frame-ancestors` phải có `'self'`. Trình duyệt đã mở editor trước khi sửa header giữ bản cũ trong cache của
+  service worker; xoá dữ liệu site `kb-office.hoandat.com` (hoặc đợi service worker cập nhật) là hết.
+- Docx tạo bằng python-docx (theme có font Đông Á để trống) hiện dòng tiêu đề thành ký tự rác trong editor; thân bài
+  hiển thị và lưu đúng. Chưa gặp với file Word thật; gặp thì báo upstream kèm file mẫu.

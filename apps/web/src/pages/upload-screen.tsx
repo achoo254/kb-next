@@ -293,7 +293,7 @@ export function UploadScreen(): ReactNode {
   const failed = queue.rows.filter((row) => row.state === 'failed').length;
   const running = queue.rows.filter((row) => row.state === 'queued' || row.state === 'uploading').length;
   const percent = overallPercent(queue.rows);
-  const sub = queue.rows.length === 0 ? t('upload.sub.empty') : running > 0 ? t('upload.sub.running', { count: running }) : t('upload.sub.done');
+  const sub = queue.rows.length === 0 ? t('upload.sub.empty') : running > 0 ? t('upload.sub.running', { count: running }) : failed > 0 ? t('upload.sub.done') : t('upload.sub.allDone');
 
   return (
     <AppShell
