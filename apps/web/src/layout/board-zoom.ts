@@ -1,8 +1,13 @@
 /**
  * The board frame's zoom: every board screen is laid out in the mock's 1440×900 space (design/mock) and the frame
- * (`.board-frame`, ui/app.css) scales it with CSS `zoom` to the window's width, so a smaller window shows the whole
- * board instead of cutting its right side off. Wider windows keep 1 (the board is centred, see app-shell.css); below
- * 768px the zoom stops at its floor and the page scrolls sideways (no phone boards are built yet).
+ * (`.board-frame`, ui/app.css) scales it with CSS `zoom` so the whole board fits the window: the zoom is the smaller
+ * of width/1440 and height/900, never above 1. Height may shrink the board only down to SHORT_WINDOW_FACTOR of the
+ * width's zoom; a shorter window keeps that zoom and scrolls instead of making the board tiny. Below 768px wide the
+ * zoom stops at its floor and the page scrolls sideways (no phone boards are built yet).
+ *
+ * When the board is narrower than the frame (a window wider than 1440, or a short one where the height sets the zoom)
+ * the board is centred (app-shell.css) and `--board-side` holds the frame's extra width on each side, in board px, for
+ * the pieces that keep to the window's edge instead of the board's (the Universe's AI panel).
  *
  * The zoom is `--board-zoom` on the root element. It is worked out from the window's size rather than read back from
  * the page: when the zoomed board is taller than the window the page scrolls, and its scrollbar takes width from the
@@ -14,19 +19,56 @@ export const BOARD_HEIGHT = 900;
 /** The smallest zoom: a 768px window (a portrait tablet); narrower windows scroll sideways. */
 export const MIN_BOARD_ZOOM = 768 / BOARD_WIDTH;
 
+/**
+ * How far the window's height may shrink the board below the zoom its width allows. 0.85 lets a 1440px-wide laptop
+ * window down to 765px tall (a 13" screen with the browser's bars and the dock) show the whole board, while the
+ * boards' 12–13px text stays at 11px or more; a shorter window scrolls rather than shrink the text further.
+ */
+export const SHORT_WINDOW_FACTOR = 0.85;
+
 function clampZoom(zoom: number): number {
   return Math.min(1, Math.max(MIN_BOARD_ZOOM, zoom));
 }
 
+/** A window height that sizes nothing (unknown, 0) counts as unlimited. */
+function knownHeight(height: number): number {
+  return Number.isFinite(height) && height > 0 ? height : Number.POSITIVE_INFINITY;
+}
+
+/** Whether a board zoomed by `zoom` is taller than a window `height` px tall, so the page scrolls. */
+function scrolls(zoom: number, height: number): boolean {
+  return BOARD_HEIGHT * zoom > height + 0.5;
+}
+
+/** The zoom for a window whose usable width is `width` px: its width's zoom, less what its height asks within limits. */
+function fitZoom(width: number, height: number): number {
+  const byWidth = clampZoom(width / BOARD_WIDTH);
+  const byHeight = Math.max(height / BOARD_HEIGHT, byWidth * SHORT_WINDOW_FACTOR);
+  return clampZoom(Math.min(byWidth, byHeight));
+}
+
 /**
  * The zoom that fits the board to a window `width` × `height` px whose vertical scrollbar, when the page scrolls, is
- * `scrollbar` px wide (0 for overlay scrollbars): the board's width, less the scrollbar when the zoomed board is
- * taller than the window.
+ * `scrollbar` px wide (0 for overlay scrollbars): the board's width and height, less the scrollbar's width when the
+ * zoomed board is still taller than the window.
  */
 export function boardZoomFor(width: number, height = Number.POSITIVE_INFINITY, scrollbar = 0): number {
   if (!Number.isFinite(width) || width <= 0) return 1;
-  const zoom = clampZoom(width / BOARD_WIDTH);
-  return BOARD_HEIGHT * zoom > height + 0.5 && scrollbar > 0 ? clampZoom((width - scrollbar) / BOARD_WIDTH) : zoom;
+  const usableHeight = knownHeight(height);
+  const zoom = fitZoom(width, usableHeight);
+  return scrolls(zoom, usableHeight) && scrollbar > 0 ? fitZoom(width - scrollbar, usableHeight) : zoom;
+}
+
+/**
+ * The frame's width beyond the board on each side, in board px, for the same window: 0 while the board fills the
+ * window's width (1440px and narrower windows whose height leaves the zoom to the width).
+ */
+export function boardSideFor(width: number, height = Number.POSITIVE_INFINITY, scrollbar = 0): number {
+  if (!Number.isFinite(width) || width <= 0) return 0;
+  const usableHeight = knownHeight(height);
+  const zoom = boardZoomFor(width, usableHeight, scrollbar);
+  const frameWidth = (width - (scrolls(zoom, usableHeight) ? scrollbar : 0)) / zoom;
+  return Math.max(0, (frameWidth - BOARD_WIDTH) / 2);
 }
 
 /** The width of a classic vertical scrollbar in this browser (0 with overlay scrollbars). */
@@ -54,11 +96,13 @@ export function toBoardPx(screenPx: number): number {
   return screenPx / boardZoom();
 }
 
-/** Keeps `--board-zoom` on the root in step with the window's size; returns the function that stops it. */
+/** Keeps `--board-zoom` and `--board-side` on the root in step with the window's size; returns the function that stops it. */
 export function installBoardZoom(root: HTMLElement = document.documentElement): () => void {
   const scrollbar = scrollbarWidth();
   const update = (): void => {
-    root.style.setProperty('--board-zoom', String(boardZoomFor(window.innerWidth, window.innerHeight, scrollbar)));
+    const { innerWidth: width, innerHeight: height } = window;
+    root.style.setProperty('--board-zoom', String(boardZoomFor(width, height, scrollbar)));
+    root.style.setProperty('--board-side', `${boardSideFor(width, height, scrollbar)}px`);
   };
   update();
   window.addEventListener('resize', update);

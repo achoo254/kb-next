@@ -7,11 +7,18 @@ phải sửa từng màn.
 
 ## Khung làm gì
 
-- Board luôn rộng 1440 và cao tối thiểu 900 (đơn vị board), co bằng CSS `zoom` theo bề ngang cửa sổ:
-  `zoom = clamp(768/1440, rộng cửa sổ / 1440, 1)`. Cửa sổ 1440×900 vẫn là 1:1 (ảnh so pixel không đổi); cửa sổ rộng
-  hơn giữ 1 và căn giữa (`app-shell.css`).
-- Board cao hơn cửa sổ thì trang cuộn dọc (hệ số chừa chỗ cho thanh cuộn). Dưới 768px board ngừng co và trang cuộn
-  ngang (chưa có board điện thoại).
+- Board luôn rộng 1440 và cao tối thiểu 900 (đơn vị board), co bằng CSS `zoom` cho vừa cả bề ngang lẫn bề cao cửa
+  sổ: `zoom = clamp(768/1440, min(rộng/1440, max(cao/900, 0.85 × rộng/1440)), 1)`. Cửa sổ 1440×900 vẫn là 1:1 (ảnh
+  so pixel không đổi); cửa sổ rộng hơn giữ 1.
+- Cửa sổ thấp (laptop 13", ví dụ 1440×840) co theo bề cao để thấy trọn board, không cuộn. Bề cao chỉ được co thêm tới
+  0.85 lần mức co theo bề ngang (`SHORT_WINDOW_FACTOR`): 1440 rộng thì vừa tới cao 765, chữ 12–13px của board vẫn từ
+  11px trở lên. Cửa sổ thấp hơn nữa giữ mức đó và trang cuộn dọc (hệ số chừa chỗ cho thanh cuộn). Dưới 768px board
+  ngừng co và trang cuộn ngang (chưa có board điện thoại).
+- Khi khung rộng hơn board (cửa sổ rộng hơn 1440, hoặc cửa sổ thấp co theo bề cao) board nằm giữa (`--board-offset`,
+  `app-shell.css`); logo, thanh lens, chuông và ⌘K bám mép cửa sổ. `--board-side` (trên root, px của board,
+  `board-zoom.ts`) là phần khung thừa mỗi bên, bằng 0 khi board chiếm trọn bề ngang (1440×900, cửa sổ hẹp mà đủ cao): panel nào cần bám mép phải cửa sổ thì cộng
+  nó vào `left`. Hiện chỉ panel AI của C09 (và panel "thử hỏi" của S05) dùng; scene và chữ của C09 ở yên theo board.
+  Panel phải của C10, C11 và các màn khác vẫn theo board.
 - `AppShell` (mọi màn đã đăng nhập) và `ScreenPage layout="board"` tự có khung. Màn tự lo cửa sổ hẹp bằng media query
   riêng (landing, login, lỗi) khai báo `responsive` để giữ 1:1.
 

@@ -129,9 +129,13 @@
 
 /* ---------- AI panel (right) ---------- */
 
+/* The AI panel (and S05's "try asking" panel in its place) keeps the board's 20px gutter to the window's right edge,
+   like the bell and ⌘K, when the frame is wider than the centred board (--board-side, layout/board-zoom.ts; 0 at
+   1440×900 and below). The scene and the hero stay with the board, so the scene keeps its place in the space left of
+   the panel as on the board. */
 .universe-ai.kf-panel {
   position: absolute;
-  left: 1034px;
+  left: calc(1034px + var(--board-side, 0px));
   top: 82px;
   width: 386px;
   height: 630px;
@@ -481,7 +485,7 @@
 
 .universe-try.kf-panel {
   position: absolute;
-  left: 1034px;
+  left: calc(1034px + var(--board-side, 0px));
   top: 82px;
   width: 386px;
   padding: 20px;
