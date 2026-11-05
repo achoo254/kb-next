@@ -39,6 +39,8 @@ interface GraphPanelProps {
   onSuggest(): void;
   onAccept(suggestion: EdgeSuggestion): void;
   onUnlink(edge: GraphEdge, title: string): void;
+  /** The Graph for viewing only (a phone, Z02): no linking or unlinking; `viewOnly` says why. */
+  viewOnly?: string;
 }
 
 function orbStyle(colour: SpaceColours | undefined): CSSProperties {
@@ -83,7 +85,7 @@ export function GraphPanel(props: GraphPanelProps): ReactNode {
   );
 }
 
-function NodeDetail({ t, node, edges, nodes, visible, colours, onSelect, onUnlink }: GraphPanelProps & { node: GraphNode }): ReactNode {
+function NodeDetail({ t, node, edges, nodes, visible, colours, onSelect, onUnlink, viewOnly }: GraphPanelProps & { node: GraphNode }): ReactNode {
   const { t: appT } = useI18n();
   const space = useSpaceText();
   const colour = colours.get(node.spaceSlug);
@@ -138,7 +140,7 @@ function NodeDetail({ t, node, edges, nodes, visible, colours, onSelect, onUnlin
                   <span className="graph-dot" style={{ background: colours.get(other.spaceSlug)?.tint }} aria-hidden="true" />
                   {other.title} <span className="graph-neighbour-rel">· {relationText(t, neighbour)}</span>
                 </button>
-                {neighbour.edge.removable && (
+                {neighbour.edge.removable && !viewOnly && (
                   <button
                     type="button"
                     className="graph-unlink"
@@ -159,7 +161,7 @@ function NodeDetail({ t, node, edges, nodes, visible, colours, onSelect, onUnlin
   );
 }
 
-function ExploreBox({ t, nodes, edges, visible, selected, colours, focusSpace, jev, suggestions, notice, onSelect, onSuggest, onAccept }: GraphPanelProps): ReactNode {
+function ExploreBox({ t, nodes, edges, visible, selected, colours, focusSpace, jev, suggestions, notice, onSelect, onSuggest, onAccept, viewOnly }: GraphPanelProps): ReactNode {
   const { locale } = useI18n();
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const start = selected ? null : startingNode(nodes, focusSpace, visible);
@@ -203,7 +205,12 @@ function ExploreBox({ t, nodes, edges, visible, selected, colours, focusSpace, j
           {t('graph.path.follow')}
         </a>
       )}
-      {jev && selected && !forThis && (
+      {viewOnly && (
+        <p className="graph-explore-note" data-id="graph-view-only">
+          {viewOnly}
+        </p>
+      )}
+      {jev && selected && !forThis && !viewOnly && (
         <button type="button" className="graph-suggest" onClick={onSuggest} data-id="graph-suggest">
           <Icon name="sparkles" size={14} />
           {t('graph.suggest.ask')}

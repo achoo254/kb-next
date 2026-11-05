@@ -7,6 +7,7 @@ import { type BackdropVeil, UniverseBackdrop } from '../ui/universe-backdrop';
 import { ViewNav, type ViewNavItem } from '../ui/view-nav';
 import { CommandPalette } from '../palette/command-palette';
 import { BrandLogo } from './brand-logo';
+import { useDevice } from './device';
 import { SHELL_PATHS } from './shell-paths';
 import { signedInUser, useSessionState } from './session-context';
 import { type StaffRole, useStaffRole } from './staff-role';
@@ -50,8 +51,13 @@ interface AppShellProps {
   unread?: number;
   /** The admin station (A01–A03): no view pill, the "Trạm quản trị" badge by the logo, the admin rail. */
   admin?: boolean;
-  /** Left of the bell (A01's shortcut hint). */
+  /** Left of the bell (A01's shortcut hint, T01's Copilot button). */
   topExtra?: ReactNode;
+  /**
+   * The screen's tablet board (T01 `universe`, T02 `reader`): in the tablet layout the screen is laid out on its
+   * 1180×820 board instead of the desktop one (device.ts).
+   */
+  tabletBoard?: 'universe' | 'reader';
   className?: string;
   children?: ReactNode;
 }
@@ -178,9 +184,12 @@ export function AppShell({
   unread,
   admin = false,
   topExtra,
+  tabletBoard,
   className,
   children,
 }: AppShellProps): ReactNode {
+  const device = useDevice();
+  const tablet = tabletBoard !== undefined && device === 'tablet';
   const { t } = useI18n();
   const accountUnread = useUnread().total;
   const user = signedInUser(useSessionState());
@@ -195,7 +204,18 @@ export function AppShell({
       }
     : undefined;
   return (
-    <UniverseBackdrop veil={veil} stars={stars} className={[`app-shell board-frame`, palette.open ? 'app-shell-palette' : '', className ?? ''].filter(Boolean).join(' ')}>
+    <UniverseBackdrop
+      veil={veil}
+      stars={stars}
+      className={[
+        'app-shell board-frame',
+        tablet ? `board-frame-tablet app-shell-tablet app-shell-tablet-${tabletBoard}` : '',
+        palette.open ? 'app-shell-palette' : '',
+        className ?? '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div className="app-shell-chrome">
         <BrandLogo />
         {admin ? (

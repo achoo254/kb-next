@@ -144,12 +144,16 @@ function EditorFrame({ state, file, editable, onSaved }: { state: Extract<ViewSt
   );
 }
 
-export function OfficeView({ documentId, file, offline }: { documentId: string; file: DocumentFile; offline: boolean }): ReactNode {
+/**
+ * `readOnly`: the file opens for reading only, whatever the account may do (a phone, Z02: no Office editing; the
+ * screen says why).
+ */
+export function OfficeView({ documentId, file, offline, readOnly = false }: { documentId: string; file: DocumentFile; offline: boolean; readOnly?: boolean }): ReactNode {
   const { t, locale } = useOfficeText();
   const [view, setView] = useState<ViewState>({ kind: 'closed' });
   const [saveState, setSaveState] = useState<SaveState>({ kind: 'idle' });
   const opensInEditor = EDITABLE_KINDS.has(file.kind);
-  const editable = file.editable && opensInEditor;
+  const editable = !readOnly && file.editable && opensInEditor;
 
   const open = useCallback(async () => {
     setView({ kind: 'loading' });

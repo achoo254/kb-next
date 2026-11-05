@@ -8,6 +8,8 @@
  */
 import { type CSSProperties, type ReactNode, useEffect, useState } from 'react';
 import { AppShell } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
+import { CreatePhone } from './create-phone';
 import { CRYSTAL_ART, ORB_ART } from '../ui/art';
 import { Icon } from '../ui/icon';
 import { CREATE_OPTIONS, CREATE_PANES, type CreateOption, GROUP_CRYSTAL, type GroupId, type OptionId, type PaneId, ringPlace } from './create-options';
@@ -114,7 +116,12 @@ function OptionHint({ option }: { option: CreateOption }): ReactNode {
   );
 }
 
+/** /create: the phone bloom (M02) on a phone, the ring (C01) elsewhere. */
 export function CreateMenu(): ReactNode {
+  return useDevice() === 'phone' ? <CreatePhone /> : <CreateRing />;
+}
+
+function CreateRing(): ReactNode {
   const { t } = useCreateText();
   const [hover, setHover] = useState<OptionId>('note');
   const [pane, setPane] = useState<PaneId>('hint');

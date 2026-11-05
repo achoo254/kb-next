@@ -4,11 +4,13 @@
  * bloom and the crystals' colours, the guides and spokes, the dots running on the orbits, the orb and the crystals as
  * sprites of their own art. The orbits are tilted towards the viewer, so dots and rings pass behind the orb and in
  * front of it. The camera is the board's (orthographic, 1440×900): the HTML labels and links stay on top, in place.
+ * On a tablet (board T01, `TABLET_SCENE`) it draws the tablet board's scene, lighter: no bloom around the orbits,
+ * half the dots, no supersampling.
  */
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { SCENE_CENTRE, SCENE_DOTS, SCENE_GUIDES, SCENE_ORBITS } from '../layout/universe-scene';
+import { DESKTOP_SCENE, type SceneGeometry } from '../layout/universe-scene';
 import type { OrbitDot } from '../ui/orbit-field';
 import { cssToken } from '../ui/css-token';
 import { FpsGuard } from './fps-guard';
@@ -47,17 +49,30 @@ export interface Universe3dLayerProps {
   onFallback: (reason: Fallback2dReason) => void;
   /** The latest measured frame rate, about four times a second. */
   onFps?: (fps: number) => void;
+  /** The board the scene is laid out on (C09's by default; T01's on a tablet). */
+  geometry?: SceneGeometry;
 }
 
-const WIDTH = 1440;
-const HEIGHT = 900;
-/** The 140px crystal draws its art 168px wide (inset -14px); the glow of its filter needs room around it. */
-const CRYSTAL_ART = 168;
+/** A crystal draws its art 1.2 times its box (168px for C09's 140px); the glow of its filter needs room around it. */
+const CRYSTAL_ART_SHARE = 1.2;
 const CRYSTAL_PAD = 32;
-const ORB_SIZE = 340;
+/** The orb draws its art 1.36 times its box (340px for C09's 250px). */
+const ORB_ART_SHARE = 1.36;
 const ORB_PAD = 24;
-const TINT_RADIUS = 125;
 const SEGMENTS = 360;
+
+function crystalArt(geometry: SceneGeometry): number {
+  return Math.round(geometry.crystal * CRYSTAL_ART_SHARE);
+}
+
+function orbArt(geometry: SceneGeometry): number {
+  return Math.round(geometry.orb * ORB_ART_SHARE);
+}
+
+/** The dots a geometry runs: all of them, or every other one in the lighter tablet scene. */
+function dotsOf(geometry: SceneGeometry): readonly OrbitDot[] {
+  return geometry.light3d ? geometry.dots.filter((_, index) => index % 2 === 0) : geometry.dots;
+}
 
 type Stop = readonly [number, `--${string}`, number];
 /** The gradients of the orbit strokes (orbit-field.tsx): horizontal for two rings, vertical for the wide one. */
@@ -177,11 +192,17 @@ function ribbonGeometry(points: readonly RibbonPoint[], width: number, closed: b
 }
 
 /** Mixes the crystals' colours into an orbit point near them, as the 2D masks do. */
-function tinted(base: { colour: THREE.Color; alpha: number }, x: number, y: number, tints: readonly { cx: number; cy: number; colour: THREE.Color }[]): { colour: THREE.Color; alpha: number } {
+function tinted(
+  base: { colour: THREE.Color; alpha: number },
+  x: number,
+  y: number,
+  tints: readonly { cx: number; cy: number; colour: THREE.Color }[],
+  radius: number,
+): { colour: THREE.Color; alpha: number } {
   let colour = base.colour;
   let alpha = base.alpha;
   for (const tint of tints) {
-    const w = tintWeight(Math.hypot(x - tint.cx, y - tint.cy), TINT_RADIUS);
+    const w = tintWeight(Math.hypot(x - tint.cx, y - tint.cy), radius);
     if (w <= 0) continue;
     colour = colour.clone().lerp(tint.colour, w);
     alpha = Math.max(alpha, w);
@@ -189,10 +210,10 @@ function tinted(base: { colour: THREE.Color; alpha: number }, x: number, y: numb
   return { colour, alpha };
 }
 
-function orbitPoints(ellipse: Ellipse, colourAt: (x: number, y: number) => { colour: THREE.Color; alpha: number }): RibbonPoint[] {
+function orbitPoints(ellipse: Ellipse, centreY: number, colourAt: (x: number, y: number) => { colour: THREE.Color; alpha: number }): RibbonPoint[] {
   return Array.from({ length: SEGMENTS }, (_, i) => {
     const { x, y } = pointOn(ellipse, (i / SEGMENTS) * 2 * Math.PI);
-    return { x, y, z: depthAt(y, SCENE_CENTRE.y), ...colourAt(x, y) };
+    return { x, y, z: depthAt(y, centreY), ...colourAt(x, y) };
   });
 }
 
@@ -236,39 +257,45 @@ async function filteredTexture(src: string, filter: string, size: number, pad: n
   return texture;
 }
 
-function Orbits({ crystals }: { crystals: readonly CrystalSprite[] }): ReactNode {
+function Orbits({ crystals, geometry }: { crystals: readonly CrystalSprite[]; geometry: SceneGeometry }): ReactNode {
   const meshes = useMemo(() => {
     const tints = crystals.map((crystal) => ({ cx: crystal.cx, cy: crystal.cy, colour: new THREE.Color(crystal.tint) }));
     const bloomBase = tokenColour('--violet-500');
     const list: { geometry: THREE.BufferGeometry; material: THREE.ShaderMaterial }[] = [];
-    SCENE_ORBITS.forEach((orbit) => {
+    const { centre, gradientX, gradientY, tintRadius } = geometry;
+    const [x0, x1] = gradientX;
+    const [y0, y1] = gradientY;
+    geometry.orbits.forEach((orbit) => {
       const ellipse = parseEllipse(orbit.d);
       const vertical = orbit.gradient === 'v';
-      const stroke = orbitPoints(ellipse, (x, y) =>
-        tinted(vertical ? gradientAt(V_STOPS, (y - 90) / 510) : gradientAt(H_STOPS, (x - 260) / 880), x, y, tints),
+      const stroke = orbitPoints(ellipse, centre.y, (x, y) =>
+        tinted(vertical ? gradientAt(V_STOPS, (y - y0) / (y1 - y0)) : gradientAt(H_STOPS, (x - x0) / (x1 - x0)), x, y, tints, tintRadius),
       );
-      const bloom = orbitPoints(ellipse, (x, y) => tinted({ colour: bloomBase, alpha: 0.5 }, x, y, tints));
-      list.push({ geometry: ribbonGeometry(bloom, 12, true), material: ribbonMaterial(1.6, 0.75, true) });
+      // the bloom is the heavy part (a wide additive band): left out of the lighter tablet scene
+      if (!geometry.light3d) {
+        const bloom = orbitPoints(ellipse, centre.y, (x, y) => tinted({ colour: bloomBase, alpha: 0.5 }, x, y, tints, tintRadius));
+        list.push({ geometry: ribbonGeometry(bloom, 12, true), material: ribbonMaterial(1.6, 0.75, true) });
+      }
       list.push({ geometry: ribbonGeometry(stroke, (orbit.width ?? 1.6) + 1.2, true), material: ribbonMaterial(0.8, 1, false) });
     });
     const guideColour = tokenColour('--violet-400');
-    SCENE_GUIDES.forEach((d) => {
-      const points = orbitPoints(parseEllipse(d), () => ({ colour: guideColour, alpha: 0.4 }));
+    geometry.guides.forEach((d) => {
+      const points = orbitPoints(parseEllipse(d), centre.y, () => ({ colour: guideColour, alpha: 0.4 }));
       // a faint line where the 2D scene draws a dotted one
       list.push({ geometry: ribbonGeometry(points, 1.4, true), material: ribbonMaterial(1, 0.35, false) });
     });
     const spoke = tokenColour('--violet-400');
     crystals.forEach((crystal) => {
-      const mid = { x: (SCENE_CENTRE.x + crystal.cx) / 2, y: (SCENE_CENTRE.y + crystal.cy) / 2 };
+      const mid = { x: (centre.x + crystal.cx) / 2, y: (centre.y + crystal.cy) / 2 };
       const points: RibbonPoint[] = [
-        { x: SCENE_CENTRE.x, y: SCENE_CENTRE.y, z: -1, colour: spoke, alpha: 0.05 },
+        { x: centre.x, y: centre.y, z: -1, colour: spoke, alpha: 0.05 },
         { x: mid.x, y: mid.y, z: -1, colour: spoke, alpha: 0.4 },
         { x: crystal.cx, y: crystal.cy, z: -1, colour: spoke, alpha: 0.08 },
       ];
       list.push({ geometry: ribbonGeometry(points, 1.4, false), material: ribbonMaterial(0.5, 1, false) });
     });
     return list;
-  }, [crystals]);
+  }, [crystals, geometry]);
 
   useEffect(
     () => () => {
@@ -289,8 +316,9 @@ function Orbits({ crystals }: { crystals: readonly CrystalSprite[] }): ReactNode
   );
 }
 
-function Dots({ origin }: { origin: number }): ReactNode {
-  const tables = useMemo(() => SCENE_ORBITS.map((orbit) => arcTable(parseEllipse(orbit.d))), []);
+function Dots({ origin, geometry }: { origin: number; geometry: SceneGeometry }): ReactNode {
+  const tables = useMemo(() => geometry.orbits.map((orbit) => arcTable(parseEllipse(orbit.d))), [geometry]);
+  const dots = useMemo(() => dotsOf(geometry), [geometry]);
   const textures = useMemo(() => {
     const entries = Object.entries(DOT_TONES).map(([tone, [core, glow]]) => [tone, glowTexture(tokenColour(core), tokenColour(glow), 0.16)] as const);
     return new Map(entries);
@@ -300,18 +328,18 @@ function Dots({ origin }: { origin: number }): ReactNode {
 
   useFrame(() => {
     const seconds = (performance.now() - origin) / 1000;
-    SCENE_DOTS.forEach((dot, index) => {
+    dots.forEach((dot, index) => {
       const sprite = sprites.current[index];
       const table = tables[dot.orbit];
       if (!sprite || !table) return;
       const { x, y } = pointAtProgress(table, lapProgress(seconds, dot.duration, dot.delay, dot.reverse));
-      sprite.position.set(x, -y, depthAt(y, SCENE_CENTRE.y) + 2);
+      sprite.position.set(x, -y, depthAt(y, geometry.centre.y) + 2);
     });
   });
 
   return (
     <>
-      {SCENE_DOTS.map((dot, index) => (
+      {dots.map((dot, index) => (
         <sprite
           key={index}
           ref={(sprite) => {
@@ -327,7 +355,7 @@ function Dots({ origin }: { origin: number }): ReactNode {
   );
 }
 
-function Orb({ texture, origin }: { texture: THREE.Texture; origin: number }): ReactNode {
+function Orb({ texture, origin, geometry }: { texture: THREE.Texture; origin: number; geometry: SceneGeometry }): ReactNode {
   const material = useRef<THREE.SpriteMaterial>(null);
   const bloom = useRef<THREE.SpriteMaterial>(null);
   const bloomTexture = useMemo(() => glowTexture(tokenColour('--violet-600'), tokenColour('--violet-600'), 0), []);
@@ -338,21 +366,35 @@ function Orb({ texture, origin }: { texture: THREE.Texture; origin: number }): R
     if (material.current) material.current.rotation = -(seconds / 120) * 2 * Math.PI;
     if (bloom.current) bloom.current.opacity = 0.42 + 0.18 * Math.sin((seconds / 5) * 2 * Math.PI);
   });
-  const size = ORB_SIZE + ORB_PAD * 2;
+  const size = orbArt(geometry) + ORB_PAD * 2;
+  // the soft bloom behind the orb: 520px round C09's 250px orb, in proportion on other boards
+  const bloomSize = Math.round((geometry.orb / DESKTOP_SCENE.orb) * 520);
+  const { centre } = geometry;
   return (
     <>
-      <sprite position={[SCENE_CENTRE.x, -SCENE_CENTRE.y, -30]} scale={[520, 520, 1]} renderOrder={0}>
+      <sprite position={[centre.x, -centre.y, -30]} scale={[bloomSize, bloomSize, 1]} renderOrder={0}>
         <spriteMaterial ref={bloom} map={bloomTexture} transparent depthWrite={false} blending={THREE.AdditiveBlending} />
       </sprite>
       {/* writes depth where it is opaque, so the far side of the orbits passes behind it */}
-      <sprite position={[SCENE_CENTRE.x, -SCENE_CENTRE.y, 0]} scale={[size, size, 1]} renderOrder={0}>
+      <sprite position={[centre.x, -centre.y, 0]} scale={[size, size, 1]} renderOrder={0}>
         <spriteMaterial ref={material} map={texture} transparent alphaTest={0.35} />
       </sprite>
     </>
   );
 }
 
-function Crystals({ crystals, textures, hovered }: { crystals: readonly CrystalSprite[]; textures: readonly THREE.Texture[]; hovered: string | null }): ReactNode {
+function Crystals({
+  crystals,
+  textures,
+  hovered,
+  geometry,
+}: {
+  crystals: readonly CrystalSprite[];
+  textures: readonly THREE.Texture[];
+  hovered: string | null;
+  geometry: SceneGeometry;
+}): ReactNode {
+  const size = crystalArt(geometry) + CRYSTAL_PAD * 2;
   const sprites = useRef<(THREE.Sprite | null)[]>([]);
   useFrame((_, delta) => {
     const now = performance.now();
@@ -361,12 +403,11 @@ function Crystals({ crystals, textures, hovered }: { crystals: readonly CrystalS
       if (!sprite) return;
       // bobs with the HTML label above it (same 6 s float, same start)
       sprite.position.y = -(crystal.cy + floatOffset(now - crystal.floatOrigin));
-      const target = (CRYSTAL_ART + CRYSTAL_PAD * 2) * (crystal.key === hovered ? 1.08 : 1);
+      const target = size * (crystal.key === hovered ? 1.08 : 1);
       const next = THREE.MathUtils.damp(sprite.scale.x, target, 12, delta);
       sprite.scale.set(next, next, 1);
     });
   });
-  const size = CRYSTAL_ART + CRYSTAL_PAD * 2;
   return (
     <>
       {crystals.map((crystal, index) => (
@@ -426,15 +467,15 @@ function Watch({ onReady, onFallback, onFps }: Pick<Universe3dLayerProps, 'onRea
 }
 
 /** The 3D layer: loads the art, then renders until it hands back to 2D. Sized and placed like the 2D scene. */
-export default function Universe3dLayer({ crystals, orb, clock, hovered, onReady, onFallback, onFps }: Universe3dLayerProps): ReactNode {
+export default function Universe3dLayer({ crystals, orb, clock, hovered, onReady, onFallback, onFps, geometry = DESKTOP_SCENE }: Universe3dLayerProps): ReactNode {
   const [art, setArt] = useState<{ orb: THREE.Texture; crystals: THREE.Texture[] } | null>(null);
 
   useEffect(() => {
     let live = true;
     let loaded: THREE.Texture[] = [];
     Promise.all([
-      filteredTexture(orb.src, orb.filter, ORB_SIZE, ORB_PAD),
-      ...crystals.map((crystal) => filteredTexture(crystal.src, crystal.filter, CRYSTAL_ART, CRYSTAL_PAD)),
+      filteredTexture(orb.src, orb.filter, orbArt(geometry), ORB_PAD),
+      ...crystals.map((crystal) => filteredTexture(crystal.src, crystal.filter, crystalArt(geometry), CRYSTAL_PAD)),
     ])
       .then(([orbTexture, ...crystalTextures]) => {
         loaded = [orbTexture, ...crystalTextures];
@@ -449,25 +490,26 @@ export default function Universe3dLayer({ crystals, orb, clock, hovered, onReady
       live = false;
       loaded.forEach((texture) => texture.dispose());
     };
-  }, [crystals, orb, onFallback]);
+  }, [crystals, orb, onFallback, geometry]);
 
   if (!art) return null;
+  const { width, height } = geometry;
   return (
     <Canvas
       orthographic
       // the board's own pixels: x right, y up from the bottom edge; no lookAt (a rotation is given)
-      camera={{ position: [WIDTH / 2, -HEIGHT / 2, 1000], rotation: [0, 0, 0], zoom: 1, near: 1, far: 3000 }}
-      dpr={[1, 1.5]}
+      camera={{ position: [width / 2, -height / 2, 1000], rotation: [0, 0, 0], zoom: 1, near: 1, far: 3000 }}
+      dpr={geometry.light3d ? 1 : [1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      style={{ width: WIDTH, height: HEIGHT }}
+      style={{ width, height }}
       // measure the layout size (board px), not the on-screen rect, which the board frame's zoom shrinks
       resize={{ offsetSize: true }}
       aria-hidden="true"
     >
-      <Orbits crystals={crystals} />
-      <Dots origin={clock.dots} />
-      <Orb texture={art.orb} origin={clock.orb} />
-      <Crystals crystals={crystals} textures={art.crystals} hovered={hovered} />
+      <Orbits crystals={crystals} geometry={geometry} />
+      <Dots origin={clock.dots} geometry={geometry} />
+      <Orb texture={art.orb} origin={clock.orb} geometry={geometry} />
+      <Crystals crystals={crystals} textures={art.crystals} hovered={hovered} geometry={geometry} />
       <Watch onReady={onReady} onFallback={onFallback} onFps={onFps} />
     </Canvas>
   );

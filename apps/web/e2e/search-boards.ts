@@ -142,3 +142,27 @@ export const C12_SPACES = {
     { ...MINE, art: '/art/crystal-personal.webp', kind: 'personal', caption: { vi: '3 tệp · riêng tư', en: '3 files · private' }, documentCount: 3, collectionCount: 0, collections: [] },
   ],
 };
+
+/** Board M06 (phone), "lấy IP": 4 results in Networking and the reader's own Space. */
+export const M06_SEARCH = answer(
+  'lấy IP',
+  [
+    {
+      space: NET,
+      kind: 'public',
+      art: '/art/crystal-networking.webp',
+      rows: [
+        { id: 'm06-dhcp', title: 'Giao thức DHCP', space: NET, collection: 'Giao thức nền tảng', type: 'lab', origin: 'official', translations: ['vi'], snippet: ['Máy mới chưa có IP, nó xin ', { hit: 'lấy IP' }, ' qua 4 bước…'] },
+        { id: 'm06-discover', title: 'DHCP § Discover', space: NET, collection: 'Giao thức nền tảng', type: 'lab', origin: 'official', translations: ['vi'], snippet: ['Hỏi cả mạng: ', { hit: 'ai cấp IP' }, ' cho mình?'], relevance: 0.96 },
+        { id: 'm06-journey', title: 'Packet Journey § Lớp 3', space: NET, collection: 'Hành trình gói tin', type: 'lab', origin: 'official', translations: ['vi'], snippet: ['Gói tin cần ', { hit: 'địa chỉ IP' }, ' trước khi đi tiếp…'], relevance: 0.71 },
+      ],
+    },
+    {
+      space: MINE,
+      kind: 'personal',
+      art: '/art/crystal-personal.webp',
+      rows: [{ id: 'm06-notes', title: 'lab-notes.docx', space: MINE, collection: 'Ghi chú', type: 'office', origin: 'own', translations: ['vi'], snippet: ['Broadcast để ', { hit: 'lấy IP' }, ' khi chưa biết server…'] }],
+    },
+  ],
+  [],
+);

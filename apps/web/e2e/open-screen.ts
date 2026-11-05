@@ -7,7 +7,7 @@ import { C17_DIFF, C17_HISTORY } from './history-boards';
 import { C07_JOURNEY, C07_NEXT, C07_POOL, FLOW_JOURNEY, JOURNEY_ID } from './journey-boards';
 import { c08Documents } from './mine-boards';
 import { mockImportsC16, mockUploadC03, seedOfflineH04 } from './office-boards';
-import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
+import { C12_SEARCH, C12_SPACES, F01_SEARCH, M06_SEARCH } from './search-boards';
 import { C04_DOCUMENT, C04_SPACES, H02_PREVIEW, H02_TOKEN, PUBLISH_DOCUMENT_ID, c18Share } from './share-boards';
 import { C19_INVITE, C19_MEMBERS, H03_ME } from './settings-boards';
 import { signInAt } from './sign-in';
@@ -86,6 +86,7 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
   for (const [mock, json] of [
     ['search-c12', C12_SEARCH],
     ['search-f01', F01_SEARCH],
+    ['search-m06', M06_SEARCH],
   ] as const) {
     if (mocks.includes(mock)) await page.route('**/api/search?*', (route) => route.fulfill({ json }));
   }

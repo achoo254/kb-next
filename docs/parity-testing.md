@@ -57,6 +57,11 @@ E2E chậm (dựng web, API, IdP giả rồi mở trình duyệt), nên chỉ ch
   (xếp ở Networking, có các mục DORA và thẻ) và danh sách Space (`publish-c04`), C18 trả trang chia sẻ của bài DHCP
   (`share-c18`), H02 trả link mở khi chưa đăng nhập (`open-h02`); dữ liệu ở `apps/web/e2e/share-boards.ts` (E2E không
   hiện lại được token).
+- Board tablet (T01, T02) và điện thoại (Mobile, M02–M06) chụp ở cỡ ảnh của board nên app tự lấy bố cục tablet hay
+  điện thoại (`data-device`, [`board-frame.md`](board-frame.md#tablet-và-điện-thoại)); T02 bấm "Mục lục" để mở ngăn
+  kéo như board, M06 trả `/api/search` bằng kết quả "lấy IP" của board (`search-m06`), M03 và M04 dùng dữ liệu của C04
+  và C14. [`phone-layout.spec.ts`](../apps/web/e2e/phone-layout.spec.ts) (project `chromium`) kiểm các màn điện thoại
+  không cuộn ngang ở 390px và mọi điều khiển từ 44×44px.
 - Board ghép nhiều trạng thái của một màn cạnh nhau (S02, X02, F02, C06) được so trên trang kit `/dev/kit/…` dựng từ chính
   component của màn đó, mỗi trạng thái một ô như board.
 - Làm xong một màn: đổi `status` sang `built`, seed dữ liệu giống mock cho màn đó, chạy lại. Vượt ngưỡng thì sửa màn;

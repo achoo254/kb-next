@@ -33,6 +33,10 @@ Xuất bản, gửi duyệt, link chia sẻ, hàng duyệt và quản lý bài c
 [`docs/admin-api.md`](docs/admin-api.md).
 Cài đặt cá nhân và workspace, vai trò (Quản trị, Người duyệt, Thành viên), mời bằng link, nhật ký kiểm toán, giao diện
 Sáng/Tối, xoá dữ liệu của tôi (H03, C19): [`docs/settings-and-roles.md`](docs/settings-and-roles.md).
+Tablet và điện thoại: tablet (641–1279px) dựng Universe và reader trên board 1180×820 (T01, T02: 3D nhẹ, mục lục
+dạng ngăn kéo); điện thoại (đến 640px) có bố cục riêng, chỉ 2D, thanh pill dưới thay lens rail cho Universe, tạo bài,
+gửi duyệt, Copilot, reader và tìm kiếm (Mobile, M02–M06), không có Canvas, Graph chỉ xem, Office chỉ đọc:
+[`docs/board-frame.md`](docs/board-frame.md#tablet-và-điện-thoại).
 
 ## Chạy
 

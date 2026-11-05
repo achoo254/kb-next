@@ -45,7 +45,7 @@ export interface ParityScreen {
  * /api/spaces never answers (the Universe loading, S04); `spaces-without-texts`: /api/spaces without the reader's own
  * Space and with nothing readable in the others (the empty Universe, S05; captions and the recent texts the AI panel
  * asks about stay as seeded, as the board draws them); `search-c12` / `search-f01`: /api/search answers the board's
- * results (search-boards.ts: E2E has neither Meilisearch nor a Jev key), and on C12 /api/spaces the board's five
+ * results (search-boards.ts: E2E has neither Meilisearch nor a Jev key; `search-m06` the phone board's), and on C12 /api/spaces the board's five
  * Spaces of the filter; `keys-f03` / `translate-f04`: /api/me/keys answers the board's three keys, and on F04 the
  * document and the translation stream are the board's, held mid-stream (ai-boards.ts: E2E has no AI provider);
  * `copilot-c14`: the board's keys, Copilot history and finished answer; `ask-c11`: the board's keys and AI card answer;
@@ -71,6 +71,7 @@ export type ParityMock =
   | 'spaces-without-texts'
   | 'search-c12'
   | 'search-f01'
+  | 'search-m06'
   | 'keys-f03'
   | 'translate-f04'
   | 'copilot-c14'
@@ -238,4 +239,35 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // The documentation boards.
   { board: 'Z01-Sitemap', path: '/dev/kit/sitemap', signedIn: false, status: 'built' },
   { board: 'Z02-Spatial3D', path: '/dev/kit/spatial', signedIn: false, status: 'built' },
+  // Tablet (1180×820) and phone (390×844) boards: the viewport is the board's PNG size, so the app takes its tablet or
+  // phone layout (apps/web/src/layout/device.ts).
+  { board: 'T01-TabletUniverse', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded'], clock: UNIVERSE_CLOCK },
+  {
+    board: 'T02-TabletReader',
+    path: `/d/${F04_DOCUMENT_ID}`,
+    signedIn: true,
+    status: 'built',
+    clock: SEED_CLOCK,
+    click: '[data-id="reader-toc-open"]',
+    waitFor: '[data-id="reader-toc-drawer"]',
+  },
+  { board: 'M05-MobileDocs', path: `/d/${F04_DOCUMENT_ID}`, signedIn: true, status: 'built', maxDiff: 0.16, clock: SEED_CLOCK, waitFor: '[data-id="reader-article"]' },
+  { board: 'M06-MobileSearch', path: '/search?q=l%E1%BA%A5y%20IP', signedIn: true, status: 'built', maxDiff: 0.12, mocks: ['search-m06'], waitFor: '[data-id="search-screen"][data-state="results"]' },
+  { board: 'M03-MobilePublish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', maxDiff: 0.14, mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
+  { board: 'M04-MobileCopilot', path: C14_PATH, signedIn: true, status: 'built', maxDiff: 0.27, mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },
+  { board: 'M02-MobileCreate', path: '/create', signedIn: true, status: 'built', waitFor: '[data-id="create-screen"]' },
+  { board: 'Mobile', path: '/u', signedIn: true, status: 'built', maxDiff: 0.045, mocks: ['onboarded'], clock: UNIVERSE_CLOCK, waitFor: '.phone-sheet-chips' },
 ];
+
+/** Boards drawn for a tablet (1180×820) or a phone (390×844): the app shows them only in that layout. */
+export function layoutOf(screen: Pick<ParityScreen, 'board'>): 'phone' | 'tablet' | 'desktop' {
+  if (screen.board === 'Mobile' || /^M0\d-/.test(screen.board)) return 'phone';
+  return /^T0\d-/.test(screen.board) ? 'tablet' : 'desktop';
+}
+
+/** Routes with a phone layout (apps/web/src/layout/device.ts): on a phone their desktop board is not shown. */
+const PHONE_ROUTES: readonly RegExp[] = [/^\/u(\?|$)/, /^\/create$/, /^\/search(\?|$)/, /^\/copilot(\?|$)/, /^\/d\/[^/?]+(\?|$)/, /^\/d\/[^/?]+\/publish$/, /^\/canvas(\/|$)/];
+
+export function hasPhoneLayout(path: string): boolean {
+  return PHONE_ROUTES.some((route) => route.test(path));
+}

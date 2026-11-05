@@ -1,0 +1,27 @@
+/* The origin of a text on the phone boards (M05, M06): a small filled chip. */
+
+.phone-origin {
+  flex: none;
+  padding: 3px 7px;
+  border-radius: 8px;
+  background: var(--phone-official-bg);
+  color: var(--phone-official-text);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.phone-origin[data-origin="community"] {
+  background: var(--phone-community-bg);
+  color: var(--phone-community-text);
+}
+
+.phone-origin[data-origin="private"] {
+  background: var(--phone-own-bg);
+  color: var(--phone-own-text);
+}
+
+.phone-origin[data-origin="pending"] {
+  background: none;
+  border: 1px dashed var(--phone-wait-border);
+  color: var(--phone-wait-text);
+}

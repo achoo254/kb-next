@@ -4,7 +4,7 @@ import type { Canvas, CanvasData } from '../api/canvas-api';
 import { answer } from '../test/api-fakes';
 import { renderWithI18n } from '../test/render';
 import { CanvasList } from './canvas-list';
-import { CanvasScreen } from './canvas-screen';
+import { CanvasRoute, CanvasScreen } from './canvas-screen';
 
 const NET = { slug: 'networking', nameVi: 'Networking', nameEn: 'Networking', tint: '#C4B5FD', glow: '#8B5CF6' };
 const ID = 'cv1';
@@ -286,5 +286,21 @@ describe('CanvasList', () => {
     ok = true;
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByText('You have no canvas yet.')).toBeTruthy();
+  });
+});
+
+describe('Canvas on a phone', () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+  });
+
+  it('says a phone has no Canvas and leads back to the Universe, without loading one', () => {
+    document.documentElement.dataset.device = 'phone';
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    renderWithI18n(<CanvasRoute id="c1" />);
+    expect(screen.getByText('Canvas is on desktop and tablet only.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Back to the Universe' }).getAttribute('href')).toBe('/u');
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

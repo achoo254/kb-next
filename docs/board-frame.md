@@ -13,7 +13,7 @@ phải sửa từng màn.
 - Cửa sổ thấp (laptop 13", ví dụ 1440×840) co theo bề cao để thấy trọn board, không cuộn. Bề cao chỉ được co thêm tới
   0.85 lần mức co theo bề ngang (`SHORT_WINDOW_FACTOR`): 1440 rộng thì vừa tới cao 765, chữ 12–13px của board vẫn từ
   11px trở lên. Cửa sổ thấp hơn nữa giữ mức đó và trang cuộn dọc (hệ số chừa chỗ cho thanh cuộn). Dưới 768px board
-  ngừng co và trang cuộn ngang (chưa có board điện thoại).
+  ngừng co và trang cuộn ngang, trừ các màn có board điện thoại (mục "Tablet và điện thoại" dưới đây).
 - Khi khung rộng hơn board (cửa sổ rộng hơn 1440, hoặc cửa sổ thấp co theo bề cao) board nằm giữa (`--board-offset`,
   `app-shell.css`); logo, thanh lens, chuông và ⌘K bám mép cửa sổ. `--board-side` (trên root, px của board,
   `board-zoom.ts`) là phần khung thừa mỗi bên, bằng 0 khi board chiếm trọn bề ngang (1440×900, cửa sổ hẹp mà đủ cao): panel nào cần bám mép phải cửa sổ thì cộng
@@ -21,6 +21,29 @@ phải sửa từng màn.
   Panel phải của C10, C11 và các màn khác vẫn theo board.
 - `AppShell` (mọi màn đã đăng nhập) và `ScreenPage layout="board"` tự có khung. Màn tự lo cửa sổ hẹp bằng media query
   riêng (landing, login, lỗi) khai báo `responsive` để giữ 1:1.
+
+## Tablet và điện thoại
+
+Bề ngang cửa sổ chọn một trong ba bố cục ([`apps/web/src/layout/device.ts`](../apps/web/src/layout/device.ts), mốc
+ở [`ui/breakpoints.ts`](../apps/web/src/ui/breakpoints.ts)); `installBoardZoom` ghi nó vào `data-device` trên
+`<html>`, component đọc bằng `useDevice()`:
+
+| Bố cục | Bề ngang | Màn có bố cục riêng | Các màn khác |
+|---|---|---|---|
+| `desktop` | từ 1280px | (board 1440×900) | board 1440×900 như trên |
+| `tablet` | 641–1279px | Universe (T01) và reader (T02) dựng trên board 1180×820, co bằng `--tablet-zoom` cùng công thức (`AppShell tabletBoard`, lớp `.board-frame-tablet`) | board 1440×900 |
+| `phone` | đến 640px | `/u` (Mobile), `/create` (M02), `/d/:id/publish` (M03), `/copilot` (M04), `/d/:id` (M05), `/search` (M06): bố cục thật theo bề ngang cửa sổ, không zoom, chỉ 2D, trong `PhoneShell` có thanh pill dưới `MobileTabBar` thay lens rail | board 1440×900 ở mức co nhỏ nhất, cuộn ngang |
+
+- Tablet: T01 là 3D nhẹ (`TABLET_SCENE.light3d`: không quầng blur quanh quỹ đạo, nửa số chấm sáng, không
+  supersampling), không có panel AI (nút "Copilot" trên thanh trên mở C14); T02 bỏ cột mục lục và cột phải, mục lục
+  thành ngăn kéo bên trái (nút "Mục lục", đóng bằng ×, nền mờ, Esc, vuốt sang trái), các hành động thành cột nút tròn.
+  `toBoardPx()` tự dùng `--tablet-zoom` khi màn đang dựng trên board tablet.
+- Điện thoại (giới hạn của Z02): không có Canvas (`/canvas` báo cần màn hình lớn hơn, pha lê Canvas ở M02 và nút
+  Canvas ở M04 chỉ giải thích), Graph chỉ xem (ẩn nối và gỡ liên kết, gợi ý của Jev), tệp Office chỉ đọc (`OfficeView
+  readOnly`, nút "Sửa" của M05 tắt kèm lý do). Vũ trụ 2D chỉ đặt 6 Space theo board, Space khác vào từ "Bay tới
+  Space" của M06.
+- Màn điện thoại không bao giờ cuộn ngang ở 390px và mọi điều khiển từ 44×44px:
+  [`apps/web/e2e/phone-layout.spec.ts`](../apps/web/e2e/phone-layout.spec.ts) kiểm các route trên.
 
 ## Dựng một màn mới
 
@@ -34,4 +57,5 @@ phải sửa từng màn.
 6. Thêm màn vào [`apps/web/e2e/parity-screens.ts`](../apps/web/e2e/parity-screens.ts): bộ so pixel
    ([`parity-testing.md`](parity-testing.md)) và [`fits-window.spec.ts`](../apps/web/e2e/fits-window.spec.ts) tự kiểm
    màn ở 1280×720, 1024×768 và 390×844: không link, nút, ô nhập hay chữ nào bị cắt hoặc nằm ngoài chỗ cuộn tới được, và
-   từ 768px không có thanh cuộn ngang.
+   từ 768px (hoặc khi màn có bố cục điện thoại) không có thanh cuộn ngang. Màn có board tablet/điện thoại thêm một dòng
+   cho board đó (ảnh PNG cỡ 1180×820 hay 390×844 tự đặt viewport, nên app lấy đúng bố cục).

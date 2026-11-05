@@ -576,3 +576,48 @@
   font-size: 13px;
   color: var(--amber-200);
 }
+
+/* ---------- Tablet (T01, 1180×820): hero 104,88 · stage 166,552 · the top bar's Copilot button ---------- */
+
+.app-shell-tablet-universe .universe-world,
+.app-shell-tablet-universe .universe-3d {
+  width: 1180px;
+  height: 820px;
+}
+
+.app-shell-tablet-universe .universe-hero {
+  left: 104px;
+  top: 88px;
+  width: 214px;
+  gap: 10px;
+}
+
+.app-shell-tablet-universe .universe-kicker {
+  padding: 5px 11px;
+  font-size: 13px;
+}
+
+.app-shell-tablet-universe .universe-title.kf-gradient-title {
+  letter-spacing: -0.6px;
+  line-height: 1.14;
+}
+
+.app-shell-tablet-universe .universe-sub {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.app-shell-tablet-universe .universe-stage.kf-stage {
+  left: 166px;
+  top: 552px;
+}
+
+.universe-copilot.kf-btn {
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 16px;
+  gap: 8px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+}

@@ -11,6 +11,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { type SpaceListItem, fetchSpaces } from '../api/content-api';
 import { SEARCH_MODES, type SearchMode, type SearchResponse, type SearchResult, resultHref } from '../api/search-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
 import { Icon, type IconName } from '../ui/icon';
 import { OriginTag } from '../ui/origin-tag';
 import { RimPanel } from '../ui/rim-panel';
@@ -18,6 +19,7 @@ import { stateArtSrc } from '../ui/art';
 import { allResults, type SearchFailure, type SearchState, useSearch } from './search-data';
 import { FilterPanel, type SearchAddress, type SearchFilters, addressOf, readAddress, searchParamsOf } from './search-filters';
 import { copilotHref } from './copilot-links';
+import { SearchPhone } from './search-phone';
 import { type SearchTranslate, useSearchText } from './search-messages';
 import { Highlighted, ResultCard, SearchSkeleton, SpaceOrb, resultPath } from './search-results';
 import { originOf } from './space-labels';
@@ -224,7 +226,7 @@ function SidePanels({ state, preview, t, locale, onPick }: { state: SearchState;
   );
 }
 
-function useVisibleSpaces(): readonly SpaceListItem[] {
+export function useVisibleSpaces(): readonly SpaceListItem[] {
   const [spaces, setSpaces] = useState<readonly SpaceListItem[]>([]);
   useEffect(() => {
     let live = true;
@@ -239,21 +241,36 @@ function useVisibleSpaces(): readonly SpaceListItem[] {
   return spaces;
 }
 
-export function SearchScreen(): ReactNode {
-  const { t, locale } = useSearchText();
+/** The search in the page's address (?q=, mode, filters): the answer, and a way to change it that keeps the address in step. */
+export function useSearchAddress(): { address: SearchAddress; update(next: Partial<SearchAddress>): void; state: SearchState; retry(): void } {
   const [address, setAddress] = useState<SearchAddress>(() => readAddress(window.location.search));
-  const spaces = useVisibleSpaces();
   const params = useMemo(() => searchParamsOf(address), [address]);
   const { state, retry } = useSearch(params);
-  const [focused, setFocused] = useState<string | null>(null);
-
   const update = (next: Partial<SearchAddress>): void => {
     const changed = { ...address, ...next };
     // A new query asks for the exact diacritics again.
     if (next.q !== undefined && next.q !== address.q) changed.variants = false;
     setAddress(changed);
-    setFocused(null);
     window.history.replaceState(window.history.state, '', addressOf(changed));
+  };
+  return { address, update, state, retry };
+}
+
+/** /search: the phone board M06 on a phone, C12 elsewhere. */
+export function SearchScreen(): ReactNode {
+  return useDevice() === 'phone' ? <SearchPhone /> : <SearchDesktop />;
+}
+
+function SearchDesktop(): ReactNode {
+  const { t, locale } = useSearchText();
+  const spaces = useVisibleSpaces();
+  const search = useSearchAddress();
+  const { address, state, retry } = search;
+  const [focused, setFocused] = useState<string | null>(null);
+
+  const update = (next: Partial<SearchAddress>): void => {
+    search.update(next);
+    setFocused(null);
   };
 
   const results = state.status === 'ready' ? allResults(state.response) : [];

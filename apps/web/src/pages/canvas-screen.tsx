@@ -5,6 +5,10 @@
  * board, saving / not saved / offline / changed in another tab, and a canvas not found (someone else's reads the
  * same) or failing to load. /canvas lists the account's canvases (canvas-list.tsx).
  */
+import { useDevice } from '../layout/device';
+import { PhoneShell } from '../layout/phone-shell';
+import { EmptyState } from '../ui/empty-state';
+import { usePhoneText } from './phone-messages';
 import { type KeyboardEvent, type PointerEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiError } from '../api/api-client';
 import { type Canvas, type CanvasDocument, type Card, type CanvasSuggestion, MAX_CARDS, fetchCanvas, fetchCanvasSuggestion } from '../api/canvas-api';
@@ -88,8 +92,22 @@ function useCanvas(id: string): { load: CanvasLoad; reload(): void } {
 }
 
 /** /canvas lists the account's canvases; /canvas/:id opens one. */
+/** /canvas and /canvas/:id; a phone has no Canvas (Z02) and says so instead. */
 export function CanvasRoute({ id }: { id: string }): ReactNode {
+  const device = useDevice();
+  if (device === 'phone') return <CanvasOnPhone />;
   return id ? <CanvasScreen id={id} /> : <CanvasList />;
+}
+
+function CanvasOnPhone(): ReactNode {
+  const { t } = usePhoneText();
+  return (
+    <PhoneShell screen="C15">
+      <div className="canvas-phone" data-id="canvas-phone">
+        <EmptyState art="planet-offline" title={t('limit.canvasTitle')} description={t('limit.canvas')} action={{ label: t('limit.canvasBack'), href: SHELL_PATHS.universe }} />
+      </div>
+    </PhoneShell>
+  );
 }
 
 export function CanvasScreen({ id }: { id: string }): ReactNode {

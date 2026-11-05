@@ -5,6 +5,8 @@
  * graph, no node matching the filters, a Space without documents, and the Space not found / not allowed / failed
  * (X02 panels). Without `space`, the first Space of the Universe opens.
  */
+import { useDevice } from '../layout/device';
+import { usePhoneText } from './phone-messages';
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import { fetchSpaces, readErrorOf } from '../api/content-api';
@@ -116,6 +118,8 @@ const GHOSTS: ReadonlyArray<readonly [number, number, number]> = [
 
 export function GraphScreen(): ReactNode {
   const { t, locale } = useGraphText();
+  const phone = usePhoneText();
+  const device = useDevice();
   const slug = useSpaceSlug();
   const { load, reload } = useGraph(slug === 'none' ? null : slug, locale);
   const graph = load.status === 'ready' ? load.graph : null;
@@ -291,6 +295,7 @@ export function GraphScreen(): ReactNode {
           onSuggest={() => void suggest()}
           onAccept={(item) => void accept(item)}
           onUnlink={(edge, title) => void unlink(edge, title)}
+          viewOnly={device === 'phone' ? phone.t('limit.graph') : undefined}
         />
       </div>
     </AppShell>

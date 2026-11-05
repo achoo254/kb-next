@@ -3,14 +3,17 @@ import { type DocumentSummary, type SpaceListItem, fetchDocument } from '../api/
 import { type Translate, useI18n } from '../i18n/i18n';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { signedInUser, useSessionState } from '../layout/session-context';
-import { type SceneOrb, type SceneSpace, UniverseScene, placeSpaces } from '../layout/universe-scene';
+import { useDevice } from '../layout/device';
+import { DESKTOP_SCENE, type SceneGeometry, type SceneOrb, type SceneSpace, TABLET_SCENE, UniverseScene, placeSpaces } from '../layout/universe-scene';
+import { Button } from '../ui/button';
 import { GradientTitle } from '../ui/gradient-title';
 import { StageCards } from '../ui/stage-cards';
 import type { CrystalSprite, SceneClock, Universe3dLayerProps } from '../universe3d/universe-3d-layer';
 import { type Fallback2dReason, REDUCED_MOTION_QUERY, reasonFor2d } from '../universe3d/three-support';
 import { UniverseAiPanel } from './universe-ai-panel';
 import { isEmptyUniverse, useUniverseData } from './universe-data';
-import { continueReading, dockCards } from './universe-dock';
+import { continueReading, dockCards, tabletCards } from './universe-dock';
+import { UniversePhone } from './universe-phone';
 import { sceneSpaces } from './universe-spaces';
 import { OfflineBanner, UniverseEmpty, UniverseSkeleton } from './universe-states';
 import './universe-screen.css';
@@ -25,10 +28,11 @@ export const MARK_3D = 'kb-universe-3d';
 
 type Layer = ComponentType<Universe3dLayerProps>;
 
-function orbOf(t: Translate, count: number): SceneOrb {
+function orbOf(t: Translate, count: number, tablet = false): SceneOrb {
   return {
     title: t('landing.orbTitle'),
-    chips: [t('landing.orbSpaces', { count }), 'VI · EN'],
+    // the tablet's smaller orb carries only the count (T01)
+    chips: tablet ? [t('landing.orbSpaces', { count })] : [t('landing.orbSpaces', { count }), 'VI · EN'],
     label: t('universe.orbLabel'),
     href: SHELL_PATHS.universe,
   };
@@ -59,8 +63,13 @@ function animationOrigin(element: Element | null, delayMs = 0): number {
  * Reads the 2D scene as drawn (art, filters, orbit tints, where each animation is) so the 3D layer takes over without
  * a jump. The crystals are in the scene's order, the order of placeSpaces.
  */
-function readScene(root: HTMLElement, spaces: readonly SceneSpace[]): { crystals: CrystalSprite[]; orb: { src: string; filter: string }; clock: SceneClock } | null {
-  const placed = placeSpaces(spaces);
+function readScene(
+  root: HTMLElement,
+  spaces: readonly SceneSpace[],
+  geometry: SceneGeometry,
+): { crystals: CrystalSprite[]; orb: { src: string; filter: string }; clock: SceneClock } | null {
+  const placed = placeSpaces(spaces, undefined, geometry);
+  const half = geometry.crystal / 2;
   const floats = root.querySelectorAll<HTMLElement>('.kf-scene-crystal');
   const tints = root.querySelectorAll<SVGElement>('.kf-orbit-tint');
   const orbArt = root.querySelector<HTMLImageElement>('.kf-scene-orb-art');
@@ -73,8 +82,8 @@ function readScene(root: HTMLElement, spaces: readonly SceneSpace[]): { crystals
       key: space.key,
       src: art?.currentSrc || art?.src || '',
       filter: art ? getComputedStyle(art).filter : 'none',
-      cx: x + 70,
-      cy: y + 70,
+      cx: x + half,
+      cy: y + half,
       tint: tint ? getComputedStyle(tint).stroke : 'currentColor',
       floatOrigin: animationOrigin(float, floatDelay * 1000),
     };
@@ -91,7 +100,7 @@ function readScene(root: HTMLElement, spaces: readonly SceneSpace[]): { crystals
  * 2D (reduced motion, no WebGL); swaps when its first frame is drawn; goes back to 2D for good when the frame rate
  * stays under 30 for 2 s or the GPU is lost.
  */
-function use3dLayer(sceneRef: RefObject<HTMLDivElement | null>, spaces: readonly SceneSpace[]) {
+function use3dLayer(sceneRef: RefObject<HTMLDivElement | null>, spaces: readonly SceneSpace[], geometry: SceneGeometry) {
   // Decided once, on the first render: reduced motion or no WebGL keeps the 2D scene.
   const [initialReason] = useState(reasonFor2d);
   const [Layer, setLayer] = useState<Layer | null>(null);
@@ -113,7 +122,7 @@ function use3dLayer(sceneRef: RefObject<HTMLDivElement | null>, spaces: readonly
       .then((module) => {
         if (!live) return;
         const root = sceneRef.current;
-        const read = root ? readScene(root, spaces) : null;
+        const read = root ? readScene(root, spaces, geometry) : null;
         if (!read) {
           goBack('load-failed');
           return;
@@ -125,7 +134,7 @@ function use3dLayer(sceneRef: RefObject<HTMLDivElement | null>, spaces: readonly
     return () => {
       live = false;
     };
-  }, [initialReason, sceneRef, spaces, goBack]);
+  }, [initialReason, sceneRef, spaces, geometry, goBack]);
 
   // Turning on reduced motion while the 3D scene runs hands back to 2D.
   useEffect(() => {
@@ -167,12 +176,17 @@ interface UniverseMainProps {
   recent: readonly DocumentSummary[];
 }
 
-/** Board C09: the Universe with its Spaces, the AI panel and the "Gần đây" stage, in 2D then 3D. */
-function UniverseMain({ spaces, recent }: UniverseMainProps): ReactNode {
+/**
+ * Board C09: the Universe with its Spaces, the AI panel and the "Gần đây" stage, in 2D then 3D. On a tablet (T01) the
+ * same Universe on the 1180×820 board: the lighter 3D, the smaller stage of recent texts, no AI panel (the top bar's
+ * Copilot button stands in for it).
+ */
+function UniverseMain({ spaces, recent, tablet }: UniverseMainProps & { tablet: boolean }): ReactNode {
   const { t, locale } = useI18n();
+  const geometry = tablet ? TABLET_SCENE : DESKTOP_SCENE;
   const scene = useMemo(() => sceneSpaces(spaces, locale), [spaces, locale]);
   const sceneRef = useRef<HTMLDivElement>(null);
-  const layer = use3dLayer(sceneRef, scene);
+  const layer = use3dLayer(sceneRef, scene, geometry);
   const focus = continueReading(recent) ?? recent[0];
   const relatedCount = useRelatedCount(focus);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -180,7 +194,8 @@ function UniverseMain({ spaces, recent }: UniverseMainProps): ReactNode {
   const [skip, setSkip] = useState(false);
   // "Đã N ngày" counts from when the Universe opened.
   const [now] = useState(Date.now);
-  const placed = useMemo(() => placeSpaces(scene), [scene]);
+  const placed = useMemo(() => placeSpaces(scene, undefined, geometry), [scene, geometry]);
+  const half = geometry.crystal / 2;
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => performance.mark(MARK_2D));
@@ -208,7 +223,7 @@ function UniverseMain({ spaces, recent }: UniverseMainProps): ReactNode {
     if (opensElsewhere(event) || reasonFor2d() === 'reduced-motion') return;
     const spot = placed.find((entry) => entry.space.key === space.key);
     event.preventDefault();
-    setWarp({ href: space.href, x: (spot?.x ?? 630) + 70, y: (spot?.y ?? 265) + 70 });
+    setWarp({ href: space.href, x: (spot?.x ?? geometry.centre.x - half) + half, y: (spot?.y ?? geometry.centre.y - half) + half });
   };
 
   const track = (event: PointerEvent<HTMLDivElement>): void => {
@@ -237,24 +252,29 @@ function UniverseMain({ spaces, recent }: UniverseMainProps): ReactNode {
               onReady={layer.onReady}
               onFallback={layer.onFallback}
               onFps={layer.onFps}
+              geometry={geometry}
             />
           </div>
         )}
-        <UniverseScene spaces={scene} orb={orbOf(t, placed.length)} onOpen={open} className="universe-scene" />
+        <UniverseScene spaces={scene} orb={orbOf(t, placed.length, tablet)} onOpen={open} geometry={geometry} className="universe-scene" />
       </div>
       <div className="universe-hero">
         <span className="universe-kicker">Knowledge OS</span>
-        <GradientTitle size={40} className="universe-title">
+        <GradientTitle size={tablet ? 30 : 40} className="universe-title">
           {t('universe.title')}
         </GradientTitle>
-        <p className="universe-sub">{t('universe.sub')}</p>
+        <p className="universe-sub">{tablet ? t('universe.subShort') : t('universe.sub')}</p>
       </div>
-      <StageCards
-        cards={dockCards({ recent, relatedCount, now }, t)}
-        more={{ href: SHELL_PATHS.mine, label: t('universe.dock.more') }}
-        className="universe-stage"
-      />
-      <UniverseAiPanel spaces={spaces} recent={recent} focus={focus} />
+      {tablet ? (
+        <StageCards cards={tabletCards({ recent, now, locale }, t)} size="tablet" className="universe-stage" />
+      ) : (
+        <StageCards
+          cards={dockCards({ recent, relatedCount, now }, t)}
+          more={{ href: SHELL_PATHS.mine, label: t('universe.dock.more') }}
+          className="universe-stage"
+        />
+      )}
+      {!tablet && <UniverseAiPanel spaces={spaces} recent={recent} focus={focus} />}
     </div>
   );
 }
@@ -269,7 +289,10 @@ export function UniverseScreen(): ReactNode {
   const user = signedInUser(useSessionState());
   const { data, online, retry } = useUniverseData();
   const [shared] = useState(wantsShared);
+  const device = useDevice();
   const sharedHref = `${SHELL_PATHS.universe}?${SHARED_PARAM}=1`;
+
+  if (device === 'phone') return <UniversePhone data={data} online={online} onRetry={retry} />;
 
   let state: 'loading' | 'failed' | 'offline' | 'empty' | 'ready';
   let body: ReactNode;
@@ -285,11 +308,25 @@ export function UniverseScreen(): ReactNode {
     body = <UniverseEmpty spaces={spaces} recent={data.recent} orb={orbOf(t, spaces.length)} name={user?.name ?? null} offline={false} sharedHref={sharedHref} />;
   } else {
     state = 'ready';
-    body = <UniverseMain spaces={data.spaces} recent={data.recent} />;
+    body = <UniverseMain spaces={data.spaces} recent={data.recent} tablet={device === 'tablet'} />;
   }
+  // T01 is the Universe itself; its loading and empty states (S04, S05) keep their desktop board on a tablet
+  const tablet = device === 'tablet' && state === 'ready';
 
   return (
-    <AppShell screen="C09" rail="universe" view="orbit">
+    <AppShell
+      screen="C09"
+      rail="universe"
+      view="orbit"
+      tabletBoard={tablet ? 'universe' : undefined}
+      topExtra={
+        tablet ? (
+          <Button variant="rim" size="lg" icon="sparkle" href={SHELL_PATHS.copilot} className="universe-copilot" dataId="universe-copilot">
+            {t('universe.tablet.copilot')}
+          </Button>
+        ) : undefined
+      }
+    >
       <div className="universe-board" data-state={state} data-id="universe-screen">
         {body}
         {(!online || state === 'offline') && <OfflineBanner />}

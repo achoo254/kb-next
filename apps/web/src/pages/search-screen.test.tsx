@@ -200,3 +200,29 @@ describe('a server where neither search runs', () => {
     expect(screen.getByText('The search server did not answer. Try again in a moment.')).toBeTruthy();
   });
 });
+
+describe('SearchScreen on a phone (M06)', () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+  });
+
+  it('shows the results by Space with how each was found, and asking AI with them', async () => {
+    document.documentElement.dataset.device = 'phone';
+    start(api(async () => answer(200, DHCP_ANSWER)));
+    await waitFor(() => expect(state()).toBe('results'));
+    expect(document.querySelector('[data-screen="M06"]')).not.toBeNull();
+    expect(screen.getByRole('searchbox', { name: 'Search the Universe' })).toHaveProperty('value', 'dhcp');
+    expect(screen.getByText('3 results · 2 Spaces')).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: 'Networking' })).getAllByRole('link').length).toBeGreaterThan(1);
+    expect(screen.getByRole('link', { name: 'Ask AI with these passages' }).getAttribute('href')).toContain('q=dhcp');
+    fireEvent.click(screen.getByRole('button', { name: 'Keywords' }));
+    await waitFor(() => expect(searches(fetchMock).at(-1)?.get('mode')).toBe('keyword'));
+  });
+
+  it('offers every Space to fly to before anything is typed', async () => {
+    document.documentElement.dataset.device = 'phone';
+    window.history.replaceState(null, '', '/search');
+    start(api(async () => answer(200, DHCP_ANSWER)));
+    expect(await screen.findByRole('link', { name: 'Linux' })).toHaveProperty('href', expect.stringContaining('/s/linux'));
+  });
+});

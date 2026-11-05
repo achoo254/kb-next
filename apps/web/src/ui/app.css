@@ -30,6 +30,13 @@ body,
   min-height: max(calc(100vh / var(--frame-zoom)), var(--board-height));
 }
 
+/* A screen with a tablet board (T01, T02) in the tablet layout: its 1180×820 space, zoomed by --tablet-zoom. */
+:root[data-device="tablet"] .universe.board-frame.board-frame-tablet {
+  --frame-zoom: var(--tablet-zoom, 1);
+  --board-width: 1180px;
+  --board-height: 820px;
+}
+
 body {
   margin: 0;
   background: var(--c-bg);

@@ -213,6 +213,21 @@ describe('GraphScreen', () => {
     expect(deleted).toEqual(['e3']);
   });
 
+  it('is for viewing only on a phone: no unlinking, no asking Jev for links, and it says so', async () => {
+    document.documentElement.dataset.device = 'phone';
+    try {
+      route({ '/api/graph': () => answer(200, graphOf()) });
+      renderWithI18n(<GraphScreen />);
+      fireEvent.click(await screen.findByRole('button', { name: /^Giao thức DHCP,/ }));
+      const panel = screen.getByRole('complementary', { name: 'Node details' });
+      expect(within(panel).queryByRole('button', { name: /^Unlink from/ })).toBeNull();
+      expect(screen.queryByRole('button', { name: /Jev/ })).toBeNull();
+      expect(screen.getByText('On a phone, the Graph is for viewing only.')).toBeTruthy();
+    } finally {
+      delete document.documentElement.dataset.device;
+    }
+  });
+
   it.each([
     [404, 'not-found', 'not-found'],
     [403, 'no-access', 'no-access'],

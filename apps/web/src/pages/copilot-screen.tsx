@@ -10,6 +10,8 @@ import { type DocumentView, fetchDocument, fetchSpace } from '../api/content-api
 import { type AskScope, type CopilotHistory, fetchCopilotHistory, fetchCopilotQuestion } from '../api/copilot-api';
 import { createJourney } from '../api/journey-api';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
+import { PhoneShell } from '../layout/phone-shell';
 import { journeyEditPath } from '../layout/shell-paths';
 import { AiAvatar } from '../ui/ai-avatar';
 import { ILLUSTRATIONS } from '../ui/art';
@@ -25,6 +27,7 @@ import { type CopilotMessageKey, useCopilotText } from './copilot-messages';
 import { type CopilotTurn, type KeysLoad, historyTurn, useAiKeys, useCopilot } from './copilot-run';
 import { CheckChip, LaterButton, TurnView } from './copilot-turn';
 import { PROVIDERS } from './keys-messages';
+import { usePhoneText } from './phone-messages';
 import { originOf } from './space-labels';
 import { spaceName } from './space-panels';
 import type { ScreenTranslate } from './space-messages';
@@ -322,6 +325,26 @@ function AnswerFooter({ turn, onRetry }: { turn: CopilotTurn; onRetry(): void })
   );
 }
 
+/** Under a phone answer (M04): the check, "Lưu thành lối đi", and Canvas, which a phone does not open (Z02). */
+function PhoneAnswerFooter({ turn }: { turn: CopilotTurn }): ReactNode {
+  const { t } = useCopilotText();
+  const phone = usePhoneText();
+  return (
+    <div className="copilot-phone-footer">
+      <CheckChip turn={turn} />
+      <div className="copilot-phone-make">
+        <MakeJourney turn={turn} />
+        <button type="button" className="copilot-phone-canvas" disabled title={phone.t('limit.canvas')} aria-describedby="copilot-phone-limit" data-id="copilot-canvas">
+          {t('copilot.makeCanvas')}
+        </button>
+      </div>
+      <span id="copilot-phone-limit" className="copilot-phone-limit">
+        {phone.t('limit.canvas')}
+      </span>
+    </div>
+  );
+}
+
 function EmptyConversation(): ReactNode {
   const { t } = useCopilotText();
   return (
@@ -335,6 +358,8 @@ function EmptyConversation(): ReactNode {
 
 export function CopilotScreen(): ReactNode {
   const { t } = useCopilotText();
+  const phone = usePhoneText();
+  const device = useDevice();
   const [link] = useState(() => readCopilotLink(window.location.search));
   const [scope, setScope] = useState<AskScope>(() => link.scope ?? (link.from ? { kind: 'document', id: link.from } : { kind: 'universe' }));
   const context = useScopeContext(scope, link.from);
@@ -416,6 +441,93 @@ export function CopilotScreen(): ReactNode {
     },
   };
 
+  const thread = (
+    <>
+      {opening && !opening.failed && (
+        <div className="copilot-opening" aria-busy="true" aria-label={t('copilot.loadingItem')}>
+          <Skeleton width="60%" height={40} radius={16} tone="glow" className="copilot-skeleton-q" />
+          <Skeleton height={140} radius={18} tone="glow" />
+        </div>
+      )}
+      {opening?.failed && (
+        <p className="copilot-note" role="alert">
+          {t('copilot.itemFailed')}
+        </p>
+      )}
+    </>
+  );
+  const scopeButtons = context.chips.map((chip) => (
+    <button
+      key={`${chip.scope.kind}:${chip.scope.id ?? ''}`}
+      type="button"
+      className="copilot-scope"
+      data-kind={chip.scope.kind}
+      aria-pressed={sameScope(chip.scope, scope)}
+      onClick={() => pickScope(chip.scope)}
+      data-id={`copilot-scope-${chip.scope.kind}`}
+    >
+      <span className="copilot-scope-dot" aria-hidden="true" />
+      {chip.label}
+    </button>
+  ));
+  const askInput = (
+    <AskInput
+      label={t('copilot.askLabel')}
+      placeholder={t(turn ? 'copilot.askNext' : 'copilot.askFirst', { scope: scopeLabel })}
+      onAsk={(question) => {
+        setOpening(null);
+        ask({ question, scope });
+      }}
+      className="copilot-ask"
+      dataId="copilot-ask"
+    />
+  );
+
+  if (device === 'phone') {
+    // M04: the same conversation at the phone's width, the scopes in one scrolling row, the field over the tab bar
+    return (
+      <PhoneShell screen="M04" tab="copilot" stars={false}>
+        <div className="copilot-phone" data-id="copilot-screen" data-state={turn ? (turn.failure ?? turn.stage) : 'empty'}>
+          <div className="copilot-phone-head">
+            <div className="copilot-phone-orb" aria-hidden="true">
+              <span className="copilot-hero-ring" />
+              <span className="copilot-hero-ring copilot-hero-ring-inner" />
+              <img src={ILLUSTRATIONS['ai-core']} alt="" width={48} height={48} />
+            </div>
+            <div className="copilot-phone-heading">
+              <h1 className="copilot-phone-title">{t('copilot.title')}</h1>
+              <span className="copilot-phone-status">{t(statusLine(keys))}</span>
+            </div>
+            <a className="phone-round" href={SHELL_PATHS.universe} aria-label={phone.t('copilot.close')}>
+              <Icon name="close" size={18} />
+            </a>
+          </div>
+          <div className="copilot-phone-scopes" role="group" aria-label={t('copilot.scopes')} data-id="copilot-scopes">
+            <span className="copilot-scopes-label" aria-hidden="true">
+              {t('copilot.scopes')}
+            </span>
+            {scopeButtons}
+          </div>
+          <div className="copilot-phone-chips">
+            <span className="copilot-jev-chip">{t('copilot.jevChip')}</span>
+            <KeyChip keys={keys} />
+          </div>
+          <div className="copilot-phone-thread" data-id="copilot-thread">
+            {context.from && (
+              <a className="copilot-phone-from" href={context.from.href} data-id="copilot-from">
+                {t('copilot.openedFrom', { title: context.from.title })}
+              </a>
+            )}
+            {thread}
+            {!opening && turn && <TurnView turn={turn} keys={keys} actions={actions} size="compact" footer={turn.stage === 'done' ? <PhoneAnswerFooter turn={turn} /> : undefined} />}
+            {!opening && !turn && <EmptyConversation />}
+          </div>
+          {askInput}
+        </div>
+      </PhoneShell>
+    );
+  }
+
   return (
     <AppShell screen="C14" rail="copilot" veil="strong" stars={false} breadcrumb={breadcrumb} crumbAction={crumbAction} className="copilot-shell">
       <div className="copilot-screen" data-id="copilot-screen" data-state={turn ? (turn.failure ?? turn.stage) : 'empty'}>
@@ -450,48 +562,16 @@ export function CopilotScreen(): ReactNode {
             <span className="copilot-scopes-label" aria-hidden="true">
               {t('copilot.scopes')}
             </span>
-            {context.chips.map((chip) => (
-              <button
-                key={`${chip.scope.kind}:${chip.scope.id ?? ''}`}
-                type="button"
-                className="copilot-scope"
-                data-kind={chip.scope.kind}
-                aria-pressed={sameScope(chip.scope, scope)}
-                onClick={() => pickScope(chip.scope)}
-                data-id={`copilot-scope-${chip.scope.kind}`}
-              >
-                <span className="copilot-scope-dot" aria-hidden="true" />
-                {chip.label}
-              </button>
-            ))}
+            {scopeButtons}
           </div>
           <div className="copilot-thread" data-id="copilot-thread">
-            {opening && !opening.failed && (
-              <div className="copilot-opening" aria-busy="true" aria-label={t('copilot.loadingItem')}>
-                <Skeleton width="60%" height={40} radius={16} tone="glow" className="copilot-skeleton-q" />
-                <Skeleton height={140} radius={18} tone="glow" />
-              </div>
-            )}
-            {opening?.failed && (
-              <p className="copilot-note" role="alert">
-                {t('copilot.itemFailed')}
-              </p>
-            )}
+            {thread}
             {!opening && turn && (
               <TurnView turn={turn} keys={keys} actions={actions} size="full" footer={turn.stage === 'done' ? <AnswerFooter turn={turn} onRetry={copilot.retry} /> : undefined} />
             )}
             {!opening && !turn && <EmptyConversation />}
           </div>
-          <AskInput
-            label={t('copilot.askLabel')}
-            placeholder={t(turn ? 'copilot.askNext' : 'copilot.askFirst', { scope: scopeLabel })}
-            onAsk={(question) => {
-              setOpening(null);
-              ask({ question, scope });
-            }}
-            className="copilot-ask"
-            dataId="copilot-ask"
-          />
+          {askInput}
         </section>
 
         <SourcesPanel turn={turn} />

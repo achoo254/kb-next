@@ -86,3 +86,43 @@
 .kf-panel[data-variant="well"][data-tone="success"] {
   border-color: color-mix(in srgb, var(--emerald-500) 55%, transparent);
 }
+
+/* A phone sheet (Mobile, M03, M05): the rim panel rising from the bottom edge. */
+.kf-panel[data-variant="sheet"] {
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  border-bottom: none;
+  border-radius: 30px 30px 0 0;
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.kf-sheet-handle {
+  align-self: center;
+  flex: none;
+  /* drawn 24px tall as on the boards, touchable over 44px (the margins give the extra back) */
+  width: 80px;
+  height: 44px;
+  margin-block: -10px;
+  padding: 0;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.kf-sheet-handle > span,
+.kf-sheet-handle[data-static] {
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--c-text-muted);
+}
+
+.kf-sheet-handle[data-static] {
+  margin-block: 0;
+  cursor: auto;
+}

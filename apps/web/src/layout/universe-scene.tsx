@@ -61,6 +61,95 @@ export const SCENE_DOTS: readonly OrbitDot[] = [
   { orbit: 2, size: 9, tone: 'violet', duration: 15, delay: -13.8, reverse: true },
 ];
 
+/**
+ * Where everything of the scene goes on one board: its size, the orb's centre and box, the crystals' box and slots,
+ * the orbits with their guides and dots, the orbit gradients' ranges and the radius of each crystal's tint.
+ */
+export interface SceneGeometry {
+  width: number;
+  height: number;
+  centre: { readonly x: number; readonly y: number };
+  /** Side of a crystal's box (its art is drawn 1.2 times as wide). */
+  crystal: number;
+  /** Side of the orb's box (its art is drawn 1.36 times as wide). */
+  orb: number;
+  slots: Record<SpaceKind, { x: number; y: number }>;
+  extraSlots: readonly { x: number; y: number }[];
+  orbits: readonly OrbitPath[];
+  guides: readonly string[];
+  dots: readonly OrbitDot[];
+  gradientX: readonly [number, number];
+  gradientY: readonly [number, number];
+  tintRadius: number;
+  /** The lighter 3D of a tablet (Z02): no bloom around the orbits, half the dots, no supersampling. */
+  light3d?: boolean;
+}
+
+/** Board C09 (1440×900). */
+export const DESKTOP_SCENE: SceneGeometry = {
+  width: 1440,
+  height: 900,
+  centre: SCENE_CENTRE,
+  crystal: 140,
+  orb: 250,
+  slots: SCENE_SLOTS,
+  extraSlots: EXTRA_SLOTS,
+  orbits: SCENE_ORBITS,
+  guides: SCENE_GUIDES,
+  dots: SCENE_DOTS,
+  gradientX: [260, 1140],
+  gradientY: [90, 600],
+  tintRadius: 125,
+};
+
+/**
+ * Board T01 (tablet, 1180×820): the seven crystals of 116px on one ellipse round the 180px orb at 660,330 (the board
+ * spaces them evenly from 115.7°), three orbits and no dotted guides. Cloud, which the board does not draw, goes
+ * below the hero text; an eighth Space right of "Vũ trụ của bạn".
+ */
+export const TABLET_SCENE: SceneGeometry = {
+  width: 1180,
+  height: 820,
+  centre: { x: 660, y: 330 },
+  crystal: 116,
+  orb: 180,
+  slots: {
+    weekly: { x: 472, y: 407 },
+    docker: { x: 310, y: 305 },
+    linux: { x: 367, y: 179 },
+    networking: { x: 602, y: 122 },
+    kubernetes: { x: 837, y: 178 },
+    observability: { x: 894, y: 305 },
+    personal: { x: 732, y: 407 },
+    cloud: { x: 150, y: 330 },
+  },
+  extraSlots: [{ x: 960, y: 440 }],
+  orbits: [
+    { d: 'M960.0 330.0 A300.0 150.0 0.0 1 1 360.0 330.0 A300.0 150.0 0.0 1 1 960.0 330.0' },
+    { d: 'M903.6 125.6 A318.0 96.0 -40.0 1 1 416.4 534.4 A318.0 96.0 -40.0 1 1 903.6 125.6', width: 1.2 },
+    { d: 'M975.7 444.9 A336.0 118.0 20.0 1 1 344.3 215.1 A336.0 118.0 20.0 1 1 975.7 444.9', width: 1.2, gradient: 'v' },
+  ],
+  guides: [],
+  dots: [
+    { orbit: 0, size: 12, tone: 'sky', duration: 24, delay: 0 },
+    { orbit: 0, size: 9, tone: 'violet', duration: 24, delay: -6 },
+    { orbit: 0, size: 10, tone: 'lavender', duration: 24, delay: -12 },
+    { orbit: 0, size: 7, tone: 'cyan', duration: 24, delay: -18 },
+    { orbit: 1, size: 12, tone: 'sky', duration: 18, delay: 0 },
+    { orbit: 1, size: 9, tone: 'violet', duration: 18, delay: -4.5 },
+    { orbit: 1, size: 10, tone: 'lavender', duration: 18, delay: -9 },
+    { orbit: 1, size: 7, tone: 'cyan', duration: 18, delay: -13.5 },
+    { orbit: 2, size: 12, tone: 'sky', duration: 14, delay: 0, reverse: true },
+    { orbit: 2, size: 9, tone: 'violet', duration: 14, delay: -3.5, reverse: true },
+    { orbit: 2, size: 10, tone: 'lavender', duration: 14, delay: -7, reverse: true },
+    { orbit: 2, size: 7, tone: 'cyan', duration: 14, delay: -10.5, reverse: true },
+  ],
+  gradientX: [320, 1000],
+  gradientY: [120, 540],
+  tintRadius: 105,
+  light3d: true,
+};
+
 /** A Space on the scene. */
 export interface SceneSpace {
   /** Stable id (the slug, or `personal`). */
@@ -91,8 +180,9 @@ export interface PlacedSpace {
 const TOKEN_TINTS: ReadonlySet<SpaceKind> = new Set(['networking', 'kubernetes', 'linux', 'observability', 'docker', 'weekly', 'personal']);
 
 /** Clockwise angle around the orb, starting a little left of 12 o'clock so Networking (top left) comes first. */
-function orbitAngle(x: number, y: number): number {
-  const angle = Math.atan2(x + 70 - SCENE_CENTRE.x, SCENE_CENTRE.y - (y + 70)) + Math.PI / 4;
+function orbitAngle(x: number, y: number, geometry: SceneGeometry): number {
+  const half = geometry.crystal / 2;
+  const angle = Math.atan2(x + half - geometry.centre.x, geometry.centre.y - (y + half)) + Math.PI / 4;
   return (angle + 2 * Math.PI) % (2 * Math.PI);
 }
 
@@ -101,15 +191,16 @@ function orbitAngle(x: number, y: number): number {
  * clockwise from the top: the order of the keyboard (Tab) and of the screen reader. Spaces beyond the free slots are
  * left off the scene (the caller lists them elsewhere).
  */
-export function placeSpaces(spaces: readonly SceneSpace[], slots: Record<SpaceKind, { x: number; y: number }> = SCENE_SLOTS): PlacedSpace[] {
+export function placeSpaces(spaces: readonly SceneSpace[], slots?: Record<SpaceKind, { x: number; y: number }>, geometry: SceneGeometry = DESKTOP_SCENE): PlacedSpace[] {
+  const slotOf = slots ?? geometry.slots;
   const taken = new Set<SpaceKind>();
-  const extras = [...EXTRA_SLOTS];
+  const extras = [...geometry.extraSlots];
   const placed: PlacedSpace[] = [];
   spaces.forEach((space, index) => {
     let slot: { x: number; y: number } | undefined;
     if (space.kind && !taken.has(space.kind)) {
       taken.add(space.kind);
-      slot = slots[space.kind];
+      slot = slotOf[space.kind];
     } else {
       slot = extras.shift();
     }
@@ -117,7 +208,7 @@ export function placeSpaces(spaces: readonly SceneSpace[], slots: Record<SpaceKi
     const order = space.kind ? FLOAT_ORDER.indexOf(space.kind) : FLOAT_ORDER.length + index;
     placed.push({ space, x: slot.x, y: slot.y, floatDelay: order * 0.7 });
   });
-  return placed.sort((a, b) => orbitAngle(a.x, a.y) - orbitAngle(b.x, b.y));
+  return placed.sort((a, b) => orbitAngle(a.x, a.y, geometry) - orbitAngle(b.x, b.y, geometry));
 }
 
 export interface SceneOrb {
@@ -136,6 +227,8 @@ interface UniverseSceneProps {
   onOpen?: (space: SceneSpace, event: MouseEvent<HTMLElement>) => void;
   /** The crystal slot of each kind, when a screen needs another place than the board's (`SCENE_SLOTS`). */
   slots?: Record<SpaceKind, { x: number; y: number }>;
+  /** The board the scene is laid out on: C09's by default, T01's on a tablet. */
+  geometry?: SceneGeometry;
   className?: string;
 }
 
@@ -143,25 +236,29 @@ interface UniverseSceneProps {
  * The orbits, the orb and the Space crystals. Lays itself out in the 1440×900 board space from the top-left of its
  * positioned parent; the crystals and the orb are links, in orbit order for the keyboard.
  */
-export function UniverseScene({ spaces, orb, onOpen, slots, className }: UniverseSceneProps): ReactNode {
-  const placed = placeSpaces(spaces, slots);
+export function UniverseScene({ spaces, orb, onOpen, slots, geometry = DESKTOP_SCENE, className }: UniverseSceneProps): ReactNode {
+  const placed = placeSpaces(spaces, slots, geometry);
+  const half = geometry.crystal / 2;
   const tints: OrbitTint[] = placed.map(({ space, x, y }) => {
     const kind = space.kind ?? 'networking';
     const color = space.kind && TOKEN_TINTS.has(space.kind) ? undefined : space.glow;
-    return { cx: x + 70, cy: y + 70, space: kind, color };
+    return { cx: x + half, cy: y + half, space: kind, color };
   });
-  const spokes = placed.map(({ x, y }) => `M${SCENE_CENTRE.x} ${SCENE_CENTRE.y} L${x + 70} ${y + 70}`);
+  const { centre } = geometry;
+  const spokes = placed.map(({ x, y }) => `M${centre.x} ${centre.y} L${x + half} ${y + half}`);
+  const tablet = geometry === TABLET_SCENE;
   return (
-    <div className={className ? `kf-scene ${className}` : 'kf-scene'}>
+    <div className={className ? `kf-scene ${className}` : 'kf-scene'} data-board={tablet ? 'tablet' : undefined}>
       <OrbitField
-        width={1440}
-        height={900}
-        orbits={SCENE_ORBITS}
-        gradientX={[260, 1140]}
-        gradientY={[90, 600]}
+        width={geometry.width}
+        height={geometry.height}
+        orbits={geometry.orbits}
+        gradientX={geometry.gradientX}
+        gradientY={geometry.gradientY}
         tints={tints}
-        dots={SCENE_DOTS}
-        guides={SCENE_GUIDES}
+        tintRadius={geometry.tintRadius}
+        dots={geometry.dots}
+        guides={geometry.guides}
         spokes={spokes}
         className="kf-scene-orbits"
       />

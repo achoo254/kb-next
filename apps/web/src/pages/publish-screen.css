@@ -834,3 +834,267 @@
   outline: 2px solid var(--c-focus);
   outline-offset: 2px;
 }
+
+/* ── phone (M03, 390×844): the text dimmed at the top, the form in a sheet 740px tall from the bottom, stacked ── */
+
+.publish-phone {
+  position: relative;
+  height: 100%;
+}
+
+.publish-phone-ghost {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0.35;
+}
+
+.publish-phone-ghost-title {
+  font: 700 24px var(--font-display);
+}
+
+.publish-phone-ghost-line {
+  width: 80%;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--phone-line);
+}
+
+.publish-phone-ghost-line + .publish-phone-ghost-line {
+  width: 64%;
+}
+
+.publish-phone-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--phone-scrim);
+}
+
+.publish-phone-sheet.kf-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(740px, calc(100% - 40px));
+  padding: 10px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.publish-phone-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.publish-phone-title {
+  margin: 0;
+  font: 700 24px var(--font-display);
+}
+
+.publish-phone-card {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 20px;
+  background: var(--phone-card);
+  border: 1px solid var(--phone-line);
+}
+
+.publish-phone-card > img {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.publish-phone-card-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.publish-phone-card-text > b {
+  font-size: 15px;
+  color: var(--c-text);
+}
+
+.publish-phone-badge {
+  flex: none;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--phone-official-bg);
+  color: var(--phone-official-text);
+  font: 700 11px var(--font-display);
+}
+
+.publish-phone-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.publish-phone-group {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.publish-phone-label {
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.publish-phone-vis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.publish-phone-vis-card {
+  height: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 18px;
+  border: 1.5px solid var(--phone-line);
+  background: var(--phone-card);
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.publish-phone-vis-card > span {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--c-text-muted);
+}
+
+.publish-phone-vis-card[aria-checked="true"] {
+  border-color: var(--rim-active-border);
+  background: var(--rim-active-bg);
+}
+
+.publish-phone-note {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.publish-phone-langs {
+  display: flex;
+  gap: 8px;
+}
+
+.publish-phone-lang {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  border: 1.5px solid var(--phone-line);
+  background: none;
+  color: var(--c-text);
+  font: 700 13px var(--font-display);
+  cursor: pointer;
+}
+
+.publish-phone-lang[aria-checked="true"] {
+  border-color: var(--c-primary);
+  background: var(--c-primary);
+  color: var(--white);
+}
+
+.publish-phone-place {
+  box-sizing: border-box;
+  height: 52px;
+  padding: 0 8px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 18px;
+  border: 1.5px solid color-mix(in srgb, var(--emerald-500) 60%, transparent);
+  background: var(--phone-card);
+}
+
+.publish-phone-place-dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--violet-300), var(--violet-600));
+}
+
+.publish-phone-place select {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: none;
+  background: none;
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+  appearance: none;
+}
+
+.publish-phone-place option {
+  background: var(--c-surface-solid);
+}
+
+.publish-phone-switch.publish-switch-row {
+  box-sizing: border-box;
+  min-height: 56px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1px solid var(--phone-line);
+  background: var(--phone-card);
+}
+
+.publish-phone .publish-tag-add input {
+  height: 44px;
+  border-radius: 22px;
+}
+
+/* 28px drawn, 44px to touch */
+.publish-phone .publish-tag-remove {
+  box-sizing: content-box;
+  padding: 8px;
+  margin: -8px -8px -8px -4px;
+  background-clip: content-box;
+}
+
+.publish-phone .publish-switch {
+  box-sizing: content-box;
+  padding: 6px 0;
+  border-color: transparent;
+  background-clip: content-box;
+}
+
+.publish-phone .publish-switch-knob {
+  margin-top: 6px;
+}
+
+.publish-phone .publish-cta {
+  flex: none;
+  justify-content: center;
+  height: 56px;
+  border-radius: 28px;
+}

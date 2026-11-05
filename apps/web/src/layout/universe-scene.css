@@ -122,3 +122,53 @@
     transform: rotate(360deg);
   }
 }
+
+/* Board T01 (tablet, 1180×820, TABLET_SCENE): 116px crystals with 13px names, the 180px orb with one chip. */
+.kf-scene[data-board="tablet"] {
+  width: 1180px;
+  height: 820px;
+}
+
+.kf-scene[data-board="tablet"] .kf-crystal-float {
+  width: 116px;
+  height: 116px;
+}
+
+.kf-scene[data-board="tablet"] .kf-crystal-art {
+  inset: -12px;
+  width: 140px;
+  height: 140px;
+}
+
+.kf-scene[data-board="tablet"] .kf-crystal-core {
+  inset: 4px;
+}
+
+.kf-scene[data-board="tablet"] .kf-crystal-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.kf-scene[data-board="tablet"] .kf-crystal-name {
+  font-size: 13px;
+}
+
+.kf-scene[data-board="tablet"] .kf-scene-orb {
+  left: 570px;
+  top: 240px;
+  width: 180px;
+  height: 180px;
+}
+
+.kf-scene[data-board="tablet"] .kf-scene-orb-label {
+  gap: 6px;
+}
+
+.kf-scene[data-board="tablet"] .kf-scene-orb-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.kf-scene[data-board="tablet"] .kf-scene-orb-title {
+  font-size: 22px;
+}

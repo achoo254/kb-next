@@ -1,0 +1,13 @@
+/* The phone frame (Mobile, M02–M06): exactly the window, never wider; screens scroll inside. */
+
+.phone-shell {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.phone-main {
+  position: relative;
+  height: 100%;
+}

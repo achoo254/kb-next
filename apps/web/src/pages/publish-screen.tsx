@@ -18,8 +18,12 @@ import { type DocumentView, type SpaceListItem, fetchDocument, fetchSpaces } fro
 import { type KeysResponse, fetchKeys } from '../api/keys-api';
 import { type SubmitRequest, keepPrivate } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
+import { PhoneShell } from '../layout/phone-shell';
 import { previewPath, sharePagePath, submitPath } from '../layout/shell-paths';
-import { CRYSTAL_ART, ORB_ART } from '../ui/art';
+import { CRYSTAL_ART, ILLUSTRATIONS, ORB_ART } from '../ui/art';
+import { RimPanel, SheetHandle } from '../ui/rim-panel';
+import { usePhoneText } from './phone-messages';
 import { Icon } from '../ui/icon';
 import { ErrorPanel } from './error-screen';
 import { PROVIDERS } from './keys-messages';
@@ -111,8 +115,17 @@ export function PublishScreen({ id }: { id: string }): ReactNode {
   const { t } = usePublishText();
   const load = useLoad(id);
   const [sending, setSending] = useState<{ request: SubmitRequest; translateTo?: Lang } | null>(null);
+  const device = useDevice();
 
   if (sending) return <SubmitScreen id={id} request={sending.request} translateTo={sending.translateTo} />;
+
+  const onSend = (request: SubmitRequest, translateTo?: Lang): void => {
+    // The address of C06 from now on: a reload there shows the text waiting, it never sends again.
+    window.history.replaceState(null, '', submitPath(id));
+    setSending({ request, translateTo });
+  };
+
+  if (device === 'phone') return <PublishPhone id={id} load={load} onSend={onSend} />;
 
   return (
     <AppShell screen="C04" view="docs" veil="strong" stars={false} docHref={`/d/${encodeURIComponent(id)}`} className="publish-shell">
@@ -136,16 +149,7 @@ export function PublishScreen({ id }: { id: string }): ReactNode {
           </div>
         )}
         {load.status === 'ready' && (
-          <PublishSheet
-            view={load.view}
-            spaces={load.spaces}
-            keys={load.keys}
-            onSend={(request, translateTo) => {
-              // The address of C06 from now on: a reload there shows the text waiting, it never sends again.
-              window.history.replaceState(null, '', submitPath(id));
-              setSending({ request, translateTo });
-            }}
-          />
+          <PublishSheet view={load.view} spaces={load.spaces} keys={load.keys} onSend={onSend} />
         )}
       </div>
     </AppShell>
@@ -159,16 +163,13 @@ interface SheetProps {
   onSend(request: SubmitRequest, translateTo?: Lang): void;
 }
 
-function PublishSheet({ view, spaces, keys, onSend }: SheetProps): ReactNode {
+/** The choice of the publish form and its two ways out: keep the text private, or send it for review. */
+function usePublishChoice(view: DocumentView, spaces: readonly SpaceListItem[], onSend: SheetProps['onSend']) {
   const { t } = usePublishText();
   const doc = view.document;
-  const published = doc.status === 'approved';
-  const [tab, setTab] = useState<Tab>(published ? 'share' : 'publish');
   const [choice, setChoice] = useState<PublishChoice>(() => initialChoice(view, spaces));
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
-  const docHref = `/d/${encodeURIComponent(doc.id)}`;
-
   const keepIt = (): void => {
     setSaving(true);
     setFailed(null);
@@ -180,6 +181,17 @@ function PublishSheet({ view, spaces, keys, onSend }: SheetProps): ReactNode {
       },
     );
   };
+  const send = (): void => onSend(requestOf(choice), choice.translate ? (choice.lang === 'vi' ? 'en' : 'vi') : undefined);
+  return { choice, setChoice, saving, failed, keepIt, send };
+}
+
+function PublishSheet({ view, spaces, keys, onSend }: SheetProps): ReactNode {
+  const { t } = usePublishText();
+  const doc = view.document;
+  const published = doc.status === 'approved';
+  const [tab, setTab] = useState<Tab>(published ? 'share' : 'publish');
+  const { choice, setChoice, saving, failed, keepIt, send } = usePublishChoice(view, spaces, onSend);
+  const docHref = `/d/${encodeURIComponent(doc.id)}`;
 
   return (
     <section className="publish-sheet" role="dialog" aria-modal="true" aria-label={t('publish.dialog')} data-id="publish-sheet">
@@ -217,7 +229,7 @@ function PublishSheet({ view, spaces, keys, onSend }: SheetProps): ReactNode {
             onChange={setChoice}
             saving={saving}
             failed={failed}
-            onSend={() => onSend(requestOf(choice), choice.translate ? (choice.lang === 'vi' ? 'en' : 'vi') : undefined)}
+            onSend={send}
             onKeepPrivate={keepIt}
           />
         ) : (
@@ -264,7 +276,8 @@ interface FormProps {
   onKeepPrivate(): void;
 }
 
-function PublishForm({ view, spaces, keys, choice, onChange, saving, failed, onSend, onKeepPrivate }: FormProps): ReactNode {
+/** What the publish form shows and does for `choice`, shared by the desktop sheet (C04) and the phone sheet (M03). */
+function usePublishForm({ view, spaces, keys, choice, onChange, saving, onSend, onKeepPrivate }: Omit<FormProps, 'failed'>) {
   const { t, locale } = usePublishText();
   const doc = view.document;
   const published = doc.status === 'approved';
@@ -300,6 +313,12 @@ function PublishForm({ view, spaces, keys, choice, onChange, saving, failed, onS
         ? { label: 'publish.cta.pending', disabled: true }
         : { label: 'publish.cta.review', disabled: problems.length > 0, run: onSend };
 
+  return { t, locale, doc, published, pending, problems, options, space, langFixed, other, key, set, pickVisibility, note, cta };
+}
+
+function PublishForm(props: FormProps): ReactNode {
+  const { choice, saving, failed } = props;
+  const { t, locale, doc, published, problems, options, space, langFixed, other, key, set, pickVisibility, note, cta } = usePublishForm(props);
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     if (!cta.disabled) cta.run?.();
@@ -557,5 +576,187 @@ function PreviewCard({ view, spaces, choice }: { view: DocumentView; spaces: Spa
       </div>
       <span className="publish-card-note">{t(state === 'approved' ? 'publish.card.note.approved' : state === 'private' ? 'publish.card.note.private' : 'publish.card.note.review')}</span>
     </aside>
+  );
+}
+
+/**
+ * Publishing on a phone (board M03): the text dimmed behind, the form in a sheet rising from the bottom with the text's
+ * card on top (its planet, where it goes, its languages). Sending opens the same steps as on a desktop (C06).
+ */
+function PublishPhone({ id, load, onSend }: { id: string; load: Load; onSend: SheetProps['onSend'] }): ReactNode {
+  const { t } = usePublishText();
+  const phone = usePhoneText();
+  return (
+    <PhoneShell screen="M03" tabBar={false}>
+      <div className="publish-phone" data-id="publish-screen" data-state={load.status}>
+        <div className="publish-phone-ghost" aria-hidden="true">
+          <span className="publish-phone-ghost-title">{load.status === 'ready' ? load.view.document.title : ''}</span>
+          <span className="publish-phone-ghost-line" />
+          <span className="publish-phone-ghost-line" />
+        </div>
+        <div className="publish-phone-scrim" aria-hidden="true" />
+        <RimPanel variant="sheet" className="publish-phone-sheet" label={t('publish.dialog')} dataId="publish-sheet">
+          <SheetHandle />
+          <div className="publish-phone-head">
+            <h1 className="publish-phone-title">{phone.t('publish.title')}</h1>
+            <a className="phone-round" href={`/d/${encodeURIComponent(id)}`} aria-label={t('publish.close')}>
+              <Icon name="close" size={18} />
+            </a>
+          </div>
+          {load.status === 'loading' && (
+            <p className="publish-loading" role="status">
+              {t('publish.loading')}
+            </p>
+          )}
+          {load.status === 'failed' && <ErrorPanel kind={load.error === 'no-access' || load.error === 'hidden' ? 'forbidden' : load.error === 'not-found' ? 'not-found' : 'server'} />}
+          {load.status === 'ready' && <PublishPhoneForm view={load.view} spaces={load.spaces} keys={load.keys} onSend={onSend} />}
+        </RimPanel>
+      </div>
+    </PhoneShell>
+  );
+}
+
+function PublishPhoneForm({ view, spaces, keys, onSend }: SheetProps): ReactNode {
+  const { t, locale } = usePublishText();
+  const phone = usePhoneText();
+  const { choice, setChoice, saving, failed, keepIt, send } = usePublishChoice(view, spaces, onSend);
+  const space = spaces.find((s) => s.slug === choice.space);
+  const where = space ? (space.kind === 'personal' ? t('publish.space.personal') : spaceName(space, locale)) : '';
+  const langs = choice.translate ? `${choice.lang.toUpperCase()} + ${(choice.lang === 'vi' ? 'en' : 'vi').toUpperCase()}` : choice.lang.toUpperCase();
+  return (
+    <>
+      <div className="publish-phone-card" data-id="publish-card">
+        <img src={ILLUSTRATIONS['doc-planet']} alt="" aria-hidden="true" />
+        <span className="publish-phone-card-text">
+          <b>{view.document.title}</b>
+          <span>{[phone.t(choice.visibility === 'private' ? 'publish.private' : 'publish.review'), where].filter(Boolean).join(' · ')}</span>
+        </span>
+        <span className="publish-phone-badge">{langs}</span>
+      </div>
+      <PhoneForm view={view} spaces={spaces} keys={keys} choice={choice} onChange={setChoice} saving={saving} failed={failed} onSend={send} onKeepPrivate={keepIt} />
+    </>
+  );
+}
+
+/** "Space › Collection" (or the Space alone) as one value of the phone's single place picker. */
+function placeValue(space: string, collection: string | null): string {
+  return `${space}|${collection ?? ''}`;
+}
+
+/**
+ * The phone form (M03): who sees it, the language, one picker for where it goes (Space › Collection), the tags, the
+ * translation switch and the send button; the same choice and rules as the desktop form.
+ */
+function PhoneForm(props: FormProps): ReactNode {
+  const { choice, saving, failed } = props;
+  const phone = usePhoneText();
+  const { t, locale, published, problems, options, langFixed, other, key, set, pickVisibility, note, cta } = usePublishForm(props);
+  const submit = (event: FormEvent): void => {
+    event.preventDefault();
+    if (!cta.disabled) cta.run?.();
+  };
+  const places = options.flatMap((s) => {
+    const name = s.kind === 'personal' ? t('publish.space.personal') : spaceName(s, locale);
+    return [{ value: placeValue(s.slug, null), label: name }, ...s.collections.map((c) => ({ value: placeValue(s.slug, c.id), label: `${name} › ${spaceName(c, locale)}` }))];
+  });
+  const visibilities = [
+    { id: 'private', icon: 'lock', name: phone.t('publish.private'), sub: phone.t('publish.privateSub') },
+    { id: 'review', icon: 'clock', name: phone.t('publish.review'), sub: phone.t('publish.reviewSub') },
+  ] as const;
+  return (
+    <form className="publish-phone-form" onSubmit={submit} data-id="publish-form">
+      {problems.length > 0 && !published && choice.visibility === 'review' && (
+        <div className="publish-alert" role="alert" data-id="publish-blockers">
+          <span className="publish-alert-title">{t('publish.err.title', { n: problems.length })}</span>
+          {problems.map((p) => (
+            <span key={p}>• {t(`publish.err.${p}`)}</span>
+          ))}
+        </div>
+      )}
+      {failed && (
+        <div className="publish-alert" role="alert" data-id="publish-failed">
+          <span className="publish-alert-title">{t('publish.failed', { reason: failed })}</span>
+        </div>
+      )}
+      <fieldset className="publish-phone-group" disabled={published}>
+        <legend className="publish-phone-label">{t('publish.who')}</legend>
+        <div role="radiogroup" aria-label={t('publish.who')} className="publish-phone-vis">
+          {visibilities.map((v) => (
+            <button key={v.id} type="button" role="radio" aria-checked={choice.visibility === v.id} className="publish-phone-vis-card" onClick={() => pickVisibility(v.id)} data-id={`publish-vis-${v.id}`}>
+              <Icon name={v.icon} size={18} />
+              {v.name}
+              <span>{v.sub}</span>
+            </button>
+          ))}
+        </div>
+        <span className="publish-phone-note">{note}</span>
+      </fieldset>
+      <div className="publish-phone-group">
+        <span className="publish-phone-label" id="publish-phone-lang">
+          {t('publish.lang')}
+        </span>
+        <div role="radiogroup" aria-labelledby="publish-phone-lang" className="publish-phone-langs" title={langFixed ? t('publish.lang.fixed') : undefined}>
+          {(['vi', 'en'] as const).map((l) => (
+            <button key={l} type="button" role="radio" aria-checked={choice.lang === l} className="publish-phone-lang" disabled={published || langFixed} onClick={() => set({ lang: l })}>
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className="publish-phone-group">
+        <span className="publish-phone-label">{phone.t('publish.where')}</span>
+        <span className="publish-phone-place">
+          <span className="publish-phone-place-dot" aria-hidden="true" />
+          <select
+            value={placeValue(choice.space, choice.collection)}
+            disabled={published}
+            onChange={(e) => {
+              const [slug = choice.space, collection = ''] = e.target.value.split('|');
+              set({ space: slug, collection: collection || null });
+            }}
+            data-id="publish-place"
+          >
+            {places.map((place) => (
+              <option key={place.value} value={place.value}>
+                {place.label}
+              </option>
+            ))}
+          </select>
+        </span>
+      </label>
+      <Tags tags={choice.tags} disabled={published} onChange={(tags) => set({ tags })} />
+      <div className="publish-switch-row publish-phone-switch">
+        <div className="publish-switch-text">
+          <div className="publish-switch-name">{t('publish.translate', { lang: other.toUpperCase() })}</div>
+          <div className="publish-switch-sub" data-on={choice.translate || undefined}>
+            {key ? t(choice.translate ? 'publish.translate.on' : 'publish.translate.idle', { provider: PROVIDERS[key.provider].name, last4: key.last4 }) : t('publish.translate.off')}
+          </div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={choice.translate}
+          aria-label={t('publish.translate', { lang: other.toUpperCase() })}
+          className="publish-switch"
+          data-tone="success"
+          disabled={!key || published || choice.visibility === 'private'}
+          onClick={() => set({ translate: !choice.translate })}
+          data-id="publish-translate"
+        >
+          <span className="publish-switch-knob" />
+        </button>
+      </div>
+      <span className="publish-fill" />
+      {cta.href ? (
+        <a className="publish-cta" href={cta.href} data-id="publish-cta">
+          <Icon name="share-up" size={18} />
+          {t(cta.label)}
+        </a>
+      ) : (
+        <button type="submit" className="publish-cta" disabled={cta.disabled} data-id="publish-cta">
+          {saving ? t('publish.cta.saving') : t(cta.label)}
+        </button>
+      )}
+    </form>
   );
 }

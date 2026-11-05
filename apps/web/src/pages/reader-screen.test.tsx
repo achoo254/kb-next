@@ -385,3 +385,37 @@ describe('reader helpers', () => {
     expect(scrolledPercent(0, 0, 0)).toBe(0);
   });
 });
+
+describe('ReaderScreen on a tablet and a phone', () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+    sessionStorage.clear();
+  });
+
+  it('puts the contents in a drawer on a tablet (T02), and picking an entry closes it', async () => {
+    document.documentElement.dataset.device = 'tablet';
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+    expect(document.querySelector('[data-id="reader-toc"]')).toBeNull();
+    expect(document.querySelector('[data-id="reader-side"]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Contents' }));
+    const drawer = screen.getByRole('complementary', { name: 'Contents' });
+    fireEvent.click(within(drawer).getByRole('link', { name: 'Broadcast là gì' }));
+    expect(screen.queryByRole('complementary', { name: 'Contents' })).toBeNull();
+    expect(within(screen.getByRole('region', { name: 'Backlinks and related' })).getByRole('link', { name: 'Giao thức ARP' })).toBeTruthy();
+  });
+
+  it('lays the text out for a phone (M05) with its contents sheet, and keeps Office files read-only', async () => {
+    document.documentElement.dataset.device = 'phone';
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+    expect(document.querySelector('[data-screen="M05"]')).not.toBeNull();
+    expect(screen.getByRole('navigation', { name: 'Open files' })).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: /Mentioned in/ })).getByRole('link', { name: /Giao thức ARP/ })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Contents' }));
+    const sheet = screen.getByRole('complementary', { name: 'Contents' });
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Broadcast là gì' }));
+    expect(screen.queryByRole('complementary', { name: 'Contents' })).toBeNull();
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+  });
+});

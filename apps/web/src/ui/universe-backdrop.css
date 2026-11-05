@@ -39,6 +39,14 @@
   background: var(--c-veil-station);
 }
 
+.universe[data-veil="phone"] {
+  background: var(--phone-sky);
+}
+
+.universe[data-veil="phone"] .universe-veil {
+  background: var(--phone-veil);
+}
+
 .universe[data-veil="fade"] .universe-veil {
   background: var(--c-veil-fade);
 }

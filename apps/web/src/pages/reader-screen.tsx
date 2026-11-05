@@ -10,6 +10,7 @@ import { type DocumentView, fetchDocument, readErrorOf } from '../api/content-ap
 import { brand } from '../brand';
 import { useI18n } from '../i18n/i18n';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
 import { journeyPath } from '../layout/shell-paths';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -26,11 +27,13 @@ import { useReading } from './reader-progress';
 import { type PassageSelection, type ReaderAi, type ReaderTask, ReaderAiCard, SelectionToolbar, usePassageSelection, useReaderAi } from './reader-ai';
 import { AiPanel, Backlinks, KeyHints, ReaderActions, RelatedDocuments, Versions } from './reader-side';
 import { originOf } from './space-labels';
+import { TabletActions, TabletLinks, TocButton, TocDrawer } from './reader-tablet';
+import { ReaderPhone } from './reader-phone';
 import { spaceName } from './space-panels';
 import './reader-screen.css';
 
 export type ReaderFailure = 'not-found' | 'no-access' | 'hidden' | 'offline' | 'server';
-type ReaderLoad = { status: 'loading' } | { status: 'ready'; view: DocumentView; loadedAt: number } | { status: 'failed'; error: ReaderFailure };
+export type ReaderLoad = { status: 'loading' } | { status: 'ready'; view: DocumentView; loadedAt: number } | { status: 'failed'; error: ReaderFailure };
 
 export function readerLoadError(error: unknown): ReaderFailure {
   const code = readErrorOf(error);
@@ -89,7 +92,7 @@ function useOffline(): boolean {
   return offline;
 }
 
-function ReaderLoading(): ReactNode {
+export function ReaderLoading(): ReactNode {
   const { t } = useReaderText();
   return (
     <div className="reader-loading" aria-busy="true" aria-label={t('reader.loading')} data-id="reader-loading">
@@ -105,7 +108,7 @@ function ReaderLoading(): ReactNode {
   );
 }
 
-function ReaderFailed({ error, onRetry }: { error: ReaderFailure; onRetry(): Promise<void> }): ReactNode {
+export function ReaderFailed({ error, onRetry }: { error: ReaderFailure; onRetry(): Promise<void> }): ReactNode {
   const { t } = useReaderText();
   if (error === 'hidden') {
     return (
@@ -199,7 +202,7 @@ interface ArticleProps {
   ai: ReaderAi;
 }
 
-function ReaderArticle({ view, offline, articleRef, selection, ai }: ArticleProps): ReactNode {
+function ReaderArticle({ view, offline, articleRef, selection, ai, tablet }: ArticleProps & { tablet: boolean }): ReactNode {
   const { t, locale } = useReaderText();
   const levels = new Map(view.toc.map((entry) => [entry.anchor, entry.level]));
   const wikilinks = useMemo(() => new Map(view.wikilinks.map((link) => [link.title, link.id])), [view.wikilinks]);
@@ -239,13 +242,14 @@ function ReaderArticle({ view, offline, articleRef, selection, ai }: ArticleProp
           </Fragment>
         );
       })}
+      {tablet && <TabletLinks view={view} />}
       <ReaderComments documentId={documentId} offline={offline} />
     </article>
   );
 }
 
 /** The text the side panel's AI buttons read: the current passage, or the whole document. */
-function sideAsk(view: DocumentView, current: string | null, task: ReaderTask, overview: string): Parameters<ReaderAi['ask']>[0] | null {
+export function sideAsk(view: DocumentView, current: string | null, task: ReaderTask, overview: string): Parameters<ReaderAi['ask']>[0] | null {
   const chunks = view.chunks;
   const first = chunks[0];
   if (!first) return null;
@@ -254,8 +258,10 @@ function sideAsk(view: DocumentView, current: string | null, task: ReaderTask, o
   return { task, about: 'passage', anchor: chunk.anchor, text: chunk.markdown, heading: chunk.heading ?? overview };
 }
 
-function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }): ReactNode {
+function ReaderBody({ view, loadedAt, tablet }: { view: DocumentView; loadedAt: number; tablet: boolean }): ReactNode {
   const { t } = useReaderText();
+  const [drawer, setDrawer] = useState(false);
+  const closeDrawer = useCallback(() => setDrawer(false), []);
   const offline = useOffline();
   const panelRef = useRef<HTMLDivElement>(null);
   const articleRef = useRef<HTMLElement>(null);
@@ -271,6 +277,37 @@ function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }
   const selection = usePassageSelection(articleRef);
   const sidePressed = ai.asked && ai.asked.about !== 'selection' ? ai.asked.task : null;
   const time = new Date(loadedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
+  const panel = (
+    <div ref={panelRef} className="reader-panel" data-id="reader-panel">
+      {offline && (
+        <div className="reader-offline" role="status" data-id="reader-offline-banner">
+          <Icon name="offline" size={16} />
+          {t('reader.offlineBanner', { time })}
+        </div>
+      )}
+      <ReaderArticle view={view} offline={offline} articleRef={articleRef} selection={selection} ai={ai} tablet={tablet} />
+    </div>
+  );
+  if (tablet) {
+    // T02: the text in one wide panel, the contents in a drawer, the actions in a column on the right
+    return (
+      <>
+        <TocButton open={drawer} onOpen={() => setDrawer(true)} />
+        {panel}
+        <TabletActions id={view.document.id} canShare={view.document.canShare ?? false} />
+        <TocDrawer open={drawer} onClose={closeDrawer}>
+          <TableOfContents
+            view={view}
+            current={current}
+            onGo={(anchor) => {
+              setDrawer(false);
+              goTo(anchor);
+            }}
+          />
+        </TocDrawer>
+      </>
+    );
+  }
   return (
     <>
       <nav className="reader-toc" aria-labelledby="reader-toc-title" data-id="reader-toc">
@@ -279,15 +316,7 @@ function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }
         </span>
         <TableOfContents view={view} current={current} onGo={goTo} />
       </nav>
-      <div ref={panelRef} className="reader-panel" data-id="reader-panel">
-        {offline && (
-          <div className="reader-offline" role="status" data-id="reader-offline-banner">
-            <Icon name="offline" size={16} />
-            {t('reader.offlineBanner', { time })}
-          </div>
-        )}
-        <ReaderArticle view={view} offline={offline} articleRef={articleRef} selection={selection} ai={ai} />
-      </div>
+      {panel}
       <aside className="reader-side" aria-label={view.document.title} data-id="reader-side">
         <ReaderActions id={view.document.id} canShare={view.document.canShare ?? false} />
         <AiPanel
@@ -311,7 +340,9 @@ function ReaderBody({ view, loadedAt }: { view: DocumentView; loadedAt: number }
 export function ReaderScreen({ id }: { id: string }): ReactNode {
   const { t, locale } = useReaderText();
   const { load, reload } = useDocument(id);
+  const device = useDevice();
   const view = load.status === 'ready' ? load.view : null;
+  const tablet = device === 'tablet';
 
   const breadcrumb: BreadcrumbItem[] = [{ label: 'Universe', href: SHELL_PATHS.universe }];
   if (view) {
@@ -326,6 +357,8 @@ export function ReaderScreen({ id }: { id: string }): ReactNode {
     if (view) document.title = `${view.document.title} · ${brand.appName}`;
   }, [view]);
 
+  if (device === 'phone') return <ReaderPhone id={id} load={load} onRetry={reload} />;
+
   return (
     <AppShell
       screen="C11"
@@ -335,11 +368,12 @@ export function ReaderScreen({ id }: { id: string }): ReactNode {
       breadcrumb={breadcrumb}
       spaceHref={view ? `/s/${encodeURIComponent(view.document.space.slug)}` : undefined}
       docHref={`/d/${encodeURIComponent(id)}`}
+      tabletBoard="reader"
       className="reader-shell"
     >
       <div className="reader-screen" data-id="reader-screen" data-state={load.status === 'failed' ? load.error : load.status}>
         {load.status === 'ready' ? (
-          <ReaderBody view={load.view} loadedAt={load.loadedAt} />
+          <ReaderBody view={load.view} loadedAt={load.loadedAt} tablet={tablet} />
         ) : (
           <>
             <nav className="reader-toc" aria-label={t('reader.toc')}>

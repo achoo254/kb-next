@@ -892,6 +892,61 @@
   --run-inset: light-dark(rgb(109 40 217 / 0.06), rgb(12 6 40 / 0.6));
   --run-origin-bg: rgb(124 58 237 / 0.22);
   --run-origin-border: rgb(124 58 237 / 0.6);
+
+  /* Phone boards (Mobile, M02–M06): the sky behind the portrait art, its veil, the bottom tab bar, cards and chips */
+  --phone-sky: radial-gradient(
+    ellipse 80% 45% at 50% 34%,
+    light-dark(#e4dbff, #2b1670) 0%,
+    light-dark(#ece8ff, #120a3a) 55%,
+    light-dark(#f7f5ff, #06041a) 90%
+  );
+  --phone-veil: linear-gradient(
+    180deg,
+    light-dark(rgb(255 255 255 / 0.6), rgb(6 4 26 / 0.35)) 0%,
+    light-dark(rgb(255 255 255 / 0.7), rgb(6 4 26 / 0.15)) 40%,
+    light-dark(rgb(255 255 255 / 0.85), rgb(6 4 26 / 0.7)) 100%
+  );
+  /* T02: the contents drawer, nearly opaque over the dimmed text */
+  --drawer-bg: linear-gradient(
+    180deg,
+    light-dark(#ffffff, rgb(26 20 64 / 0.96)) 0%,
+    light-dark(#f5f3ff, rgb(13 10 36 / 0.97)) 100%
+  );
+  --drawer-scrim: light-dark(rgb(26 16 51 / 0.3), rgb(6 4 26 / 0.55));
+  --phone-tabbar-bg: light-dark(rgb(255 255 255 / 0.88), rgb(12 9 32 / 0.82));
+  --phone-tabbar-border: light-dark(rgb(109 40 217 / 0.28), rgb(196 181 253 / 0.5));
+  --phone-tabbar-shadow:
+    inset 0 0 18px light-dark(rgb(139 92 246 / 0.1), rgb(139 92 246 / 0.3)),
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 0 26px light-dark(rgb(124 58 237 / 0.16), rgb(124 58 237 / 0.4));
+  --phone-tab-on-bg: linear-gradient(180deg, rgb(88 60 200 / 0.55), rgb(44 26 112 / 0.82));
+  --phone-tab-on-shadow:
+    inset 0 0 0 1.5px rgb(196 181 253 / 0.9),
+    inset 0 0 12px rgb(196 181 253 / 0.45),
+    0 0 16px rgb(139 92 246 / 0.75);
+  --phone-card: light-dark(#ffffff, rgb(12 6 40 / 0.7));
+  --phone-surface: light-dark(#ffffff, rgb(22 17 54 / 0.72));
+  --phone-soft: light-dark(rgb(109 40 217 / 0.08), rgb(255 255 255 / 0.08));
+  --phone-line: light-dark(rgb(109 40 217 / 0.18), rgb(167 139 250 / 0.28));
+  --phone-ghost-border: light-dark(rgb(109 40 217 / 0.35), rgb(167 139 250 / 0.45));
+  --phone-ghost-text: light-dark(#4c1d95, #ede9fe);
+  --phone-lead: light-dark(#3b2f63, #ddd6fe);
+  --phone-scrim: light-dark(rgb(247 245 255 / 0.78), rgb(6 4 26 / 0.6));
+  --phone-official-bg: light-dark(rgb(109 40 217 / 0.14), rgb(124 58 237 / 0.45));
+  --phone-official-text: light-dark(#4c1d95, #ede9fe);
+  --phone-community-bg: light-dark(rgb(14 116 144 / 0.12), rgb(6 182 212 / 0.25));
+  --phone-community-text: light-dark(#0e5566, #a5f3fc);
+  --phone-own-bg: light-dark(rgb(190 24 93 / 0.1), rgb(236 72 153 / 0.22));
+  --phone-own-text: light-dark(#9d174d, #fbcfe8);
+  --phone-wait-text: light-dark(#92400e, #fcd34d);
+  --phone-wait-border: light-dark(#b45309, #f59e0b);
+  --phone-planet-shade: radial-gradient(
+    ellipse 50% 44% at 50% 54%,
+    rgb(8 4 28 / 0.8) 0%,
+    rgb(8 4 28 / 0.6) 45%,
+    rgb(8 4 28 / 0.2) 78%,
+    rgb(8 4 28 / 0) 100%
+  );
 }
 
 :root[data-theme="light"] {

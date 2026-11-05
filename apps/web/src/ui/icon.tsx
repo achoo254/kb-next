@@ -176,6 +176,10 @@ const ICONS = {
   'step-up': { body: <path d="M6 15l6-6 6 6" />, stroke: 2.4, cap: 'round' },
   'step-down': { body: <path d="M6 9l6 6 6-6" />, stroke: 2.4, cap: 'round' },
   pulse: { body: <path d="M3 12h4l3-8 4 16 3-8h4" />, stroke: 2.2, cap: 'round' },
+  // The phone tab bar (Mobile, M02–M06): the Universe's planet, the account, Copilot's outlined star
+  'tab-universe': { body: <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 14c3 2 17-2 20-6" />, cap: 'round', join: 'round' },
+  'tab-me': { body: <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6" />, cap: 'round', join: 'round' },
+  'tab-copilot': { body: <path d="M12 2l2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2z" />, cap: 'round', join: 'round' },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

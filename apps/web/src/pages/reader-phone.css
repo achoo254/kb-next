@@ -1,0 +1,450 @@
+/* The phone reader (board M05, 390×844): the top bar at 12px, the text scrolling under it from 68px, the two floating
+   buttons 98px from the bottom (over the tab bar), the sheets rising over everything. */
+
+.phone-reader {
+  position: relative;
+  height: 100%;
+}
+
+.phone-reader-top {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* the round glass button of the phone boards (back, close) */
+.phone-round {
+  flex: none;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.phone-reader-tabs {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  border-radius: 22px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+}
+
+.phone-reader-tab {
+  flex: 1;
+  min-width: 0;
+  /* drawn 3px inside the pill as on the board, pressed over its full 44px height */
+  margin-block: -1.5px;
+  padding: 3px 1px;
+  background-clip: content-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+  border-radius: 22px;
+  color: var(--c-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.phone-reader-tab:first-child {
+  padding-left: 3px;
+}
+
+.phone-reader-tab:last-child {
+  padding-right: 3px;
+}
+
+.phone-reader-tab[aria-current="page"] {
+  background: var(--c-primary);
+  color: var(--white);
+}
+
+.phone-reader-tab-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: var(--violet-600);
+  color: var(--white);
+  font: 700 10px var(--font-display);
+}
+
+.phone-reader-tab-icon[data-office] {
+  background: var(--blue-600);
+}
+
+.phone-reader-tab-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phone-edit {
+  flex: none;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: 22px;
+  background: var(--violet-900);
+  color: var(--white);
+  font: 700 13px var(--font-sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.phone-edit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.phone-reader-scroll {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 68px;
+  bottom: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.phone-reader-page {
+  box-sizing: border-box;
+  padding: 12px 20px 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-wrap: anywhere;
+}
+
+.phone-reader-hero {
+  position: relative;
+  flex: none;
+  height: 140px;
+  display: flex;
+  justify-content: center;
+}
+
+.phone-reader-hero > span {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 16px;
+}
+
+.phone-reader-hero > [data-layer="3"] {
+  top: 58px;
+  background: color-mix(in srgb, var(--cyan-500) 55%, transparent);
+  box-shadow: 0 0 26px var(--cyan-500);
+}
+
+.phone-reader-hero > [data-layer="2"] {
+  top: 32px;
+  background: color-mix(in srgb, var(--violet-600) 65%, transparent);
+  box-shadow: 0 0 26px var(--violet-600);
+}
+
+.phone-reader-hero > [data-layer="1"] {
+  top: 6px;
+  background: color-mix(in srgb, var(--violet-300) 75%, transparent);
+  box-shadow: 0 0 26px var(--violet-400);
+}
+
+.phone-reader-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.phone-reader-path {
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--phone-soft);
+  color: var(--c-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.phone-reader-title {
+  margin: 0;
+  font: 700 32px/1.05 var(--font-display);
+}
+
+.phone-reader-passage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.phone-reader-passage p {
+  margin: 0;
+}
+
+.phone-reader-passage pre,
+.phone-reader-passage table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.phone-reader-heading {
+  margin: 6px 0 0;
+  font: 700 20px var(--font-display);
+}
+
+.phone-limit {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--phone-soft);
+  color: var(--c-text-muted);
+  font-size: 13px;
+}
+
+.phone-reader-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.phone-reader-links-title {
+  margin: 0;
+  font: 700 18px var(--font-display);
+}
+
+.phone-reader-links-title > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.phone-reader-link {
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 16px;
+  background: var(--phone-surface);
+  border: 1px solid var(--phone-line);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.phone-reader-link-dot {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.phone-reader-link-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.phone-reader-link-text > b {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.phone-reader-to {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.phone-reader-fabs {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 98px;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.phone-fab {
+  box-sizing: border-box;
+  height: 52px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 26px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* ---------- sheets (contents, AI) ---------- */
+
+.phone-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  padding: 0;
+  border: none;
+  background: var(--phone-scrim);
+  cursor: pointer;
+}
+
+.phone-reader-sheet.kf-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  max-height: 80%;
+  overflow-y: auto;
+  padding: 10px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phone-reader-sheet-title {
+  margin: 0;
+  padding: 0 6px 8px;
+  font: 700 20px var(--font-display);
+}
+
+.phone-toc-entry {
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 14px;
+  background: none;
+  color: var(--c-text);
+  font: 600 15px var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.phone-toc-entry > span {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c-text-muted);
+}
+
+.phone-ai-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.phone-ai-tab {
+  flex: 1;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--phone-line);
+  background: var(--phone-soft);
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.phone-ai-tab[aria-pressed="true"] {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: var(--white);
+}
+
+/* the steps of a text (DORA) as the board's row of solid cards, scrolling sideways past the page's padding */
+.phone-reader-passage ol.reader-steps {
+  margin: 0 -20px;
+  padding: 4px 20px 8px;
+  list-style: none;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.phone-reader-passage .reader-steps > li {
+  flex: none;
+  width: 220px;
+  min-height: 170px;
+  padding: 16px;
+  justify-content: space-between;
+  border: none;
+  border-radius: 22px;
+  background: var(--violet-300);
+  box-shadow: none;
+  color: var(--dark-bg);
+  scroll-snap-align: start;
+}
+
+.phone-reader-passage .reader-steps > li:nth-child(even) {
+  background: var(--cyan-300);
+  box-shadow: none;
+}
+
+.phone-reader-passage .reader-steps > li::before {
+  font-size: 40px;
+  line-height: 1;
+  color: var(--dark-bg);
+}
+
+.phone-reader-passage .reader-steps > li > p {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.phone-reader-passage .reader-steps strong {
+  font-size: 15px;
+  color: var(--dark-bg);
+}

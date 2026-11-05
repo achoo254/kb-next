@@ -124,3 +124,32 @@
 .app-shell-rail-admin .kf-rail-items {
   top: 230px;
 }
+
+/* The tablet boards (T01, T02; 1180×820, AppShell `tabletBoard`): the nav further left, the top actions 24 / 20px
+   from the right, the lens rail's icons higher on the reader. */
+.app-shell-tablet-universe .app-shell-nav {
+  left: calc(var(--board-offset) + 318px);
+}
+
+.app-shell-tablet-universe .app-shell-top {
+  right: 24px;
+}
+
+.app-shell-tablet-reader .app-shell-nav {
+  left: calc(var(--board-offset) + 370px);
+}
+
+.app-shell-tablet-reader .app-shell-top {
+  right: 20px;
+}
+
+.app-shell-tablet-reader .app-shell-rail .kf-rail-items {
+  top: 170px;
+}
+
+/* T02: "Mục lục" opens the contents drawer at 112,78; the breadcrumb follows it. */
+.app-shell-tablet-reader .app-shell-crumbs {
+  left: calc(var(--board-offset) + 228px);
+  top: 78px;
+  height: 44px;
+}

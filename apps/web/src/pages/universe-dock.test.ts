@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { translator } from '../i18n/i18n';
-import { continueReading, daysSince, dockCards, staleDocument } from './universe-dock';
+import { continueReading, daysSince, dockCards, staleDocument, tabletCards } from './universe-dock';
 import { doc } from './universe-test-data';
 
 const t = translator('vi');
@@ -38,5 +38,27 @@ describe('the "Gần đây" stage', () => {
     expect(cards[0]).toMatchObject({ title: 'Bắt đầu đọc', href: '/search' });
     expect(cards[1]).toMatchObject({ title: 'Của tôi', href: '/me' });
     expect(cards[3]?.href).toBe('/graph');
+  });
+});
+
+describe('the tablet stage (T01)', () => {
+  it('puts the text read on and the next recent ones round the Knowledge Graph, with their origin', () => {
+    const recent = [
+      doc('dns', { title: 'DNS', updatedAt: '2026-12-17T14:00:00Z' }),
+      doc('dhcp', { title: 'Giao thức DHCP', readProgress: 72 }),
+      doc('k8s', { title: 'Kiến trúc cụm K8s', updatedAt: '2026-12-16T14:00:00Z' }),
+      doc('notes', { title: 'lab-notes.docx', origin: 'own', status: 'private' }),
+      doc('extra'),
+    ];
+    const cards = tabletCards({ recent, now: NOW, locale: 'vi' }, t);
+    expect(cards.map((card) => card.title)).toEqual(['Giao thức DHCP', 'DNS', 'Khám phá', 'Kiến trúc cụm K8s', 'lab-notes.docx']);
+    expect(cards[0]).toMatchObject({ sub: 'Đã đọc 72%', progress: 72, badge: { label: 'Chính thức', tone: 'official' } });
+    expect(cards[1]?.sub).toBe('Hôm qua');
+    expect(cards[2]).toMatchObject({ id: 'graph', highlight: true });
+    expect(cards[4]?.badge).toEqual({ label: 'Của bạn', tone: 'own' });
+  });
+
+  it('keeps the Knowledge Graph card without recent texts', () => {
+    expect(tabletCards({ recent: [], now: NOW, locale: 'vi' }, t).map((card) => card.id)).toEqual(['graph']);
   });
 });

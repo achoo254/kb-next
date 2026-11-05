@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MIN_BOARD_ZOOM, SHORT_WINDOW_FACTOR, boardSideFor, boardZoom, boardZoomFor, installBoardZoom, toBoardPx } from './board-zoom';
+import { MIN_BOARD_ZOOM, SHORT_WINDOW_FACTOR, boardSideFor, boardZoom, boardZoomFor, installBoardZoom, tabletZoomFor, toBoardPx } from './board-zoom';
 
 describe('boardZoomFor', () => {
   it('keeps the board 1:1 from 1440px up and shrinks it to the window below', () => {
@@ -52,11 +52,45 @@ describe('boardZoomFor', () => {
   });
 });
 
+describe('tabletZoomFor', () => {
+  it('fits the 1180×820 tablet board the same way: 1:1 at its own size, smaller on a smaller tablet', () => {
+    expect(tabletZoomFor(1180, 820)).toBe(1);
+    expect(tabletZoomFor(1024, 768)).toBeCloseTo(1024 / 1180);
+    // a short tablet window: the height sets the zoom
+    expect(tabletZoomFor(1180, 738)).toBeCloseTo(0.9);
+    // no 768px floor: the tablet layout starts above a phone's width
+    expect(tabletZoomFor(700, 1000)).toBeCloseTo(700 / 1180);
+  });
+});
+
 describe('installBoardZoom', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     document.documentElement.style.removeProperty('--board-zoom');
     document.documentElement.style.removeProperty('--board-side');
+    document.documentElement.style.removeProperty('--tablet-zoom');
+    delete document.documentElement.dataset.device;
+    document.body.replaceChildren();
+  });
+
+  it('sets the layout and the tablet zoom; a screen on its tablet board reads the tablet zoom', () => {
+    vi.stubGlobal('innerWidth', 1024);
+    vi.stubGlobal('innerHeight', 768);
+    const stop = installBoardZoom();
+    expect(document.documentElement.dataset.device).toBe('tablet');
+    expect(Number(document.documentElement.style.getPropertyValue('--tablet-zoom'))).toBeCloseTo(1024 / 1180);
+    expect(boardZoom()).toBeCloseTo(1024 / 1440);
+    const frame = document.createElement('div');
+    frame.className = 'universe board-frame board-frame-tablet';
+    document.body.append(frame);
+    expect(boardZoom()).toBeCloseTo(1024 / 1180);
+    vi.stubGlobal('innerWidth', 390);
+    vi.stubGlobal('innerHeight', 844);
+    window.dispatchEvent(new Event('resize'));
+    expect(document.documentElement.dataset.device).toBe('phone');
+    // a tablet frame left on the page counts only in the tablet layout
+    expect(boardZoom()).toBe(MIN_BOARD_ZOOM);
+    stop();
   });
 
   it('sets --board-zoom and --board-side from the window and follows resizes; screen px become board px', () => {

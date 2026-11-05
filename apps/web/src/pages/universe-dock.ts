@@ -1,7 +1,8 @@
 import type { DocumentSummary } from '../api/content-api';
-import type { Translate } from '../i18n/i18n';
+import type { Locale, Translate } from '../i18n/i18n';
 import { SHELL_PATHS } from '../layout/app-shell';
 import type { StageCard } from '../ui/stage-cards';
+import { timeAgo } from './reader-messages';
 
 /** A text not updated for this many days is "Cần cập nhật" on the stage. */
 export const STALE_DAYS = 30;
@@ -79,4 +80,37 @@ export function dockCards({ recent, relatedCount, now }: DockInput, t: Translate
   });
   cards.push({ id: 'ask', href: SHELL_PATHS.copilot, title: t('universe.dock.ask'), sub: t('universe.dock.askSub'), icon: 'sparkles' });
   return cards;
+}
+
+export interface TabletDockInput {
+  recent: readonly DocumentSummary[];
+  now: number;
+  locale: Locale;
+}
+
+/** A recent text as a card of the tablet stage: its title, how far it was read (or when it changed), its origin. */
+function recentCard(doc: DocumentSummary, input: TabletDockInput, t: Translate): StageCard {
+  const reading = doc.readProgress !== null && doc.readProgress > 0 && doc.readProgress < 100 ? doc.readProgress : undefined;
+  const when = timeAgo(input.locale, doc.updatedAt, input.now);
+  return {
+    id: `doc-${doc.id}`,
+    href: documentHref(doc.id),
+    title: doc.title,
+    sub: reading !== undefined ? t('universe.tablet.read', { percent: reading }) : when.charAt(0).toLocaleUpperCase(input.locale) + when.slice(1),
+    icon: reading !== undefined ? 'bookmark' : 'docs',
+    progress: reading,
+    badge: doc.origin === 'own' ? { label: t('universe.tablet.yours'), tone: 'own' } : { label: t(doc.origin === 'official' ? 'origin.official' : 'origin.community'), tone: 'official' },
+  };
+}
+
+/**
+ * The stage of the tablet Universe (T01): the text read on (else the latest) and the next recent texts round the
+ * Knowledge Graph card in the middle; fewer recent texts leave fewer cards.
+ */
+export function tabletCards(input: TabletDockInput, t: Translate): StageCard[] {
+  const first = continueReading(input.recent) ?? input.recent[0];
+  const rest = input.recent.filter((doc) => doc !== first).slice(0, 3);
+  const docs = (first ? [first, ...rest] : rest).map((doc) => recentCard(doc, input, t));
+  const graph: StageCard = { id: 'graph', href: SHELL_PATHS.graph, title: t('universe.dock.graph'), sub: t('universe.dock.graphSub'), icon: 'space-networking', highlight: true };
+  return [...docs.slice(0, 2), graph, ...docs.slice(2)];
 }

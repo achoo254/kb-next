@@ -580,3 +580,172 @@ a.copilot-source:focus-visible {
     animation: none;
   }
 }
+
+/* ── phone (M04, 390×844): head at 14px, scopes at 76px, Jev and key chips at 122px, the thread from 178px to the
+   field 96px from the bottom ── */
+
+.copilot-phone {
+  position: relative;
+  height: 100%;
+}
+
+.copilot-phone-head {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.copilot-phone-orb {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copilot-phone-orb .copilot-hero-ring-inner {
+  inset: 6px;
+}
+
+.copilot-phone-orb img {
+  position: relative;
+  object-fit: contain;
+}
+
+.copilot-phone-heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.copilot-phone-title {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 700 20px var(--font-display);
+}
+
+.copilot-phone-status {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.copilot-phone-scopes {
+  position: absolute;
+  left: 16px;
+  right: 0;
+  top: 72px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.copilot-phone-scopes .copilot-scope {
+  flex: none;
+  white-space: nowrap;
+}
+
+.copilot-phone-chips {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 122px;
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.copilot-phone-chips > * {
+  box-sizing: border-box;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.copilot-phone-thread {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 178px;
+  bottom: 170px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.copilot-phone-from {
+  align-self: flex-start;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--c-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.copilot-phone .copilot-ask {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 96px;
+}
+
+.copilot-phone .copilot-ask .kf-ask-box {
+  height: 60px;
+  border-radius: 30px;
+}
+
+.copilot-phone .copilot-ask .kf-ask-send {
+  width: 48px;
+  height: 48px;
+}
+
+.copilot-phone-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.copilot-phone-make {
+  display: flex;
+  gap: 8px;
+}
+
+.copilot-phone-make > * {
+  flex: 1;
+}
+
+.copilot-phone-canvas {
+  min-height: 44px;
+  border-radius: 22px;
+  border: 1px solid var(--phone-ghost-border);
+  background: none;
+  color: var(--phone-ghost-text);
+  font: 600 13px var(--font-sans);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.copilot-phone-limit {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}

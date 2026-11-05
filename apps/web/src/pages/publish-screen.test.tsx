@@ -165,3 +165,22 @@ it('shows the X02 panel for a text it cannot open', async () => {
   renderWithI18n(<PublishScreen id={DOC_ID} />);
   expect(await screen.findByText('404')).toBeTruthy();
 });
+
+describe('publishing on a phone (M03)', () => {
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+  });
+
+  it('keeps the same choice in a sheet: who sees it, one place picker, and "Gửi duyệt" sends it', async () => {
+    document.documentElement.dataset.device = 'phone';
+    renderWithI18n(<PublishScreen id={DOC_ID} />);
+    const sheet = within(await screen.findByRole('region', { name: 'Xuất bản và chia sẻ' }));
+    expect(document.querySelector('[data-screen="M03"]')).not.toBeNull();
+    expect(sheet.getByRole('radio', { name: /Gửi duyệt/ }).getAttribute('aria-checked')).toBe('true');
+    const place = sheet.getByRole('combobox', { name: 'Bộ sưu tập' }) as HTMLSelectElement;
+    expect(Array.from(place.options).map((o) => o.textContent)).toContain('Networking › Giao thức nền tảng');
+    fireEvent.change(place, { target: { value: 'networking|c-proto' } });
+    fireEvent.click(sheet.getByRole('button', { name: 'Gửi duyệt' }));
+    await waitFor(() => expect(calls.find((c) => c.url.endsWith('/submit'))?.body).toMatchObject({ space: 'networking', collection: 'c-proto' }));
+  });
+});

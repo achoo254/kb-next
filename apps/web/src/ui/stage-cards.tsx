@@ -18,12 +18,17 @@ export interface StageCard {
   warning?: string;
   /** Icon in the warning colour (an item that needs attention). */
   iconTone?: 'warn';
+  /** The text's origin under its line (T01): "Chính thức", "Của bạn". */
+  badge?: { label: string; tone: 'official' | 'own' };
 }
 
 interface StageCardsProps {
   cards: readonly StageCard[];
-  /** `full`: the dock of C09 (964×307, with the neon stage glass and arc); `mini`: the DesignSystem tile. */
-  size?: 'full' | 'mini';
+  /**
+   * `full`: the dock of C09 (964×307, with the neon stage glass and arc); `tablet`: the smaller dock of T01 (848×274);
+   * `mini`: the DesignSystem tile.
+   */
+  size?: 'full' | 'tablet' | 'mini';
   /** The chevron link under the dock (full size), e.g. to "Của tôi". */
   more?: { href: string; label: string };
   className?: string;
@@ -38,7 +43,7 @@ interface Tilt {
 }
 
 /** The fan of tilted cards of C09 (5 cards) and of the DesignSystem tile (3 cards), copied from the boards. */
-const FANS: Record<'full' | 'mini', Record<number, readonly Tilt[]>> = {
+const FANS: Record<'full' | 'tablet' | 'mini', Record<number, readonly Tilt[]>> = {
   full: {
     5: [
       { rx: -6, ry: 16, rz: -1.5, origin: 'right center', marginTop: 26 },
@@ -46,6 +51,15 @@ const FANS: Record<'full' | 'mini', Record<number, readonly Tilt[]>> = {
       { rx: -10, ry: 0, rz: 0, origin: 'center', marginTop: 0 },
       { rx: -6, ry: -8, rz: 0.7, origin: 'left center', marginTop: 12 },
       { rx: -6, ry: -16, rz: 1.5, origin: 'left center', marginTop: 26 },
+    ],
+  },
+  tablet: {
+    5: [
+      { rx: -6, ry: 14, rz: -1.5, origin: 'right center', marginTop: 22 },
+      { rx: -6, ry: 7, rz: -0.7, origin: 'right center', marginTop: 10 },
+      { rx: -10, ry: 0, rz: 0, origin: 'center', marginTop: 0 },
+      { rx: -6, ry: -7, rz: 0.7, origin: 'left center', marginTop: 10 },
+      { rx: -6, ry: -14, rz: 1.5, origin: 'left center', marginTop: 22 },
     ],
   },
   mini: {
@@ -59,6 +73,12 @@ const FANS: Record<'full' | 'mini', Record<number, readonly Tilt[]>> = {
 
 const FLAT: Tilt = { rx: 0, ry: 0, rz: 0, origin: 'center', marginTop: 0 };
 
+/** The glass arc over the stage: its box and the curve of its top edge (C09, T01). */
+const ARCS: Record<'full' | 'tablet', { width: number; height: number; d: string }> = {
+  full: { width: 888, height: 236, d: 'M0 112 Q444 -6 888 112' },
+  tablet: { width: 780, height: 210, d: 'M0 100 Q390 -6 780 100' },
+};
+
 function tiltStyle(tilt: Tilt): CSSProperties {
   return {
     transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) rotateZ(${tilt.rz}deg)`,
@@ -67,17 +87,24 @@ function tiltStyle(tilt: Tilt): CSSProperties {
   };
 }
 
+function iconSize(size: 'full' | 'tablet' | 'mini', highlight: boolean): number {
+  if (size === 'full') return highlight ? 28 : 22;
+  if (size === 'tablet') return highlight ? 26 : 20;
+  return highlight ? 22 : 20;
+}
+
 /** The neon stage with glass cards tilted in 3D (`perspective()` in `transform`) of board C09. */
 export function StageCards({ cards, size = 'full', more, className }: StageCardsProps): ReactNode {
   const mini = size === 'mini';
   const fan = FANS[size][cards.length];
+  const arc = size === 'mini' ? null : ARCS[size];
   return (
     <div className={className ? `kf-stage ${className}` : 'kf-stage'} data-size={size}>
-      {!mini && (
+      {arc && (
         <>
           <div className="kf-stage-glass" aria-hidden="true" />
-          <svg className="kf-stage-arc" aria-hidden="true" width="888" height="236" viewBox="0 0 888 236">
-            <path d="M0 112 Q444 -6 888 112" fill="none" strokeWidth="1.6" />
+          <svg className="kf-stage-arc" aria-hidden="true" width={arc.width} height={arc.height} viewBox={`0 0 ${arc.width} ${arc.height}`}>
+            <path d={arc.d} fill="none" strokeWidth="1.6" />
           </svg>
         </>
       )}
@@ -93,7 +120,7 @@ export function StageCards({ cards, size = 'full', more, className }: StageCards
             data-id={`stage-card-${card.id}`}
             style={tiltStyle(fan?.[index] ?? FLAT)}
           >
-            <Icon name={card.icon} size={mini ? (card.highlight ? 22 : 20) : card.highlight ? 28 : 22} className="kf-stage-icon" />
+            <Icon name={card.icon} size={iconSize(size, card.highlight === true)} className="kf-stage-icon" />
             <span className="kf-stage-title">{card.title}</span>
             {card.sub && <span className="kf-stage-sub">{card.sub}</span>}
             {card.progress !== undefined && (
@@ -102,6 +129,11 @@ export function StageCards({ cards, size = 'full', more, className }: StageCards
                   <span className="kf-stage-bar" style={{ width: `${card.progress}%` }} />
                 </span>
                 <span>{card.progress}%</span>
+              </span>
+            )}
+            {card.badge && (
+              <span className="kf-stage-badge" data-tone={card.badge.tone}>
+                {card.badge.label}
               </span>
             )}
             {card.warning && <span className="kf-stage-warning">{card.warning}</span>}

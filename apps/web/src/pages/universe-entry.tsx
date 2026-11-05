@@ -1,3 +1,4 @@
+import { useDevice } from '../layout/device';
 import { type ReactNode, useEffect, useState } from 'react';
 import { type Me, type SpaceListItem, fetchMe, fetchSpaces } from '../api/content-api';
 import { useI18n } from '../i18n/i18n';
@@ -48,6 +49,7 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   const [account, setAccount] = useState<AccountState>({ status: 'loading' });
   const [closed, setClosed] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
+  const device = useDevice();
 
   useEffect(() => {
     let live = true;
@@ -60,7 +62,8 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   }, []);
 
   if (account.status === 'loading') return <UniverseOpening stage="universe" />;
-  const open = !closed && showOnboarding(account, window.location.search);
+  // The tour points at the desktop's rail, panel and stage, which a phone does not have: it waits for a bigger screen.
+  const open = device !== 'phone' && !closed && showOnboarding(account, window.location.search);
   return (
     <>
       {children}

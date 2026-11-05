@@ -267,3 +267,79 @@
     opacity: 1;
   }
 }
+
+/* The text's origin on a card (T01). */
+.kf-stage-badge {
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.kf-stage-badge[data-tone="own"] {
+  background: color-mix(in srgb, var(--glow-personal) 35%, transparent);
+}
+
+/* The tablet dock (T01, 848×274): glass 780×210 from 34px, platform 848×140 at 134px, five 122×130 cards. */
+.kf-stage[data-size="tablet"] {
+  width: 848px;
+  height: 274px;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-glass {
+  left: 34px;
+  width: 780px;
+  height: 210px;
+  clip-path: path("M0 100 Q390 -6 780 100 Q766 174 712 198 Q390 232 68 198 Q14 174 0 100 Z");
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-arc {
+  left: 34px;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-platform {
+  top: 134px;
+  width: 848px;
+  height: 140px;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-cards {
+  left: 84px;
+  top: 28px;
+  width: 680px;
+  height: 170px;
+  gap: 10px;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-card {
+  width: 122px;
+  height: 130px;
+  padding: 12px;
+  gap: 6px;
+  border-radius: 20px;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-card[data-highlight] {
+  width: 124px;
+  height: 150px;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-title {
+  line-height: 1.25;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-card[data-highlight] .kf-stage-title {
+  font-size: 15px;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-sub {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.kf-stage[data-size="tablet"] .kf-stage-progress {
+  font-size: 10px;
+}

@@ -762,3 +762,13 @@
 :root[data-motion="reduce"] .canvas-link-dot {
   display: none;
 }
+
+/* A phone has no Canvas (Z02): the note in the middle of the phone frame. */
+.canvas-phone {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 24px 20px 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

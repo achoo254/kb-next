@@ -1,0 +1,394 @@
+/* The phone Universe (board Mobile, 390×844): search and account at the top, the 2D orbit (390×520 from 18px,
+   centred on wider phones), the Space sheet rising from 410px (from 150px when expanded). */
+
+.phone-universe {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.phone-universe-top {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 16px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-search-pill {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 6px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 24px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text-muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.phone-search-text {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.phone-search-ai {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: var(--white);
+}
+
+.phone-search-ai svg {
+  fill: currentColor;
+}
+
+.phone-avatar {
+  flex: none;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--violet-600);
+  border: 2px solid var(--violet-300);
+  color: var(--white);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.phone-universe-note {
+  position: absolute;
+  left: 16px;
+  top: 74px;
+  z-index: 3;
+  box-sizing: border-box;
+  height: 28px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 14px;
+  background: var(--phone-soft);
+  color: var(--c-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.phone-orbit {
+  position: absolute;
+  left: calc(50% - 195px);
+  top: 18px;
+  width: 390px;
+  height: 520px;
+}
+
+.phone-orbit-field {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.phone-orb {
+  position: absolute;
+  left: 135px;
+  top: 180px;
+  width: 120px;
+  height: 120px;
+  padding: 0;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.phone-orb-art {
+  position: absolute;
+  inset: -22px;
+  width: 164px;
+  height: 164px;
+}
+
+.phone-orb-title {
+  position: relative;
+  font: 700 16px var(--font-display);
+  text-shadow: var(--orb-text-shadow);
+}
+
+.phone-planet {
+  position: absolute;
+  padding: 0;
+  border: none;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  color: var(--white);
+  opacity: 0.72;
+  cursor: pointer;
+  animation: kf-float 5s ease-in-out infinite;
+  transition: transform 0.3s var(--ease-out-back);
+}
+
+.phone-planet[data-focused] {
+  opacity: 1;
+}
+
+.phone-planet:active {
+  transform: scale(0.92);
+}
+
+.phone-planet-art {
+  position: absolute;
+  left: -12px;
+  top: -12px;
+}
+
+.phone-planet[data-space="kubernetes"] .phone-planet-art {
+  filter: hue-rotate(28deg) saturate(1.2);
+}
+
+.phone-planet-shade {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--phone-planet-shade);
+}
+
+.phone-planet-name {
+  position: relative;
+  font: 700 12px var(--font-display);
+  white-space: nowrap;
+  text-shadow: var(--text-shadow-strong);
+}
+
+.phone-planet-count {
+  position: relative;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tint);
+  text-shadow: 0 0 6px var(--glow), var(--text-shadow-strong);
+}
+
+.phone-planet:focus-visible,
+.phone-orb:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* ---------- the Space sheet ---------- */
+
+.phone-sheet.kf-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% - 434px);
+  z-index: 4;
+  height: 640px;
+  transition: top 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+.phone-sheet.phone-sheet-open {
+  top: 150px;
+}
+
+.phone-sheet-body {
+  box-sizing: border-box;
+  height: 100%;
+  padding: 10px 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.phone-sheet-name {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 700 22px var(--font-display);
+}
+
+.phone-sheet-open {
+  flex: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--c-link);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.phone-sheet-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.phone-sheet-chip {
+  box-sizing: border-box;
+  height: 26px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  border-radius: 13px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--phone-official-bg);
+  color: var(--phone-official-text);
+}
+
+.phone-sheet-chip[data-origin="community"] {
+  background: var(--phone-community-bg);
+  color: var(--phone-community-text);
+}
+
+.phone-sheet-chip[data-origin="own"] {
+  background: var(--phone-own-bg);
+  color: var(--phone-own-text);
+}
+
+.phone-sheet-chip[data-origin="pending"] {
+  background: none;
+  border: 1px dashed var(--phone-wait-border);
+  color: var(--phone-wait-text);
+}
+
+.phone-sheet-line {
+  /* one line, as on the board: the Space's whole description is one tap away ("Mở Space") */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phone-sheet-line,
+.phone-sheet-note {
+  margin: 0;
+  font-size: 14px;
+  color: var(--phone-lead);
+}
+
+.phone-sheet-texts {
+  margin: 0;
+  padding: 0 0 4px;
+  list-style: none;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.phone-sheet-text {
+  flex: none;
+  box-sizing: border-box;
+  width: 112px;
+  height: 100px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 18px;
+  background: var(--phone-card);
+  border: 1px solid var(--tint);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.phone-sheet-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--white), var(--tint));
+}
+
+.phone-sheet-title {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.phone-sheet-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* The two buttons of the phone boards: the glowing rim one and the ghost one (46px inside their rim, round). */
+.phone-button {
+  flex: 1;
+  box-sizing: content-box;
+  height: 46px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 23px;
+  font: 600 14px var(--font-sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.phone-button[data-tone="rim"] {
+  background: var(--rim-active-bg);
+  border: 1.5px solid var(--rim-active-border);
+  box-shadow: var(--rim-active-shadow);
+  color: var(--white);
+}
+
+.phone-button[data-tone="ghost"] {
+  background: none;
+  border: 1px solid var(--phone-ghost-border);
+  color: var(--phone-ghost-text);
+}
+
+.phone-offline {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 110px;
+  z-index: 3;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--c-warn);
+  color: var(--c-on-warn);
+  font-size: 12px;
+  font-weight: 600;
+}
+
