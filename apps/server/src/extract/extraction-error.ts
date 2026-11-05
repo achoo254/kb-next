@@ -14,7 +14,14 @@ export type ExtractErrorCode =
   | 'no-document'
   | 'tika-unavailable'
   | 'timeout'
-  | 'internal';
+  | 'internal'
+  /** Stopped by its owner (C16 "Huỷ"); "Thử lại" runs it again. */
+  | 'cancelled'
+  /**
+   * The file needs more memory than its reader may take (the PDF worker ran out), or the server stopped while reading
+   * it MAX_ATTEMPTS times. Never retried on its own; only an admin may run it again (a user could loop it otherwise).
+   */
+  | 'too-complex';
 
 const HINTS: Record<ExtractErrorCode, ExtractFixHint> = {
   'too-large': 'smaller-file',
@@ -26,7 +33,12 @@ const HINTS: Record<ExtractErrorCode, ExtractFixHint> = {
   'tika-unavailable': 'retry-later',
   timeout: 'retry-later',
   internal: 'retry-later',
+  cancelled: 'retry-later',
+  'too-complex': 'smaller-file',
 };
+
+/** Codes only an admin may retry (C16 "Thử lại" is refused to the owner). */
+export const ADMIN_RETRY_ONLY: ReadonlySet<string> = new Set<ExtractErrorCode>(['too-complex']);
 
 const RETRYABLE: ReadonlySet<ExtractErrorCode> = new Set(['tika-unavailable', 'timeout', 'internal']);
 

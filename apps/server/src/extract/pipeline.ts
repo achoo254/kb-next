@@ -18,8 +18,7 @@ import { type ExtractedPart, normalize, ocrPageText, tikaMarkdown, tikaPages } f
 import { ExtractionError } from './extraction-error';
 import { type FileRoute, MAX_FILE_BYTES, routeFor } from './formats';
 import { type PageDecision, decidePages } from './ocr-decision';
-import { inspectPdf } from './pdf-inspector';
-import { pdfWithPages } from './pdf-subset';
+import { PdfWork, type PdfWorkOptions } from './pdf-work';
 import { assessOcrPages } from './quality-validator';
 import { initialSteps } from './job-store';
 import type { TikaExtractor } from './tika-client';
@@ -37,6 +36,8 @@ export interface PipelineDeps {
   jev: JevJudge | null;
   sync: Pick<IndexSync, 'enqueue'> | null;
   filesDir: string;
+  /** Limits of the PDF worker thread (default PDF_WORKER_LIMITS; tests lower them). */
+  pdfWorker?: PdfWorkOptions;
 }
 
 /** One run's links to its job: where its steps and suggestions are saved, and its deadline. */
@@ -72,7 +73,9 @@ async function readStoredFile(filesDir: string, target: ExtractionTarget): Promi
   try {
     // The size on disk, not the row's: the cap holds whatever was written.
     if ((await stat(file)).size > MAX_FILE_BYTES) throw new ExtractionError('too-large', 'file on disk over the cap');
-    return new Uint8Array(await readFile(file));
+    // A view of the buffer read, not a copy of it.
+    const read = await readFile(file);
+    return new Uint8Array(read.buffer, read.byteOffset, read.byteLength);
   } catch (error) {
     if (error instanceof ExtractionError) throw error;
     const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : null;
@@ -102,12 +105,12 @@ interface OcrOutcome {
 }
 
 /** OCR of the pages that need it, in batches, then their quality. */
-async function ocrPages(deps: PipelineDeps, bytes: Uint8Array, decisions: readonly PageDecision[], signal: AbortSignal): Promise<OcrOutcome> {
+async function ocrPages(deps: PipelineDeps, pdf: PdfWork, bytes: Uint8Array, decisions: readonly PageDecision[], signal: AbortSignal): Promise<OcrOutcome> {
   const wanted = decisions.filter((d) => d.source === 'ocr').map((d) => d.page);
   const read: Array<{ page: number; text: string; confidence: number | null }> = [];
   for (let start = 0; start < wanted.length; start += OCR_PAGES_PER_REQUEST) {
     const batch = wanted.slice(start, start + OCR_PAGES_PER_REQUEST);
-    const subset = await pdfWithPages(bytes, batch);
+    const subset = await pdf.subset(bytes, batch);
     const html = await deps.tika.html(subset, 'application/pdf', { ocr: true, signal, timeoutMs: OCR_REQUEST_BASE_MS + OCR_REQUEST_PER_PAGE_MS * batch.length });
     const pages = tikaPages(html);
     // One page in the batch and no page markup: the whole answer is that page.
@@ -149,10 +152,19 @@ export async function runExtraction(deps: PipelineDeps, fileId: string, run: Pip
   let parts: ExtractedPart[];
   if (route === 'pdf') {
     await tracker.set('ocr', 'running');
-    const reports = await inspectPdf(bytes, signal);
-    const decisions = await decidePages(deps.jev, reports);
-    const needsOcr = decisions.some((d) => d.source === 'ocr');
-    const ocr = needsOcr ? await ocrPages(deps, bytes, decisions, signal) : null;
+    // pdf.js and pdf-lib run in the job's worker thread, never in the API's (pdf-work.ts).
+    const pdf = new PdfWork(signal, deps.pdfWorker);
+    let reports: Awaited<ReturnType<PdfWork['inspect']>>;
+    let decisions: PageDecision[];
+    let ocr: OcrOutcome | null;
+    try {
+      reports = await pdf.inspect(bytes);
+      decisions = await decidePages(deps.jev, reports);
+      const needsOcr = decisions.some((d) => d.source === 'ocr');
+      ocr = needsOcr ? await ocrPages(deps, pdf, bytes, decisions, signal) : null;
+    } finally {
+      pdf.close();
+    }
     if (ocr) await tracker.set('ocr', 'done', ocr.detail);
     else await tracker.set('ocr', 'skipped', { pages: reports.length, ocrPages: [], quality: null, lowQualityPages: [], reason: 'no-scanned-pages' });
 

@@ -26,6 +26,8 @@ trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02
 Kiểm giống mock: [`docs/parity-testing.md`](docs/parity-testing.md); chỗ buộc phải khác mock: [`docs/mock-deviations.md`](docs/mock-deviations.md).
 Trình soạn bài (C02, TipTap, Markdown, tự lưu và offline): [`docs/editor.md`](docs/editor.md).
 Trích chữ và OCR tệp tải lên (Tika, chọn trang OCR, cờ chất lượng, hàng đợi): [`docs/text-extraction.md`](docs/text-extraction.md).
+Tải tệp, Trung tâm nhập, trình sửa Office nhúng và đồng bộ offline (C03, C16, H04, ranuts/document ở tên miền riêng):
+[`docs/office-editor.md`](docs/office-editor.md).
 
 ## Chạy
 

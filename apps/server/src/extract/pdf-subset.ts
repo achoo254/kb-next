@@ -5,10 +5,18 @@
 import { PDFDocument } from 'pdf-lib';
 import { ExtractionError } from './extraction-error';
 
-/** The given 1-based pages of `bytes`, in that order, as a new PDF. */
-export async function pdfWithPages(bytes: Uint8Array, pages: readonly number[]): Promise<Uint8Array> {
+/** Parses a PDF once, for every subset a job takes of it. */
+export async function loadPdf(bytes: Uint8Array): Promise<PDFDocument> {
   try {
-    const source = await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+    return await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+  } catch (error) {
+    throw new ExtractionError('corrupt', `PDF could not be parsed: ${error instanceof Error ? error.name : 'error'}`, { cause: error });
+  }
+}
+
+/** The given 1-based pages of `source`, in that order, as a new PDF. */
+export async function pagesOf(source: PDFDocument, pages: readonly number[]): Promise<Uint8Array> {
+  try {
     const target = await PDFDocument.create({ updateMetadata: false });
     const copied = await target.copyPages(
       source,
@@ -19,4 +27,9 @@ export async function pdfWithPages(bytes: Uint8Array, pages: readonly number[]):
   } catch (error) {
     throw new ExtractionError('corrupt', `PDF pages could not be copied: ${error instanceof Error ? error.name : 'error'}`, { cause: error });
   }
+}
+
+/** The given 1-based pages of `bytes`, in that order, as a new PDF. */
+export async function pdfWithPages(bytes: Uint8Array, pages: readonly number[]): Promise<Uint8Array> {
+  return pagesOf(await loadPdf(bytes), pages);
 }

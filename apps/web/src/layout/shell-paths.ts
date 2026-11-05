@@ -14,4 +14,8 @@ export const SHELL_PATHS = {
   /** Own AI keys (F03). */
   keys: '/settings/keys',
   inbox: '/inbox',
+  /** Uploading Office files (C03), the Import Center (C16), the offline sync queue (H04). */
+  upload: '/upload',
+  imports: '/import',
+  sync: '/sync',
 } as const;

@@ -46,6 +46,11 @@ id kb >/dev/null 2>&1 || useradd --system --no-create-home --shell /sbin/nologin
 chown root:kb /etc/kb/production.env
 chmod 640 /etc/kb/production.env
 mkdir -p $remote/releases
+# Uploaded files: kb writes them, nginx reads them for X-Accel-Redirect through the group (setgid: new files take it).
+nginx_group=\$(id -gn nginx 2>/dev/null || id -gn www-data)
+# /var/lib/kb also holds Meilisearch's data (root-only): traversable, not listable, so kb and nginx reach files/.
+install -d -m 711 -o root -g root /var/lib/kb
+install -d -m 2750 -o kb -g "\$nginx_group" /var/lib/kb/files
 unit=/etc/systemd/system/kb-server.service
 if ! cmp -s $remote/infra/kb-server.service \$unit; then
 	install -m 644 $remote/infra/kb-server.service \$unit

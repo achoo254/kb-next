@@ -20,6 +20,9 @@ import {
   userNames,
 } from '../access/reading';
 import type { Viewer } from '../access/viewer';
+import { editRight } from '../access/authoring';
+import { currentFileOf } from '../access/files';
+import { EDITABLE_KINDS, type FileKind, kindOfMime } from '../files/file-kinds';
 import { type Caption, type SpaceCaptions, captionInputsFor, fallbackCaption, textTotal } from '../captions/space-captions';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
@@ -111,6 +114,11 @@ export interface DocumentResponse {
   /** Most related readable texts first: same Space or linked, scored in code. */
   related: Array<WithRelevance<DocumentSummary>>;
   versions: Array<{ version: number; editorName: string | null; createdAt: string }>;
+  /**
+   * The stored file of an Office document's current version (C11 opens it in the editor); null for a text.
+   * `editable`: the viewer may save a new version and the editor opens that kind (docx, xlsx, pptx).
+   */
+  file: { id: string; name: string; kind: FileKind; size: number; version: number; savedAt: string; editable: boolean } | null;
 }
 
 /**
@@ -287,6 +295,8 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
     const progress = viewer.kind === 'user' ? (await progressOf(db, viewer.userId, [doc.id])).get(doc.id) : undefined;
     if (!summary) throw new Error('document summary missing');
     const collection = collectionRows.find((c) => c.id === doc.collectionId);
+    const stored = doc.type === 'office' ? await currentFileOf(db, viewer, doc.id) : null;
+    const storedKind = stored ? kindOfMime(stored.mime) : null;
     const body: DocumentResponse = {
       lang,
       translationAvailable: doc.lang === lang,
@@ -309,6 +319,18 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
       wikilinks: writtenLinks(chunks.map((c) => c.text).join('\n\n'), others.filter((d) => links.some((l) => l.kind === 'wikilink' && l.sourceId === doc.id && l.targetId === d.id)), doc.lang),
       related,
       versions: (versions ?? []).map((v) => ({ version: v.version, editorName: names.get(v.editorId) ?? null, createdAt: v.createdAt.toISOString() })),
+      file:
+        stored && storedKind
+          ? {
+              id: stored.id,
+              name: stored.originalName,
+              kind: storedKind,
+              size: stored.size,
+              version: stored.version,
+              savedAt: stored.savedAt.toISOString(),
+              editable: EDITABLE_KINDS.has(storedKind) && editRight(viewer, doc) === 'ok',
+            }
+          : null,
     };
     res.set('Cache-Control', 'no-store').json(body);
   });

@@ -6,6 +6,7 @@ import { activityRoutes } from './api/activity-routes';
 import { DOCUMENT_BODY_LIMIT, authoringRoutes } from './api/authoring-routes';
 import { CANVAS_BODY_LIMIT, canvasRoutes } from './api/canvas-routes';
 import { contentRoutes } from './api/content-routes';
+import { fileRoutes } from './api/file-routes';
 import { graphRoutes } from './api/graph-routes';
 import { historyRoutes } from './api/history-routes';
 import { meRoutes } from './api/me-routes';
@@ -18,6 +19,7 @@ import type { ServerConfig } from './config';
 import type { Db } from './db/client';
 import { SpaceCaptions } from './captions/space-captions';
 import { askRoutes } from './copilot/ask-routes';
+import type { ExtractionService } from './extract';
 import { translateRoutes } from './copilot/translate-routes';
 import { WRITE_BODY_LIMIT, writeRoutes } from './copilot/write-routes';
 import { HttpError } from './http-error';
@@ -51,6 +53,8 @@ export interface AppDeps {
   userKeysSecret?: Buffer | null;
   /** API origins of the AI providers (default: the real ones; tests use local fakes). */
   aiBases?: ProviderBases;
+  /** Text extraction of uploaded files (server.ts starts it; null: uploads are stored without processing). */
+  extraction?: ExtractionService | null;
 }
 
 /** The real Jev client, each call logged and added to the day's totals. */
@@ -65,7 +69,8 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
 /**
  * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
  * (/api/me), the reading API (Spaces, documents, recent), writing (documents, versions, trash, favourites, Spaces and
- * Collections), the Graph and Canvas, search, the account's own AI keys, the Copilot, AI translation and AI writing
+ * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, search,
+ * the account's own AI keys, the Copilot, AI translation and AI writing
  * (all three on those keys). The web app is static (nginx in production, Vite in dev).
  */
 export function createApp({
@@ -78,6 +83,7 @@ export function createApp({
   summaries = loadImportedSummaries(),
   userKeysSecret = readUserKeysSecret(config.userKeysSecretPath).secret,
   aiBases = LIVE_BASES,
+  extraction = null,
 }: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
@@ -107,6 +113,8 @@ export function createApp({
   app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(historyRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(myContentRoutes({ config, db, now, sync: search?.sync ?? null }));
+  // Stored files: uploads (multipart, streamed to disk, never parsed as JSON), downloads, editor saves.
+  app.use(fileRoutes({ config, db, now, extraction, sync: search?.sync ?? null }));
   app.use(graphRoutes({ config, db, now, jev, summaries }));
   app.use(canvasRoutes({ config, db, now, jev }));
   app.use(searchRoutes({ config, db, now, meili: search?.meili ?? null, jev, summaries }));

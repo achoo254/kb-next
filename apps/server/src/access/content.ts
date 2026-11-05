@@ -60,6 +60,7 @@ export const documentColumns = {
   deletedAt: documents.deletedAt,
   deletedBy: documents.deletedBy,
   planet: documents.planet,
+  tags: documents.tags,
 };
 
 /** Spaces a viewer sees on the Universe: every public Space, plus the viewer's own personal one. */

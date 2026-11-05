@@ -24,6 +24,7 @@ function row(id: string, lang: 'vi' | 'en', group: string | null, aiTranslated =
     deletedAt: null,
     deletedBy: null,
     planet: null,
+    tags: [],
   };
 }
 

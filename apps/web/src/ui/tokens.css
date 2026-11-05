@@ -572,6 +572,44 @@
   --mine-text-private: light-dark(#9d174d, #fbcfe8);
   --mine-text-approved: light-dark(#0e7490, #67e8f9);
   --mine-text-dim: light-dark(#334155, #cbd5e1);
+  /* C03, C16, H04: the badge of each kind of file (W, X, P, PDF, M; anything else) */
+  --file-word: var(--blue-600);
+  --file-excel: #16a34a;
+  --file-powerpoint: #ea580c;
+  --file-pdf: #dc2626;
+  --file-markdown: #7c3aed;
+  --file-other: var(--slate-500);
+  /* C03, C16 (their panels are rim panels, their file cards soft rims): the file rows, wells and step nodes */
+  --import-row: rgb(22 17 54 / 0.7);
+  --import-well: rgb(14 11 38 / 0.8);
+  --import-node-wait: rgb(14 11 38 / 0.85);
+  --import-ok-node: radial-gradient(circle at 40% 35%, #6ee7b7, #059669 75%);
+  --import-run-node: radial-gradient(circle at 40% 35%, #a5f3fc, #0891b2 75%);
+  --import-err-node: radial-gradient(circle at 40% 35%, #fde68a, #d97706 75%);
+  --import-ok-glow: #34d399;
+  --import-ok-rim: var(--emerald-200);
+  --import-run-rim: var(--cyan-100);
+  --import-err-rim: #fef3c7;
+  --import-run-text: light-dark(#0e718c, #67e8f9);
+  --import-sky: var(--sky-300);
+  --import-flow: var(--sky-100);
+  --import-warn-button: linear-gradient(180deg, rgb(245 158 11 / 0.4) 0%, rgb(120 53 15 / 0.7) 100%);
+  --import-warn-rim: var(--amber-300);
+  --import-ok-button: linear-gradient(180deg, rgb(16 185 129 / 0.45) 0%, rgb(6 78 59 / 0.75) 100%);
+  --import-dark-ring: radial-gradient(circle at 50% 40%, rgb(40 30 96 / 0.95), rgb(10 8 30 / 0.98));
+  --import-portal: radial-gradient(circle, #06041a 25%, #7c3aed 60%, #22d3ee 100%);
+  --import-on-warn: #1c1206;
+  /* H04: the sync queue rows and the version cards in conflict */
+  --sync-row: rgb(12 6 40 / 0.6);
+  --sync-card: rgb(18 12 52 / 0.85);
+  --sync-button: rgb(30 20 72 / 0.85);
+  --sync-banner-ink: rgb(6 4 26 / 0.55);
+  --sync-online-card: rgb(16 40 40 / 0.7);
+  --sync-ok-ink: #04231a;
+  --sync-fail-text: var(--red-300);
+  --sync-fail-line: var(--red-400);
+  --sync-wait-text: var(--violet-200);
+  --sync-local: var(--cyan-500);
 }
 
 :root[data-theme="light"] {

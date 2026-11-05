@@ -12,6 +12,8 @@ hay user máy chủ vào đây; dùng alias SSH (`SSH_TARGET`) và placeholder n
 | Web (React + Vite, tĩnh) | `/var/www/kb/current/apps/web/dist`, nginx phục vụ trực tiếp |
 | API (Node, Express 5, một file bundle) | systemd `kb-server`, loopback `127.0.0.1:5320`, Node 22 ở `/opt/node22`, `MemoryHigh=300M`, `MemoryMax=400M` |
 | Tìm kiếm | Meilisearch riêng của kb, container Docker `kb-meili` (bản ghim `v1.56.1`), loopback `127.0.0.1:5322`, `--memory=512m`, dữ liệu `/var/lib/kb/meili` (mục Meilisearch) |
+| Tệp tải lên | `/var/lib/kb/files` (`FILES_DIR`), `kb:nginx` `2750`, tệp `0640`; nginx gửi tệp tải về qua `X-Accel-Redirect` (mục Tệp tải lên) |
+| Trình sửa Office | `kb-office.hoandat.com`, bản build nguyên của ranuts/document ở `/var/www/kb-office/current`, nginx phục vụ tĩnh ([office-editor.md](office-editor.md)) |
 | Trích chữ tệp tải lên | Apache Tika 2.9.3 dùng chung trên `.65` (loopback `127.0.0.1:9998`, có Tesseract `vie`/`eng`), gọi từ ngay process `kb-server`, một tệp một lúc ([text-extraction.md](text-extraction.md)) |
 | Database | Postgres dùng chung trên `.65`, database `kb`, role `kb` (dòng `host kb kb 127.0.0.1/32 scram-sha-256` trong `pg_hba.conf`); migration chạy khi server khởi động |
 | Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/healthz` sang API |
@@ -20,8 +22,8 @@ hay user máy chủ vào đây; dùng alias SSH (`SSH_TARGET`) và placeholder n
 Việc định kỳ chạy ngay trong process `kb-server` (không cần cron): dọn phiên hết hạn (lúc khởi động, rồi mỗi giờ), xoá
 vĩnh viễn bài nằm trong thùng rác từ 30 ngày (lúc khởi động, rồi mỗi ngày; log `trash purge: deleted N document(s)…`,
 lỗi thì `trash purge failed` và lần sau thử lại), kiểm lệch chỉ mục Meilisearch (mỗi ngày). Bài bị xoá hẳn được gỡ khỏi
-chỉ mục. Chưa có thư mục tệp tải lên (tải Office là phase 10), nên job chưa có tệp nào trên đĩa để xoá. Job không chạy
-với `KB_SEED=mock` (dev/E2E): thùng rác của seed ghi ngày theo board (03/11/2026).
+chỉ mục, tệp tải lên của bài đó (mọi phiên bản) bị xoá khỏi `/var/lib/kb/files`. Job không chạy với `KB_SEED=mock`
+(dev/E2E): thùng rác của seed ghi ngày theo board (03/11/2026).
 
 Link chia sẻ `/l/<token>` mang token trong đường dẫn: nginx phục vụ trang web cho nó như mọi trang nhưng `access_log off`
 và `error_log … crit`. Các trang khác ghi log theo định dạng `kb_notoken` (chỉ `$uri`, không query string, không
@@ -29,6 +31,7 @@ và `error_log … crit`. Các trang khác ghi log theo định dạng `kb_notok
 nhau và giữ các luật log này.
 
 Các file: [`infra/nginx/kb.hoandat.com.conf`](../infra/nginx/kb.hoandat.com.conf),
+[`infra/nginx/kb-office.hoandat.com.conf`](../infra/nginx/kb-office.hoandat.com.conf) (trình sửa Office),
 [`infra/kb-server.service`](../infra/kb-server.service), [`infra/deploy.sh`](../infra/deploy.sh),
 [`infra/activate-incoming.sh`](../infra/activate-incoming.sh), [`infra/setup-deploy-user.sh`](../infra/setup-deploy-user.sh),
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml).
@@ -82,6 +85,8 @@ chép thành file env của `apps/server`.
 | `USER_KEYS_SECRET_PATH` | `/etc/kb-keys/user-keys-secret` (mục Key riêng). Không bắt buộc: không đặt, thiếu tệp hay tệp sai thì Key riêng, Copilot và dịch bằng AI tắt (503), phần còn lại vẫn chạy |
 | `TIKA_URL` | không cần đặt: mặc định `http://127.0.0.1:9998` (Tika dùng chung); `http` chỉ được trên loopback |
 | `FILES_DIR` | không cần đặt: mặc định `/var/lib/kb/files` (tệp tải lên, đọc để trích chữ; [text-extraction.md](text-extraction.md)) |
+| `FILE_DELIVERY` | không cần đặt: production mặc định `x-accel` (nginx gửi tệp, mục Tệp tải lên); `node` chỉ dùng khi không có nginx phía trước (dev, test) |
+| `OFFICE_EDITOR_ORIGIN` | không cần đặt: production mặc định `https://kb-office.hoandat.com`; phải `https` và khác origin của kb. **Phải trùng** origin trong `frame-src` của CSP ở `infra/nginx/kb.hoandat.com.conf` và `frame-ancestors` của `infra/nginx/kb-office.hoandat.com.conf`: đổi một chỗ mà không đổi chỗ kia thì khung editor bị chặn ([office-editor.md](office-editor.md)) |
 | `KB_SEED` | không đặt: chỉ dùng khi dev/E2E (`mock` nạp dữ liệu mẫu lúc khởi động); production từ chối khởi động nếu có |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
@@ -192,6 +197,33 @@ Log khởi động ghi `text extraction: Tika at <TIKA_URL>, files in <FILES_DIR
 job chờ rồi thử lại, log `extract: file <id> will retry (tika-unavailable …)`. Không restart hay đổi cấu hình Tika khi
 chưa kiểm RAM trống của máy: các app khác cũng dùng nó.
 
+## Tệp tải lên
+
+Tải lên (C03, C16) và lưu từ trình sửa Office đi qua `POST /api/files`, `PUT /api/files/:id`: một tệp mỗi request,
+ghi thẳng ra đĩa theo luồng (sha256 tính trên đường đi, không giữ cả tệp trong RAM), dừng ngay khi quá 25 MB, chỉ nhận
+docx, xlsx, pptx, pdf, md và kiểm nội dung thật (đầu `%PDF-`, cấu trúc zip của OOXML, md là UTF-8 không ký tự điều
+khiển; Office có mật khẩu bị từ chối với cách sửa). Tên trên đĩa là khoá ngẫu nhiên 32 ký tự, không bao giờ là tên người
+dùng gửi.
+
+| Việc | Cấu hình |
+|---|---|
+| Thư mục | `install -d -m 2750 -o kb -g nginx /var/lib/kb/files` (`deploy.sh setup` làm việc này): `kb` ghi, nhóm `nginx` đọc, bit setgid để tệp mới mang nhóm `nginx` |
+| Tệp | `0640` (server tự đặt): chủ `kb` đọc ghi, nhóm `nginx` đọc, người khác không |
+| Unit | `ReadWritePaths=/var/lib/kb/files` ([`infra/kb-server.service`](../infra/kb-server.service)): ngoài thư mục này hệ thống vẫn chỉ đọc (`ProtectSystem=strict`) |
+| Tải lên | nginx `location ^~ /api/files`: `client_max_body_size 26m`, `proxy_request_buffering off` (server nhận theo luồng và cắt ở 25 MB thay vì nginx ghi tạm cả tệp) |
+| Tải về | `GET /api/files/:id` kiểm quyền (người đọc khác chỉ tải được phiên bản hiện tại) rồi trả `X-Accel-Redirect: /_kb_files/<khoá>`; nginx `location ^~ /_kb_files/ { internal; alias /var/lib/kb/files/; }` gửi tệp. Gọi thẳng `/_kb_files/…` từ ngoài là 404 |
+
+Tệp tải về qua nginx mang `Content-Type`, `Content-Disposition` (attachment), `Cache-Control` của server và
+`X-Content-Type-Options: nosniff`; ETag là của nginx (server không gửi ETag ở cả hai cách gửi). SELinux trên `.65` đang
+`Disabled` (kiểm 05/11/2026), nên nginx đọc được `/var/lib/kb/files` chỉ nhờ nhóm; bật SELinux về sau thì phải gắn nhãn
+`httpd_sys_content_t` cho thư mục này (`semanage fcontext` + `restorecon`) trước khi bật.
+
+Đọc PDF chạy trong worker thread riêng của mỗi job (heap tối đa 160 MB, [text-extraction.md](text-extraction.md#pdf-trong-luồng-riêng)):
+bundle phải có `apps/server/dist/server/pdf-worker.mjs` cạnh `index.mjs` (`pnpm build` tạo cả hai).
+
+Kiểm sau khi deploy: `sudo -u nginx test -r /var/lib/kb/files/<một khoá>` đúng; tải một tệp từ C11 trả 200 và log
+`kb-server` không có dòng nào của request đó ngoài API. Xoá vĩnh viễn một bài trong thùng rác xoá cả các tệp của nó.
+
 ## Nhập nội dung Học Cloud
 
 Lệnh nhập đọc API công khai của Học Cloud (lab, bài tập) và `content/` đi kèm bản release (trang học hàng tuần đã chỉnh,
@@ -215,7 +247,8 @@ bản gốc cho tới khi xem lại). Máy dev: `pnpm import:hoc-cloud` (PGlite 
 
 ## Lần đầu (đã làm 04/11/2026)
 
-1. **DNS:** bản ghi `A` `kb.hoandat.com` **proxied** trỏ về `<SERVER_65_IP>` (cùng đích với các app khác trên `.65`).
+1. **DNS:** bản ghi `A` `kb.hoandat.com` **proxied** trỏ về `<SERVER_65_IP>` (cùng đích với các app khác trên `.65`);
+   thêm `kb-office.hoandat.com` cùng kiểu cho trình sửa Office (05/11/2026, mục Trình sửa Office).
 2. **RAM, cổng, đĩa:** `free -m`, `ss -ltn`, `df -h /` trước khi cài.
 3. **Database:** sao lưu cả cụm trước (`sudo -u postgres pg_dumpall | gzip > /root/pg-backups/all-<stamp>.sql.gz`), rồi
    tạo role `kb` (mật khẩu ngẫu nhiên sinh trên server), `createdb -O kb kb`, thêm dòng `pg_hba.conf` cạnh các sản
@@ -225,6 +258,20 @@ bản gốc cho tới khi xem lại). Máy dev: `pnpm import:hoc-cloud` (PGlite 
 5. **Unit và nginx:** `SSH_TARGET=<alias> bash infra/deploy.sh setup`.
 6. **Release:** `SSH_TARGET=<alias> bash infra/deploy.sh`.
 7. **User CI:** `kb-deploy` và secret của repo (mục Deploy tự động).
+
+## Trình sửa Office
+
+Một lần (và mỗi lần nâng bản editor), theo [office-editor.md](office-editor.md#triển-khai-editor):
+
+1. DNS `kb-office.hoandat.com` (proxied, như trên).
+2. Dựng bản build ở tag và commit đã ghim, `rsync` `dist/` sang `/var/www/kb-office/releases/<tag>/`, trỏ
+   `/var/www/kb-office/current` vào đó.
+3. Chép [`infra/nginx/kb-office.hoandat.com.conf`](../infra/nginx/kb-office.hoandat.com.conf) vào
+   `/etc/nginx/conf.d/`, `nginx -t`, reload (`deploy.sh setup` chỉ cài site của kb).
+4. Site của kb (`deploy.sh setup`) đã có `frame-src https://kb-office.hoandat.com` trong CSP.
+
+Kiểm: mở một docx ở C11, bấm "Mở để sửa", sửa, "Lưu" thì C17 có phiên bản mới; tắt mạng, sửa, lưu (báo "Đã lưu trên
+máy"), bật mạng thì bản đó lên server (H04 `/sync` hết hàng chờ).
 
 ## Deploy tự động (CI)
 

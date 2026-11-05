@@ -47,7 +47,9 @@ E2E chậm (dựng web, API, IdP giả rồi mở trình duyệt), nên chỉ ch
   bấm "Giải thích"). Câu trả lời AI (C11, C14) là luồng `/api/ask` ghi sẵn trong `apps/web/e2e/ai-boards.ts` vì E2E không
   có nhà cung cấp AI. C02 trả `/api/me/keys` bằng key của board (`keys-c02`) vì E2E không lưu được key thật. C08 trả `/api/me/documents` bằng 8 bài
   của board (`mine-c08`) vì seed dùng chung với C02, C09, C10 giữ các tên đó ở trạng thái khác; Canvas, gần đây, yêu
-  thích, thùng rác vẫn là seed.
+  thích, thùng rác vẫn là seed. C03 chọn 6 tệp của board vào ô chọn tệp (`files`; câu trả lời tải lên giả `upload-c03`), C16 trả `/api/files`
+  bằng 5 tệp của board (`imports-c16`), H04 nạp sẵn IndexedDB của trình duyệt bằng bản nháp và ghi chú của board rồi cắt
+  mạng (`offline-h04`, `offline`); dữ liệu ở `apps/web/e2e/office-boards.ts`.
 - Board ghép nhiều trạng thái của một màn cạnh nhau (S02, X02, F02) được so trên trang kit `/dev/kit/…` dựng từ chính
   component của màn đó, mỗi trạng thái một ô như board.
 - Làm xong một màn: đổi `status` sang `built`, seed dữ liệu giống mock cho màn đó, chạy lại. Vượt ngưỡng thì sửa màn;

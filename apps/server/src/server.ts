@@ -56,11 +56,11 @@ console.log(`text extraction: Tika at ${config.tikaUrl}, files in ${config.files
 
 // The trash keeps a deleted document 30 days (C08): purged at start, then daily. Not on the mock seed (dev/E2E): its
 // trash is dated on the boards' fixed day (03/11/2026), which the real clock would purge out from under them.
-const trashPurge = config.startupSeed ? null : startTrashPurge(database.db, search?.sync ?? null);
+const trashPurge = config.startupSeed ? null : startTrashPurge(database.db, search?.sync ?? null, config.filesDir);
 console.log(`trash purge: ${trashPurge ? 'daily' : 'off (KB_SEED=mock keeps the boards’ trash)'}`);
 
 // Loopback only: nginx (production) and the web dev server proxy to it.
-const server = createApp({ config, db: database.db, search, userKeysSecret: userKeys.secret }).listen(config.port, '127.0.0.1', () => {
+const server = createApp({ config, db: database.db, search, userKeysSecret: userKeys.secret, extraction }).listen(config.port, '127.0.0.1', () => {
   console.log(`kb server listening on 127.0.0.1:${config.port} (${config.nodeEnv})`);
 });
 // A taken port must stop the process (systemd restarts it), not leave it running without a listener.

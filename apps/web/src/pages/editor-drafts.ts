@@ -5,6 +5,7 @@
  * offline. Without IndexedDB (a private window that blocks it) the editor still saves to the server.
  */
 import type { EditableDocument, Planet } from '../api/authoring-api';
+import { currentAccountId } from './office-account';
 
 export interface EditorDraft {
   id: string;
@@ -17,6 +18,8 @@ export interface EditorDraft {
   editedAt: number;
   /** The document as last opened, to show the editor offline. */
   doc: EditableDocument;
+  /** The account that wrote it (H04 lists only the signed-in account's); absent on copies written before. */
+  userId?: string;
 }
 
 const DB_NAME = 'kb-editor';
@@ -89,7 +92,15 @@ export async function readDraft(id: string): Promise<EditorDraft | null> {
 
 /** Keeps the copy; resolves false when the browser could not (no IndexedDB, storage full). */
 export async function writeDraft(draft: EditorDraft): Promise<boolean> {
-  return (await run('readwrite', (store) => store.put(draft))) !== null;
+  const userId = draft.userId ?? (await currentAccountId()) ?? undefined;
+  return (await run('readwrite', (store) => store.put(userId ? { ...draft, userId } : draft))) !== null;
+}
+
+/** The copies `userId` wrote in this browser (H04 lists those not on the server yet); never another account's. */
+export async function listDrafts(userId: string): Promise<EditorDraft[]> {
+  const values: unknown = await run('readonly', (store) => store.getAll());
+  const drafts = Array.isArray(values) ? values.filter((value: unknown): value is EditorDraft => typeof value === 'object' && value !== null && 'id' in value && typeof value.id === 'string' && isDraft(value, value.id)) : [];
+  return drafts.filter((draft) => draft.userId === userId);
 }
 
 export async function deleteDraft(id: string): Promise<void> {

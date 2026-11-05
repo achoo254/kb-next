@@ -140,6 +140,13 @@ const ICONS = {
   favorite: { body: <path d="M12 2l3 7 7 .6-5.3 4.7 1.6 7.2L12 17.8 5.7 21.5l1.6-7.2L2 9.6 9 9z" /> },
   'eye-off': { body: <path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 22 12s-1.2 2.2-3.3 4M6.6 6.6C3.8 8.3 2 12 2 12s4 7 10 7c1.6 0 3-.4 4.3-1" />, stroke: 2.4, cap: 'round' },
   'create-canvas': { body: <path d="M4 4h7v7H4zM13 13h7v7h-7zM11 7.5h3.5a2 2 0 0 1 2 2V13" />, stroke: 2.1, cap: 'round', join: 'round' },
+  /* C03, C16: the processing details link; H04: the connection banner, the conflict mark and the server copy */
+  lines: { body: <path d="M4 6h16M4 12h10M4 18h6" />, cap: 'round' },
+  'wifi-off': { body: <path d="M2 9a15 15 0 0 1 6-3.3M22 9a15 15 0 0 0-8-3.9M8.5 16a5 5 0 0 1 7 0M12 19.5v.5M3 3l18 18" />, stroke: 2.2, cap: 'round' },
+  wifi: { body: <path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 19.5v.5" />, stroke: 2.2, cap: 'round' },
+  reconnect: { body: <path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" />, stroke: 2.2, cap: 'round' },
+  conflict: { body: <path d="M7 4v10M17 10v10M4 7l3-3 3 3M14 17l3 3 3-3" />, stroke: 2.2, cap: 'round' },
+  'cloud-copy': { body: <path d="M7 18a4 4 0 0 1-1-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18z" /> },
 } satisfies Record<string, IconShape>;
 
 export type IconName = keyof typeof ICONS;

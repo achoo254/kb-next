@@ -1,0 +1,545 @@
+/* Offline sync (design/mock/H04-Offline.dc.html): the board scales its stage to 0.944 and moves it by (78, 10); in
+   it: the queue 40,110 (330 wide) · the conflict 400,110 (660 wide) · what works offline right 28, top 110 (320
+   wide) · the connection banner centred at top 850. */
+
+.sync-screen {
+  position: relative;
+  height: 900px;
+}
+
+.sync-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 900px;
+  transform-origin: 0 0;
+  transform: translate(78px, 10px) scale(0.944);
+}
+
+.sync-muted {
+  margin: 0;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+/* ── the queue ── */
+
+.sync-queue {
+  position: absolute;
+  left: 40px;
+  top: 110px;
+  width: 330px;
+  box-sizing: border-box;
+  padding: 20px;
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--c-glass);
+  border: 1px solid var(--c-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.sync-queue-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sync-queue-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.sync-count {
+  font: 700 13px var(--font-display);
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--violet-600) 40%, transparent);
+}
+
+.sync-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.sync-row {
+  --row-line: color-mix(in srgb, var(--violet-400) 20%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--sync-row);
+  border: 1px solid var(--row-line);
+}
+
+.sync-row[data-state="sending"],
+.sync-row[data-state="ready"] {
+  --row-line: color-mix(in srgb, var(--cyan-400) 40%, transparent);
+}
+
+.sync-row[data-state="failed"] {
+  --row-line: color-mix(in srgb, var(--red-500) 55%, transparent);
+}
+
+.sync-row[data-state="conflict"] {
+  --row-line: color-mix(in srgb, var(--amber-500) 55%, transparent);
+}
+
+.sync-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sync-row-head .file-badge {
+  border-radius: 9px;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.sync-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sync-row-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sync-row-what {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.sync-spin {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2.5px solid color-mix(in srgb, var(--cyan-400) 30%, transparent);
+  border-top-color: var(--cyan-400);
+  animation: kf-spin 1s linear infinite;
+}
+
+.sync-row-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sync-pill {
+  --pill-bg: color-mix(in srgb, var(--violet-300) 18%, transparent);
+  --pill-text: var(--sync-wait-text);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--pill-bg);
+  color: var(--pill-text);
+}
+
+.sync-pill[data-state="sending"],
+.sync-pill[data-state="ready"] {
+  --pill-bg: color-mix(in srgb, var(--cyan-400) 18%, transparent);
+  --pill-text: var(--import-run-text);
+}
+
+.sync-pill[data-state="failed"] {
+  --pill-bg: color-mix(in srgb, var(--red-500) 18%, transparent);
+  --pill-text: var(--sync-fail-text);
+}
+
+.sync-pill[data-state="conflict"] {
+  --pill-bg: color-mix(in srgb, var(--amber-500) 18%, transparent);
+  --pill-text: var(--c-warn-text);
+}
+
+.sync-pill-link {
+  text-decoration: none;
+}
+
+.sync-retry {
+  margin-left: auto;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid var(--sync-fail-line);
+  background: none;
+  color: var(--sync-fail-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.sync-row-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--white) 10%, transparent);
+}
+
+.sync-row-bar span {
+  display: block;
+  height: 4px;
+  width: 60%;
+  background: linear-gradient(90deg, var(--cyan-400), var(--violet-400));
+}
+
+.sync-storage {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--amber-500) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-500) 55%, transparent);
+  color: var(--c-warn-text);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* ── the conflict ── */
+
+.sync-conflict {
+  position: absolute;
+  left: 400px;
+  top: 110px;
+  width: 660px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sync-conflict-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sync-conflict-mark {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--amber-500) 20%, transparent);
+  color: var(--amber-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sync-conflict-text,
+.sync-none {
+  display: flex;
+  flex-direction: column;
+}
+
+.sync-none {
+  gap: 6px;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--sync-card);
+  border: 2px solid color-mix(in srgb, var(--violet-400) 30%, transparent);
+}
+
+.sync-conflict-title {
+  font: 700 22px var(--font-display);
+}
+
+.sync-conflict-sub {
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.sync-versions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sync-version {
+  --side: var(--cyan-400);
+  --side-text: var(--import-run-text);
+  --side-mark: color-mix(in srgb, var(--cyan-400) 25%, transparent);
+  text-align: left;
+  padding: 18px;
+  border-radius: 24px;
+  border: 2px solid color-mix(in srgb, var(--violet-400) 30%, transparent);
+  background: var(--sync-card);
+  color: var(--c-text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font: inherit;
+}
+
+.sync-version[data-side="server"] {
+  --side: var(--violet-400);
+  --side-text: var(--violet-300);
+  --side-mark: color-mix(in srgb, var(--violet-400) 30%, transparent);
+}
+
+.sync-version[aria-pressed="true"] {
+  border-color: var(--side);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--side) 50%, transparent);
+}
+
+.sync-version-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--side-text);
+}
+
+.sync-version-title {
+  font: 700 20px var(--font-display);
+}
+
+.sync-version-body {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sync-version-body mark {
+  background: var(--side-mark);
+  color: inherit;
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+.sync-line {
+  height: 7px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--violet-300) 20%, transparent);
+}
+
+.sync-version-foot {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.sync-choices {
+  display: flex;
+  gap: 10px;
+}
+
+.sync-choice {
+  flex: 1;
+  height: 52px;
+  border-radius: 26px;
+  border: none;
+  background: var(--sync-button);
+  color: var(--c-text);
+  font: 700 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.sync-choice:disabled {
+  cursor: default;
+}
+
+.sync-choice[data-on][data-tone="local"] {
+  background: var(--sync-local);
+}
+
+.sync-choice[data-on][data-tone="server"] {
+  background: var(--violet-600);
+}
+
+.sync-choice[data-on][data-tone="both"] {
+  background: var(--emerald-500);
+}
+
+.sync-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--amber-500) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-500) 50%, transparent);
+  color: var(--c-warn-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sync-result[data-ok] {
+  background: color-mix(in srgb, var(--emerald-500) 16%, transparent);
+  border-color: color-mix(in srgb, var(--emerald-500) 50%, transparent);
+  color: var(--c-success-text);
+}
+
+/* ── what works offline, or what was synced ── */
+
+.sync-side {
+  position: absolute;
+  right: 28px;
+  top: 110px;
+  width: 320px;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--c-glass);
+  border: 1px solid var(--c-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.sync-side-art {
+  align-self: center;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--violet-500) 50%, transparent));
+  animation: sync-float 6s ease-in-out infinite;
+}
+
+@keyframes sync-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.sync-side-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.sync-can {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.sync-can-no {
+  color: var(--c-text-muted);
+}
+
+.sync-can-yes {
+  color: var(--emerald-500);
+}
+
+.sync-can-x {
+  color: var(--amber-500);
+}
+
+.sync-warm {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--c-text-muted);
+}
+
+.sync-side-online {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  border-color: color-mix(in srgb, var(--emerald-500) 60%, transparent);
+  background: var(--sync-online-card);
+}
+
+.sync-online-mark {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--emerald-500);
+  color: var(--sync-ok-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--emerald-500) 70%, transparent);
+}
+
+.sync-online-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sync-online-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.sync-online-sub {
+  font-size: 12px;
+  color: var(--emerald-200);
+}
+
+/* ── the connection banner ── */
+
+.sync-banner {
+  --banner: var(--amber-500);
+  --banner-text: var(--amber-300);
+  position: absolute;
+  left: 50%;
+  top: 850px;
+  transform: translateX(-50%);
+  height: 52px;
+  box-sizing: border-box;
+  padding: 0 8px 0 18px;
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--banner) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--banner) 60%, transparent);
+  color: var(--banner-text);
+}
+
+.sync-banner[data-state="reconnecting"] {
+  --banner: var(--cyan-400);
+  --banner-text: var(--import-run-text);
+}
+
+.sync-banner[data-state="online"] {
+  --banner: var(--emerald-500);
+  --banner-text: var(--c-success-text);
+}
+
+.sync-banner-text {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sync-banner-spin {
+  animation: kf-spin 1.2s linear infinite;
+}
+
+.sync-banner-button {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 19px;
+  border: none;
+  background: var(--sync-banner-ink);
+  color: var(--white);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}

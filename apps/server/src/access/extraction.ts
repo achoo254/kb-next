@@ -105,9 +105,12 @@ export async function collectionOptions(db: Db, ownerId: string): Promise<Collec
     .orderBy(asc(spaces.sortOrder), asc(spaces.slug), asc(collections.sortOrder), asc(collections.createdAt));
 }
 
-/** Whether `viewer` may follow a file's processing (C16): its owner, or an admin. */
+/**
+ * Whether `viewer` may follow and steer a file's processing (C16: see it, retry, cancel): the author of the document
+ * it belongs to (whoever saved that version, an admin's save included), or an admin.
+ */
 export async function mayFollowFile(db: Db, viewer: Viewer, fileId: string): Promise<boolean> {
   if (viewer.kind !== 'user' || !isUuid(fileId)) return false;
-  const [row] = await db.select({ ownerId: files.ownerId }).from(files).where(eq(files.id, fileId));
-  return row !== undefined && (viewer.isAdmin || row.ownerId === viewer.userId);
+  const [row] = await db.select({ authorId: documents.authorId }).from(files).innerJoin(documents, eq(documents.id, files.documentId)).where(eq(files.id, fileId));
+  return row !== undefined && (viewer.isAdmin || row.authorId === viewer.userId);
 }

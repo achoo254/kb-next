@@ -85,7 +85,8 @@ export function authRoutes({ config, db, idp, now }: AuthRoutesOptions): Router 
     const token = readSessionToken(req, config);
     const session = token ? await findSession(db, token, now()) : null;
     const user = session ? await findProfile(db, session.userId) : null;
-    res.set('Cache-Control', 'no-store').json(user ? { signedIn: true, signInAvailable: auth !== null, user } : { signedIn: false, signInAvailable: auth !== null });
+    // `id`: the account's id, so the browser keeps each account's offline Office drafts apart (office-store.ts).
+    res.set('Cache-Control', 'no-store').json(user && session ? { signedIn: true, signInAvailable: auth !== null, user: { ...user, id: session.userId } } : { signedIn: false, signInAvailable: auth !== null });
   });
 
   router.get('/auth/login', signInLimit, async (req, res) => {

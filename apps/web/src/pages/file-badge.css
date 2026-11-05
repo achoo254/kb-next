@@ -1,0 +1,36 @@
+/* The kind badge of a file row (C03 38px, C16 36px, H04 30px): a coloured square with its letter and glow. */
+
+.file-badge {
+  --file-colour: var(--file-other);
+  flex: none;
+  box-sizing: border-box;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--file-colour);
+  box-shadow: 0 0 12px var(--file-colour);
+  color: var(--white);
+  font: 700 13px var(--font-display);
+}
+
+.file-badge[data-kind="docx"] {
+  --file-colour: var(--file-word);
+}
+
+.file-badge[data-kind="xlsx"] {
+  --file-colour: var(--file-excel);
+}
+
+.file-badge[data-kind="pptx"] {
+  --file-colour: var(--file-powerpoint);
+}
+
+.file-badge[data-kind="pdf"] {
+  --file-colour: var(--file-pdf);
+}
+
+.file-badge[data-kind="md"],
+.file-badge[data-kind="note"] {
+  --file-colour: var(--file-markdown);
+}

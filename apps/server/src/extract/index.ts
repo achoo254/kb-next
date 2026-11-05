@@ -14,7 +14,8 @@ import type { ExtractFixHint, ExtractStep, ExtractSuggestions, extractStatus } f
 import type { JevJudge } from '../jev/jev-client';
 import type { IndexSync } from '../search/index-sync';
 import { ExtractionQueue, MAX_ATTEMPTS } from './extraction-queue';
-import { readJob } from './job-store';
+import { type ExtractJobRow, readJob } from './job-store';
+import type { PdfWorkOptions } from './pdf-work';
 import { TikaClient, type TikaExtractor } from './tika-client';
 
 export { MAX_FILE_BYTES, routeFor } from './formats';
@@ -39,8 +40,26 @@ export interface ExtractionStatus {
   finishedAt: Date | null;
 }
 
+/** What C16 shows of a job row (also for the upload list, which reads the jobs with their files). */
+export function toExtractionStatus(job: ExtractJobRow): ExtractionStatus {
+  return {
+    fileId: job.fileId,
+    status: job.status,
+    steps: job.steps,
+    attempts: job.attempts,
+    maxAttempts: MAX_ATTEMPTS,
+    error: job.errorCode ? { code: job.errorCode, hint: job.errorHint } : null,
+    suggestions: job.suggestions,
+    nextAttemptAt: job.nextAttemptAt,
+    updatedAt: job.updatedAt,
+    finishedAt: job.finishedAt,
+  };
+}
+
 export interface ExtractionService {
   enqueueExtraction(fileId: string): Promise<void>;
+  /** Stops a file's processing (C16 "Huỷ"); `enqueueExtraction` runs it again. Resolves whether anything stopped. */
+  cancelExtraction(fileId: string): Promise<boolean>;
   extractionStatus(viewer: Viewer, fileId: string): Promise<ExtractionStatus | null>;
   /** Resolves once no job is running or due (tests, shutdown). */
   idle(): Promise<void>;
@@ -55,32 +74,23 @@ export interface ExtractionDeps {
   /** Tika (default: a client of config.tikaUrl); tests pass a fake. */
   tika?: TikaExtractor;
   queue?: ConstructorParameters<typeof ExtractionQueue>[1];
+  /** Limits of the PDF worker thread (default PDF_WORKER_LIMITS); tests lower them. */
+  pdfWorker?: PdfWorkOptions;
 }
 
 /** Starts the queue (resuming the jobs a stopped server left) and returns the contract. */
-export async function startExtraction({ config, db, jev, sync, tika = new TikaClient(config.tikaUrl), queue: options }: ExtractionDeps): Promise<ExtractionService> {
-  const queue = new ExtractionQueue({ db, tika, jev, sync, filesDir: config.filesDir }, options);
+export async function startExtraction({ config, db, jev, sync, tika = new TikaClient(config.tikaUrl), queue: options, pdfWorker }: ExtractionDeps): Promise<ExtractionService> {
+  const queue = new ExtractionQueue({ db, tika, jev, sync, filesDir: config.filesDir, pdfWorker }, options);
   await queue.start();
   return {
     async enqueueExtraction(fileId) {
       await queue.enqueue(fileId);
     },
+    cancelExtraction: (fileId) => queue.cancel(fileId),
     async extractionStatus(viewer, fileId) {
       if (!(await mayFollowFile(db, viewer, fileId))) return null;
       const job = await readJob(db, fileId);
-      if (!job) return null;
-      return {
-        fileId: job.fileId,
-        status: job.status,
-        steps: job.steps,
-        attempts: job.attempts,
-        maxAttempts: MAX_ATTEMPTS,
-        error: job.errorCode ? { code: job.errorCode, hint: job.errorHint } : null,
-        suggestions: job.suggestions,
-        nextAttemptAt: job.nextAttemptAt,
-        updatedAt: job.updatedAt,
-        finishedAt: job.finishedAt,
-      };
+      return job ? toExtractionStatus(job) : null;
     },
     idle: () => queue.idle(),
     close: () => queue.close(),

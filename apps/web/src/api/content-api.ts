@@ -11,6 +11,7 @@
  * `rate-limited` (429); `network` when the request got no answer (offline).
  */
 import * as z from 'zod/mini';
+import { FILE_KINDS } from './files-api';
 import { ApiError, getJson } from './api-client';
 
 export const LANGS = ['vi', 'en'] as const;
@@ -190,8 +191,16 @@ const DocumentSchema = z.object({
   related: z.array(z.extend(DocumentSummarySchema, { relevance: Relevance })),
   /** Newest first. */
   versions: z.array(z.object({ version: z.number(), editorName: z.nullable(z.string()), createdAt: Time })),
+  /**
+   * The stored file of an Office document's current version (null for a text; absent from answers recorded before
+   * files existed). `editable`: the reader may save a new version and the editor opens its kind.
+   */
+  file: z.optional(
+    z.nullable(z.object({ id: z.string(), name: z.string(), kind: z.enum(FILE_KINDS), size: z.number(), version: z.number(), savedAt: Time, editable: z.boolean() })),
+  ),
 });
 export type DocumentView = z.infer<typeof DocumentSchema>;
+export type DocumentFile = NonNullable<DocumentView['file']>;
 export type ReaderDocument = DocumentView['document'];
 
 const RecentSchema = z.object({ documents: z.array(DocumentSummarySchema) });

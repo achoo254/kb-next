@@ -18,6 +18,7 @@ import { OriginTag } from '../ui/origin-tag';
 import { Skeleton } from '../ui/skeleton';
 import { ErrorPanel } from './error-screen';
 import { COMMENTS_ANCHOR, ReaderComments } from './reader-comments';
+import { OfficeView } from './office-view';
 import { ReaderMarkdown } from './reader-markdown';
 import { shortDate, useReaderText } from './reader-messages';
 import { useReading } from './reader-progress';
@@ -200,6 +201,7 @@ function ReaderArticle({ view, offline, articleRef, selection, ai }: ArticleProp
           </Button>
         </div>
       )}
+      {view.file && <OfficeView documentId={documentId} file={view.file} offline={offline} />}
       {view.chunks.map((chunk) => {
         const Heading = levels.get(chunk.anchor) === 3 ? 'h3' : 'h2';
         return (

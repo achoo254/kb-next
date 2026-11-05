@@ -9,6 +9,8 @@ export const DEFAULT_CLIENT_ID = 'kb-web';
 export const DEFAULT_TIKA_URL = 'http://127.0.0.1:9998';
 /** Uploaded files in production: outside the web root, owned by the user running `kb-server`. */
 export const PRODUCTION_FILES_DIR = '/var/lib/kb/files';
+/** The Office editor (ranuts/document, unmodified build) on its own subdomain in production (docs/office-editor.md). */
+export const PRODUCTION_OFFICE_EDITOR_ORIGIN = 'https://kb-office.hoandat.com';
 /** Uploaded files on a developer's machine: next to the dev PGlite directory (`.data/`, gitignored). */
 export const DEV_FILES_DIR = fileURLToPath(new URL('../../../.data/files', import.meta.url));
 
@@ -44,6 +46,17 @@ const Env = z.object({
   TIKA_URL: z.preprocess(emptyIsUnset, z.url().default(DEFAULT_TIKA_URL)),
   /** Directory of uploaded files (`<FILES_DIR>/<storageKey>`); default /var/lib/kb/files in production, .data/files otherwise. */
   FILES_DIR: z.preprocess(emptyIsUnset, z.string().min(1).optional()),
+  /**
+   * How GET /api/files/:id sends a file: `x-accel` hands it to nginx (an `internal` location reads the files
+   * directory, docs/deployment-guide.md); `node` streams it from this process (dev and tests, no nginx in front).
+   * Default: x-accel in production, node otherwise.
+   */
+  FILE_DELIVERY: z.preprocess(emptyIsUnset, z.enum(['x-accel', 'node']).optional()),
+  /**
+   * Origin of the Office editor the web app embeds in an iframe (its own subdomain). Default in production:
+   * https://kb-office.hoandat.com; unset elsewhere (Office files open read-only as their extracted text).
+   */
+  OFFICE_EDITOR_ORIGIN: z.preprocess(emptyIsUnset, z.url().optional()),
   /** `mock`: load the dev seed (the mock's Spaces and documents) at startup, for E2E. Refused in production. */
   KB_SEED: z.preprocess(emptyIsUnset, z.enum(['mock']).optional()),
   /** IdP sub that owns the seed's personal Space and private documents (KB_SEED and `pnpm seed`). */
@@ -98,12 +111,20 @@ export interface ServerConfig {
   askLimitPerMinute: number;
   /** Own-key saves per minute per account: each save calls the provider to check the key. */
   keySaveLimitPerMinute: number;
+  /** Uploads and Office editor saves per minute per account: each is up to 25 MB on disk and a job in the shared queue. */
+  uploadLimitPerMinute: number;
+  /** Extraction retries per minute per account: each is a new run through the shared Tika. */
+  retryLimitPerMinute: number;
   /** Load the dev seed at startup as this owner (KB_SEED=mock); null otherwise. Never set in production. */
   startupSeed: { ownerSub: string } | null;
   /** Base URL of the Tika server (no trailing slash). */
   tikaUrl: string;
   /** Absolute directory holding uploaded files by their storage key. */
   filesDir: string;
+  /** How downloads leave the server (FILE_DELIVERY). */
+  fileDelivery: 'x-accel' | 'node';
+  /** Origin of the embedded Office editor (no trailing slash); null: no editor. */
+  officeEditorOrigin: string | null;
 }
 
 /** The seed's owner when SEED_OWNER_SUB is unset: the seed admin. */
@@ -143,6 +164,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
   if (tikaUrl.protocol !== 'https:' && (tikaUrl.protocol !== 'http:' || !LOOPBACK_HOSTS.includes(tikaUrl.hostname))) {
     throw new Error('Invalid server env: TIKA_URL must be loopback http or https');
   }
+  const editorUrl = e.OFFICE_EDITOR_ORIGIN ? new URL(e.OFFICE_EDITOR_ORIGIN) : production ? new URL(PRODUCTION_OFFICE_EDITOR_ORIGIN) : null;
+  // File bytes go to that page: https only, plain http only on loopback outside production (a local editor build).
+  if (editorUrl && editorUrl.protocol !== 'https:' && (production || editorUrl.protocol !== 'http:' || !LOOPBACK_HOSTS.includes(editorUrl.hostname))) {
+    throw new Error('Invalid server env: OFFICE_EDITOR_ORIGIN must be https (http only on loopback outside production)');
+  }
+  if (editorUrl && editorUrl.origin === publicUrl.origin) throw new Error('Invalid server env: OFFICE_EDITOR_ORIGIN must be its own origin, not PUBLIC_URL');
   if (e.FILES_DIR && !path.isAbsolute(e.FILES_DIR)) throw new Error('Invalid server env: FILES_DIR must be an absolute path');
   // The code exchange is only as trustworthy as the TLS it travels over.
   if (e.AUTH_CLIENT_SECRET && env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
@@ -171,8 +198,12 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     userKeysSecretPath: e.USER_KEYS_SECRET_PATH ?? null,
     askLimitPerMinute: 20,
     keySaveLimitPerMinute: 5,
+    uploadLimitPerMinute: 30,
+    retryLimitPerMinute: 10,
     startupSeed: e.KB_SEED === 'mock' ? { ownerSub: e.SEED_OWNER_SUB ?? DEFAULT_SEED_OWNER_SUB } : null,
     tikaUrl: tikaUrl.href.replace(/\/$/, ''),
     filesDir: e.FILES_DIR ?? (production ? PRODUCTION_FILES_DIR : DEV_FILES_DIR),
+    fileDelivery: e.FILE_DELIVERY ?? (production ? 'x-accel' : 'node'),
+    officeEditorOrigin: editorUrl?.origin ?? null,
   };
 }

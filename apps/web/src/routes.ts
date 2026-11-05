@@ -38,6 +38,10 @@ export const ROUTES: readonly ScreenRoute[] = [
   // The create ring, opened by the lens rail's "+".
   { code: 'C01', titleKey: 'screen.C01', access: 'signed-in', pattern: /^\/create$/ },
   { code: 'C08', titleKey: 'screen.C08', access: 'signed-in', pattern: /^\/me$/ },
+  // Uploading Office files (C03), the Import Center (C16) and the offline sync queue (H04).
+  { code: 'C03', titleKey: 'screen.C03', access: 'signed-in', pattern: /^\/upload$/ },
+  { code: 'C16', titleKey: 'screen.C16', access: 'signed-in', pattern: /^\/import$/ },
+  { code: 'H04', titleKey: 'screen.H04', access: 'signed-in', pattern: /^\/sync$/ },
   { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },
   { code: 'F03', titleKey: 'screen.F03', access: 'signed-in', pattern: /^\/settings\/keys$/ },

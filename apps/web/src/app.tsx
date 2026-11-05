@@ -13,6 +13,7 @@ import { EditorScreen } from './pages/editor-screen';
 import { ErrorScreen } from './pages/error-screen';
 import { GraphScreen } from './pages/graph-screen';
 import { HistoryScreen } from './pages/history-screen';
+import { ImportScreen } from './pages/import-screen';
 import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
@@ -20,10 +21,12 @@ import { MineScreen } from './pages/mine-screen';
 import { NewNote } from './pages/new-note';
 import { ReaderScreen } from './pages/reader-screen';
 import { SearchScreen } from './pages/search-screen';
+import { SyncScreen } from './pages/sync-screen';
 import { SpaceScreen } from './pages/space-screen';
 import { TranslateScreen } from './pages/translate-screen';
 import { UniverseEntry } from './pages/universe-entry';
 import { UniverseScreen } from './pages/universe-screen';
+import { UploadScreen } from './pages/upload-screen';
 import { type ScreenRoute, matchRoute, routePath } from './routes';
 
 /** Whether the screen can show now: public screens always, the others once the session says signed in. */
@@ -49,6 +52,9 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   C02: { rail: 'create', view: 'docs', veil: 'strong' },
   C17: { rail: 'spaces', view: 'docs', veil: 'strong' },
   C08: { rail: 'mine', veil: 'strong' },
+  C03: { rail: 'create', veil: 'strong' },
+  C16: { rail: 'mine', veil: 'strong' },
+  H04: { veil: 'radial' },
   C20: { veil: 'strong' },
   H03: { rail: 'settings', veil: 'strong' },
   F03: { rail: 'settings', veil: 'radial' },
@@ -102,6 +108,12 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
       return <CreateMenu />;
     case 'C08':
       return <MineScreen />;
+    case 'C03':
+      return <UploadScreen />;
+    case 'C16':
+      return <ImportScreen />;
+    case 'H04':
+      return <SyncScreen />;
     case 'C12':
       return <SearchScreen />;
     case 'C13':

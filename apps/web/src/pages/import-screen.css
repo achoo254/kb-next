@@ -1,0 +1,677 @@
+/* The Import Center (design/mock/C16-ImportCenter.dc.html): header 112,116 (848 wide) · filters 112,208 · files
+   112,262 (848 × 610) · aside 990,116 (410 wide), over the strong veil. The board's pills and badges are content-box
+   spans (their border adds to their height; buttons and selects are border-box there too); the app is border-box,
+   so their heights here include the border. */
+
+.import-shell .app-shell-crumbs {
+  top: 78px;
+}
+
+.import-shell .app-shell-crumbs a {
+  font-weight: 400;
+}
+
+.import-shell .app-shell-crumb-current {
+  font-weight: 600;
+}
+
+.import-screen {
+  position: relative;
+  height: 900px;
+}
+
+.import-head {
+  position: absolute;
+  left: 112px;
+  top: 116px;
+  width: 848px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.import-ring {
+  flex: none;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: conic-gradient(var(--cyan-400) 0deg, var(--violet-400) var(--import-deg, 0deg), color-mix(in srgb, var(--violet-300) 16%, transparent) var(--import-deg, 0deg));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--violet-600) 55%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-ring span {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--import-dark-ring);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--violet-500) 45%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 16px var(--font-display);
+}
+
+.import-head-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.import-title {
+  margin: 0;
+  font: 700 32px var(--font-sans);
+  letter-spacing: -0.6px;
+  background: var(--hero-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.import-summary {
+  font-size: 13px;
+  color: var(--c-text-sub);
+}
+
+/* ── buttons of the board (.bw amber, .bs soft) ── */
+
+.import-warn-button,
+.import-soft-button {
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  font: 700 12px var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.import-head-button {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  font-size: 13px;
+}
+
+.import-warn-button {
+  background: var(--import-warn-button);
+  border: 1.5px solid var(--import-warn-rim);
+  color: var(--white);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 30%, transparent), 0 0 14px color-mix(in srgb, var(--amber-500) 55%, transparent);
+}
+
+.import-warn-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.import-soft-button,
+.import-round {
+  background: color-mix(in srgb, var(--import-well) 75%, transparent);
+  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  color: var(--c-text);
+}
+
+.import-soft-button {
+  font-weight: 600;
+}
+
+.import-soft-button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.import-round {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--c-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── filters ── */
+
+.import-filters {
+  position: absolute;
+  left: 112px;
+  top: 208px;
+  display: flex;
+  gap: 6px;
+}
+
+.import-filter {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  background: color-mix(in srgb, var(--import-well) 75%, transparent);
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.import-filter[aria-pressed="true"] {
+  border: 1.5px solid var(--rim-active-border);
+  background: var(--rim-active-bg);
+  box-shadow: inset 0 0 14px color-mix(in srgb, var(--violet-300) 45%, transparent), inset 0 1px 0 color-mix(in srgb, var(--white) 35%, transparent), 0 0 16px color-mix(in srgb, var(--violet-500) 75%, transparent);
+  color: var(--white);
+}
+
+/* ── the files ── */
+
+.import-list {
+  position: absolute;
+  left: 112px;
+  top: 262px;
+  width: 848px;
+  height: 610px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.import-empty {
+  flex: none;
+  height: 200px;
+  box-sizing: border-box;
+  border-radius: 24px;
+  border: 1.5px dashed var(--rim-border);
+  background: var(--rim-bg);
+  box-shadow: var(--rim-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 13px;
+}
+
+.import-empty-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--c-text);
+}
+
+.import-card {
+  --card-line: color-mix(in srgb, var(--violet-300) 35%, transparent);
+  --card-glow: color-mix(in srgb, var(--violet-500) 20%, transparent);
+  flex: none;
+  border-radius: 22px;
+  padding: 12px 16px;
+  background: var(--rim-soft-bg);
+  border: 1.5px solid var(--card-line);
+  box-shadow: inset 0 0 20px var(--card-glow), inset 0 1px 0 color-mix(in srgb, var(--white) 18%, transparent), 0 0 18px var(--card-glow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.import-card[data-state="done"] {
+  --card-line: color-mix(in srgb, var(--emerald-300) 50%, transparent);
+}
+
+.import-card[data-state="run"] {
+  --card-line: color-mix(in srgb, var(--cyan-300) 55%, transparent);
+  --card-glow: color-mix(in srgb, var(--cyan-400) 18%, transparent);
+}
+
+.import-card[data-state="err"] {
+  --card-line: color-mix(in srgb, var(--amber-300) 75%, transparent);
+  --card-glow: color-mix(in srgb, var(--amber-500) 22%, transparent);
+}
+
+.import-card-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.import-card-head .file-badge {
+  border: 1px solid color-mix(in srgb, var(--white) 35%, transparent);
+  font-size: 12px;
+}
+
+.import-card-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.import-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.import-card-place {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.import-pill {
+  --pill: var(--c-text-muted);
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--violet-400) 14%, transparent);
+  border: 1px solid var(--pill);
+  color: var(--pill);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.import-pill[data-state="done"] {
+  --pill: var(--c-success-text);
+  background: color-mix(in srgb, var(--emerald-500) 14%, transparent);
+}
+
+.import-pill[data-state="run"] {
+  --pill: var(--import-run-text);
+  background: color-mix(in srgb, var(--cyan-400) 14%, transparent);
+}
+
+.import-pill[data-state="err"] {
+  --pill: var(--c-warn-text);
+  background: color-mix(in srgb, var(--amber-500) 14%, transparent);
+}
+
+.import-pill-spin {
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--violet-300) 25%, transparent);
+  border-top-color: var(--pill);
+  animation: kf-spin 1s linear infinite;
+}
+
+.import-steps {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 0 48px;
+  display: flex;
+  align-items: center;
+}
+
+.import-step {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+}
+
+.import-step[data-first] {
+  flex: 0 0 auto;
+}
+
+.import-step-body {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.import-wire {
+  --from: color-mix(in srgb, var(--violet-300) 18%, transparent);
+  --to: color-mix(in srgb, var(--violet-300) 18%, transparent);
+  flex: 1;
+  height: 2px;
+  margin: 0 6px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--violet-300) 18%, transparent);
+}
+
+.import-wire[data-from="done"] {
+  --from: var(--import-ok-glow);
+}
+
+.import-wire[data-from="skipped"] {
+  --from: color-mix(in srgb, var(--violet-300) 35%, transparent);
+}
+
+.import-wire[data-to="done"] {
+  --to: var(--import-ok-glow);
+}
+
+.import-wire[data-to="skipped"] {
+  --to: color-mix(in srgb, var(--violet-300) 35%, transparent);
+}
+
+.import-wire[data-to="running"] {
+  --to: var(--cyan-400);
+}
+
+.import-wire[data-to="failed"] {
+  --to: var(--amber-500);
+}
+
+.import-wire[data-lit] {
+  background: linear-gradient(90deg, var(--from), var(--to));
+  box-shadow: 0 0 8px var(--to);
+}
+
+.import-wire[data-lit][data-to="running"] {
+  background: linear-gradient(90deg, var(--from) 0%, var(--import-flow) 25%, var(--to) 50%, var(--from) 75%, var(--import-flow) 100%);
+  background-size: 200% 100%;
+  animation: import-flow 1.6s linear infinite;
+}
+
+@keyframes import-flow {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.import-node {
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  flex: none;
+  border-radius: 50%;
+  background: var(--import-node-wait);
+  border: 1.5px solid color-mix(in srgb, var(--violet-300) 35%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font: 700 10px var(--font-sans);
+}
+
+.import-node[data-state="done"] {
+  background: var(--import-ok-node);
+  border-color: var(--import-ok-rim);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--emerald-500) 85%, transparent);
+}
+
+.import-node[data-state="skipped"] {
+  background: transparent;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--violet-300) 45%, transparent);
+  color: var(--c-text-muted);
+}
+
+.import-node[data-state="running"] {
+  background: var(--import-run-node);
+  border-color: var(--import-run-rim);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--cyan-400) 85%, transparent);
+}
+
+.import-node[data-state="failed"] {
+  background: var(--import-err-node);
+  border-color: var(--import-err-rim);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--amber-500) 85%, transparent);
+}
+
+.import-step-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.import-step-name[data-state="done"] {
+  color: var(--c-text);
+}
+
+.import-step-name[data-state="running"] {
+  color: var(--import-run-text);
+}
+
+.import-step-name[data-state="failed"] {
+  color: var(--c-warn-text);
+}
+
+.import-bar {
+  margin-left: 48px;
+  height: 5px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--violet-300) 16%, transparent);
+}
+
+.import-bar span {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--import-sky), var(--violet-400));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--import-sky) 70%, transparent);
+}
+
+.import-alert {
+  margin-left: 48px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--amber-500) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-300) 40%, transparent);
+  color: var(--c-warn-text);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.import-note {
+  margin: 0 0 0 48px;
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.import-note-warn {
+  color: var(--c-warn-text);
+}
+
+/* ── the aside ── */
+
+.import-aside {
+  position: absolute;
+  left: 990px;
+  top: 116px;
+  width: 410px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.import-drop {
+  position: relative;
+  height: 184px;
+  box-sizing: border-box;
+  border-radius: 26px;
+  border: 1.5px dashed var(--rim-border);
+  background: var(--rim-bg);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.import-drop:hover,
+.import-drop:focus-within {
+  border-color: color-mix(in srgb, var(--violet-200) 95%, transparent);
+}
+
+.import-drop-art {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-drop-art img {
+  position: absolute;
+  inset: 0;
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: var(--glow-orb);
+}
+
+.import-drop-icon {
+  position: relative;
+  color: var(--white);
+  filter: drop-shadow(0 0 6px var(--violet-deep));
+}
+
+.import-drop-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.import-drop-kinds {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.import-drop-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.import-dest {
+  border-radius: 26px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.import-dest-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.import-sug-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.import-sug {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--emerald-500) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--emerald-300) 40%, transparent);
+  color: var(--c-success-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.import-sug-text {
+  flex: 1;
+}
+
+.import-sug-button {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1.5px solid color-mix(in srgb, var(--emerald-300) 90%, transparent);
+  background: var(--import-ok-button);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 30%, transparent), 0 0 12px color-mix(in srgb, var(--emerald-500) 50%, transparent);
+  color: var(--white);
+  font: 700 11px var(--font-sans);
+  cursor: pointer;
+}
+
+.import-sug-button:disabled {
+  cursor: default;
+}
+
+.import-sug-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.import-tag {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+}
+
+.import-tag[aria-pressed="true"] {
+  border-color: var(--rim-active-border);
+  background: var(--rim-active-bg);
+  color: var(--white);
+}
+
+.import-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-muted);
+}
+
+.import-field select {
+  height: 46px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, var(--violet-300) 50%, transparent);
+  background: var(--import-well);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--violet-500) 25%, transparent);
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+}
+
+.import-dest-note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--c-text-sub);
+}
+
+.import-info {
+  border-radius: 20px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--night-row) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 6%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--c-text-sub);
+}
+
+.import-info b {
+  color: var(--c-text);
+}

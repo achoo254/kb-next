@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import * as z from 'zod/mini';
 import { apiFetch } from './api-client';
 
-/** The signed-in account as the IdP named it at the latest sign-in; any field may be null. */
-const SessionUserSchema = z.object({ name: z.nullable(z.string()), email: z.nullable(z.string()), picture: z.nullable(z.string()) });
+/**
+ * The signed-in account as the IdP named it at the latest sign-in; any field may be null. `id`: the account's id in
+ * KnowFlow (what this browser's offline Office drafts are kept under).
+ */
+const SessionUserSchema = z.object({ id: z.optional(z.string()), name: z.nullable(z.string()), email: z.nullable(z.string()), picture: z.nullable(z.string()) });
 export type SessionUser = z.infer<typeof SessionUserSchema>;
 
 const SessionSchema = z.object({ signedIn: z.boolean(), signInAvailable: z.boolean(), user: z.optional(SessionUserSchema) });
@@ -15,7 +18,16 @@ export async function fetchSession(): Promise<SessionInfo> {
   return SessionSchema.parse(await (await apiFetch('/api/session')).json());
 }
 
+/** Where the browser remembers the last signed-in account for its offline drafts (pages/office-account.ts). */
+export const REMEMBERED_ACCOUNT_KEY = 'kb-office-account';
+
 export async function signOut(): Promise<void> {
+  // Signed out on purpose: this browser no longer shows that account's offline drafts until it signs in again.
+  try {
+    localStorage.removeItem(REMEMBERED_ACCOUNT_KEY);
+  } catch {
+    // Storage blocked: nothing was remembered.
+  }
   await apiFetch('/auth/logout', { method: 'POST' });
 }
 

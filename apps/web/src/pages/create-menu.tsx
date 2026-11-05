@@ -1,9 +1,9 @@
 /**
  * The create ring (board C01, `/create`, opened by the lens rail's "+"): nine things to create around the orb, in
  * four groups, and the panel on the right describing the one under the pointer or keyboard focus. A note opens the
- * editor (/new), Canvas its list (/canvas); "Space cá nhân" and "Collection" open their form in the panel. What a
- * later phase brings (Office and bulk import, URL, journeys, templates) stays on the ring, marked "Sắp có", and does
- * nothing. Escape closes a form, then the ring (back to the page that opened it).
+ * editor (/new), Canvas its list (/canvas), an Office file the upload (/upload, C03), bulk import the Import Center
+ * (/import, C16); "Space cá nhân" and "Collection" open their form in the panel. What a later phase brings (URL,
+ * journeys, templates) stays on the ring, marked "Sắp có", and does nothing. Escape closes a form, then the ring (back to the page that opened it).
  */
 import { type CSSProperties, type ReactNode, useEffect, useState } from 'react';
 import { AppShell } from '../layout/app-shell';

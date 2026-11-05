@@ -25,7 +25,7 @@ export async function startTestServer(
    * Search (a test Meilisearch), the imported summaries, the own-keys secret and the AI providers' origins (fakes),
    * when the test needs them (given the test database).
    */
-  extra: (db: Db) => Pick<AppDeps, 'search' | 'summaries' | 'userKeysSecret' | 'aiBases'> = () => ({}),
+  extra: (db: Db) => Pick<AppDeps, 'search' | 'summaries' | 'userKeysSecret' | 'aiBases' | 'extraction'> = () => ({}),
 ): Promise<TestServer> {
   const database = await openPglite();
   // The app's public origin is the test server itself, known once it listens: listen first, then build the app.

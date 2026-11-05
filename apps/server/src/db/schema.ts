@@ -188,6 +188,8 @@ export const documents = pgTable(
     deletedBy: uuid('deleted_by').references(() => users.id, { onDelete: 'set null' }),
     /** The colour of the document's planet (C02 "Hành tinh của bài", C08), one of PLANET_COLOURS; null: the default. */
     planet: text('planet'),
+    /** Tags of the document, as its author accepted them from Jev's suggestions (C16) or wrote them. */
+    tags: text('tags').array().notNull().default(sql`'{}'::text[]`),
   },
   (table) => [
     index('documents_space_id_idx').on(table.spaceId),

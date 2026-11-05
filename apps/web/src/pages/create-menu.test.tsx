@@ -71,14 +71,16 @@ describe('the ring', () => {
       'Tài liệu từ mẫu · Nội dung · Sắp có',
       'Space cá nhân mới · Tổ chức',
       'Collection mới · Tổ chức',
-      'Tải file Office · Nhập · Sắp có',
-      'Nhập hàng loạt · Nhập · Sắp có',
+      'Tải file Office · Nhập',
+      'Nhập hàng loạt · Nhập',
       'Từ URL / Link · Nhập · Sắp có',
       'Lối đi · Hành trình · Sắp có',
       'Canvas · Hành trình',
     ]);
     expect(ringItem('Ghi chú').getAttribute('href')).toBe('/new');
     expect(ringItem('Canvas').getAttribute('href')).toBe('/canvas');
+    expect(ringItem('Tải file Office').getAttribute('href')).toBe('/upload');
+    expect(ringItem('Nhập hàng loạt').getAttribute('href')).toBe('/import');
     expect(ringPlace(0)).toEqual({ x: 580, y: 208, angle: -90 });
     expect(ringPlace(CREATE_OPTIONS.length - 1).angle).toBe(230);
     expect(within(screen.getByRole('list', { name: 'Nhóm lựa chọn' })).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Nội dung', 'Tổ chức', 'Nhập', 'Hành trình']);
@@ -92,12 +94,15 @@ describe('the ring', () => {
     expect(panel().getByText('Bảng ý tưởng tự do')).toBeTruthy();
     expect(panel().queryByText(/Sắp có/)).toBeNull();
 
-    const office = ringItem('Tải file Office');
-    fireEvent.focus(office);
+    fireEvent.focus(ringItem('Tải file Office'));
     expect(panel().getByText('docx, xlsx, pptx, pdf')).toBeTruthy();
+    expect(panel().queryByText(/Sắp có/)).toBeNull();
+
+    const url = ringItem('Từ URL / Link');
+    fireEvent.focus(url);
     expect(panel().getByText('Sắp có · mở cùng Trung tâm nhập')).toBeTruthy();
-    expect(office.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(office);
+    expect(url.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(url);
     expect(panel().queryByRole('button', { name: 'Tạo Space' })).toBeNull();
     expect(screen.getByText('Mô tả')).toBeTruthy();
 

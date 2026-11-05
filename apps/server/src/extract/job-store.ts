@@ -2,7 +2,7 @@
  * The `extract_jobs` rows: the queue's state lives in Postgres, so a restart picks up where the server stopped and C16
  * reads the same progress the queue writes.
  */
-import { and, asc, eq, inArray, lte, min, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lte, min, or, sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { EXTRACT_STEPS, type ExtractFixHint, type ExtractStep, type ExtractSuggestions, extractJobs } from '../db/schema';
 
@@ -55,8 +55,12 @@ export async function saveSteps(db: Db, fileId: string, steps: readonly ExtractS
     .where(and(eq(extractJobs.fileId, fileId), eq(extractJobs.status, 'running')));
 }
 
+/** The suggestions of a run still running (a cancelled or failed job is left as it is). */
 export async function saveSuggestions(db: Db, fileId: string, suggestions: ExtractSuggestions, now: Date): Promise<void> {
-  await db.update(extractJobs).set({ suggestions, updatedAt: now }).where(eq(extractJobs.fileId, fileId));
+  await db
+    .update(extractJobs)
+    .set({ suggestions, updatedAt: now })
+    .where(and(eq(extractJobs.fileId, fileId), eq(extractJobs.status, 'running')));
 }
 
 export async function finishJob(db: Db, fileId: string, steps: readonly ExtractStep[], now: Date): Promise<void> {
@@ -79,14 +83,23 @@ export async function failJob(db: Db, fileId: string, steps: readonly ExtractSte
     .where(eq(extractJobs.fileId, fileId));
 }
 
-/** Jobs a stopped server left running go back to the queue (their attempt counts: a file that crashes it gives up). */
-export async function requeueInterrupted(db: Db, now: Date): Promise<number> {
-  const rows = await db
+/**
+ * Jobs a stopped server left running: an attempt is counted when a job is claimed, so one already at `maxAttempts`
+ * failed for good as `too-complex` (a file that keeps crashing the server stops there); the others go back to the
+ * queue. Resolves how many were requeued and how many failed.
+ */
+export async function requeueInterrupted(db: Db, now: Date, maxAttempts: number): Promise<{ requeued: number; failed: number }> {
+  const failed = await db
+    .update(extractJobs)
+    .set({ status: 'failed', errorCode: 'too-complex', errorHint: 'smaller-file', nextAttemptAt: null, updatedAt: now, finishedAt: now })
+    .where(and(eq(extractJobs.status, 'running'), gte(extractJobs.attempts, maxAttempts)))
+    .returning({ fileId: extractJobs.fileId });
+  const requeued = await db
     .update(extractJobs)
     .set({ status: 'queued', updatedAt: now })
     .where(eq(extractJobs.status, 'running'))
     .returning({ fileId: extractJobs.fileId });
-  return rows.length;
+  return { requeued: requeued.length, failed: failed.length };
 }
 
 /** When the earliest waiting job is due; null when none waits. */
@@ -96,6 +109,19 @@ export async function nextRetryAt(db: Db): Promise<Date | null> {
     .from(extractJobs)
     .where(eq(extractJobs.status, 'waiting'));
   return row?.at ?? null;
+}
+
+/**
+ * Stops a job that waits (queued, or waiting for its retry): failed as `cancelled`, until "Thử lại" queues it again.
+ * Resolves whether there was such a job; a running one is stopped by the queue itself.
+ */
+export async function cancelWaitingJob(db: Db, fileId: string, now: Date): Promise<boolean> {
+  const rows = await db
+    .update(extractJobs)
+    .set({ status: 'failed', errorCode: 'cancelled', errorHint: 'retry-later', nextAttemptAt: null, updatedAt: now, finishedAt: now })
+    .where(and(eq(extractJobs.fileId, fileId), inArray(extractJobs.status, ['queued', 'waiting'])))
+    .returning({ fileId: extractJobs.fileId });
+  return rows.length > 0;
 }
 
 export async function readJob(db: Db, fileId: string): Promise<ExtractJobRow | null> {

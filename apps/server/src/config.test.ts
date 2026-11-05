@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEV_FILES_DIR, PRODUCTION_FILES_DIR, loadConfig } from './config';
+import { DEV_FILES_DIR, PRODUCTION_FILES_DIR, PRODUCTION_OFFICE_EDITOR_ORIGIN, loadConfig } from './config';
 
 const SECRET = 's'.repeat(40);
 
@@ -128,5 +128,27 @@ describe('server config', () => {
     expect(DEV_FILES_DIR).toMatch(/[/\\]\.data[/\\]files$/);
     expect(loadConfig({ FILES_DIR: '/srv/kb-files' }).filesDir).toBe('/srv/kb-files');
     expect(() => loadConfig({ FILES_DIR: 'relative/files' })).toThrow(/FILES_DIR/);
+    // nginx sends the files in production; without it (dev, tests) Node streams them.
+    expect(loadConfig(prod).fileDelivery).toBe('x-accel');
+    expect(loadConfig({}).fileDelivery).toBe('node');
+    expect(loadConfig({ FILE_DELIVERY: 'x-accel' }).fileDelivery).toBe('x-accel');
+  });
+
+  it('embeds the Office editor from its own origin: the subdomain in production, none in dev unless set', () => {
+    const prod = {
+      NODE_ENV: 'production',
+      PUBLIC_URL: 'https://kb.hoandat.com',
+      DATABASE_URL: 'postgres://kb@127.0.0.1/kb',
+      AUTH_CLIENT_SECRET: SECRET,
+      MEILI_URL: 'http://127.0.0.1:7700',
+      MEILI_MASTER_KEY: SECRET,
+    };
+    expect(loadConfig(prod).officeEditorOrigin).toBe(PRODUCTION_OFFICE_EDITOR_ORIGIN);
+    expect(loadConfig({ ...prod, OFFICE_EDITOR_ORIGIN: 'https://office.example/editor' }).officeEditorOrigin).toBe('https://office.example');
+    expect(loadConfig({}).officeEditorOrigin).toBeNull();
+    expect(loadConfig({ OFFICE_EDITOR_ORIGIN: 'http://localhost:5330' }).officeEditorOrigin).toBe('http://localhost:5330');
+    expect(() => loadConfig({ ...prod, OFFICE_EDITOR_ORIGIN: 'http://localhost:5330' })).toThrow(/OFFICE_EDITOR_ORIGIN/);
+    expect(() => loadConfig({ OFFICE_EDITOR_ORIGIN: 'http://office.example' })).toThrow(/OFFICE_EDITOR_ORIGIN/);
+    expect(() => loadConfig({ OFFICE_EDITOR_ORIGIN: 'http://localhost:5321' })).toThrow(/OFFICE_EDITOR_ORIGIN/);
   });
 });

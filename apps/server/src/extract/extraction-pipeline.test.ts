@@ -16,6 +16,9 @@ import type { Viewer } from '../access/viewer';
 import { type DbHandle, openPglite } from '../db/client';
 import { chunks, collections, documentVersions, extractJobs, files } from '../db/schema';
 import { type ExtractionService, type ExtractionStatus, MAX_FILE_BYTES, startExtraction } from './index';
+import { claimNextJob, queueJob, requeueInterrupted } from './job-store';
+import { MAX_ATTEMPTS } from './extraction-queue';
+import { PdfWork } from './pdf-work';
 import { TikaClient } from './tika-client';
 
 const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -88,7 +91,7 @@ interface Started {
 
 const running: ExtractionService[] = [];
 
-async function start(options: { jev?: FakeJev | null; jobTimeoutMs?: number } = {}): Promise<Started> {
+async function start(options: { jev?: FakeJev | null; jobTimeoutMs?: number; pdfWorker?: ConstructorParameters<typeof PdfWork>[1] } = {}): Promise<Started> {
   const synced: string[] = [];
   const jev = options.jev === undefined ? fakeJev() : options.jev;
   const service = await startExtraction({
@@ -98,6 +101,7 @@ async function start(options: { jev?: FakeJev | null; jobTimeoutMs?: number } = 
     sync: { enqueue: (ids) => synced.push(...ids) },
     tika: new TikaClient(tika.url, { retryDelaysMs: [] }),
     queue: { retryDelaysMs: [0, 0], jobTimeoutMs: options.jobTimeoutMs ?? 30_000 },
+    pdfWorker: options.pdfWorker,
   });
   running.push(service);
   return { service, synced, jev: jev ?? fakeJev() };
@@ -402,6 +406,44 @@ describe('the queue', () => {
     const status = await started.service.extractionStatus(owner, fileId);
     expect(status).toMatchObject({ status: 'done', attempts: 2 });
     expect(await chunksOf(documentId)).toHaveLength(1);
+  });
+
+  it('fails for good a file the server stopped on MAX_ATTEMPTS times in a row, instead of crashing forever', async () => {
+    const { fileId } = await upload('crash.md', 'text/markdown', new TextEncoder().encode('Làm sập máy chủ.'));
+    await queueJob(database.db, fileId, new Date());
+    // Each round: the job is claimed (one attempt counted), the server dies mid-run, and starts again.
+    for (let round = 1; round <= MAX_ATTEMPTS; round += 1) {
+      const claimed = await claimNextJob(database.db, new Date());
+      expect(claimed).toEqual({ fileId, attempts: round });
+      const restart = await requeueInterrupted(database.db, new Date(), MAX_ATTEMPTS);
+      expect(restart).toEqual(round < MAX_ATTEMPTS ? { requeued: 1, failed: 0 } : { requeued: 0, failed: 1 });
+    }
+    expect(await claimNextJob(database.db, new Date())).toBeNull();
+    const [job] = await database.db.select({ status: extractJobs.status, errorCode: extractJobs.errorCode }).from(extractJobs).where(eq(extractJobs.fileId, fileId));
+    expect(job).toEqual({ status: 'failed', errorCode: 'too-complex' });
+  });
+
+  it('reads PDFs in a worker thread: one that needs more memory than allowed fails as too-complex, the server unharmed', async () => {
+    const pdf = await makePdf([{ text: ENGLISH_PAGE }]);
+    const tiny = { limits: { maxOldGenerationSizeMb: 4, maxYoungGenerationSizeMb: 1, stackSizeMb: 1 } };
+    const work = new PdfWork(new AbortController().signal, tiny);
+    await expect(work.inspect(pdf)).rejects.toMatchObject({ code: 'too-complex' });
+    work.close();
+
+    const started = await start({ pdfWorker: tiny });
+    const { fileId } = await upload('heavy.pdf', 'application/pdf', pdf);
+    const status = await extract(started, fileId);
+    // Not retried: the same file would only run out again.
+    expect(status).toMatchObject({ status: 'failed', attempts: 1, error: { code: 'too-complex', hint: 'smaller-file' } });
+    // The worker keeps the file's pages for every OCR batch, parsed once.
+    const ok = new PdfWork(new AbortController().signal);
+    const three = await makePdf([{ text: 'page one' }, { text: 'page two' }, { text: 'page three' }]);
+    expect((await ok.inspect(three)).map((r) => r.page)).toEqual([1, 2, 3]);
+    const first = await ok.subset(three, [3]);
+    const second = await ok.subset(three, [1, 2]);
+    ok.close();
+    expect((await PDFDocument.load(first)).getPageCount()).toBe(1);
+    expect((await PDFDocument.load(second)).getPageCount()).toBe(2);
   });
 
   it('does not overwrite the chunks of a document whose file was replaced since', async () => {

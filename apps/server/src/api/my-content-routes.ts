@@ -156,14 +156,14 @@ export function myContentRoutes({ config, db, now, sync }: MyContentRoutesOption
     const id = req.params.id;
     const result = await purgeOwnTrash(db, viewer, typeof id === 'string' ? id : '');
     if (result.documentIds.length === 0) throw new HttpError(404, 'not-found');
-    await finishPurge(result, sync);
+    await finishPurge(result, sync, config.filesDir);
     res.status(204).end();
   });
 
   router.delete('/api/me/trash', auth, purgeLimit, async (req, res) => {
     const viewer = await reader(req);
     const result = await purgeOwnTrash(db, viewer, null);
-    await finishPurge(result, sync);
+    await finishPurge(result, sync, config.filesDir);
     res.json({ purged: result.documentIds.length });
   });
 

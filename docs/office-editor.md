@@ -2,7 +2,8 @@
 
 Kết quả spike bước 1 của phase 10, chạy ngày 05/11/2026: dựng ranuts/document, đo dung lượng tải đầu, thử lấy nội dung
 đã sửa từ iframe. Cả hai câu hỏi đều có câu trả lời là **được**: trang cha nạp file bằng bytes và nhận lại bytes của file
-đã sửa qua `postMessage`. Phase đi tiếp được. Riêng chỗ host thì phải chọn lại, xem mục Tự host.
+đã sửa qua `postMessage`. Phase đi tiếp được. Chỗ host đã chốt là tên miền riêng (mục Tự host); cách KnowFlow dùng
+editor ở mục Trong KnowFlow.
 
 ## Phiên bản
 
@@ -36,7 +37,11 @@ pnpm run build          # bin/build.sh → dist/
 
 ## Tự host
 
-### Không đặt được ở `/editor/` của kb nếu không sửa mã
+**Chủ dự án chốt 05/11/2026: editor ở tên miền riêng `kb-office.hoandat.com`, dùng nguyên bản build** (không fork, không
+đặt dưới `/editor/` của kb). Lý do ở mục con dưới; origin của editor là cấu hình `OFFICE_EDITOR_ORIGIN` của server
+(mục Trong KnowFlow).
+
+### Vì sao không đặt ở `/editor/` của kb
 
 Mã của editor dùng đường dẫn tuyệt đối từ gốc tên miền: `/sdkjs/common/wasm/x2t/x2t.worker.js`
 (`lib/onlyoffice/guards/x2t-worker.ts`), `/sw.js` và `HEAD /editor` (`lib/offline-worker-control.ts`), và service worker
@@ -46,42 +51,45 @@ chỉ nhận `/editor`, `/editor.html` là trang editor. Đã thử đặt `dist
 - Thêm một location `/sdkjs/` trỏ vào `dist/sdkjs/`: mở, sửa, lưu được, nhưng service worker sẽ đăng ký `/sw.js` ở gốc kb
   (kb không có tệp này, SPA fallback trả `index.html`), nên **không có offline**.
 
-Hai cách:
+Đặt ở `/editor/` thì phải fork, sửa ít nhất 4 chỗ đường dẫn tuyệt đối và phạm vi service worker, công khai bản fork (AGPL)
+và đối chiếu lại mỗi lần lên bản mới. Tên miền riêng dùng nguyên bản build, service worker và offline chạy như upstream,
+`frame-ancestors 'none'` của kb không đụng tới editor; đổi lại cần một bản ghi DNS và một server block nginx, và CSP của kb
+thêm `frame-src` cho tên miền đó.
 
-| Cách | Được | Mất |
-|---|---|---|
-| **Tên miền riêng** cho editor (khuyên dùng), ví dụ `kb-office.hoandat.com`, nginx phục vụ `dist/` ở gốc | Dùng nguyên bản build, không sửa mã nên không phải công khai bản sửa; service worker và offline chạy như upstream (đã đo); `frame-ancestors 'none'` của kb không đụng tới editor | Thêm bản ghi DNS (một cấp dưới `hoandat.com` để chứng chỉ Cloudflare phủ được), thêm server block nginx; trang kb phải thêm `frame-src` cho tên miền đó |
-| Đặt ở `/editor/` như plan | Cùng origin với kb | Phải fork, sửa ít nhất 4 chỗ đường dẫn tuyệt đối và phạm vi service worker, công khai bản fork (AGPL) và đối chiếu lại mỗi lần lên bản mới |
+### nginx và DNS
 
-Thử nghiệm của spike chạy theo cách thứ nhất: trang cha và editor ở hai origin khác nhau (khác cổng, cùng site), nhắn
-nhau qua `postMessage` có kiểm `origin`.
-
-### nginx (tên miền riêng)
-
-```nginx
-root /var/www/kb-office/current;           # dist/ của ranuts/document
-add_header Cache-Control "no-cache" always;
-location / { try_files $uri $uri.html $uri/ =404; }
-location /assets/ { add_header Cache-Control "public, max-age=31536000, immutable" always; }
-location /fonts/  { types {} default_type font/ttf;
-                    add_header Cache-Control "public, max-age=31536000, immutable" always; }
-location = /sdkjs/common/wasm/x2t/x2t.wasm.br {
-    gzip off; types {} default_type application/octet-stream;
-    add_header Content-Encoding br always;
-    add_header Cache-Control "public, max-age=31536000, immutable" always;
-}
-location = /sw.js { add_header Cache-Control "no-cache" always; }
-gzip on; gzip_comp_level 6;
-gzip_types text/css text/javascript application/javascript application/json image/svg+xml font/ttf application/wasm;
-```
-
-- CSP của editor nằm sẵn trong thẻ `<meta>` của `editor.html` (`script-src 'self' 'wasm-unsafe-eval'`,
-  `worker-src 'self' blob:`, `frame-src 'self' blob:`). Không thêm CSP header nào chặn `wasm-unsafe-eval`. Thêm
-  `frame-ancestors https://kb.hoandat.com` ở header để chỉ kb nhúng được.
+- Server block: [`infra/nginx/kb-office.hoandat.com.conf`](../infra/nginx/kb-office.hoandat.com.conf) (gốc
+  `/var/www/kb-office/current` là `dist/` của bản build; `x2t.wasm.br` gửi kèm `Content-Encoding: br` và không nén lại;
+  `fonts/` là `font/ttf`; `sw.js` không cache). `deploy.sh setup` không cài tệp này: chép tay vào
+  `/etc/nginx/conf.d/`, `nginx -t`, reload (mục Triển khai editor).
+- Chỉ kb nhúng được: header `Content-Security-Policy: frame-ancestors https://kb.hoandat.com`. CSP của chính editor nằm
+  sẵn trong thẻ `<meta>` của `editor.html` (`script-src 'self' 'wasm-unsafe-eval'`, `worker-src 'self' blob:`,
+  `frame-src 'self' blob:`); không thêm CSP header nào chặn `wasm-unsafe-eval`.
+- CSP của kb ([`infra/nginx/kb.hoandat.com.conf`](../infra/nginx/kb.hoandat.com.conf)) có
+  `frame-src https://kb-office.hoandat.com`. Đổi tên miền editor thì đổi cùng lúc ở đó, ở `OFFICE_EDITOR_ORIGIN` và ở
+  `frame-ancestors` của editor.
+- DNS: bản ghi `A` `kb-office.hoandat.com` **proxied** trỏ về `<SERVER_65_IP>` (một cấp dưới `hoandat.com`, chứng chỉ
+  Cloudflare phủ được; nginx dùng chứng chỉ origin chung).
 - Upstream gửi `Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy` chỉ để chạy luồng WASM của trợ lý AI cục bộ.
   Spike chạy không có hai header này, mở/sửa/lưu đều được; kb không cần.
 - Mọi URL editor tải là cùng origin. Trong cả lượt đo không có request nào ra ngoài (không CDN, không font Google);
   `static.cloudflareinsights.com` chỉ có trong CSP, không được gọi.
+
+### Triển khai editor
+
+Trên máy build (Node 24, pnpm 11.4), theo tag và commit ở mục Phiên bản:
+
+```bash
+git clone --depth 1 --branch v0.0.9 https://github.com/ranuts/document.git && cd document
+git rev-parse HEAD          # phải là cf4e9a7f10fd8581740f453c33c01900e94dbfdf
+pnpm install --frozen-lockfile && pnpm run build
+rsync -rlz --delete dist/ <alias>:/var/www/kb-office/releases/v0.0.9/
+ssh <alias> 'ln -sfn /var/www/kb-office/releases/v0.0.9 /var/www/kb-office/current'
+```
+
+`dist/` khoảng 556 MB; giữ bản trước để quay lại bằng cách trỏ `current` về nó. Nâng bản: chạy lại spike
+(`open-buffer` → sửa → `save` → kiểm zip) trước khi trỏ `current` sang bản mới.
+
 
 ## Dung lượng tải lần đầu
 
@@ -187,6 +195,44 @@ Cần lo trong phase:
 - Cache của editor nằm ở origin của editor, tính chung hạn mức với bản nháp trong IndexedDB của kb nếu cùng site. Phần
   `navigator.storage.estimate()` của kb không thấy phần đó nếu khác origin; cộng thêm khoảng 100 MB cho editor khi tính.
 
+## Trong KnowFlow
+
+Phase 10 dùng editor như sau (mã ở [`apps/web/src/pages/office-view.tsx`](../apps/web/src/pages/office-view.tsx),
+[`office-editor-bridge.ts`](../apps/web/src/pages/office-editor-bridge.ts), [`office-store.ts`](../apps/web/src/pages/office-store.ts),
+[`office-sync.ts`](../apps/web/src/pages/office-sync.ts)):
+
+- **Cấu hình**: `OFFICE_EDITOR_ORIGIN` của server (production mặc định `https://kb-office.hoandat.com`; dev và test không
+  đặt thì không có editor, tệp Office chỉ đọc phần chữ đã trích). Phải là `https` (dev được `http` trên loopback) và khác
+  origin của kb. Web đọc nó qua `GET /api/office-editor` (`{origin, maxBytes}`).
+- **Nhúng**: trong C11, tệp docx, xlsx, pptx có thẻ tệp và nút "Mở để sửa" (hay "Mở xem" khi người đọc không sửa được).
+  Iframe chỉ nạp khi bấm (tải đầu 16–24 MB), `src` là `<origin>/editor?embed=1&embedOrigin=<origin của kb>`. PDF và md
+  chỉ đọc phần chữ.
+- **Kiểm origin**: trang chỉ đọc tin nhắn có `event.origin` đúng bằng origin của editor **và** `event.source` là đúng
+  cửa sổ của iframe; mọi tin khác trên kênh `message` bị bỏ. Trang gửi lệnh bằng `postMessage(…, origin của editor)`,
+  không bao giờ `'*'`.
+- **Mở**: bản nháp chưa đồng bộ trên máy (nếu có) được mở trước; không thì tải `GET /api/files/:id` (có cookie) rồi gửi
+  bytes bằng `document:open-buffer` sau `document:ready`, đồng thời giữ một bản trên máy để mở lại khi offline.
+- **Theo tài khoản**: mỗi bản trên máy thuộc tài khoản đã lưu nó (khoá `<id tài khoản>|<id tài liệu>`, id lấy từ
+  `GET /api/session`, nhớ trong trình duyệt để mở và liệt kê được khi offline; đăng xuất thì quên). Tài khoản khác đăng
+  nhập trên cùng trình duyệt không thấy, không mở, không gửi bản của người kia; bản đó nằm yên tới khi chủ của nó quay lại.
+  Phiên hết hạn (401) thì việc gửi tạm dừng, không bản nào bị đánh dấu lỗi; đăng nhập lại là gửi tiếp.
+- **Một lượt đồng bộ một lúc**, kể cả giữa các tab (Web Locks; trình duyệt không có thì một lượt mỗi tab). Mỗi lần lưu
+  tăng `revision` của bản; gửi xong, bản chỉ thành "đã đồng bộ" nếu vẫn là revision đã gửi (cùng một transaction đọc và
+  ghi). Lưu thêm trong lúc gửi thì bản vẫn là bản nháp, dựa trên phiên bản server vừa tạo, và lên ở lượt sau.
+- **Lưu**: `document:save` → `document:saved` (`payload.file`) → ghi IndexedDB `kb-office` (bản nháp không bao giờ bị
+  xoá trước khi server có) → có mạng thì `PUT /api/files/:id` (`:id` là tệp bản nháp mở từ đó) thành phiên bản mới, server
+  trích chữ lại. Server có bản mới hơn thì trả 409 kèm phiên bản hiện tại; bản nháp thành "xung đột" và H04 (`/sync`) cho
+  chọn giữ bản này, bản kia hoặc cả hai (bản trên máy thành tài liệu mới "… (bản offline).docx"), hai bản đặt cạnh nhau ở
+  đoạn đầu tiên khác nhau (trang tự đọc chữ docx, xlsx, pptx).
+- **Hạn mức**: lúc giữ bản đầu tiên gọi `navigator.storage.persist()`; chỉ dùng tới 80% hạn mức
+  `navigator.storage.estimate()` trừ 100 MB để dành cache của editor (khác origin, `estimate()` không thấy); đầy thì xoá
+  bản đã đồng bộ ít dùng nhất trước (mỗi bản được kiểm lại ngay trong transaction xoá nó: bản vừa thành bản nháp ở tab
+  khác thì giữ), không bao giờ xoá bản nháp; quá 90% phần được dùng thì H04 cảnh báo. Khi so hai bản ở H04, mỗi phần
+  của tệp chỉ được giải nén tối đa 2 MB.
+- **Offline của editor**: chỉ chắc với loại tệp đã mở ít nhất một lần khi có mạng (mục Offline). Không làm bước "mở ẩn
+  để làm nóng" (cần một tệp trống mỗi loại và tải thêm 16–24 MB mỗi loại); thay vào đó trình duyệt nhớ loại nào đã mở
+  khi có mạng, và H04 ghi rõ giới hạn này kèm các loại đã sẵn sàng.
+
 ## AGPL
 
 - Giữ nguyên `LICENSE` và `NOTICE` trong `dist/` (bản build đã chép sẵn hai tệp này, phục vụ ở `/LICENSE`, `/NOTICE`).
@@ -210,7 +256,6 @@ Cần lo trong phase:
   không mở được file lớn.
 - Dự án một người duy trì, ra bản liên tục (v0.0.6 → v0.0.9 trong 2 tháng), chưa có bản 1.0. Ghim theo commit, nâng cấp
   có chủ đích và chạy lại spike (`open-buffer` → sửa → `save` → kiểm zip) mỗi lần nâng.
-- Đặt ở `/editor/` cùng origin cần fork (mục Tự host). Plan đang ghi `/editor/`; cần chủ dự án chọn giữa tên miền riêng
-  và fork.
+- Tên miền riêng đã chốt (05/11/2026): thêm một bản ghi DNS và một server block phải giữ khớp với CSP của kb.
 - Offline chỉ chắc với loại file đã mở khi có mạng (mục Offline).
 - Spike chỉ thử file nhỏ tự tạo và mẫu pptx của vendor; chưa thử file 25 MB, file có ảnh nhiều, file CJK, Safari.

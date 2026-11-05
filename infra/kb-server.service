@@ -20,6 +20,9 @@ MemoryHigh=300M
 MemoryMax=400M
 NoNewPrivileges=true
 ProtectSystem=strict
+# Uploaded files (FILES_DIR): written here (0640, group nginx through the directory's setgid bit), read by nginx for
+# downloads; the rest of the system stays read-only.
+ReadWritePaths=/var/lib/kb/files
 ProtectHome=true
 PrivateTmp=true
 

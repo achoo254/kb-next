@@ -4,6 +4,7 @@ import { C11_STREAM, C14_HISTORY, C14_STREAM, F03_KEYS, F04_DOCUMENT, F04_DOCUME
 import { C15_SUGGESTION } from './graph-canvas-boards';
 import { C17_DIFF, C17_HISTORY } from './history-boards';
 import { c08Documents } from './mine-boards';
+import { mockImportsC16, mockUploadC03, seedOfflineH04 } from './office-boards';
 import { C12_SEARCH, C12_SPACES, F01_SEARCH } from './search-boards';
 import { signInAt } from './sign-in';
 
@@ -64,6 +65,9 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
       return personal ? route.fulfill({ response, json: c08Documents(personal) }) : route.fulfill({ response });
     });
   }
+  if (mocks.includes('upload-c03')) await mockUploadC03(page);
+  if (mocks.includes('imports-c16')) await mockImportsC16(page);
+  if (mocks.includes('offline-h04')) await seedOfflineH04(page);
   if (mocks.includes('canvas-c15')) await page.route('**/api/canvases/*/suggestion', (route) => route.fulfill({ json: C15_SUGGESTION }));
   if (mocks.includes('translate-f04')) {
     await page.route('**/api/me/keys', (route) => route.fulfill({ json: F03_KEYS }));
@@ -116,6 +120,14 @@ export async function openScreen(page: Page, screen: ParityScreen): Promise<void
       }
       throw new Error(`"${text}" not found in ${within}`);
     }, screen.select);
+  }
+  if (screen.files) {
+    await page.waitForLoadState('networkidle');
+    await page.locator(screen.files.input).setInputFiles(screen.files.files.map((file) => ({ name: file.name, mimeType: 'application/octet-stream', buffer: Buffer.alloc(file.size) })));
+  }
+  if (screen.offline) {
+    await page.waitForLoadState('networkidle');
+    await page.context().setOffline(true);
   }
   if (screen.click) await page.locator(screen.click).click();
   if (screen.waitFor) await page.locator(screen.waitFor).waitFor();

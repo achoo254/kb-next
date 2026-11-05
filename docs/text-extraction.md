@@ -42,8 +42,9 @@ của Tesseract. Nội dung tệp không bao giờ vào log.
 | `TIKA_URL` | `http://127.0.0.1:9998` | Tika. `http` chỉ được trên loopback; địa chỉ khác phải `https` |
 | `FILES_DIR` | production `/var/lib/kb/files`, dev `.data/files` | thư mục tệp tải lên, tệp nằm ở `<FILES_DIR>/<storageKey>`; phải là đường dẫn tuyệt đối |
 
-Unit `kb-server` có `ProtectSystem=strict`: server chỉ cần đọc `FILES_DIR` để trích chữ; API tải lên (C03) ghi vào đó
-thì cần thêm `ReadWritePaths=/var/lib/kb/files` vào unit.
+Unit `kb-server` có `ProtectSystem=strict` và `ReadWritePaths=/var/lib/kb/files`: API tải lên (C03, C16, lượt lưu của
+trình sửa Office) ghi tệp vào đó, dây chuyền đọc, nginx đọc để gửi tệp tải về (`X-Accel-Redirect`, quyền ở
+[deployment-guide.md](deployment-guide.md#tệp-tải-lên)).
 
 ## Các bước (C16)
 
@@ -105,6 +106,8 @@ Giao diện dịch mã cách sửa (`hint`) theo ngôn ngữ người dùng.
 | `tika-unavailable` | Tika không phản hồi, trả 5xx | có | `retry-later` |
 | `timeout` | quá hạn một lượt (15 phút) | có | `retry-later` |
 | `internal` | lỗi bất ngờ | có | `retry-later` |
+| `cancelled` | tác giả bấm "Huỷ" trên C16 | không | (C16 hiện "Đã huỷ" và "Thử lại") |
+| `too-complex` | worker PDF hết bộ nhớ, hoặc server dừng giữa chừng khi đọc tệp này 3 lần | không (chỉ quản trị bấm "Thử lại" được) | `smaller-file` |
 
 Cờ trang chất lượng thấp dùng `rescan` (quét lại rõ hơn) hoặc `export-text-pdf` (xuất PDF có chữ từ ứng dụng gốc,
 khi trang vốn có lớp chữ nhưng là rác).
@@ -116,7 +119,9 @@ Sau khi chia đoạn, một lượt gọi Jev gồm: `choice` chọn Collection 
 viên. KnowFlow chưa có bộ thẻ riêng nên thẻ ứng viên lấy từ chính văn bản: tối đa 8 thuật ngữ lặp từ 2 lần (viết tắt như
 DNS, tên riêng viết hoa giữa câu như Kubernetes). Thẻ có `noul` từ 0,5 trở lên được gợi ý.
 
-Kết quả lưu ở `extract_jobs.suggestions` với `status: "pending"` cho tới khi chủ tệp chấp nhận hay bỏ qua trên C16.
+Kết quả lưu ở `extract_jobs.suggestions` với `status: "pending"` cho tới khi tác giả tài liệu chấp nhận hay bỏ qua trên
+C16 (chỉ với tệp của phiên bản hiện tại: gợi ý của phiên bản cũ trả `409 answered`). Ai theo dõi, thử lại, huỷ và trả lời
+gợi ý của một tệp là tác giả của tài liệu (kể cả khi quản trị lưu phiên bản đó) hoặc quản trị.
 Chạy cho mọi người bằng key Jev của server (`TYPESAFE_API_KEY`), không dùng key riêng của người dùng. Jev tắt hoặc lỗi
 thì bước này `skipped`, tệp vẫn được lập chỉ mục. Lượt gọi Jev của dây chuyền tính vào báo cáo chi phí theo `purpose`
 `extract-ocr-decision`, `extract-quality`, `extract-classify`.
@@ -139,10 +144,32 @@ bản sau thay thì bước lập chỉ mục `skipped` (`superseded`).
   (`waiting`, `nextAttemptAt`); lỗi do chính tệp thì `failed` ngay. Client Tika tự thử lại 2 lần (1 s, 3 s) khi Tika
   từ chối kết nối hay trả 502–504.
 - Mỗi lượt có hạn 15 phút; mỗi request OCR có hạn 1 phút cộng 1 phút mỗi trang.
-- Khởi động lại server: job đang chạy dở trở về hàng đợi (lượt dở vẫn được đếm, nên tệp làm sập server không chạy mãi),
-  các job đến hạn chạy tiếp.
+- Một lượt được đếm ngay khi job được nhận chạy. Khởi động lại server: job đang chạy dở đã dùng hết 3 lượt thì `failed`
+  với mã `too-complex` (tệp làm sập server 3 lần không chạy nữa), các job khác trở về hàng đợi; log `extract: resumed N
+  interrupted job(s)` và `extract: N job(s) stopped the server 3 times: failed (too-complex)`.
 - Tika chết không làm treo API: tệp nằm ở `waiting` rồi `failed` sau 3 lượt; người dùng bấm "Thử lại" là chạy lại từ
   đầu với 3 lượt mới.
+- "Thử lại" (`POST /api/files/:id/retry`, 10 lần mỗi phút mỗi tài khoản) bị từ chối `409 busy` khi job đang `queued`
+  hay `waiting` (chỉ đặt lại số lượt), và `409 not-retryable` với tệp `too-complex` trừ khi quản trị bấm. Thử lại ngay sau
+  "Huỷ", khi lượt bị huỷ chưa dừng hẳn, được xếp hàng ngay khi lượt đó dừng.
+- "Huỷ": job chờ thành `cancelled` ngay; job đang chạy dừng luồng PDF (worker bị kết thúc) và ngắt request đang gửi Tika.
+  Tika vẫn làm nốt request nó đã nhận (không có cách dừng từ phía kb); lượt bị huỷ không ghi gì thêm vào job (gợi ý
+  của Jev không được lưu nữa).
+- Mỗi tài khoản có tối đa 20 tệp đang chờ hay đang đọc (`POST /api/files` trả `429 too-many-pending` khi đầy) và 30 lượt
+  tải lên mỗi phút: hàng đợi đọc một tệp một lúc cho mọi người, không để một tài khoản chiếm hết.
+
+## PDF trong luồng riêng
+
+pdf.js (PDF Inspector) và pdf-lib (chép trang cần OCR) chạy trong một worker thread cho mỗi job
+([`pdf-work.ts`](../apps/server/src/extract/pdf-work.ts), [`pdf-worker.ts`](../apps/server/src/extract/pdf-worker.ts);
+bundle production có `dist/server/pdf-worker.mjs` cạnh `index.mjs`), không bao giờ trong luồng của API:
+
+- Heap của worker giới hạn 160 MB (`resourceLimits`). Tệp cần hơn thế làm worker dừng (`ERR_WORKER_OUT_OF_MEMORY`), job
+  `failed` với `too-complex`, API vẫn chạy.
+- Ảnh trong PDF lớn hơn 20 triệu điểm ảnh (khoảng A4 quét 450 dpi) không được giải mã (`maxImageSize` của pdf.js): bộ
+  nhớ của ảnh giải mã nằm ngoài heap nên giới hạn heap không chặn được. Trang chỉ có ảnh lớn như vậy được tính như không
+  có ảnh đó (không vào OCR).
+- pdf-lib đọc tệp một lần cho mọi lượt OCR của job; tệp chỉ có hai bản trong bộ nhớ (luồng chính để gửi Tika, worker).
 
 Log (không có tên hay nội dung tệp): `extract: file <id> will retry|failed (<mã>, attempt n/3): …`,
 `extract: resumed N interrupted job(s)`. Lần đầu đọc một PDF, pdf.js in vài dòng `Warning: Cannot load
@@ -156,7 +183,8 @@ Từ [`apps/server/src/extract/index.ts`](../apps/server/src/extract/index.ts):
 ```ts
 const extraction = await startExtraction({ config, db, jev, sync }); // server.ts đã khởi động sẵn
 await extraction.enqueueExtraction(fileId);          // sau khi ghi tệp, dòng `files` (có documentId) và phiên bản trỏ tới tệp
-const status = await extraction.extractionStatus(viewer, fileId); // null: chưa có job, hoặc không phải chủ tệp / admin
+const status = await extraction.extractionStatus(viewer, fileId); // null: chưa có job, hoặc không phải tác giả tài liệu / admin
+await extraction.cancelExtraction(fileId);           // C16 "Huỷ": job chờ thành `cancelled` ngay, job đang chạy dừng ở bước kế
 ```
 
 - Trước khi gọi `enqueueExtraction`: tệp nằm ở `<FILES_DIR>/<storageKey>` (`storageKey` ngẫu nhiên, 8–128 ký tự
@@ -168,3 +196,8 @@ const status = await extraction.extractionStatus(viewer, fileId); // null: chưa
   `probability`; `tags` gồm `tag`, `probability`; `status` `pending`/`accepted`/`dismissed`), `nextAttemptAt`,
   `updatedAt`, `finishedAt`.
 - `MAX_FILE_BYTES` (25 MB) và `routeFor(mime)` (loại tệp nhận) cũng xuất từ đây để API tải lên kiểm cùng giới hạn.
+- API dùng hợp đồng này ở [`apps/server/src/api/file-routes.ts`](../apps/server/src/api/file-routes.ts): tải lên
+  (`POST /api/files`), lưu từ trình sửa Office (`PUT /api/files/:id`, phiên bản mới, trích lại), danh sách của C16
+  (`GET /api/files`, đọc job cùng tệp qua `toExtractionStatus`), "Thử lại" (`POST /api/files/:id/retry`), "Huỷ"
+  (`POST /api/files/:id/cancel`) và trả lời gợi ý của Jev (`POST /api/files/:id/suggestions`: chấp nhận thì chuyển tài liệu
+  vào Collection được gợi ý và thêm các thẻ đã chọn vào `documents.tags`).
