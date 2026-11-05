@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
-import { API_PORT, E2E_CLIENT_ID, E2E_CLIENT_SECRET, FAKE_IDP_PORT, WEB_PORT } from './e2e-env';
+import { API_PORT, E2E_CLIENT_ID, E2E_CLIENT_SECRET, FAKE_IDP_PORT, OFFICE_EDITOR_ORIGIN, WEB_PORT } from './e2e-env';
 
 const WEB_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SERVER_DIR = path.resolve(WEB_DIR, '../server');
@@ -47,6 +47,8 @@ export default defineConfig({
         AUTH_ISSUER: `http://127.0.0.1:${FAKE_IDP_PORT}`,
         AUTH_CLIENT_ID: E2E_CLIENT_ID,
         AUTH_CLIENT_SECRET: E2E_CLIENT_SECRET,
+        // The Office editor's origin, served by a stub page in the spec that needs it (office-offline.spec.ts).
+        OFFICE_EDITOR_ORIGIN,
         // The mock's data, "Của bạn" content owned by the fake IdP's account (fake-idp-server.ts); Đạt is the admin.
         KB_SEED: 'mock', SEED_OWNER_SUB: 'e2e-account', ADMIN_SUBS: 'seed:dat',
       },

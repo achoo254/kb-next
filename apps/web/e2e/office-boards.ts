@@ -125,7 +125,8 @@ function zip(entries: Record<string, string>): Buffer {
   return Buffer.concat([...locals, ...centrals, end]);
 }
 
-function docx(paragraphs: readonly string[]): string {
+/** A docx whose paragraphs are `paragraphs`, as base64. */
+export function docx(paragraphs: readonly string[]): string {
   const body = paragraphs.map((p) => `<w:p><w:r><w:t>${p}</w:t></w:r></w:p>`).join('');
   return zip({ '[Content_Types].xml': '<Types/>', 'word/document.xml': `<w:document><w:body>${body}</w:body></w:document>` }).toString('base64');
 }

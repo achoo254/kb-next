@@ -4,7 +4,7 @@
  * newer server version side by side (keep this one, keep the other, keep both), what still works offline, and a
  * warning when the browser's storage is nearly full.
  */
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { type FileKind, MAX_UPLOAD_BYTES, fetchFileBytes } from '../api/files-api';
 import { AppShell } from '../layout/app-shell';
 import { ILLUSTRATIONS } from '../ui/art';
@@ -14,7 +14,7 @@ import { currentAccountId } from './office-account';
 import { FileBadge } from './file-badge';
 import { clockTime, syncReasonKey, useOfficeText } from './office-messages';
 import { type OfficeEntry, type StorageStatus, listEntries, pending, storageStatus, warmKinds } from './office-store';
-import { OFFICE_CHANGE, type SyncReport, keepBoth, keepMine, keepServer, syncAll, syncEntry, syncing } from './office-sync';
+import { type SyncReport, keepBoth, keepMine, keepServer, onOfficeChange, syncAll, syncEntry, syncing } from './office-sync';
 import { type VersionComparison, compareParagraphs, officeParagraphs } from './office-text';
 import './sync-screen.css';
 
@@ -69,8 +69,7 @@ function useSyncData(): { data: SyncData; refresh(): void } {
   }, []);
   useEffect(() => {
     refresh();
-    window.addEventListener(OFFICE_CHANGE, refresh);
-    return () => window.removeEventListener(OFFICE_CHANGE, refresh);
+    return onOfficeChange(refresh);
   }, [refresh]);
   return { data, refresh };
 }
@@ -325,9 +324,19 @@ export function SyncScreen(): ReactNode {
   const queue = pending(data.entries);
   const conflict = queue.find((entry) => entry.state === 'conflict') ?? null;
 
+  // A sync can outlive the screen (the reader navigated away): its result is then dropped, not set on a gone tree.
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
   const sync = useCallback(() => {
     syncAll().then(
       (done) => {
+        if (!mounted.current) return;
         setReport(done);
         setBackAt(Date.now());
       },

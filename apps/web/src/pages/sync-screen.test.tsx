@@ -157,6 +157,18 @@ describe('SyncScreen', () => {
     expect(screen.queryByText('Của người khác')).toBeNull();
   });
 
+  it('lists a draft saved offline in another tab of this browser', async () => {
+    renderWithI18n(<SyncScreen />);
+    await waitFor(() => expect(queueRows()).toHaveLength(3));
+    await keepDraft({ userId: ME, documentId: 'doc-dns', fileId: 'file-dns-v1', name: 'dns-notes.docx', kind: 'docx', bytes: new ArrayBuffer(8) }, EDITED + 1000);
+    // What the reader's announce() sends from the other tab.
+    const otherTab = new BroadcastChannel('kb-office-change');
+    otherTab.postMessage(null);
+    otherTab.close();
+    await waitFor(() => expect(queueRows()).toHaveLength(4));
+    expect(screen.getByText('dns-notes.docx')).toBeTruthy();
+  });
+
   it('keeps this device’s version on top of the server’s, or the server’s instead', async () => {
     online = true;
     renderWithI18n(<SyncScreen />);

@@ -10,7 +10,7 @@
  * - Without a connection a draft stays a draft; one the server refuses for good (too large, no right any more) is
  *   marked failed with the reason.
  *
- * Every change is announced on `window` (OFFICE_CHANGE) for the screens showing the queue.
+ * Every change is announced on `window` (OFFICE_CHANGE) and to the other tabs, for the screens showing the queue.
  */
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import { type ServerVersion, fetchFileBytes, saveFileVersion } from '../api/files-api';
@@ -25,8 +25,32 @@ const LOCK = 'kb-office-sync';
 const PASSING = new Set([NETWORK_ERROR, 'rate-limited']);
 const SIGNED_OUT = 'sign-in-required';
 
+let tabs: BroadcastChannel | null | undefined;
+
+/**
+ * The other tabs of this browser (H04 open next to the reader that saved). One channel per tab, used to send and to
+ * listen: a channel never receives its own messages, so this tab hears its changes only once, through `window`.
+ */
+function otherTabs(): BroadcastChannel | null {
+  tabs ??= typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(OFFICE_CHANGE);
+  return tabs;
+}
+
 export function announce(): void {
-  if (typeof window !== 'undefined') window.dispatchEvent(new Event(OFFICE_CHANGE));
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new Event(OFFICE_CHANGE));
+  otherTabs()?.postMessage(null);
+}
+
+/** Calls `listener` on every change announced here or in another tab. Returns the unsubscriber. */
+export function onOfficeChange(listener: () => void): () => void {
+  window.addEventListener(OFFICE_CHANGE, listener);
+  const channel = otherTabs();
+  channel?.addEventListener('message', listener);
+  return () => {
+    window.removeEventListener(OFFICE_CHANGE, listener);
+    channel?.removeEventListener('message', listener);
+  };
 }
 
 let localTail: Promise<unknown> = Promise.resolve();

@@ -232,6 +232,11 @@ Phase 10 dùng editor như sau (mã ở [`apps/web/src/pages/office-view.tsx`](.
 - **Offline của editor**: chỉ chắc với loại tệp đã mở ít nhất một lần khi có mạng (mục Offline). Không làm bước "mở ẩn
   để làm nóng" (cần một tệp trống mỗi loại và tải thêm 16–24 MB mỗi loại); thay vào đó trình duyệt nhớ loại nào đã mở
   khi có mạng, và H04 ghi rõ giới hạn này kèm các loại đã sẵn sàng.
+- **Kiểm luồng offline**: `pnpm e2e --project chromium -g "Office draft saved offline"`
+  ([`apps/web/e2e/office-offline.spec.ts`](../apps/web/e2e/office-offline.spec.ts)) chạy trên Chromium thật, editor
+  là trang giả nói cùng giao thức `postMessage` ([`office-editor-stub.ts`](../apps/web/e2e/office-editor-stub.ts)). Bài
+  này lưu khi `setOffline(true)` (bản nháp nằm trong IndexedDB, H04 mở ở tab bên cạnh báo 1 bản chờ), rồi bật mạng lại
+  (tự `PUT`, H04 hết bản chờ, server có phiên bản 2 đúng bytes đã sửa). E2E không có Tika nên không kiểm tìm kiếm chữ mới.
 
 ## AGPL
 
