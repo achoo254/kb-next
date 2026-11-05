@@ -5,6 +5,7 @@ import type { SessionState } from '../api/session-api';
 import { brand } from '../brand';
 import { type Locale, type Translate, useI18n } from '../i18n/i18n';
 import { BRAND_WORDS } from '../layout/brand-words';
+import { LegalLinks } from '../layout/legal-links';
 import { ScreenPage } from '../layout/screen-page';
 import { SCENE_SLOTS, type SceneSpace, UniverseScene } from '../layout/universe-scene';
 import { Button } from '../ui/button';
@@ -127,7 +128,9 @@ export function LandingPage({ session }: { session: SessionState }): ReactNode {
         <span className="landing-note">{signedIn ? t('landing.noteSignedIn', { account: BRAND_WORDS.account }) : t('landing.note')}</span>
       </div>
       <StageCards cards={tiles(t)} className="landing-stage" />
-      <footer className="landing-footer">{t('landing.footer', { account: BRAND_WORDS.account })}</footer>
+      <footer className="landing-footer">
+        {t('landing.footer', { account: BRAND_WORDS.account })} · <LegalLinks />
+      </footer>
     </ScreenPage>
   );
 }

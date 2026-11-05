@@ -26,6 +26,7 @@ import { JourneyBuilderScreen, NewJourney } from './pages/journey-builder';
 import { JourneyRunScreen } from './pages/journey-run';
 import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
+import { LegalPage } from './pages/legal-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
 import { MineScreen } from './pages/mine-screen';
 import { NewNote } from './pages/new-note';
@@ -224,6 +225,10 @@ function Screen({ route, path, session }: { route: ScreenRoute; path: string; se
       return <ErrorScreen kind="not-found" />;
     case 'H02':
       return <SharedOpenScreen token={routeParam(route, path)} />;
+    case 'Privacy':
+      return <LegalPage kind="privacy" />;
+    case 'Terms':
+      return <LegalPage kind="terms" />;
     default:
       if (route.access === 'signed-in') return <SignedInScreen route={route} path={path} />;
       return (

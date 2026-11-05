@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { LOGIN_PATH, type SessionState, loginReturnPath, safeReturnPath, signInHref } from '../api/session-api';
 import { useI18n } from '../i18n/i18n';
+import { LegalLinks } from '../layout/legal-links';
 import { ScreenPage } from '../layout/screen-page';
 import { Button } from '../ui/button';
 import { AuthGateCard, type OpeningStage, type SignInFailure, SignInFailedCard, UniverseOpeningCard } from './auth-cards';
@@ -64,6 +65,7 @@ export function LoginPage({ session }: { session: SessionState }): ReactNode {
       veil="gate"
       layout="board"
       responsive
+      className="login"
       actions={
         <Button variant="glass" href="/" className="start-ghost" dataId="login-home">
           {t('layout.backHome')}
@@ -75,6 +77,7 @@ export function LoginPage({ session }: { session: SessionState }): ReactNode {
         {view.card === 'failed' && <SignInFailedCard reason={view.reason} retryHref={href} homeHref="/" />}
         {view.card === 'gate' && <AuthGateCard state={view.opening ? 'opening' : 'idle'} href={href} onStart={() => setStarted(true)} />}
       </div>
+      <LegalLinks className="login-legal" />
     </ScreenPage>
   );
 }

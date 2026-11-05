@@ -3,7 +3,7 @@
  * signed in (save to the Universe, remix when the link allows it, read), expired, revoked, private (the text hidden
  * since it was shared: nothing about it), no such link, and a failed load with Try again.
  */
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SharedPreview } from '../api/share-api';
 import { answer } from '../test/api-fakes';
@@ -71,6 +71,10 @@ describe('signed out', () => {
     expect(document.querySelector('[data-id="open-screen"]')?.getAttribute('data-state')).toBe('guest');
     // The address shows only the start of the token.
     expect(document.querySelector('.open-address')?.textContent).toBe(`${window.location.host}/l/AbCd…`);
+    // A guest reaches the privacy policy and the terms from here.
+    const legal = screen.getByRole('navigation', { name: 'Chính sách và điều khoản' });
+    expect(within(legal).getByRole('link', { name: 'Quyền riêng tư' }).getAttribute('href')).toBe('/privacy');
+    expect(within(legal).getByRole('link', { name: 'Điều khoản' }).getAttribute('href')).toBe('/terms');
   });
 });
 

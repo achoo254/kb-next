@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SessionState } from '../api/session-api';
 import { renderWithI18n } from '../test/render';
@@ -47,6 +47,9 @@ describe('LoginPage', () => {
     expect(screen.getByRole('status').textContent).toBe('Opening the auth.hoandat.com gate…');
     expect(screen.queryByRole('link', { name: 'Sign in with your hoandat account' })).toBeNull();
     expect(document.querySelector('[data-screen="S02"]')).not.toBeNull();
+    const legal = screen.getByRole('navigation', { name: 'Policies and terms' });
+    expect(within(legal).getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/privacy');
+    expect(within(legal).getByRole('link', { name: 'Terms' }).getAttribute('href')).toBe('/terms');
   });
 
   it('shows a failed sign-in with a retry and a way home', () => {

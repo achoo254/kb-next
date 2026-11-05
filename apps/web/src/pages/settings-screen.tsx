@@ -18,6 +18,7 @@ import { deleteMyData } from '../api/workspace-api';
 import { brand } from '../brand';
 import { type Locale, useI18n } from '../i18n/i18n';
 import { AppShell, SHELL_PATHS, accountInitial } from '../layout/app-shell';
+import { LegalLinks } from '../layout/legal-links';
 import { signedInUser, useSessionState } from '../layout/session-context';
 import { Button } from '../ui/button';
 import { type DefaultView, type DisplayPrefs, type ThemeChoice, applyPrefs, readDefaultView, readStoredPrefs, storeDefaultView } from '../ui/display-prefs';
@@ -491,6 +492,7 @@ export function SettingsScreen(): ReactNode {
           <Svg d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" size={14} />
           {t('settings.delete')}
         </button>
+        <LegalLinks className="h03-legal" />
       </div>
 
       <Modal

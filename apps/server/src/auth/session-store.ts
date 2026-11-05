@@ -2,9 +2,11 @@ import { createHash, randomBytes } from 'node:crypto';
 import { and, eq, inArray, isNull, lt, lte, or } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { sessions, users } from '../db/schema';
+import { SESSION_ABSOLUTE_DAYS, SESSION_IDLE_DAYS } from '../retention';
 
-export const SESSION_ABSOLUTE_MS = 30 * 24 * 60 * 60 * 1000;
-export const SESSION_IDLE_MS = 14 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+export const SESSION_ABSOLUTE_MS = SESSION_ABSOLUTE_DAYS * DAY_MS;
+export const SESSION_IDLE_MS = SESSION_IDLE_DAYS * DAY_MS;
 /** Refresh `last_seen_at` at most this often, to avoid a write on every request. */
 const TOUCH_INTERVAL_MS = 60 * 1000;
 

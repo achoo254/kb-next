@@ -17,3 +17,19 @@
     width: 100%;
   }
 }
+
+/* Not on the board: the legal links, quiet at the bottom of the sign-in page (the board's 900px, or the window). */
+.login .screen-board {
+  min-height: max(100vh, 720px);
+}
+
+.legal-links.login-legal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  color: var(--c-text-sub);
+}

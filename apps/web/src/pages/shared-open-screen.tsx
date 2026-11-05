@@ -17,6 +17,7 @@ import { setFavorite } from '../api/authoring-api';
 import { LOGIN_PATH } from '../api/session-api';
 import { type SharedPreview, openSharedLink, remixShared } from '../api/share-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { LegalLinks } from '../layout/legal-links';
 import { ILLUSTRATIONS, type IllustrationName } from '../ui/art';
 import { Icon } from '../ui/icon';
 import { type ShareMessageKey, useShareText } from './share-messages';
@@ -83,6 +84,7 @@ export function SharedOpenScreen({ token }: { token: string }): ReactNode {
           {load.state === 'not-found' && <OffState art="blackhole" title="open.notFound.title" text="open.notFound.text" />}
           {load.state === 'failed' && <OffState art="crystal-cracked" title="open.failed.title" text="open.failed.text" onRetry={() => void open()} />}
         </div>
+        <LegalLinks className="open-legal" />
       </div>
     </AppShell>
   );

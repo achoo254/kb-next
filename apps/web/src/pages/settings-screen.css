@@ -563,6 +563,18 @@
   cursor: pointer;
 }
 
+/* Not on the board: the legal links, quiet under "Xoá dữ liệu của tôi". */
+.legal-links.h03-legal {
+  position: absolute;
+  left: 600px;
+  top: 850px;
+  width: 240px;
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  color: var(--c-text-sub);
+}
+
 .h03-toast {
   position: absolute;
   left: 50%;

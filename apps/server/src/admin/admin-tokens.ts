@@ -8,11 +8,12 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { and, desc, eq, isNull, lt } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { adminApiCalls, adminTokens, users } from '../db/schema';
+import { ADMIN_CALL_LOG_DAYS } from '../retention';
 
 export const TOKEN_PREFIX = 'kf_admin_';
 const TOKEN_SHAPE = /^kf_admin_[A-Za-z0-9_-]{43}$/;
-/** How long the call log keeps a call. */
-export const CALL_LOG_DAYS = 30;
+/** How long the call log keeps a call (src/retention.ts). */
+export const CALL_LOG_DAYS = ADMIN_CALL_LOG_DAYS;
 /** Calls A03 lists. */
 export const RECENT_CALLS = 20;
 

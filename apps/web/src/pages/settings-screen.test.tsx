@@ -90,6 +90,9 @@ describe('the theme and reduced motion', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Theo hệ thống' }));
     expect(document.documentElement.dataset.theme).toBeUndefined();
     expect(screen.getByText(/^Theo máy: đang/)).toBeTruthy();
+    // The privacy policy (what deleting one's data removes) and the terms sit under the station.
+    const legal = screen.getByRole('navigation', { name: 'Chính sách và điều khoản' });
+    expect(within(legal).getByRole('link', { name: 'Quyền riêng tư' }).getAttribute('href')).toBe('/privacy');
   });
 
   it('stops motion app-wide with the switch', async () => {

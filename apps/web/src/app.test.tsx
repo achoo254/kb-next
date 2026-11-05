@@ -35,6 +35,10 @@ describe('routes', () => {
     ['/i/abc_DEF-123', 'Invite'],
     ['/i/a/b', 'X02'],
     ['/l/abc_DEF-123', 'H02'],
+    ['/privacy', 'Privacy'],
+    ['/privacy/', 'Privacy'],
+    ['/terms', 'Terms'],
+    ['/terms/x', 'X02'],
     ['/nowhere', 'X02'],
     ['/d/', 'X02'],
     ['/d/a/b', 'X02'],
@@ -42,9 +46,9 @@ describe('routes', () => {
     expect(matchRoute(path).code).toBe(code);
   });
 
-  it('keeps every screen behind sign-in except the landing, sign-in, share-link and error pages', () => {
+  it('keeps every screen behind sign-in except the landing, sign-in, share-link, legal and error pages', () => {
     const open = [...ROUTES, NOT_FOUND].filter((route) => route.access === 'public').map((route) => route.code);
-    expect(open.sort()).toEqual(['H02', 'S01', 'S02', 'X02']);
+    expect(open.sort()).toEqual(['H02', 'Privacy', 'S01', 'S02', 'Terms', 'X02']);
   });
 });
 
@@ -52,6 +56,8 @@ describe('sign-in gate', () => {
   it('shows public screens at once and signed-in screens only to a signed-in account', () => {
     expect(canShow(matchRoute('/'), { status: 'loading' })).toBe(true);
     expect(canShow(matchRoute('/l/tok'), READY_OUT)).toBe(true);
+    expect(canShow(matchRoute('/privacy'), { status: 'loading' })).toBe(true);
+    expect(canShow(matchRoute('/terms'), READY_OUT)).toBe(true);
     expect(canShow(matchRoute('/u'), { status: 'loading' })).toBe(false);
     expect(canShow(matchRoute('/u'), READY_OUT)).toBe(false);
     expect(canShow(matchRoute('/u'), READY_IN)).toBe(true);

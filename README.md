@@ -20,7 +20,12 @@ và hiện nền Universe kèm mã board; nội dung các màn được dựng d
 | [`scripts`](scripts) | `brand-gen`, `check-tokens` (màu chỉ ở `tokens.css`, tương phản WCAG AA cả Tối lẫn Sáng), `check-public-info` (không lộ địa chỉ máy chủ, cổng SSH), `meili-dev` + `meili-binary` (Meilisearch cho dev và test) |
 
 Route của web và board tương ứng: [`apps/web/src/routes.ts`](apps/web/src/routes.ts). Mọi trang cần đăng nhập trừ
-trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02) và trang lỗi (X02).
+trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02), trang lỗi (X02) và hai trang pháp lý
+song ngữ không có board: `/privacy` (quyền riêng tư: câu hỏi AI đi tới nhà cung cấp người dùng chọn bằng key riêng,
+Jev xử lý tìm kiếm phía server, cookie, link chia sẻ, sao lưu, cách xoá dữ liệu) và `/terms` (điều khoản sử dụng).
+Chữ ở [`apps/web/src/pages/legal-docs.ts`](apps/web/src/pages/legal-docs.ts); mọi thời hạn lưu giữ in từ
+[`apps/server/src/retention.ts`](apps/server/src/retention.ts), cùng hằng số server dùng. Đổi cách app giữ hay gửi dữ
+liệu thì sửa trang này cùng lúc. Link tới hai trang ở chân landing, trang đăng nhập, H02 và H03.
 
 Ảnh AI trong `apps/web/public/art/`: xem [`CREDITS.md`](CREDITS.md). Deploy: [`docs/deployment-guide.md`](docs/deployment-guide.md).
 Kiểm giống mock: [`docs/parity-testing.md`](docs/parity-testing.md); chỗ buộc phải khác mock: [`docs/mock-deviations.md`](docs/mock-deviations.md).

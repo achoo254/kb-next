@@ -1,0 +1,201 @@
+/* /privacy and /terms (legal-page.tsx, no board): one reading column of 760px on the kit's rim panel, the reader's
+   type (16px, line height 1.75), over the strong veil. The landscape and veil stay put while the long text scrolls.
+   Below 640px the column takes the window's width, so a 390px phone never scrolls sideways. */
+
+.legal .universe-bg img,
+.legal .universe-veil {
+  position: fixed;
+}
+
+.legal .screen-board {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 96px var(--space-4) var(--space-6);
+}
+
+.legal .kf-btn[data-variant="ghost"] {
+  background: var(--c-glass);
+  border-color: var(--c-glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.legal-lang {
+  min-width: 58px;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.legal-column {
+  max-width: 760px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.legal-article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: 40px 52px 44px;
+  /* long words (cookie names, hosts) wrap instead of widening the page */
+  overflow-wrap: anywhere;
+}
+
+.legal-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.legal-title {
+  align-self: flex-start;
+  margin: 0;
+  padding-bottom: 4px;
+  font: 700 40px/1.12 var(--font-sans);
+  letter-spacing: -0.8px;
+  background: var(--hero-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.legal-updated {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-text-muted);
+}
+
+.legal-intro {
+  margin: var(--space-2) 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.legal-toc {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--c-text) 5%, transparent);
+  border: 1px solid var(--c-border);
+}
+
+.legal-toc ol {
+  margin: 0;
+  padding-left: 22px;
+  columns: 2;
+  column-gap: var(--space-6);
+}
+
+.legal-toc li {
+  break-inside: avoid;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.legal-toc a,
+.legal-section a {
+  color: var(--c-link);
+  font-weight: 600;
+  text-underline-offset: 2px;
+}
+
+.legal-toc a:focus-visible,
+.legal-section a:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.legal-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.legal-heading {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  /* a heading reached from the table of contents clears the top of the window */
+  scroll-margin-top: var(--space-5);
+}
+
+.legal-section p,
+.legal-section li {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.legal-section ul {
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.legal-section-link {
+  align-self: flex-start;
+}
+
+.legal-foot {
+  padding: var(--space-2) 0 var(--space-4);
+  text-align: center;
+  font-size: 13px;
+  color: var(--c-text-sub);
+}
+
+@media (max-width: 640px) {
+  .legal .brand-logo {
+    left: 16px;
+    top: 20px;
+  }
+
+  .legal .screen-page-actions {
+    right: 16px;
+  }
+
+  .legal .screen-board {
+    padding: 88px 12px var(--space-5);
+  }
+
+  .legal-article {
+    gap: var(--space-4);
+    padding: 24px 20px 28px;
+  }
+
+  .legal-title {
+    font-size: 30px;
+    letter-spacing: -0.5px;
+  }
+
+  .legal-intro {
+    font-size: 17px;
+  }
+
+  .legal-toc {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .legal-toc ol {
+    columns: 1;
+  }
+
+  .legal-heading {
+    font-size: 20px;
+  }
+
+  .legal-section ul {
+    padding-left: 18px;
+  }
+}
+
+/* The logo already leads home; on a phone the brand name and the language button keep the row to themselves. */
+@media (max-width: 480px) {
+  .legal .legal-home {
+    display: none;
+  }
+}

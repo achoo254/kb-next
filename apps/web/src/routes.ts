@@ -16,12 +16,15 @@ const segment = '([A-Za-z0-9_-]+)';
 
 /**
  * The app's screens. Every page needs a signed-in account except the landing page (S01), the sign-in page (S02),
- * a share link (H02) and the error page (X02, any unknown path).
+ * a share link (H02), the privacy and terms pages (no board) and the error page (X02, any unknown path).
  */
 export const ROUTES: readonly ScreenRoute[] = [
   { code: 'S01', titleKey: 'screen.S01', access: 'public', pattern: /^\/$/ },
   { code: 'S02', titleKey: 'screen.S02', access: 'public', pattern: /^\/login$/ },
   { code: 'H02', titleKey: 'screen.H02', access: 'public', pattern: new RegExp(`^/l/${segment}$`) },
+  // The privacy policy and terms of use: text pages with no board of their own (pages/legal-page.tsx).
+  { code: 'Privacy', titleKey: 'screen.Privacy', access: 'public', pattern: /^\/privacy$/ },
+  { code: 'Terms', titleKey: 'screen.Terms', access: 'public', pattern: /^\/terms$/ },
   { code: 'C09', titleKey: 'screen.C09', access: 'signed-in', pattern: /^\/u$/ },
   { code: 'C10', titleKey: 'screen.C10', access: 'signed-in', pattern: new RegExp(`^/s/${segment}$`) },
   { code: 'C11', titleKey: 'screen.C11', access: 'signed-in', pattern: new RegExp(`^/d/${segment}$`) },

@@ -15,6 +15,7 @@ import { bodyOf, chunksOf, composeMarkdown, contentHash, foldTitle, linkedTitles
 import { titleLine } from '../import/hoc-cloud/sections';
 import type { Db } from '../db/client';
 import { PLANET_COLOURS, chunks, documentVersions, documents, files, links } from '../db/schema';
+import { TRASH_DAYS } from '../retention';
 import { type DocumentRow, documentColumns } from './content';
 import { isUuid } from './ids';
 import { historyScope } from './history';
@@ -34,8 +35,8 @@ export function isPlanet(value: string | null): value is Planet {
 
 /** Saves by the same editor within this long of a version's first save update that version (C17's granularity). */
 export const MERGE_WINDOW_MS = 2 * 60 * 1000;
-/** Days a document stays in the trash before it is deleted for good (C08 "tự xoá sau 30 ngày"). */
-export const TRASH_DAYS = 30;
+/** Days a document stays in the trash before it is deleted for good (src/retention.ts). */
+export { TRASH_DAYS };
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Titles of `[[ ]]` links resolved per save, and candidates read per title. */
 const MAX_LINK_TITLES = 100;

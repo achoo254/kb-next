@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SessionState } from '../api/session-api';
 import { renderWithI18n } from '../test/render';
@@ -32,6 +32,10 @@ describe('LandingPage', () => {
     expect(screen.getByRole('link', { name: 'Sign in with your hoandat account' }).getAttribute('href')).toBe('/login?return=%2Fu&go=1');
     expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toBe('/login?return=%2Fu&go=1');
     expect(screen.getByText('Knowledge OS · kb.hoandat.com')).toBeTruthy();
+    // The footer leads to the privacy policy and the terms, signed out.
+    const legal = within(screen.getByRole('contentinfo')).getByRole('navigation', { name: 'Policies and terms' });
+    expect(within(legal).getByRole('link', { name: 'Privacy' }).getAttribute('href')).toBe('/privacy');
+    expect(within(legal).getByRole('link', { name: 'Terms' }).getAttribute('href')).toBe('/terms');
   });
 
   it('previews the Universe from the public Spaces, with the visitor’s own Space as a promise', async () => {

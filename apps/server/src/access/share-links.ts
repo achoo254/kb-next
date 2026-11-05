@@ -19,6 +19,7 @@ import { and, count, desc, eq, gte, inArray, isNull, lt, or } from 'drizzle-orm'
 import type { Db } from '../db/client';
 import { auditLog, documents, shareLinkVisits, shareLinks, users } from '../db/schema';
 import { type DocumentRow, documentColumns } from './content';
+import { SHARE_OPENINGS_KEEP_DAYS } from '../retention';
 import { HIDE_ACTION, SHOW_ACTION } from './history';
 import { isUuid } from './ids';
 import { findApproval } from './reading';
@@ -34,8 +35,8 @@ const EXPIRY_DAYS: Record<ShareExpiry, number | null> = { none: null, '7d': 7, '
 export type ShareAccess = (typeof shareLinks.$inferSelect)['access'];
 export type ShareLinkRow = typeof shareLinks.$inferSelect;
 
-/** How long the access history keeps an opening. */
-export const OPENED_KEEP_DAYS = 90;
+/** How long the access history keeps an opening (src/retention.ts). */
+export const OPENED_KEEP_DAYS = SHARE_OPENINGS_KEEP_DAYS;
 /** History lines C18 lists. */
 export const HISTORY_LIMIT = 20;
 

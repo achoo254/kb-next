@@ -20,6 +20,16 @@
   color: var(--open-sub);
 }
 
+/* Not on the board: the legal links, quiet in the bottom right corner (clear of the board's state switch). */
+.legal-links.open-legal {
+  position: absolute;
+  right: 28px;
+  bottom: 20px;
+  z-index: 1;
+  font-size: 12px;
+  color: var(--open-sub);
+}
+
 .open-content {
   position: absolute;
   left: 0;
