@@ -115,8 +115,10 @@ export function receiveUpload(req: Request, filesDir: string, expected: FileKind
       if (settled) return;
       settled = true;
       req.unpipe(form);
-      // Ends a file part still streaming: its partial file is removed (store) and nothing more is read.
-      form.destroy();
+      // Ends a file part still streaming: its partial file is removed (store) and nothing more is read. Deferred:
+      // `fail` can run inside busboy's own callbacks (the file's 'limit' event), and destroying the form there
+      // leaves busboy finishing the current chunk on a torn-down part, an uncaught TypeError that kills the process.
+      setImmediate(() => form.destroy());
       reject(error);
     };
 
