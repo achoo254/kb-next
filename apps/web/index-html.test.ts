@@ -48,7 +48,7 @@ describe('nginx site', () => {
     const size = /client_max_body_size (\d+)k;/.exec(block)?.[1];
     expect(Number(size)).toBeGreaterThanOrEqual(1024);
     expect(block).toContain('proxy_pass http://127.0.0.1:5320;');
-    expect(conf()).toMatch(/^    client_max_body_size 48k;$/m);
+    expect(conf()).toMatch(/^ {4}client_max_body_size 48k;$/m);
   });
 
   it('never lets the internal API through (services on the host call the server directly)', () => {
