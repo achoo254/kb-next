@@ -43,6 +43,14 @@ describe('nginx site', () => {
     for (const line of conf().match(/access_log [^;]*;/g) ?? []) expect(line).toMatch(/^access_log (off|\S+ kb_notoken);$/);
   });
 
+  it('lets the routes that take long texts through up to the server limit (1 MB)', () => {
+    const block = /location ~ \^\/api\/\(documents\|admin\|journeys\|canvases\|write\)\(\/\|\$\) \{([^}]*)\}/.exec(conf())?.[1] ?? '';
+    const size = /client_max_body_size (\d+)k;/.exec(block)?.[1];
+    expect(Number(size)).toBeGreaterThanOrEqual(1024);
+    expect(block).toContain('proxy_pass http://127.0.0.1:5320;');
+    expect(conf()).toMatch(/^    client_max_body_size 48k;$/m);
+  });
+
   it('never lets the internal API through (services on the host call the server directly)', () => {
     // ^~ beats every regex location, so no /api/ block can reach it first.
     const block = /location \^~ \/api\/internal\/ \{([^}]*)\}/.exec(conf())?.[1] ?? '';
