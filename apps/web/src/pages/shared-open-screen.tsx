@@ -114,16 +114,16 @@ function GuestCard({ token, preview }: { token: string; preview: SharedPreview }
           <span className="open-meta-sub">{t('open.meta', { sections: doc.sections.length, minutes: doc.readingMinutes })}</span>
         </div>
         {doc.sections.length > 0 && (
-          <div className="open-steps">
+          <ol className="open-steps">
             {doc.sections.slice(0, 5).map((section, i) => (
-              <span key={`${i}-${section}`} className="open-step" data-tone={TONES[i % TONES.length]} data-first={i === 0 || undefined}>
+              <li key={`${i}-${section}`} className="open-step" data-tone={TONES[i % TONES.length]} data-first={i === 0 || undefined} title={section}>
                 {/* the sections after the first open once signed in: a lock says so, not only their fade */}
                 {i > 0 && <Icon name="lock" size={11} className="open-step-lock" />}
                 <span className="open-step-text">{section}</span>
                 {i > 0 && <span className="kf-visually-hidden">{` (${t('open.stepLocked')})`}</span>}
-              </span>
+              </li>
             ))}
-          </div>
+          </ol>
         )}
         <div className="open-actions">
           <a className="open-primary" href={login} data-id="open-sign-in">
@@ -137,7 +137,7 @@ function GuestCard({ token, preview }: { token: string; preview: SharedPreview }
         </div>
         {peek && doc.peek && (
           <div className="open-peek" data-id="open-peek-text">
-            <span className="open-peek-label">{Array.from(doc.peek.heading ?? doc.title).slice(0, 6).join('')}</span>
+            {doc.peek.heading && <span className="open-peek-label">{doc.peek.heading}</span>}
             <span className="open-peek-text">{doc.peek.text}</span>
           </div>
         )}

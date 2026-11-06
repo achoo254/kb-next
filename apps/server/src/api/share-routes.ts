@@ -56,6 +56,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const PREVIEW_SECTIONS = 8;
 /** Characters of the first section a guest may peek at (H02 "Xem trước 1 bước"). */
 const PEEK_CHARS = 280;
+/** A passage shorter than this (a line such as "Thời lượng ước tính: 30 phút.") is skipped for the peek. */
+const PEEK_MIN_CHARS = 80;
 
 const Expiry = z.enum(shareLinkExpiry.enumValues);
 const Access = z.enum(SHARE_LINK_ACCESS);
@@ -284,7 +286,8 @@ export function shareRoutes({ config, db, now, sync }: RequestContextDeps & { sy
     const space = spaceRows[0];
     if (!space) throw new Error('document without its Space');
     const list = chunks ?? [];
-    const first = list[0];
+    // The peek is the first section with something to read, not a one-line note before it.
+    const first = list.find((c) => peekText(c.text).length >= PEEK_MIN_CHARS) ?? list[0];
     const body: SharedPreview = {
       access: link.access,
       signedIn: viewer.kind === 'user',

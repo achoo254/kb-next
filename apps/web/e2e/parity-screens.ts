@@ -197,7 +197,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'C05-Preview', path: `/d/${PUBLISH_DOCUMENT_ID}/preview`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="preview-stage"]' },
   // maxDiff: the people's orbs are deeper than the board's so their white initials read AA; docs/mock-deviations.md.
   { board: 'C18-Share', path: `/d/${C13_DHCP_ID}/share`, signedIn: true, status: 'built', maxDiff: 0.031, mocks: ['share-c18'], clock: C18_CLOCK, waitFor: '[data-id="share-history"]' },
-  { board: 'H02-SharedOpen', path: `/l/${H02_TOKEN}`, signedIn: false, status: 'built', mocks: ['open-h02'], waitFor: '[data-id="open-card"]' },
+  // maxDiff: the sections are a list of full names, not the board's row of chips; docs/mock-deviations.md.
+  { board: 'H02-SharedOpen', path: `/l/${H02_TOKEN}`, signedIn: false, status: 'built', maxDiff: 0.08, mocks: ['open-h02'], waitFor: '[data-id="open-card"]' },
   // The admin station on the boards' data (the E2E account answered as an admin): the queue with TCP vs UDP picked,
   // published texts by Space with DHCP picked, the API with its token and calls.
   { board: 'A01-AdminReview', path: '/admin', signedIn: true, status: 'built', mocks: ['admin', 'admin-a01'], clock: A01_CLOCK, waitFor: '.a01-block[data-n="2"]' },

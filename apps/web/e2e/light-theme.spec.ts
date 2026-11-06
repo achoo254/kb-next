@@ -54,7 +54,7 @@ const SHOTS: readonly Shot[] = PARITY_SCREENS.flatMap((screen): Shot[] => {
 const FADED: ReadonlyArray<{ match: RegExp; state: string; cue: string }> = [
   { match: /^span\.graph-node-name\b/, state: 'C13: nodes outside the picked node\'s neighbourhood', cue: 'only the neighbours keep their lines to it and are listed in its panel; the node\'s name says "không nối với bài đang chọn"' },
   { match: /^span\.(jr-stop-n|jr-stop-name)\b/, state: 'Flow: stops not reached yet', cue: 'done stops carry a check and the current one the traveller; the stop\'s name says "chưa tới"' },
-  { match: /^span\.(open-step|open-step-text)\b/, state: 'H02: sections locked until sign-in', cue: 'a lock on each locked section, with "mở khi đăng nhập" for a screen reader' },
+  { match: /^(li\.open-step|span\.open-step-text)\b/, state: 'H02: sections locked until sign-in', cue: 'a lock on each locked section, with "mở khi đăng nhập" for a screen reader' },
   { match: /^span\.(a02-planet-name|a02-badge-user)\b/, state: 'A02: hidden texts', cue: 'a crossed eye on the planet (as on the legend); its name says "Đã ẩn"' },
 ];
 

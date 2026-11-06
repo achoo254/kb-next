@@ -144,28 +144,31 @@
   color: var(--open-sub);
 }
 
+/* The first sections, one per line with their full name (lab headings such as "Bước 1 — Gửi ARP Request" lost
+   everything but "Bước" in the board's row of small chips). */
 .open-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .open-step {
   --tone: var(--open-violet);
-  flex: 1;
   min-width: 0;
-  height: 46px;
-  padding: 0 6px;
-  border-radius: 12px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
   background: var(--tone);
   color: var(--open-step-ink);
-  font: 700 12px var(--font-display);
+  font: 700 13px var(--font-display);
   display: flex;
   align-items: center;
-  justify-content: center;
-  opacity: 0.4;
+  opacity: 0.6;
   overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .open-step[data-first] {
@@ -174,7 +177,7 @@
 
 .open-step-lock {
   flex: none;
-  margin-right: 3px;
+  margin-right: 6px;
 }
 
 .open-step-text {
@@ -251,22 +254,17 @@
   background: var(--open-peek-bg);
   border: 1px solid var(--open-cyan);
   display: flex;
-  gap: 12px;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
 }
 
+/* the section's full name above its first lines */
 .open-peek-label {
-  width: 56px;
-  height: 56px;
-  flex: none;
-  border-radius: 14px;
-  background: var(--open-peek-chip);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font: 700 14px var(--font-display);
   color: var(--open-sub);
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .open-peek-text {

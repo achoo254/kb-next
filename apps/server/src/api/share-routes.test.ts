@@ -49,8 +49,8 @@ async function failure(promise: Promise<unknown>): Promise<string> {
 const tokenOf = (path: string): string => path.replace(/^\/l\//, '');
 
 /** A text of the owner's, sent for review and approved: published, as a member's text is. */
-async function publishedText(title: string): Promise<string> {
-  const doc = await as('owner', () => createDocument({ title, body: '## Bước một\n\nMáy mới hỏi cả mạng.\n\n## Bước hai\n\nServer trả lời.' }));
+async function publishedText(title: string, body = '## Bước một\n\nMáy mới hỏi cả mạng.\n\n## Bước hai\n\nServer trả lời.'): Promise<string> {
+  const doc = await as('owner', () => createDocument({ title, body }));
   await as('owner', () => submitForReview(doc.id));
   await as('admin', () => decideReview(doc.id, 'approved'));
   return doc.id;
@@ -112,6 +112,14 @@ describe('making a link', () => {
 });
 
 describe('opening a link', () => {
+  it('lets a guest peek at the first section with something to read, past a one-line note', async () => {
+    const lesson = 'Máy mới chưa có IP nên gửi một gói hỏi cả mạng, rồi chờ server trả lời với địa chỉ để dùng.';
+    const id = await publishedText('Bài có dòng thời lượng', `Thời lượng ước tính: 30 phút.\n\n## Bước 1 — Hỏi cả mạng\n\n${lesson}`);
+    const made = await as('owner', () => createShareLink(id, { expiry: 'none', access: 'view' }));
+    const guest = await as('guest', () => openSharedLink(tokenOf(made.path)));
+    expect(guest.document.peek).toEqual({ heading: 'Bước 1 — Hỏi cả mạng', text: lesson });
+  });
+
   it('previews the text for a guest and logs who opened it and when, never the token', async () => {
     const id = await publishedText('Máy mới vào mạng');
     const made = await as('owner', () => createShareLink(id, { expiry: 'none', access: 'view' }));
