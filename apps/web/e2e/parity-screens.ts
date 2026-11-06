@@ -118,12 +118,14 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // The seeded Space and document of the boards (KB_SEED=mock): Networking on "Giao thức nền tảng", and DHCP read
   // by the seed's owner (its progress, backlinks, comments "2 giờ trước"), at the seed's last update.
   { board: 'C10-Space', path: '/s/networking', signedIn: true, status: 'built', clock: SEED_CLOCK },
-  // The board's default: the broadcast sentence selected, its toolbar, and the AI card explaining it.
+  // The board's default: the broadcast sentence selected, its toolbar, and the AI card explaining it. maxDiff: the
+  // reader's text is 17px (board 16px) with A−/A+ in the meta row, docs/mock-deviations.md.
   {
     board: 'C11-Reader',
     path: `/d/${F04_DOCUMENT_ID}`,
     signedIn: true,
     status: 'built',
+    maxDiff: 0.09,
     clock: SEED_CLOCK,
     mocks: ['ask-c11'],
     select: { within: '#broadcast-la-gi', text: C11_SELECTION },
@@ -242,16 +244,18 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // Tablet (1180×820) and phone (390×844) boards: the viewport is the board's PNG size, so the app takes its tablet or
   // phone layout (apps/web/src/layout/device.ts).
   { board: 'T01-TabletUniverse', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded'], clock: UNIVERSE_CLOCK },
+  // maxDiff: 17px reader text and A−/A+, as C11.
   {
     board: 'T02-TabletReader',
     path: `/d/${F04_DOCUMENT_ID}`,
     signedIn: true,
     status: 'built',
+    maxDiff: 0.035,
     clock: SEED_CLOCK,
     click: '[data-id="reader-toc-open"]',
     waitFor: '[data-id="reader-toc-drawer"]',
   },
-  { board: 'M05-MobileDocs', path: `/d/${F04_DOCUMENT_ID}`, signedIn: true, status: 'built', maxDiff: 0.16, clock: SEED_CLOCK, waitFor: '[data-id="reader-article"]' },
+  { board: 'M05-MobileDocs', path: `/d/${F04_DOCUMENT_ID}`, signedIn: true, status: 'built', maxDiff: 0.175, clock: SEED_CLOCK, waitFor: '[data-id="reader-article"]' },
   { board: 'M06-MobileSearch', path: '/search?q=l%E1%BA%A5y%20IP', signedIn: true, status: 'built', maxDiff: 0.12, mocks: ['search-m06'], waitFor: '[data-id="search-screen"][data-state="results"]' },
   { board: 'M03-MobilePublish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', maxDiff: 0.14, mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
   { board: 'M04-MobileCopilot', path: C14_PATH, signedIn: true, status: 'built', maxDiff: 0.33, mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },

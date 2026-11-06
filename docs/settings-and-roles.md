@@ -59,6 +59,13 @@ API), mới nhất trước, lọc theo Thành viên / Nội dung / API / Đăng
 - Sáng dùng token Sáng và ảnh `bg-universe-light`. Nút đổi giao diện chỉ có ở H03.
 - "Giảm chuyển động" của app cộng thêm với cài đặt hệ điều hành: tắt animation và transition, Universe chạy 2D.
 - "Mở app ở chế độ" (Orbit / Danh sách) chỉ lưu trên máy này: C08 và A02 mở theo lựa chọn đó.
+- Cỡ chữ khi đọc: nút A−/A+ trong trình đọc (C11, tablet T02, điện thoại M05) chọn 16 / 17 (mặc định) / 18 / 20px cho
+  chữ thân bài; đoạn mở đầu và tiêu đề mục co giãn theo cùng tỉ lệ (17px: mở đầu 19px, tiêu đề mục 25px, dòng cao
+  1.75). Lưu theo tài khoản (`PATCH /api/me` `readerTextSize`, cột `users.reader_text_size`, migration
+  `0017_reader-text-size`), `GET /api/session` trả lại, một bản trong trình duyệt (`localStorage`
+  `kb-reader-text-size`, biến CSS `--reader-text-size` trên `<html>`) để khung đầu đã đúng cỡ. Đổi cỡ giữ nguyên đoạn
+  đang đọc ở chỗ cũ trên màn hình nên tiến độ đọc và anchor không nhảy. Trên điện thoại hai nút là ô chạm 44px; ở đầu
+  và cuối thang nút vẫn nhận focus (`aria-disabled`). H03 không có nút riêng: chọn ngay trong lúc đọc là đủ.
 
 ## Xoá dữ liệu của tôi (H03)
 

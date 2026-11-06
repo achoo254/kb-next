@@ -81,3 +81,23 @@ export function matchRoute(pathname: string): ScreenRoute {
   const path = routePath(pathname);
   return ROUTES.find((route) => route.pattern.test(path)) ?? NOT_FOUND;
 }
+
+/** The path parameter of a route (`/s/:space`, `/d/:doc`): the pattern's first capture group. */
+export function routeParam(route: ScreenRoute, path: string): string {
+  return route.pattern.exec(routePath(path))?.[1] ?? '';
+}
+
+/**
+ * Screens always opened by a full page load, never by in-app navigation: the sign-in page (S02, the way to the
+ * IdP and back) and a share link (H02, whose page the server sends with the shared text's link preview tags).
+ */
+const FULL_LOAD_SCREENS: ReadonlySet<string> = new Set(['S02', 'H02']);
+
+/**
+ * Whether a path of this site opens in the app without a page load: a screen of ROUTES other than the full-load ones.
+ * Anything else (/api, /auth, files, the dev kit, an unknown path the server may answer) is left to the browser.
+ */
+export function isInAppPath(pathname: string): boolean {
+  const route = matchRoute(pathname);
+  return route !== NOT_FOUND && !FULL_LOAD_SCREENS.has(route.code);
+}

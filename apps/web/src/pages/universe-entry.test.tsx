@@ -1,5 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getRouterState, installRouter, navigate, resetRouter } from '../router/navigation';
 import { renderWithI18n } from '../test/render';
 import { resetOpeningClock } from './opening-pace';
 import { UniverseEntry, showOnboarding } from './universe-entry';
@@ -109,5 +110,29 @@ describe('UniverseEntry', () => {
     );
     await waitFor(() => expect(screen.getByText('universe')).toBeTruthy(), OPENED);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('shows the Universe at once, without the opening card, when reached by in-app navigation', async () => {
+    serve(json(ME));
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    resetRouter();
+    const stop = installRouter();
+    try {
+      navigate('/settings');
+      await waitFor(() => expect(getRouterState().location.pathname).toBe('/settings'));
+      renderWithI18n(
+        <UniverseEntry>
+          <p>universe</p>
+        </UniverseEntry>,
+      );
+      expect(screen.getByText('universe')).toBeTruthy();
+      expect(screen.queryByRole('progressbar')).toBeNull();
+      // the first-visit dialog still comes once the account is read
+      await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    } finally {
+      stop();
+      resetRouter();
+      vi.restoreAllMocks();
+    }
   });
 });

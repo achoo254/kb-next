@@ -117,12 +117,21 @@
 }
 
 .phone-reader-page {
+  position: relative;
   box-sizing: border-box;
   padding: 12px 20px calc(190px + var(--safe-bottom));
   display: flex;
   flex-direction: column;
   gap: 14px;
   overflow-wrap: anywhere;
+}
+
+/* A−/A+ (reader-text-size-control.tsx) in the hero's bottom-right corner: 12px padding + 140px hero − 44px */
+.phone-reader-page > .reader-text-size-phone {
+  position: absolute;
+  top: 108px;
+  right: 20px;
+  z-index: 1;
 }
 
 .phone-reader-hero {
@@ -183,7 +192,8 @@
   flex-direction: column;
   gap: 12px;
   scroll-margin-top: 8px;
-  font-size: 16px;
+  /* the reader's chosen size (ui/reader-text-size.ts), 17px by default; headings in proportion */
+  font-size: var(--reader-text-size, 17px);
   line-height: 1.6;
 }
 
@@ -199,7 +209,7 @@
 
 .phone-reader-heading {
   margin: 6px 0 0;
-  font: 700 20px var(--font-display);
+  font: 700 calc(var(--reader-text-size, 17px) * 21 / 17) var(--font-display);
 }
 
 .phone-limit {

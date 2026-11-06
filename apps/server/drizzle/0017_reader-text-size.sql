@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "reader_text_size" smallint DEFAULT 17 NOT NULL;

@@ -1,0 +1,81 @@
+/* In-app navigation (navigation.ts): the waiting bar, the content's cross-fade, the focus target. */
+
+.nav-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1000;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  /* a screen that is ready within the delay never shows the bar */
+  animation: nav-progress-in var(--motion-feedback, 150ms) ease-out 80ms forwards;
+}
+
+.nav-progress-bar {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, transparent, var(--c-accent), var(--c-primary));
+  animation: nav-progress-run 1.1s ease-in-out infinite;
+}
+
+@keyframes nav-progress-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nav-progress-run {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+/* Reduced motion (the system's or the app's): a still bar, shown at once (the global rule drops every animation). */
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress {
+    opacity: 1;
+  }
+  .nav-progress-bar {
+    width: 100%;
+    opacity: 0.6;
+  }
+}
+:root[data-motion="reduce"] .nav-progress {
+  opacity: 1;
+}
+:root[data-motion="reduce"] .nav-progress-bar {
+  width: 100%;
+  opacity: 0.6;
+}
+
+/* The view transition of a navigation: the page swaps at once, only the content area cross-fades. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+:root[data-nav-transition] #content {
+  view-transition-name: kb-content;
+}
+::view-transition-old(kb-content),
+::view-transition-new(kb-content) {
+  animation-duration: var(--motion-feedback, 150ms);
+  animation-timing-function: ease-out;
+}
+
+/* The title announced after a navigation (app.tsx): pinned, so it never lengthens the page below a full-height screen. */
+.route-announcer {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+/* The heading focus moves to after a navigation (for screen readers): no ring for a mouse user. */
+[data-route-focus]:focus:not(:focus-visible) {
+  outline: none;
+}

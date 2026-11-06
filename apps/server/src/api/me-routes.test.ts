@@ -42,6 +42,7 @@ describe('GET /api/me', () => {
       lang: 'vi',
       theme: 'system',
       reducedMotion: false,
+      readerTextSize: 17,
       role: 'member',
       isAdmin: false,
       canReview: false,
@@ -78,8 +79,16 @@ describe('PATCH /api/me', () => {
     expect(await off.json()).toMatchObject({ reducedMotion: false });
   });
 
+  it('keeps the reader text size, and the session tells it for the first paint', async () => {
+    const bigger = await api(server, '/api/me', { method: 'PATCH', cookie: session, body: json({ readerTextSize: 20 }) });
+    expect(await bigger.json()).toMatchObject({ readerTextSize: 20 });
+    expect(await (await api(server, '/api/session', { cookie: session })).json()).toMatchObject({ user: { readerTextSize: 20 } });
+    const back = await api(server, '/api/me', { method: 'PATCH', cookie: session, body: json({ readerTextSize: 17 }) });
+    expect(await back.json()).toMatchObject({ readerTextSize: 17 });
+  });
+
   it('rejects an empty change, unknown values and unknown fields', async () => {
-    for (const body of [{}, { lang: 'fr' }, { theme: 'blue' }, { reducedMotion: 'yes' }, { lang: 'vi', role: 'reviewer' }]) {
+    for (const body of [{}, { lang: 'fr' }, { theme: 'blue' }, { reducedMotion: 'yes' }, { readerTextSize: 19 }, { readerTextSize: '18' }, { readerTextSize: null }, { lang: 'vi', role: 'reviewer' }]) {
       const res = await api(server, '/api/me', { method: 'PATCH', cookie: session, body: json(body) });
       expect(res.status, JSON.stringify(body)).toBe(400);
       expect(await res.json()).toEqual({ error: 'invalid-body' });

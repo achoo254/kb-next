@@ -13,10 +13,11 @@ interface UnreadState {
 const UnreadContext = createContext<UnreadState>({ total: 0, refresh: () => undefined, set: () => undefined });
 
 /**
- * The bell's count (TopActions' red dot), asked once per page for a signed-in account. A failed request leaves the
- * count at 0: the bell is a hint, never an error.
+ * The bell's count (TopActions' red dot), asked for a signed-in account when the page loads and again on each in-app
+ * navigation (`refreshKey`), as a page load did. A failed request leaves the count as it was (0 at first): the bell is
+ * a hint, never an error.
  */
-export function UnreadProvider({ signedIn, children }: { signedIn: boolean; children?: ReactNode }): ReactNode {
+export function UnreadProvider({ signedIn, refreshKey, children }: { signedIn: boolean; refreshKey?: string; children?: ReactNode }): ReactNode {
   const [total, setTotal] = useState(0);
   const [asked, setAsked] = useState(0);
   useEffect(() => {
@@ -31,7 +32,7 @@ export function UnreadProvider({ signedIn, children }: { signedIn: boolean; chil
     return () => {
       live = false;
     };
-  }, [signedIn, asked]);
+  }, [signedIn, asked, refreshKey]);
   const refresh = useCallback(() => setAsked((n) => n + 1), []);
   const value = useMemo(() => ({ total: signedIn ? total : 0, refresh, set: setTotal }), [signedIn, total, refresh]);
   return <UnreadContext value={value}>{children}</UnreadContext>;

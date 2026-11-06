@@ -63,6 +63,7 @@ describe('signed in through the hoandat.com account', () => {
         picture: 'https://lh3.googleusercontent.com/a/photo',
         theme: 'system',
         reducedMotion: false,
+        readerTextSize: 17,
       },
     });
     const logout = await api(server, '/auth/logout', { method: 'POST', cookie: session });

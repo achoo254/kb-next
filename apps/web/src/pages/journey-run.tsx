@@ -23,6 +23,7 @@ import { originOf } from './space-labels';
 import type { ScreenTranslate } from './space-messages';
 import { documentHref } from './universe-dock';
 import './journey-run.css';
+import { navigate } from '../router/navigation';
 
 type T = ScreenTranslate<JourneyMessageKey>;
 
@@ -151,7 +152,7 @@ function Run({ journey }: { journey: Journey }): ReactNode {
   const remix = async (): Promise<void> => {
     setError(null);
     try {
-      window.location.assign(journeyEditPath(await createJourney({ from: journey.id })));
+      navigate(journeyEditPath(await createJourney({ from: journey.id })));
     } catch (failure) {
       if (!(failure instanceof ApiError)) console.error('journey remix failed', failure);
       setError('run.remixFailed');

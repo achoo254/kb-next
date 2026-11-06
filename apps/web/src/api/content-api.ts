@@ -13,6 +13,7 @@
 import * as z from 'zod/mini';
 import { FILE_KINDS } from './files-api';
 import { ApiError, getJson } from './api-client';
+import type { ReaderTextSize } from '../ui/reader-text-sizes';
 
 export const LANGS = ['vi', 'en'] as const;
 export const THEMES = ['dark', 'light', 'system'] as const;
@@ -42,6 +43,8 @@ const MeSchema = z.object({
   theme: z.enum(THEMES),
   /** App-level reduced motion (H03), on top of the system's setting. */
   reducedMotion: z.boolean(),
+  /** The reader's body text size in px (ui/reader-text-size.ts); left out by older servers. */
+  readerTextSize: z.optional(z.number()),
   /** The workspace role the account acts with (C19). */
   role: z.enum(WORKSPACE_ROLES),
   isAdmin: z.boolean(),
@@ -255,8 +258,8 @@ export function fetchMe(): Promise<Me> {
   return getJson(MeSchema, '/api/me');
 }
 
-/** Changes the account's language, theme and/or reduced motion (H03); answers the updated account. */
-export function updateMe(change: { lang?: Lang; theme?: Theme; reducedMotion?: boolean }): Promise<Me> {
+/** Changes the account's language, theme, reduced motion (H03) and/or reader text size; answers the updated account. */
+export function updateMe(change: { lang?: Lang; theme?: Theme; reducedMotion?: boolean; readerTextSize?: ReaderTextSize }): Promise<Me> {
   return getJson(MeSchema, '/api/me', { method: 'PATCH', body: JSON.stringify(change) });
 }
 

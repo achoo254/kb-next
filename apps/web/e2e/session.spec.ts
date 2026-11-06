@@ -39,8 +39,9 @@ test('signing out at the IdP ends the session here', async ({ page, request }) =
 });
 
 test('signing out in the app ends the session', async ({ page }) => {
-  await signInAt(page, '/me');
-  await page.locator('[data-id="sign-out"]').click();
+  await signInAt(page, '/settings');
+  await page.locator('[data-id="settings-logout"]').click();
+  await page.locator('[data-id="settings-logout-confirm"]').click();
   await expect(page).toHaveURL(/\/$/);
   await page.goto('/me');
   await expect(page).toHaveURL(/\/login\?return=%2Fme$/);

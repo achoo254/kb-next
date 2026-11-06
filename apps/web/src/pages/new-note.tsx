@@ -11,6 +11,7 @@ import { EmptyState } from '../ui/empty-state';
 import { useEditorText } from './editor-messages';
 import { EditorFrame } from './editor-screen';
 import './editor-screen.css';
+import { navigate } from '../router/navigation';
 
 /** The note to create, from the page's query. */
 export function newNoteRequest(search: string): NewDocumentRequest {
@@ -31,7 +32,7 @@ export function NewNote(): ReactNode {
   const create = useCallback(() => {
     setFailed(false);
     createDocument(newNoteRequest(window.location.search)).then(
-      (doc) => window.location.replace(`/d/${encodeURIComponent(doc.id)}/edit`),
+      (doc) => navigate(`/d/${encodeURIComponent(doc.id)}/edit`, { replace: true }),
       (error: unknown) => {
         if (!(error instanceof ApiError)) console.error('note create failed', error);
         setFailed(true);

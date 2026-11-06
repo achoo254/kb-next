@@ -22,6 +22,7 @@ import { spaceName } from './space-panels';
 import type { ScreenTranslate } from './space-messages';
 import type { Locale } from '../i18n/i18n';
 import './journey-builder.css';
+import { navigate } from '../router/navigation';
 
 type BuilderError = 'not-found' | 'forbidden' | 'locked' | 'server';
 
@@ -112,7 +113,7 @@ export function NewJourney(): ReactNode {
   const create = useCallback(() => {
     setFailed(false);
     createJourney({}).then(
-      (id) => window.location.replace(journeyEditPath(id)),
+      (id) => navigate(journeyEditPath(id), { replace: true }),
       (error: unknown) => {
         if (!(error instanceof ApiError)) console.error('journey create failed', error);
         setFailed(true);

@@ -17,6 +17,7 @@ import { UniversePhone } from './universe-phone';
 import { sceneSpaces } from './universe-spaces';
 import { OfflineBanner, UniverseEmpty, UniverseSkeleton } from './universe-states';
 import './universe-screen.css';
+import { navigate } from '../router/navigation';
 
 /** `?shared=1`: the Universe (C09) even when nothing in it has a text yet (S05's "khám phá Universe chung"). */
 export const SHARED_PARAM = 'shared';
@@ -207,7 +208,7 @@ function UniverseMain({ spaces, recent, tablet }: UniverseMainProps & { tablet: 
     const onKey = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape') return;
       setSkip(true);
-      if (warp) window.location.assign(warp.href);
+      if (warp) navigate(warp.href);
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
@@ -215,7 +216,7 @@ function UniverseMain({ spaces, recent, tablet }: UniverseMainProps & { tablet: 
 
   useEffect(() => {
     if (!warp) return undefined;
-    const timer = window.setTimeout(() => window.location.assign(warp.href), WARP_MS);
+    const timer = window.setTimeout(() => navigate(warp.href), WARP_MS);
     return () => window.clearTimeout(timer);
   }, [warp]);
 

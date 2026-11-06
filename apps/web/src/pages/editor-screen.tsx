@@ -33,6 +33,7 @@ import { ErrorPanel } from './error-screen';
 import { usePhoneText } from './phone-messages';
 import { spaceName } from './space-panels';
 import './editor-screen.css';
+import { navigate } from '../router/navigation';
 
 type EditorFailure = 'not-found' | 'no-access' | 'hidden' | 'locked' | 'not-editable' | 'offline' | 'server';
 type EditorLoad = { status: 'loading' } | { status: 'ready'; opened: OpenedDocument } | { status: 'failed'; error: EditorFailure };
@@ -57,7 +58,7 @@ function useOpened(id: string): { load: EditorLoad; reload(): void } {
         if (!current) return;
         // A journey is built in its own builder (C07), not written as Markdown.
         if (error instanceof ApiError && error.code === 'journey') {
-          window.location.replace(journeyEditPath(id));
+          navigate(journeyEditPath(id), { replace: true });
           return;
         }
         if (!(error instanceof ApiError)) console.error('editor load failed', error);
@@ -574,7 +575,7 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
   // (the text saves on leaving).
   const next = (): void => {
     if (title.trim()) {
-      window.location.assign(publishPath(doc.id));
+      navigate(publishPath(doc.id));
       return;
     }
     setTitleError(true);

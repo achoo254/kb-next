@@ -19,7 +19,8 @@ phải sửa từng màn.
   `board-zoom.ts`) là phần khung thừa mỗi bên, bằng 0 khi board chiếm trọn bề ngang (1440×900, cửa sổ hẹp mà đủ cao): panel nào cần bám mép phải cửa sổ thì cộng
   nó vào `left`. Hiện chỉ panel AI của C09 (và panel "thử hỏi" của S05) dùng; scene và chữ của C09 ở yên theo board.
   Panel phải của C10, C11 và các màn khác vẫn theo board.
-- `AppShell` (mọi màn đã đăng nhập) và `ScreenPage layout="board"` tự có khung. Màn tự lo cửa sổ hẹp bằng media query
+- `AppShell` (mọi màn đã đăng nhập; trong app là một khung dùng chung, giữ nguyên khi chuyển màn:
+  [`navigation.md`](navigation.md#khung-app-giữ-nguyên)) và `ScreenPage layout="board"` tự có khung. Màn tự lo cửa sổ hẹp bằng media query
   riêng (landing, login, lỗi) khai báo `responsive` để giữ 1:1.
 
 ## Tablet và điện thoại

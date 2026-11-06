@@ -16,6 +16,7 @@ import { orderBacklinks } from './reader-side';
 import { originOf } from './space-labels';
 import { spaceName } from './space-panels';
 import './reader-phone.css';
+import { ReaderTextSizeControl } from './reader-text-size-control';
 
 /**
  * The reader on a phone (board M05): the open files as tabs, the text at the window's width with its sections, the
@@ -83,6 +84,8 @@ function PhoneArticle({ view, onSheet }: { view: DocumentView; onSheet(sheet: Sh
         <span data-layer="2" />
         <span data-layer="1" />
       </div>
+      {/* over the hero's free corner: no room in the tags row, and it moves nothing below */}
+      <ReaderTextSizeControl phone />
       <div className="phone-reader-tags">
         <PhoneOrigin origin={originOf(doc)} />
         <span className="phone-reader-path">{[spaceName(reader.locale, doc.space), doc.collection ? spaceName(reader.locale, doc.collection) : null].filter(Boolean).join(' › ')}</span>

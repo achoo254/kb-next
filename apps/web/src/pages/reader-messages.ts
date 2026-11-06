@@ -4,6 +4,10 @@ import { type ScreenTranslate, useScreenText } from './space-messages';
 
 export const readerVi = {
   'reader.toc': 'Mục lục',
+  'reader.textSize': 'Cỡ chữ',
+  'reader.textSmaller': 'Chữ nhỏ hơn',
+  'reader.textLarger': 'Chữ lớn hơn',
+  'reader.textSizeValue': '{size}px',
   'reader.overview': 'Tổng quan',
   'reader.comments': 'Bình luận',
   'reader.reviewedBy': 'Đã duyệt bởi {name}',
@@ -81,6 +85,10 @@ export type ReaderMessageKey = keyof typeof readerVi;
 
 export const readerEn: Record<ReaderMessageKey, string> = {
   'reader.toc': 'Contents',
+  'reader.textSize': 'Text size',
+  'reader.textSmaller': 'Smaller text',
+  'reader.textLarger': 'Larger text',
+  'reader.textSizeValue': '{size}px',
   'reader.overview': 'Overview',
   'reader.comments': 'Comments',
   'reader.reviewedBy': 'Reviewed by {name}',

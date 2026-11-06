@@ -33,6 +33,7 @@ import { originOf } from './space-labels';
 import { spaceName } from './space-panels';
 import type { ScreenTranslate } from './space-messages';
 import './copilot-screen.css';
+import { navigate } from '../router/navigation';
 
 type HistoryItem = CopilotHistory['items'][number];
 type Translate = ScreenTranslate<CopilotMessageKey>;
@@ -260,7 +261,7 @@ function MakeJourney({ turn }: { turn: CopilotTurn }): ReactNode {
   const make = (): void => {
     setState('busy');
     createJourney({ title: (turn.request.question ?? '').replace(/\s+/g, ' ').trim().slice(0, 200), documents }).then(
-      (id) => window.location.assign(journeyEditPath(id)),
+      (id) => navigate(journeyEditPath(id)),
       (error: unknown) => {
         if (!(error instanceof ApiError)) console.error('journey from answer failed', error);
         setState('failed');

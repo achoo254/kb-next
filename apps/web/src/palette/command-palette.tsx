@@ -25,6 +25,7 @@ import { OriginTag } from '../ui/origin-tag';
 import { Skeleton } from '../ui/skeleton';
 import { type PaletteMessageKey, usePaletteText } from './palette-messages';
 import './command-palette.css';
+import { navigate } from '../router/navigation';
 
 interface Command {
   id: 'note' | 'canvas' | 'ask' | 'upload';
@@ -90,7 +91,7 @@ interface CommandPaletteProps {
   navigate?: (href: string) => void;
 }
 
-const goTo = (href: string): void => window.location.assign(href);
+const goTo = (href: string): void => navigate(href);
 
 export function CommandPalette({ initialQuery = '', onClose, navigate = goTo }: CommandPaletteProps): ReactNode {
   const { t, locale } = usePaletteText();

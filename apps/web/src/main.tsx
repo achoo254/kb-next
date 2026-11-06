@@ -8,11 +8,12 @@ import './ui/tokens.css';
 import './ui/app.css';
 import { type ReactNode, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './app';
+import { RoutedApp } from './app';
 import { I18nProvider } from './i18n/i18n';
 import { installBoardZoom } from './layout/board-zoom';
 import { installOfficeSync } from './pages/office-sync';
 import { applyPrefs, readStoredPrefs } from './ui/display-prefs';
+import { applyReaderTextSize, readStoredReaderTextSize } from './ui/reader-text-size';
 
 /** The dev-only UI kit (/dev/kit); `import.meta.env.DEV` is false in builds, so the bundle never contains it. */
 async function devKit(pathname: string): Promise<ReactNode | null> {
@@ -24,6 +25,7 @@ async function devKit(pathname: string): Promise<ReactNode | null> {
 // before the first render, so the board screens paint at their zoom at once, in the account's theme and motion
 installBoardZoom();
 applyPrefs(readStoredPrefs());
+applyReaderTextSize(readStoredReaderTextSize());
 // Office drafts kept in this browser go to the server now and whenever the connection comes back.
 installOfficeSync();
 
@@ -33,7 +35,7 @@ const pathname = window.location.pathname;
 void devKit(pathname).then((kit) => {
   createRoot(root).render(
     <StrictMode>
-      <I18nProvider>{kit ?? <App pathname={pathname} />}</I18nProvider>
+      <I18nProvider>{kit ?? <RoutedApp />}</I18nProvider>
     </StrictMode>,
   );
 });

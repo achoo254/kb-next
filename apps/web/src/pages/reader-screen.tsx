@@ -30,6 +30,8 @@ import { ReaderPhone } from './reader-phone';
 import { spaceName } from './space-panels';
 import { type ReaderLoad, ReaderFailed, ReaderLoading, readerLoadError, sideAsk } from './reader-states';
 import './reader-screen.css';
+import { navigate } from '../router/navigation';
+import { ReaderTextSizeControl } from './reader-text-size-control';
 
 function useDocument(id: string): { load: ReaderLoad; reload(): Promise<void> } {
   const { locale } = useI18n();
@@ -41,7 +43,7 @@ function useDocument(id: string): { load: ReaderLoad; reload(): Promise<void> } 
       const view = await fetchDocument(id, locale);
       // A journey is run on its own path (Flow), not read as a text.
       if (view.document.type === 'journey') {
-        window.location.replace(journeyPath(id));
+        navigate(journeyPath(id), { replace: true });
         return { status: 'loading' };
       }
       return { status: 'ready', view, loadedAt: Date.now() };
@@ -133,6 +135,7 @@ function DocumentMeta({ view }: { view: DocumentView }): ReactNode {
         </Badge>
       )}
       <span className="reader-meta-text">{meta.join(' · ')}</span>
+      <ReaderTextSizeControl />
     </div>
   );
 }

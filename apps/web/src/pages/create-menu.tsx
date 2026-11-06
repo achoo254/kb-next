@@ -16,12 +16,13 @@ import { CREATE_OPTIONS, CREATE_PANES, type CreateOption, GROUP_CRYSTAL, type Gr
 import { CollectionPane, SpacePane, usePlaces } from './create-panes';
 import { type CreateMessageKey, useCreateText } from './create-messages';
 import './create-menu.css';
+import { navigate } from '../router/navigation';
 
 /** Where closing the ring goes: back to the page of this app that opened it, else the Universe. */
 export function leaveCreate(): void {
   const referrer = document.referrer ? new URL(document.referrer, window.location.href) : null;
   if (referrer && referrer.origin === window.location.origin && referrer.pathname !== window.location.pathname && window.history.length > 1) window.history.back();
-  else window.location.assign('/u');
+  else navigate('/u');
 }
 
 const GROUP_LABEL: Record<GroupId, CreateMessageKey> = {

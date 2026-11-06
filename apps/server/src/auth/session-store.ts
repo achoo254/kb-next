@@ -44,12 +44,14 @@ export async function upsertUser(db: Db, sub: string, profile: AccountProfile | 
 export interface SessionProfile extends AccountProfile {
   theme: (typeof users.$inferSelect)['theme'];
   reducedMotion: boolean;
+  /** The reader's body text size in px (api/me-routes.ts READER_TEXT_SIZES). */
+  readerTextSize: number;
 }
 
 /** The stored profile and display settings of a live account; null for one removed or deleted. */
 export async function findProfile(db: Db, userId: string): Promise<SessionProfile | null> {
   const [row] = await db
-    .select({ name: users.name, email: users.email, picture: users.picture, theme: users.theme, reducedMotion: users.reducedMotion })
+    .select({ name: users.name, email: users.email, picture: users.picture, theme: users.theme, reducedMotion: users.reducedMotion, readerTextSize: users.readerTextSize })
     .from(users)
     .where(and(eq(users.id, userId), isNull(users.removedAt), isNull(users.deletedAt)));
   return row ?? null;

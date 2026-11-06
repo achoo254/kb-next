@@ -32,6 +32,8 @@ export interface MeResponse {
   theme: 'dark' | 'light' | 'system';
   /** App-level reduced motion (H03), on top of the system's setting. */
   reducedMotion: boolean;
+  /** The reader's body text size in px (READER_TEXT_SIZES). */
+  readerTextSize: ReaderTextSize;
   /** The workspace role it acts with (src/access/roles.ts). */
   role: WorkspaceRole;
   isAdmin: boolean;
@@ -48,9 +50,24 @@ export interface MeResponse {
 const MAX_INTERESTS = 20;
 const SpaceSlug = z.string().min(1).max(120);
 
+/** The reader's text sizes (A−/A+ in the reader, H03), in px; 17 by default. */
+export const READER_TEXT_SIZES = [16, 17, 18, 20] as const;
+export type ReaderTextSize = (typeof READER_TEXT_SIZES)[number];
+export const DEFAULT_READER_TEXT_SIZE: ReaderTextSize = 17;
+
+/** A stored size as one of the sizes (a row from before a size was dropped reads as the default). */
+export function readerTextSizeOf(value: number): ReaderTextSize {
+  return READER_TEXT_SIZES.find((size) => size === value) ?? DEFAULT_READER_TEXT_SIZE;
+}
+
 const SettingsBody = z
-  .strictObject({ lang: z.enum(uiLang.enumValues).optional(), theme: z.enum(uiTheme.enumValues).optional(), reducedMotion: z.boolean().optional() })
-  .refine((body) => body.lang !== undefined || body.theme !== undefined || body.reducedMotion !== undefined);
+  .strictObject({
+    lang: z.enum(uiLang.enumValues).optional(),
+    theme: z.enum(uiTheme.enumValues).optional(),
+    reducedMotion: z.boolean().optional(),
+    readerTextSize: z.literal([...READER_TEXT_SIZES]).optional(),
+  })
+  .refine((body) => Object.values(body).some((value) => value !== undefined));
 
 /**
  * The word the person typed to confirm (H03): `XOÁ` in Vietnamese, `DELETE` in English, any case. The server checks it
@@ -96,6 +113,7 @@ export function meRoutes({ config, db, now, sync = null }: MeRoutesOptions): Rou
       lang: row.lang,
       theme: row.theme,
       reducedMotion: row.reducedMotion,
+      readerTextSize: readerTextSizeOf(row.readerTextSize),
       role,
       isAdmin: role === 'admin',
       canReview: canReviewAs(role),

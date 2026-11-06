@@ -31,6 +31,7 @@ import { MAX_TAGS, type PublishMessageKey, usePublishText } from './publish-mess
 import { type ReaderFailure, readerLoadError } from './reader-states';
 import { SubmitScreen } from './submit-screen';
 import './publish-screen.css';
+import { navigate } from '../router/navigation';
 
 type Lang = 'vi' | 'en';
 type Visibility = 'private' | 'review';
@@ -121,7 +122,7 @@ export function PublishScreen({ id }: { id: string }): ReactNode {
 
   const onSend = (request: SubmitRequest, translateTo?: Lang): void => {
     // The address of C06 from now on: a reload there shows the text waiting, it never sends again.
-    window.history.replaceState(null, '', submitPath(id));
+    window.history.replaceState(window.history.state, '', submitPath(id));
     setSending({ request, translateTo });
   };
 
@@ -174,7 +175,7 @@ function usePublishChoice(view: DocumentView, spaces: readonly SpaceListItem[], 
     setSaving(true);
     setFailed(null);
     keepPrivate(doc.id, requestOf(choice)).then(
-      () => window.location.assign(SHELL_PATHS.mine),
+      () => navigate(SHELL_PATHS.mine),
       (error: unknown) => {
         setSaving(false);
         setFailed(error instanceof ApiError && error.code === NETWORK_ERROR ? t('publish.failed.network') : t('publish.failed.other'));

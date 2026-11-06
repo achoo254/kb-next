@@ -136,6 +136,7 @@ export async function deleteAccountData(db: Db, userId: string, options: DeleteD
         lang: 'vi',
         theme: 'system',
         reducedMotion: false,
+        readerTextSize: 17,
         role: 'member',
         onboardedAt: null,
         interests: [],

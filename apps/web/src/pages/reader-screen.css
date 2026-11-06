@@ -191,15 +191,19 @@
   scroll-margin-top: 8px;
 }
 
+/*
+ * The text sizes follow the reader's chosen size (--reader-text-size, ui/reader-text-size.ts; 17px by default): at 17px
+ * the lead is 19px and a section heading 25px, the same proportions at every size.
+ */
 .reader-heading {
   margin: 10px 0 0;
-  font-size: 24px;
+  font-size: calc(var(--reader-text-size, 17px) * 25 / 17);
   font-weight: 700;
   letter-spacing: -0.3px;
 }
 
 h3.reader-heading {
-  font-size: 19px;
+  font-size: calc(var(--reader-text-size, 17px) * 20 / 17);
 }
 
 /* the passage text as Markdown renders it */
@@ -209,7 +213,7 @@ h3.reader-heading {
 
 .reader-passage p,
 .reader-passage li {
-  font-size: 16px;
+  font-size: var(--reader-text-size, 17px);
   line-height: 1.75;
 }
 
@@ -218,7 +222,7 @@ h3.reader-heading {
 }
 
 .reader-passage[data-overview] > p:first-child {
-  font-size: 18px;
+  font-size: calc(var(--reader-text-size, 17px) * 19 / 17);
   line-height: 1.6;
 }
 

@@ -1,4 +1,5 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, createContext, useContext, useEffect, useId, useLayoutEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { SessionUser } from '../api/session-api';
 import { type Translate, useI18n } from '../i18n/i18n';
 import { LensRail, type LensRailItem } from '../ui/lens-rail';
@@ -6,9 +7,11 @@ import { TopActions } from '../ui/top-actions';
 import { type BackdropVeil, UniverseBackdrop } from '../ui/universe-backdrop';
 import { ViewNav, type ViewNavItem } from '../ui/view-nav';
 import { CommandPalette } from '../palette/command-palette';
+import { useRouterState } from '../router/navigation';
 import { BrandLogo } from './brand-logo';
 import { useDevice } from './device';
 import { SHELL_PATHS } from './shell-paths';
+import { type ShellHostStore, createShellHostStore } from './shell-host-store';
 import { signedInUser, useSessionState } from './session-context';
 import { type StaffRole, useStaffRole } from './staff-role';
 import { useUnread } from './unread-context';
@@ -150,20 +153,29 @@ export function isPaletteShortcut(event: Pick<KeyboardEvent, 'key' | 'metaKey' |
   return (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'k';
 }
 
-/** The ⌘K palette's open state: the shortcut (anywhere on the page) and the top-right button open and close it. */
+/**
+ * The ⌘K palette's open state: the shortcut (anywhere on the page) and the top-right button open and close it. It
+ * belongs to the page on view: a navigation (also back/forward) closes it.
+ */
 function usePalette(): { open: boolean; toggle(): void; close(): void } {
-  const [open, setOpen] = useState(false);
+  const page = useRouterState().location.key;
+  // the page it was opened on; open only while that page is on view
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === page;
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
       if (!isPaletteShortcut(event)) return;
       event.preventDefault();
-      setOpen((current) => !current);
+      setOpenOn((current) => (current === page ? null : page));
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, []);
-  return { open, toggle: () => setOpen((current) => !current), close: () => setOpen(false) };
+  }, [page]);
+  return { open, toggle: () => setOpenOn(open ? null : page), close: () => setOpenOn(null) };
 }
+
+/** The frame's own props: a screen's AppShell props without the content, plus where its `<main>` is reported. */
+type ShellFrameProps = Omit<AppShellProps, 'children'> & { mainRef?: (element: HTMLElement | null) => void; children?: ReactNode };
 
 /**
  * The frame of every signed-in screen (boards C09–C20): the Universe backdrop, the logo, the view nav, the bell and
@@ -171,7 +183,7 @@ function usePalette(): { open: boolean; toggle(): void; close(): void } {
  * the screen's own content in `<main>`. The screen places its content at the board's coordinates inside `<main>`
  * (the full window, under the chrome).
  */
-export function AppShell({
+function ShellFrame({
   screen,
   rail,
   view,
@@ -186,8 +198,9 @@ export function AppShell({
   topExtra,
   tabletBoard,
   className,
+  mainRef,
   children,
-}: AppShellProps): ReactNode {
+}: ShellFrameProps): ReactNode {
   const device = useDevice();
   const tablet = tabletBoard !== undefined && device === 'tablet';
   const { t } = useI18n();
@@ -244,10 +257,77 @@ export function AppShell({
         />
         {breadcrumb && breadcrumb.length > 0 && <Breadcrumb items={breadcrumb} label={t('shell.breadcrumb')} action={crumbAction} />}
       </div>
-      <main id="content" className="app-shell-main board-frame-main" data-screen={screen} data-id={`screen-${screen}`}>
+      <main ref={mainRef} id="content" className="app-shell-main board-frame-main" data-screen={screen} data-id={`screen-${screen}`}>
         {children}
       </main>
       {palette.open && <CommandPalette onClose={palette.close} />}
     </UniverseBackdrop>
   );
+}
+
+type HostedProps = Omit<AppShellProps, 'children'>;
+
+const ShellHostContext = createContext<ShellHostStore<HostedProps> | null>(null);
+
+/**
+ * A value of the host store, followed from the layout phase on: the frame and the screen's content then land in the
+ * same paint as the screen (a passive subscription would leave the first paint without them).
+ */
+function useHostValue<T>(subscribe: (listener: () => void) => () => void, read: () => T): T {
+  const [value, setValue] = useState(read);
+  useLayoutEffect(() => {
+    const follow = (): void => setValue(() => read());
+    follow();
+    return subscribe(follow);
+  }, [subscribe, read]);
+  return value;
+}
+
+/** Draws the one frame from the props the screen on view published; its `<main>` takes the screen's content. */
+function ShellOutlet({ store }: { store: ShellHostStore<HostedProps> }): ReactNode {
+  const shell = useHostValue(store.subscribeShell, store.shell);
+  return shell ? <ShellFrame {...shell} mainRef={store.setMain} /> : null;
+}
+
+/**
+ * Keeps the app shell mounted while the screens below it change (in-app navigation, docs/navigation.md): the
+ * screens' AppShells publish their props to it and portal their content into its `<main>`. The frame is drawn ahead
+ * of the screens, where a screen's own AppShell used to be.
+ */
+export function ShellHost({ children }: { children?: ReactNode }): ReactNode {
+  const [store] = useState(() => createShellHostStore<HostedProps>());
+  return (
+    <ShellHostContext value={store}>
+      <ShellOutlet store={store} />
+      {children}
+    </ShellHostContext>
+  );
+}
+
+function HostedShell({ store, children, ...props }: AppShellProps & { store: ShellHostStore<HostedProps> }): ReactNode {
+  const id = useId();
+  // followed before publishing below, so the frame's `<main>` reaches this screen as soon as the frame mounts
+  const main = useHostValue(store.subscribeMain, store.main);
+  // Every render: the frame follows the screen's props (active rail circle, breadcrumb, veil…) as before.
+  useLayoutEffect(() => {
+    store.publish(id, props);
+  });
+  useLayoutEffect(() => () => store.withdraw(id), [store, id]);
+  return main ? createPortal(children, main) : null;
+}
+
+/**
+ * The frame of a signed-in screen (ShellFrame). Under a ShellHost (the app) the frame is shared and stays mounted
+ * from screen to screen; on its own (a test, the dev kit) it draws its frame in place.
+ */
+export function AppShell({ children, ...props }: AppShellProps): ReactNode {
+  const store = useContext(ShellHostContext);
+  if (store) {
+    return (
+      <HostedShell store={store} {...props}>
+        {children}
+      </HostedShell>
+    );
+  }
+  return <ShellFrame {...props}>{children}</ShellFrame>;
 }

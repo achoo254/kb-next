@@ -43,6 +43,8 @@ dạng ngăn kéo); điện thoại (đến 640px) có bố cục riêng, chỉ 
 gửi duyệt, Copilot, reader và tìm kiếm (Mobile, M02–M06), kể cả trình soạn và các bước gửi duyệt; không có Canvas,
 Graph chỉ xem, tệp Office chỉ tải lên và đọc:
 [`docs/board-frame.md`](docs/board-frame.md#tablet-và-điện-thoại).
+Chuyển màn trong app không tải lại trang (khung app giữ nguyên, thanh tiến trình, prefetch, Back/Forward):
+[`docs/navigation.md`](docs/navigation.md).
 
 ## Chạy
 

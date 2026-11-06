@@ -2,6 +2,7 @@ import { useDevice } from '../layout/device';
 import { type ReactNode, useEffect, useState } from 'react';
 import { type Me, type SpaceListItem, fetchMe, fetchSpaces } from '../api/content-api';
 import { useI18n } from '../i18n/i18n';
+import { hasNavigatedInApp } from '../router/navigation';
 import { Toast } from '../ui/toast';
 import { UniverseOpening } from './login-page';
 import { useOpeningFinished } from './opening-pace';
@@ -43,7 +44,8 @@ async function loadAccount(search: string): Promise<{ me: Me; spaces: SpaceListI
 /**
  * The way into /u: the Universe opening (S02 B) while the account loads, then the Universe with the first-visit
  * dialog (S03) over it when the account has not been onboarded. An account that cannot be read opens the Universe
- * without the dialog, so a missing profile never blocks reading.
+ * without the dialog, so a missing profile never blocks reading. The opening belongs to the page load (sign-in, a
+ * link, a reload): reached by in-app navigation, the Universe shows at once with its own loading state.
  */
 export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   const { t, locale } = useI18n();
@@ -51,6 +53,7 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   const [closed, setClosed] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const device = useDevice();
+  const [inApp] = useState(hasNavigatedInApp);
   const opened = useOpeningFinished(account.status !== 'loading');
 
   useEffect(() => {
@@ -64,7 +67,7 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   }, []);
 
   // the card stays until every step has shown done for a beat (opening-pace.ts)
-  if (!opened) return <UniverseOpening stage={account.status === 'loading' ? 'universe' : 'ready'} />;
+  if (!opened && !inApp) return <UniverseOpening stage={account.status === 'loading' ? 'universe' : 'ready'} />;
   // The tour points at the desktop's rail, panel and stage, which a phone does not have: it waits for a bigger screen.
   const open = device !== 'phone' && !closed && showOnboarding(account, window.location.search);
   return (

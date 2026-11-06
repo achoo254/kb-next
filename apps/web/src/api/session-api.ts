@@ -14,6 +14,8 @@ const SessionUserSchema = z.object({
   /** The account's display settings (H03), applied as soon as the session is known. */
   theme: z.optional(z.enum(['dark', 'light', 'system'])),
   reducedMotion: z.optional(z.boolean()),
+  /** The reader's body text size in px (ui/reader-text-size.ts). */
+  readerTextSize: z.optional(z.number()),
 });
 export type SessionUser = z.infer<typeof SessionUserSchema>;
 

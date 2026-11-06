@@ -10,6 +10,7 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -37,7 +38,8 @@ export const USER_ROLES = userRole.enumValues;
 /**
  * An account of the hoandat.com IdP that signed in here: its `sub`, and the name, email and picture its userinfo
  * gave at the latest sign-in (scope `openid profile email`), shown in the account menu. The three are null for an
- * account whose userinfo gave none. `lang`, `theme` and `reducedMotion` are the account's settings (H03).
+ * account whose userinfo gave none. `lang`, `theme`, `reducedMotion` and `readerTextSize` are the account's settings
+ * (H03; the text size is also set from the reader's A−/A+).
  * `removedAt`: an admin took the account out of the workspace (C19 "Gỡ"); it cannot sign in until restored.
  * `deletedAt`: the account deleted its data (H03); the row stays as a nameless tombstone (its `sub` replaced) so the
  * published texts it chose to leave and the audit trail keep an author, and the IdP account starts afresh next time.
@@ -52,6 +54,8 @@ export const users = pgTable('users', {
   theme: uiTheme('theme').notNull().default('system'),
   role: userRole('role').notNull().default('member'),
   reducedMotion: boolean('reduced_motion').notNull().default(false),
+  /** The reader's body text size in px (16, 17, 18 or 20; READER_TEXT_SIZES in api/me-routes.ts). */
+  readerTextSize: smallint('reader_text_size').notNull().default(17),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   removedAt: timestamp('removed_at', { withTimezone: true }),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),

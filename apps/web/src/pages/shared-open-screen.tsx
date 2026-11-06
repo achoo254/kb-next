@@ -22,6 +22,7 @@ import { ILLUSTRATIONS, type IllustrationName } from '../ui/art';
 import { Icon } from '../ui/icon';
 import { type ShareMessageKey, useShareText } from './share-messages';
 import './shared-open-screen.css';
+import { navigate } from '../router/navigation';
 
 export type OpenState = 'loading' | 'guest' | 'member' | 'expired' | 'revoked' | 'private' | 'not-found' | 'failed';
 type Load = { state: 'loading' } | { state: 'guest' | 'member'; preview: SharedPreview } | { state: Exclude<OpenState, 'loading' | 'guest' | 'member'> };
@@ -218,7 +219,7 @@ function MemberView({ token, preview }: { token: string; preview: SharedPreview 
             onClick={() =>
               void act(async () => {
                 const id = await remixShared(token);
-                window.location.assign(`/d/${encodeURIComponent(id)}/edit`);
+                navigate(`/d/${encodeURIComponent(id)}/edit`);
               })
             }
             data-id="open-remix"

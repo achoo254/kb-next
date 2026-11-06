@@ -2,11 +2,12 @@ import { type ReactNode, useEffect } from 'react';
 import { LOGIN_PATH, type SessionState, signOut, useSession } from './api/session-api';
 import { brand } from './brand';
 import { useI18n } from './i18n/i18n';
-import { AppShell, type RailId, type ViewId } from './layout/app-shell';
+import { AppShell, type RailId, ShellHost, type ViewId } from './layout/app-shell';
 import { ScreenPage } from './layout/screen-page';
 import { SessionProvider } from './layout/session-context';
 import { UnreadProvider } from './layout/unread-context';
 import { applyPrefs } from './ui/display-prefs';
+import { applyReaderTextSize, isReaderTextSize } from './ui/reader-text-size';
 import type { BackdropVeil } from './ui/universe-backdrop';
 import { AdminApiScreen } from './pages/admin-api-screen';
 import { AdminContentScreen } from './pages/admin-content-screen';
@@ -45,7 +46,9 @@ import { UniverseEntry } from './pages/universe-entry';
 import { UniverseScreen } from './pages/universe-screen';
 import { UploadScreen } from './pages/upload-screen';
 import { WorkspaceScreen } from './pages/workspace-screen';
-import { type ScreenRoute, matchRoute, routePath } from './routes';
+import { NavigationProgress } from './router/navigation-progress';
+import { hasNavigatedInApp, installRouter, useRouterState } from './router/navigation';
+import { type ScreenRoute, matchRoute, routeParam, routePath } from './routes';
 
 /** Whether the screen can show now: public screens always, the others once the session says signed in. */
 export function canShow(route: ScreenRoute, session: SessionState): boolean {
@@ -101,10 +104,7 @@ function PendingCard({ route, signedIn }: { route: ScreenRoute; signedIn: boolea
   );
 }
 
-/** The path parameter of a route (`/s/:space`, `/d/:doc`): the pattern's first capture group. */
-export function routeParam(route: ScreenRoute, path: string): string {
-  return route.pattern.exec(path)?.[1] ?? '';
-}
+export { routeParam };
 
 /**
  * A signed-in screen. The built screens live in their own files (pages/*-screen.tsx); the others show the app shell
@@ -232,15 +232,25 @@ function Screen({ route, path, session }: { route: ScreenRoute; path: string; se
   }
 }
 
-export function App({ pathname }: { pathname: string }): ReactNode {
+interface AppProps {
+  pathname: string;
+  /**
+   * The history entry on view (router/navigation.ts): each in-app navigation mounts the screen afresh, as a page load
+   * did, while the session, the unread count and the app shell stay.
+   */
+  navKey?: string;
+}
+
+export function App({ pathname, navKey = 'page' }: AppProps): ReactNode {
   const { t } = useI18n();
   const session = useSession();
   const path = routePath(pathname);
   const route = matchRoute(path);
+  const title = `${t(route.titleKey)} · ${brand.appName}`;
 
   useEffect(() => {
-    document.title = `${t(route.titleKey)} · ${brand.appName}`;
-  }, [route, t]);
+    document.title = title;
+  }, [title]);
 
   // The account's theme and reduced motion (H03) as the server keeps them: every screen follows at once.
   const sessionUser = session.status === 'ready' && session.signedIn ? session.user : undefined;
@@ -249,6 +259,11 @@ export function App({ pathname }: { pathname: string }): ReactNode {
   useEffect(() => {
     if (sessionTheme !== undefined) applyPrefs({ theme: sessionTheme, reducedMotion: sessionMotion ?? false });
   }, [sessionTheme, sessionMotion]);
+  // The reader's text size as the account keeps it (A−/A+ in the reader).
+  const sessionReaderSize = sessionUser?.readerTextSize;
+  useEffect(() => {
+    if (isReaderTextSize(sessionReaderSize)) applyReaderTextSize(sessionReaderSize);
+  }, [sessionReaderSize]);
 
   useEffect(() => {
     if (route.access === 'signed-in' && session.status === 'ready' && !session.signedIn) {
@@ -258,12 +273,30 @@ export function App({ pathname }: { pathname: string }): ReactNode {
 
   return (
     <SessionProvider value={session}>
-      <UnreadProvider signedIn={session.status === 'ready' && session.signedIn}>
+      <UnreadProvider signedIn={session.status === 'ready' && session.signedIn} refreshKey={navKey}>
         <a className="skip-link" href="#content">
           {t('layout.skip')}
         </a>
-        <Screen route={route} path={path} session={session} />
+        <ShellHost>
+          <Screen key={navKey} route={route} path={path} session={session} />
+        </ShellHost>
+        {/* The new screen's title after an in-app navigation (a page load announces itself). */}
+        <div className="kf-visually-hidden route-announcer" aria-live="polite" aria-atomic="true" data-id="route-announcer">
+          {hasNavigatedInApp() ? title : ''}
+        </div>
       </UnreadProvider>
     </SessionProvider>
+  );
+}
+
+/** The app with in-app navigation (main.tsx): the router's address, its progress bar, and the router started once. */
+export function RoutedApp(): ReactNode {
+  const { location, pending } = useRouterState();
+  useEffect(() => installRouter(), []);
+  return (
+    <>
+      <App pathname={location.pathname} navKey={location.key} />
+      <NavigationProgress pending={pending} />
+    </>
   );
 }

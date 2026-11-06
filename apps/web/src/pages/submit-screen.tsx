@@ -21,6 +21,7 @@ import { type SubmitMessageKey, submitErrorOf, useSubmitText } from './submit-me
 import type { ScreenTranslate } from './space-messages';
 import { SubmitPhone } from './submit-phone';
 import './submit-screen.css';
+import { navigate } from '../router/navigation';
 
 /**
  * `checking`: a visit of /submit, reading the text's status; `sent` without a result: a text already waiting (its
@@ -137,7 +138,7 @@ export function SubmitScreen({ id, request, translateTo }: SubmitScreenProps): R
         if (!view) return;
         if (view.document.status === 'pending') setPhase({ kind: 'sent', result: null });
         // Not waiting: nothing was sent from here. Choosing where it goes and sending it is C04's.
-        else window.location.replace(publishPath(id));
+        else navigate(publishPath(id), { replace: true });
       });
     }
     fetchInbox({ kind: 'review' }).then(

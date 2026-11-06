@@ -1,0 +1,72 @@
+/* The reader's A−/A+ (reader-text-size-control.tsx). */
+
+.reader-text-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  padding: 2px;
+  border: 1px solid var(--c-glass-border);
+  border-radius: var(--radius-full);
+  background: var(--c-glass);
+}
+
+.reader-text-size-step {
+  display: inline-grid;
+  place-items: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--c-text);
+  font: 600 12px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.reader-text-size-larger {
+  font-size: 15px;
+}
+
+.reader-text-size-step:hover:not([aria-disabled="true"]) {
+  background: color-mix(in srgb, var(--c-text) 10%, transparent);
+}
+
+.reader-text-size-step:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 1px;
+}
+
+.reader-text-size-step[aria-disabled="true"] {
+  color: var(--c-text-muted);
+  cursor: default;
+}
+
+.reader-text-size-value {
+  min-width: 34px;
+  color: var(--c-text-sub);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* phone (M05): 44px touch targets; the size is announced, not shown (narrow corner) */
+.reader-text-size-phone .reader-text-size-value {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.reader-text-size-phone .reader-text-size-step {
+  min-width: 44px;
+  height: 44px;
+  font-size: 14px;
+}
+
+.reader-text-size-phone .reader-text-size-larger {
+  font-size: 18px;
+}

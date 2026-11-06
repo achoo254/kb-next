@@ -120,6 +120,13 @@
       "when": 1793882994564,
       "tag": "0016_workspace-roles-invites-and-account-deletion",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793928693058,
+      "tag": "0017_reader-text-size",
+      "breakpoints": true
     }
   ]
 }

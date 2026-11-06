@@ -13,6 +13,7 @@ import { RimPanel } from '../ui/rim-panel';
 import { TextField } from '../ui/text-field';
 import { useCanvasText } from './canvas-messages';
 import { shortDate } from './reader-messages';
+import { navigate } from '../router/navigation';
 
 type ListLoad = { status: 'loading' } | { status: 'ready'; canvases: CanvasListItem[] } | { status: 'failed' };
 
@@ -60,7 +61,7 @@ export function CanvasList(): ReactNode {
     setMessage(null);
     try {
       const made = await createCanvas(name.slice(0, 120), space);
-      window.location.assign(`${SHELL_PATHS.canvas}/${encodeURIComponent(made.id)}`);
+      navigate(`${SHELL_PATHS.canvas}/${encodeURIComponent(made.id)}`);
     } catch (error) {
       if (!(error instanceof ApiError)) console.error('canvas create failed', error);
       setMessage(t('canvas.list.createFailed'));

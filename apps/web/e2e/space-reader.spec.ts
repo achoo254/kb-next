@@ -66,3 +66,34 @@ test('scrolling a document saves how far the reader got', async ({ page }) => {
   expect(body.progress).toBe(100);
   expect(body.anchor).toBe('arp-request-reply');
 });
+
+test('A−/A+ sets the reading text size, kept for the account and the next visit', async ({ page }) => {
+  await signInAt(page, '/s/networking');
+  await page.locator('[data-screen="C10"]').getByRole('link', { name: /Giao thức DHCP/ }).click();
+  const reader = page.locator('[data-screen="C11"]');
+  const body = reader.locator('.reader-passage:not([data-overview]) p').first();
+  await expect(body).toHaveCSS('font-size', '17px');
+  const sizes = reader.getByRole('group', { name: 'Cỡ chữ' });
+  const saved = page.waitForRequest((request) => request.url().endsWith('/api/me') && request.method() === 'PATCH');
+  await sizes.getByRole('button', { name: 'Chữ lớn hơn' }).click();
+  expect((await saved).postDataJSON()).toEqual({ readerTextSize: 18 });
+  await expect(body).toHaveCSS('font-size', '18px');
+  // the keyboard reaches it too
+  const largest = page.waitForResponse((response) => response.url().endsWith('/api/me') && response.request().method() === 'PATCH' && response.request().postData() === '{"readerTextSize":20}');
+  await sizes.getByRole('button', { name: 'Chữ lớn hơn' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(body).toHaveCSS('font-size', '20px');
+  expect((await largest).ok()).toBe(true);
+
+  // the account keeps it: a fresh browser copy still gets 20px from the session
+  await page.evaluate(() => localStorage.removeItem('kb-reader-text-size'));
+  await page.reload();
+  await expect(reader.locator('.reader-passage:not([data-overview]) p').first()).toHaveCSS('font-size', '20px');
+
+  // back to the default, so other screens of the run see the board's setting
+  const back = page.waitForResponse((response) => response.url().endsWith('/api/me') && response.request().method() === 'PATCH' && response.request().postData() === '{"readerTextSize":17}');
+  await sizes.getByRole('button', { name: 'Chữ nhỏ hơn' }).click();
+  await sizes.getByRole('button', { name: 'Chữ nhỏ hơn' }).click();
+  await back;
+  await expect(reader.locator('.reader-passage:not([data-overview]) p').first()).toHaveCSS('font-size', '17px');
+});
