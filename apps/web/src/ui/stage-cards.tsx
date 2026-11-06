@@ -79,9 +79,10 @@ const ARCS: Record<'full' | 'tablet', { width: number; height: number; d: string
   tablet: { width: 780, height: 210, d: 'M0 100 Q390 -6 780 100' },
 };
 
-function tiltStyle(tilt: Tilt): CSSProperties {
+/** The card's fan tilt goes through `--kf-tilt`: hover adds a lift on top of it and keeps the fan (stage-cards.css). */
+function tiltStyle(tilt: Tilt): CSSProperties & Record<'--kf-tilt', string> {
   return {
-    transform: `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) rotateZ(${tilt.rz}deg)`,
+    '--kf-tilt': `perspective(900px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) rotateZ(${tilt.rz}deg)`,
     transformOrigin: tilt.origin,
     marginTop: tilt.marginTop,
   };

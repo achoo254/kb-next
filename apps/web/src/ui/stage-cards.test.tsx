@@ -13,8 +13,9 @@ describe('StageCards', () => {
     ] as const;
     render(<StageCards cards={cards} more={{ href: '/me', label: 'Mở rộng khay' }} />);
     const first = screen.getByRole('link', { name: /Tiếp tục đọc/ });
-    expect(first.style.transform).toContain('perspective(900px)');
-    expect(first.style.transform).toContain('rotateY(16deg)');
+    const tilt = first.style.getPropertyValue('--kf-tilt');
+    expect(tilt).toContain('perspective(900px)');
+    expect(tilt).toContain('rotateY(16deg)');
     expect(first.textContent).toContain('72%');
     expect(screen.getByRole('link', { name: /Khám phá/ }).dataset.highlight).toBe('true');
     expect(screen.getByRole('link', { name: 'Mở rộng khay' }).getAttribute('href')).toBe('/me');
