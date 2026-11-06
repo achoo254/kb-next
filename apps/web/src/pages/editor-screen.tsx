@@ -27,8 +27,9 @@ import { type AssistantTab, EditorAssistant, useAiWriting } from './editor-assis
 import { type AutosaveState, type DocumentAutosave, type OpenedDocument, type Snapshot, openForEditing, useDocumentAutosave } from './editor-autosave';
 import { countWords, readMarkdown, readingMinutes, writeMarkdown } from './editor-markdown';
 import { type EditorMessageKey, savedTime, useEditorText } from './editor-messages';
-import { type Step, editorExtensions, isStepList, stepLetter } from './editor-schema';
+import { type Step, editorExtensions, isStepList } from './editor-schema';
 import { type MenuState, MenuStore, suggestionMenu } from './editor-suggestions';
+import { stepMark } from './step-mark';
 import { ErrorPanel } from './error-screen';
 import { usePhoneText } from './phone-messages';
 import { spaceName } from './space-panels';
@@ -865,7 +866,7 @@ function StepCaptions({ editor }: { editor: Editor | null }): ReactNode {
       selector: ({ editor: e }) => {
         const found: string[] = [];
         e?.state.doc.descendants((node) => {
-          if (node.type.name === 'steps' && isStepList(node.attrs.steps)) found.push(node.attrs.steps.map((s) => `${stepLetter(s)}: ${s.term}${s.text ? ` ${s.text}` : ''}`).join('; '));
+          if (node.type.name === 'steps' && isStepList(node.attrs.steps)) found.push(node.attrs.steps.map((s) => `${stepMark(s.term)}: ${s.term}${s.text ? ` ${s.text}` : ''}`).join('; '));
           return node.type.name !== 'steps';
         });
         return found.join('|');

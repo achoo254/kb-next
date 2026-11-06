@@ -74,7 +74,7 @@
 .copilot-text code {
   padding: 1px 6px;
   border-radius: 6px;
-  background: color-mix(in srgb, var(--night-well) 80%, transparent);
+  background: color-mix(in srgb, var(--c-ink-well) 80%, transparent);
   font-size: 0.92em;
 }
 
@@ -82,7 +82,7 @@
   padding: 12px;
   border-radius: 12px;
   overflow-x: auto;
-  background: color-mix(in srgb, var(--night-well) 85%, transparent);
+  background: color-mix(in srgb, var(--c-ink-well) 85%, transparent);
   font-size: 13px;
 }
 
@@ -129,7 +129,7 @@
   margin: 0 2px;
   padding: 0 4px;
   border-radius: 7px;
-  background: color-mix(in srgb, var(--violet-600) 60%, transparent);
+  background: light-dark(var(--violet-700), color-mix(in srgb, var(--violet-600) 60%, transparent));
   color: var(--white);
   font: 700 11px var(--font-display);
   text-decoration: none;
@@ -610,7 +610,7 @@
 
 .copilot-ring[data-tone="success"] {
   background: var(--emerald-500);
-  opacity: 0.6;
+  opacity: max(0.6, var(--c-dim-floor));
 }
 
 .copilot-ring[data-tone="success"] > span {
@@ -658,7 +658,7 @@
 }
 
 .copilot-jev-off-row[data-off] {
-  opacity: 0.5;
+  opacity: max(0.5, var(--c-dim-floor));
 }
 
 .copilot-jev-off-row mark {

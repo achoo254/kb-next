@@ -58,11 +58,12 @@
   height: 44px;
   border-radius: 14px;
   border: 1px solid color-mix(in srgb, var(--violet-400) 35%, transparent);
-  color: var(--violet-50);
+  color: light-dark(var(--violet-700), var(--violet-50));
   font-size: 12px;
 }
 
 .kf-tabs[data-variant="segment"] .kf-tab[aria-selected="true"] {
   border-color: var(--violet-300);
   background: var(--violet-600);
+  color: var(--violet-50);
 }

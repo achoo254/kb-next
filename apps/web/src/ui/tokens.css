@@ -91,15 +91,20 @@
   --light-surface: rgb(255 255 255 / 0.78);
   --light-border: rgb(109 40 217 / 0.18);
   --light-text: #1a1033;
-  --light-muted: #5b4b8a;
+  /* the board's #5B4B8A reads 4.4:1 where small print sits over the light landscape (breadcrumb, board labels) */
+  --light-muted: #554583;
   --light-sub: #3b2e66;
   --light-primary: #6d28d9;
   --light-on-primary: #ffffff;
-  /* the board says #0E7490, which reads 4.48:1 on bg2 (accent text sits on bg2 tiles); a touch darker passes AA */
-  --light-accent: #0e718c;
-  --light-link: #6d28d9;
+  /* the board says #0E7490, which reads 4.48:1 on bg2 (accent text sits on bg2 tiles) and less on cyan tints; a touch
+     darker passes AA on both */
+  --light-accent: #0d6d87;
+  /* the board's #6D28D9 reads 4.2:1 where links sit over the light landscape (the breadcrumb); one shade deeper */
+  --light-link: #5b21b6;
   --light-success: #047857;
-  --light-success-text: #047857;
+  /* the board's #047857 reads 4.4:1 on its own green tint over a pale card (badges "Đã duyệt", "Jev đã kiểm"); one shade
+     darker reads AA on every tint the light theme puts it on */
+  --light-success-text: #065f46;
   --light-warn: #b45309;
   --light-warn-text: #92400e;
   --light-on-warn: #ffffff;
@@ -276,6 +281,23 @@
   --c-glass-border: light-dark(var(--light-glass-border), var(--dark-glass-border));
   --c-logo-from: var(--violet-600);
   --c-logo-to: var(--violet-400);
+  /* the night inks of the kit as fills of rows, wells, cards and answers: the dark theme keeps its ink, the light theme
+     takes white or a pale violet. Components mix them as the board does (color-mix(in srgb, var(--c-ink-row) 70%,
+     transparent)), so the same rule reads in both themes. The raw --night-* stay for art that is dark in both. */
+  --c-ink-rim-top: light-dark(var(--white), var(--night-rim-top));
+  --c-ink-rim-bottom: light-dark(var(--violet-50), var(--night-rim-bottom));
+  --c-ink-well: light-dark(var(--violet-50), var(--night-well));
+  --c-ink-inset: light-dark(var(--white), var(--night-inset));
+  --c-ink-row: light-dark(var(--white), var(--night-row));
+  --c-ink-answer: light-dark(var(--violet-100), var(--night-answer));
+  --c-ink-rail: light-dark(var(--white), var(--night-rail));
+  --c-ink-card: light-dark(var(--white), var(--night-card));
+  --c-ink-cell: light-dark(var(--white), var(--night-cell));
+  /* the ink of see-through ghost fills and borders (kickers, ghost buttons): white over the night, violet over the day */
+  --c-ghost-ink: light-dark(var(--violet-700), var(--white));
+  /* the least opacity a dimmed element keeps (opacity: max(<its dim>, var(--c-dim-floor))): none at night; over a light
+     page a dim lets the page through and its text fades below AA, so the light theme keeps nearly all of it */
+  --c-dim-floor: 0;
 
   /* ---------- 4. Kit tokens ---------- */
   --hero-gradient: linear-gradient(
@@ -355,7 +377,13 @@
   --dialog-shadow: 0 16px 40px rgb(6 4 26 / 0.3);
 
   /* the active pill of the view nav and the primary rim button (KIT §4, DesignSystem) */
-  --rim-active-bg: linear-gradient(180deg, rgb(88 60 200 / 0.55) 0%, rgb(44 26 112 / 0.78) 100%);
+  /* white text on it in both themes: over a light page the board's see-through violet washes out, so the light theme
+     takes the same violets nearly opaque */
+  --rim-active-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(124 58 237 / 0.94), rgb(88 60 200 / 0.55)) 0%,
+    light-dark(rgb(91 33 182 / 0.96), rgb(44 26 112 / 0.78)) 100%
+  );
   --rim-active-border: rgb(196 181 253 / 0.9);
   --rim-active-shadow:
     inset 0 0 14px rgb(196 181 253 / 0.45),
@@ -363,7 +391,11 @@
     0 0 16px rgb(139 92 246 / 0.75),
     0 0 34px rgb(124 58 237 / 0.35);
   /* the rim button of the X01/X03 boards (.btn): a little denser than the active pill, without its 34px halo */
-  --rim-button-bg: linear-gradient(180deg, rgb(88 60 200 / 0.6) 0%, rgb(44 26 112 / 0.82) 100%);
+  --rim-button-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(124 58 237 / 0.94), rgb(88 60 200 / 0.6)) 0%,
+    light-dark(rgb(91 33 182 / 0.96), rgb(44 26 112 / 0.82)) 100%
+  );
   --rim-button-shadow:
     inset 0 0 12px rgb(196 181 253 / 0.42),
     inset 0 1px 0 rgb(255 255 255 / 0.3),
@@ -415,6 +447,7 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
+  --c-dim-floor: 0.9;
   --c-veil: var(--light-veil);
   --c-veil-strong: var(--light-veil-strong);
   --c-veil-radial: var(--light-veil-radial);
@@ -431,6 +464,7 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     color-scheme: light;
+    --c-dim-floor: 0.9;
     --c-veil: var(--light-veil);
     --c-veil-strong: var(--light-veil-strong);
     --c-veil-radial: var(--light-veil-radial);
@@ -444,9 +478,13 @@
 /* Interaction board */
 :root {
   /* the demo stages and the zoom tag */
-  --ix-stage-bg: rgb(10 7 34 / 0.78);
+  --ix-stage-bg: light-dark(rgb(255 255 255 / 0.78), rgb(10 7 34 / 0.78));
   /* the AI Copilot bar: a rim of its own, lighter than the active pill */
-  --ix-copilot-bg: linear-gradient(180deg, rgb(88 60 200 / 0.4) 0%, rgb(44 26 112 / 0.6) 100%);
+  --ix-copilot-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(255 255 255 / 0.85), rgb(88 60 200 / 0.4)) 0%,
+    light-dark(rgb(237 233 254 / 0.9), rgb(44 26 112 / 0.6)) 100%
+  );
   --ix-copilot-border: rgb(196 181 253 / 0.8);
   --ix-copilot-shadow:
     inset 0 0 14px rgb(196 181 253 / 0.35),
@@ -464,20 +502,27 @@
   --c-veil-gate: var(--dark-veil-gate);
   --c-veil-doc: var(--dark-veil-doc);
   /* the dimmed Universe behind the onboarding dialog, and the spotlight of a tour tip (S03) */
-  --onboarding-dim: rgb(6 4 26 / 0.7);
+  --onboarding-dim: light-dark(rgb(236 232 255 / 0.78), rgb(6 4 26 / 0.7));
   --spotlight-shadow:
     0 0 0 9999px rgb(6 4 26 / 0.66),
     0 0 0 2px var(--violet-200),
     0 0 26px 6px rgb(167 139 250 / 0.9);
   /* a choice tile (S03 language and topic), the look of the stage cards: frosted when off, glowing violet when on */
+  /* off: frosted night violet, frosted white in the light theme (its text follows the theme); on: glowing violet with
+     light text in both, the light theme's violets nearly opaque so that text reads over a light page */
   --choice-bg:
     radial-gradient(120% 60% at 50% 0%, rgb(196 181 253 / 0.16) 0%, rgb(196 181 253 / 0) 60%),
-    linear-gradient(180deg, rgb(64 48 130 / 0.55) 0%, rgb(28 18 70 / 0.62) 100%);
+    linear-gradient(180deg, light-dark(rgb(255 255 255 / 0.8), rgb(64 48 130 / 0.55)) 0%, light-dark(rgb(237 233 254 / 0.85), rgb(28 18 70 / 0.62)) 100%);
   --choice-border: rgb(196 181 253 / 0.4);
   --choice-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 0 18px rgb(139 92 246 / 0.12);
   --choice-on-bg:
-    radial-gradient(120% 70% at 50% 0%, rgb(221 214 254 / 0.42) 0%, rgb(221 214 254 / 0) 60%),
-    linear-gradient(180deg, rgb(167 139 250 / 0.55) 0%, rgb(124 58 237 / 0.55) 50%, rgb(76 29 149 / 0.72) 100%);
+    radial-gradient(120% 70% at 50% 0%, light-dark(rgb(221 214 254 / 0.22), rgb(221 214 254 / 0.42)) 0%, rgb(221 214 254 / 0) 60%),
+    linear-gradient(
+      180deg,
+      light-dark(rgb(124 58 237 / 0.96), rgb(167 139 250 / 0.55)) 0%,
+      light-dark(rgb(109 40 217 / 0.96), rgb(124 58 237 / 0.55)) 50%,
+      light-dark(rgb(76 29 149 / 0.97), rgb(76 29 149 / 0.72)) 100%
+    );
   --choice-on-border: rgb(243 232 255 / 0.95);
   --choice-on-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.55),
@@ -495,14 +540,15 @@
   );
   --orb-text-shadow: 0 1px 3px rgb(0 0 0 / 0.9), 0 2px 14px rgb(20 8 60 / 0.95);
   /* the secondary link button of the start boards (Về trang chủ, Bỏ qua…) and its text */
-  --start-ghost-text: #e5e7eb;
+  --start-ghost-text: light-dark(var(--light-sub), #e5e7eb);
   /* the "waiting" step mark of the sign-in board (S02) */
   --step-wait: #6b6890;
   /* the warp streaks of the sign-in gate (S02) */
   --sky-100: #e0f2fe;
   /* the small print of the landing (S01): the note under the sign-in button and the footer */
-  --landing-note: #a9a3c9;
-  --landing-footer: #9c96bd;
+  --landing-note: light-dark(var(--light-muted), #a9a3c9);
+  /* the footer runs over the neon stage, dark in both themes */
+  --landing-footer: light-dark(var(--violet-100), #9c96bd);
 }
 
 :root[data-theme="light"] {
@@ -522,6 +568,8 @@
   /* the deep ends of the avatar gradients of people (members, comment authors) */
   --cyan-600: #0891b2;
   --cyan-700: #0e7490;
+  /* cyan text on a cyan tint in the light theme (search hits, community chips) */
+  --cyan-800: #155e75;
   --amber-700: #b45309;
   --emerald-300: #6ee7b7;
   --emerald-700: #047857;
@@ -586,9 +634,9 @@
   --file-markdown: #7c3aed;
   --file-other: var(--slate-500);
   /* C03, C16 (their panels are rim panels, their file cards soft rims): the file rows, wells and step nodes */
-  --import-row: rgb(22 17 54 / 0.7);
-  --import-well: rgb(14 11 38 / 0.8);
-  --import-node-wait: rgb(14 11 38 / 0.85);
+  --import-row: light-dark(rgb(255 255 255 / 0.72), rgb(22 17 54 / 0.7));
+  --import-well: light-dark(rgb(237 233 254 / 0.7), rgb(14 11 38 / 0.8));
+  --import-node-wait: light-dark(rgb(237 233 254 / 0.95), rgb(14 11 38 / 0.85));
   --import-ok-node: radial-gradient(circle at 40% 35%, #6ee7b7, #059669 75%);
   --import-run-node: radial-gradient(circle at 40% 35%, #a5f3fc, #0891b2 75%);
   --import-err-node: radial-gradient(circle at 40% 35%, #fde68a, #d97706 75%);
@@ -599,22 +647,23 @@
   --import-run-text: light-dark(#0e718c, #67e8f9);
   --import-sky: var(--sky-300);
   --import-flow: var(--sky-100);
-  --import-warn-button: linear-gradient(180deg, rgb(245 158 11 / 0.4) 0%, rgb(120 53 15 / 0.7) 100%);
+  /* white text on the amber and green buttons: over a light page they take their deep ends nearly opaque */
+  --import-warn-button: linear-gradient(180deg, light-dark(rgb(180 83 9 / 0.96), rgb(245 158 11 / 0.4)) 0%, light-dark(rgb(120 53 15 / 0.97), rgb(120 53 15 / 0.7)) 100%);
   --import-warn-rim: var(--amber-300);
-  --import-ok-button: linear-gradient(180deg, rgb(16 185 129 / 0.45) 0%, rgb(6 78 59 / 0.75) 100%);
-  --import-dark-ring: radial-gradient(circle at 50% 40%, rgb(40 30 96 / 0.95), rgb(10 8 30 / 0.98));
+  --import-ok-button: linear-gradient(180deg, light-dark(rgb(4 120 87 / 0.96), rgb(16 185 129 / 0.45)) 0%, light-dark(rgb(6 78 59 / 0.97), rgb(6 78 59 / 0.75)) 100%);
+  --import-dark-ring: radial-gradient(circle at 50% 40%, light-dark(rgb(255 255 255 / 0.95), rgb(40 30 96 / 0.95)), light-dark(rgb(237 233 254 / 0.98), rgb(10 8 30 / 0.98)));
   --import-portal: radial-gradient(circle, #06041a 25%, #7c3aed 60%, #22d3ee 100%);
   --import-on-warn: #1c1206;
   /* H04: the sync queue rows and the version cards in conflict */
-  --sync-row: rgb(12 6 40 / 0.6);
-  --sync-card: rgb(18 12 52 / 0.85);
-  --sync-button: rgb(30 20 72 / 0.85);
+  --sync-row: light-dark(rgb(255 255 255 / 0.72), rgb(12 6 40 / 0.6));
+  --sync-card: light-dark(rgb(255 255 255 / 0.85), rgb(18 12 52 / 0.85));
+  --sync-button: light-dark(rgb(255 255 255 / 0.85), rgb(30 20 72 / 0.85));
   --sync-banner-ink: rgb(6 4 26 / 0.55);
-  --sync-online-card: rgb(16 40 40 / 0.7);
+  --sync-online-card: light-dark(rgb(236 253 245 / 0.85), rgb(16 40 40 / 0.7));
   --sync-ok-ink: #04231a;
   --sync-fail-text: var(--red-300);
   --sync-fail-line: var(--red-400);
-  --sync-wait-text: var(--violet-200);
+  --sync-wait-text: light-dark(var(--violet-700), var(--violet-200));
   --sync-local: var(--cyan-500);
   /* C20: the inbox rows and the orbs of the notification kinds; C06: the submission panels */
   --inbox-row-selected: light-dark(rgb(109 40 217 / 0.12), rgb(88 60 200 / 0.35));
@@ -632,9 +681,9 @@
   /* A01–A03: the admin station's cards, wells and scores */
   --admin-card: light-dark(rgb(255 255 255 / 0.85), rgb(30 20 72 / 0.6));
   --admin-inset: light-dark(rgb(109 40 217 / 0.06), rgb(22 17 54 / 0.7));
-  --admin-row: rgb(22 17 54 / 0.7);
-  --admin-row-on: rgb(88 60 200 / 0.4);
-  --admin-code: #0a0624;
+  --admin-row: light-dark(rgb(255 255 255 / 0.72), rgb(22 17 54 / 0.7));
+  --admin-row-on: light-dark(rgb(109 40 217 / 0.12), rgb(88 60 200 / 0.4));
+  --admin-code: light-dark(#f5f3ff, #0a0624);
   --admin-on-success: #04231a;
   --admin-on-danger: #3b0a0a;
   --admin-hidden-planet: #3b2a6e;
@@ -671,14 +720,10 @@
   --pub-row-bg: light-dark(rgb(255 255 255 / 0.7), rgb(22 17 54 / 0.7));
   --pub-pick-shadow: inset 0 0 12px rgb(196 181 253 / 0.35), 0 0 14px rgb(139 92 246 / 0.6);
   /* C04: the two "Ai thấy bài này?" cards, off and picked, and their orbs */
-  --pub-vis-off-bg:
-    radial-gradient(120% 60% at 50% 0%, rgb(196 181 253 / 0.16) 0%, rgb(196 181 253 / 0) 60%),
-    linear-gradient(180deg, rgb(64 48 130 / 0.55) 0%, rgb(28 18 70 / 0.62) 100%);
+  --pub-vis-off-bg: var(--choice-bg);
   --pub-vis-off-border: rgb(196 181 253 / 0.4);
   --pub-vis-off-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2), inset 0 0 18px rgb(139 92 246 / 0.12);
-  --pub-vis-on-bg:
-    radial-gradient(120% 70% at 50% 0%, rgb(221 214 254 / 0.42) 0%, rgb(221 214 254 / 0) 60%),
-    linear-gradient(180deg, rgb(167 139 250 / 0.55) 0%, rgb(124 58 237 / 0.55) 50%, rgb(76 29 149 / 0.72) 100%);
+  --pub-vis-on-bg: var(--choice-on-bg);
   --pub-vis-on-border: rgb(243 232 255 / 0.95);
   --pub-vis-on-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.55),
@@ -715,8 +760,13 @@
   --pub-locked-glow: drop-shadow(0 0 14px var(--amber-500));
   /* C04: the glowing violet card of the preview (the same in both themes, its text light) */
   --pub-card-bg:
-    radial-gradient(120% 70% at 50% 0%, rgb(221 214 254 / 0.32) 0%, rgb(221 214 254 / 0) 60%),
-    linear-gradient(180deg, rgb(167 139 250 / 0.38) 0%, rgb(124 58 237 / 0.4) 50%, rgb(76 29 149 / 0.62) 100%);
+    radial-gradient(120% 70% at 50% 0%, light-dark(rgb(221 214 254 / 0), rgb(221 214 254 / 0.32)) 0%, rgb(221 214 254 / 0) 60%),
+    linear-gradient(
+      180deg,
+      light-dark(rgb(109 40 217 / 0.96), rgb(167 139 250 / 0.38)) 0%,
+      light-dark(rgb(109 40 217 / 0.95), rgb(124 58 237 / 0.4)) 50%,
+      light-dark(rgb(76 29 149 / 0.97), rgb(76 29 149 / 0.62)) 100%
+    );
   --pub-card-border: rgb(243 232 255 / 0.9);
   --pub-card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 24px rgb(221 214 254 / 0.3), 0 0 24px rgb(167 139 250 / 0.55);
   --pub-card-text: #ede9fe;
@@ -725,9 +775,9 @@
   --pub-card-chip: rgb(20 10 60 / 0.45);
   --pub-card-chip-border: rgb(255 255 255 / 0.2);
   --pub-badge-private: rgb(236 72 153 / 0.3);
-  --pub-badge-pending: rgb(245 158 11 / 0.3);
+  --pub-badge-pending: light-dark(rgb(245 158 11 / 0.12), rgb(245 158 11 / 0.3));
   --pub-badge-public: rgb(34 211 238 / 0.3);
-  --pub-card-pending: #fcd34d;
+  --pub-card-pending: light-dark(var(--amber-200), #fcd34d);
   --pub-card-private: #f9a8d4;
   --pub-card-public: #67e8f9;
   /* C05: the stage and device frames of the preview, the page inside them, the chat bubble and the role badges */
@@ -750,7 +800,11 @@
   --prev-step-ink: #1a1033;
   --prev-og-veil: linear-gradient(90deg, rgb(6 4 26 / 0.35), rgb(6 4 26 / 0.1));
   --prev-planet-glow: drop-shadow(0 0 16px rgb(124 58 237 / 0.8));
-  --prev-cta-bg: linear-gradient(180deg, rgb(88 60 200 / 0.62) 0%, rgb(44 26 112 / 0.86) 100%);
+  --prev-cta-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(124 58 237 / 0.94), rgb(88 60 200 / 0.62)) 0%,
+    light-dark(rgb(91 33 182 / 0.96), rgb(44 26 112 / 0.86)) 100%
+  );
   --prev-cta-border: rgb(196 181 253 / 0.85);
   --prev-cta-shadow: inset 0 0 12px rgb(196 181 253 / 0.4), inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 14px rgb(139 92 246 / 0.6);
   --prev-warn-bg: rgb(245 158 11 / 0.16);
@@ -786,7 +840,7 @@
   --share-badge-warn-glow: rgb(245 158 11 / 0.35);
   --share-off-toggle: light-dark(rgb(255 255 255 / 0.7), rgb(14 11 38 / 0.6));
   --share-off-toggle-border: light-dark(rgb(109 40 217 / 0.2), rgb(255 255 255 / 0.16));
-  --share-done-bg: linear-gradient(180deg, rgb(16 185 129 / 0.45) 0%, rgb(6 78 59 / 0.75) 100%);
+  --share-done-bg: linear-gradient(180deg, light-dark(rgb(4 120 87 / 0.96), rgb(16 185 129 / 0.45)) 0%, light-dark(rgb(6 78 59 / 0.97), rgb(6 78 59 / 0.75)) 100%);
   --share-done-border: rgb(110 231 183 / 0.9);
   --share-done-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 12px rgb(16 185 129 / 0.55);
   --share-warn-border: rgb(252 211 77 / 0.8);
@@ -928,7 +982,11 @@
     inset 0 0 18px light-dark(rgb(139 92 246 / 0.1), rgb(139 92 246 / 0.3)),
     inset 0 1px 0 rgb(255 255 255 / 0.2),
     0 0 26px light-dark(rgb(124 58 237 / 0.16), rgb(124 58 237 / 0.4));
-  --phone-tab-on-bg: linear-gradient(180deg, rgb(88 60 200 / 0.55), rgb(44 26 112 / 0.82));
+  --phone-tab-on-bg: linear-gradient(
+    180deg,
+    light-dark(rgb(124 58 237 / 0.94), rgb(88 60 200 / 0.55)),
+    light-dark(rgb(91 33 182 / 0.96), rgb(44 26 112 / 0.82))
+  );
   --phone-tab-on-shadow:
     inset 0 0 0 1.5px rgb(196 181 253 / 0.9),
     inset 0 0 12px rgb(196 181 253 / 0.45),

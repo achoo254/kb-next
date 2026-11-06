@@ -16,33 +16,48 @@ import { signInAt } from './sign-in';
  * Opens a screen of parity-screens.ts in the state of its board (fixed clock, API answers, signed in, keys pressed),
  * at the page's current viewport: shared by the pixel parity check and the window-size check (fits-window.spec.ts).
  */
+/** A theme the shot pins (the account's setting, H03), whatever the server keeps for the E2E account. */
+export type ShotTheme = 'dark' | 'light';
+
+export interface OpenOptions {
+  /** Unset: the account's own theme (the E2E account follows the system, i.e. the browser's colour scheme). */
+  theme?: ShotTheme;
+}
+
+type Account = Record<string, unknown>;
+
+/**
+ * Pins the account's theme: its session and /api/me carry it, and this browser's copy (ui/display-prefs.ts) has it
+ * for the first paint, signed out too.
+ */
+async function pinTheme(page: Page, theme: ShotTheme): Promise<void> {
+  await page.addInitScript((pinned: ShotTheme) => {
+    window.localStorage.setItem('kb-display', JSON.stringify({ theme: pinned, reducedMotion: false }));
+  }, theme);
+  await page.route('**/api/session', async (route) => {
+    if (route.request().method() !== 'GET') return route.fallback();
+    const response = await route.fetch();
+    if (!response.ok()) return route.fulfill({ response });
+    const session = (await response.json()) as { user?: Account };
+    return route.fulfill({ response, json: session.user ? { ...session, user: { ...session.user, theme } } : session });
+  });
+}
+
 /** Changes the API's answers for one shot (see ParityMock); everything else goes to the real API. */
-async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> {
-  if (mocks.includes('onboarded')) {
+async function mockApi(page: Page, mocks: readonly ParityMock[], theme: ShotTheme | undefined): Promise<void> {
+  // /api/me in one handler: a routed answer is final, so the changes of several mocks (and the theme) stack here.
+  const meChanges: Array<(me: Account) => Account> = [];
+  if (mocks.includes('onboarded')) meChanges.push((me) => ({ ...me, onboardedAt: me.onboardedAt ?? '2026-11-03T14:05:00.000Z' }));
+  if (mocks.includes('admin')) meChanges.push((me) => ({ ...me, role: 'admin', isAdmin: true, canReview: true }));
+  if (mocks.includes('settings-h03')) meChanges.push((me) => ({ ...me, ...H03_ME }));
+  if (theme) meChanges.push((me) => ({ ...me, theme }));
+  if (meChanges.length > 0) {
     await page.route('**/api/me', async (route) => {
       if (route.request().method() !== 'GET') return route.fallback();
       const response = await route.fetch();
       if (!response.ok()) return route.fulfill({ response });
-      const me = (await response.json()) as Record<string, unknown>;
-      return route.fulfill({ response, json: { ...me, onboardedAt: me.onboardedAt ?? '2026-11-03T14:05:00.000Z' } });
-    });
-  }
-  if (mocks.includes('admin')) {
-    await page.route('**/api/me', async (route) => {
-      if (route.request().method() !== 'GET') return route.fallback();
-      const response = await route.fetch();
-      if (!response.ok()) return route.fulfill({ response });
-      const me = (await response.json()) as Record<string, unknown>;
-      return route.fulfill({ response, json: { ...me, role: 'admin', isAdmin: true, canReview: true } });
-    });
-  }
-  if (mocks.includes('settings-h03')) {
-    await page.route('**/api/me', async (route) => {
-      if (route.request().method() !== 'GET') return route.fallback();
-      const response = await route.fetch();
-      if (!response.ok()) return route.fulfill({ response });
-      const me = (await response.json()) as Record<string, unknown>;
-      return route.fulfill({ response, json: { ...me, ...H03_ME } });
+      const me = (await response.json()) as Account;
+      return route.fulfill({ response, json: meChanges.reduce((changed, change) => change(changed), me) });
     });
   }
   if (mocks.includes('workspace-c19')) {
@@ -145,9 +160,10 @@ async function mockApi(page: Page, mocks: readonly ParityMock[]): Promise<void> 
 }
 
 /** Opens `screen` and waits until it is ready to be looked at. */
-export async function openScreen(page: Page, screen: ParityScreen): Promise<void> {
+export async function openScreen(page: Page, screen: ParityScreen, options: OpenOptions = {}): Promise<void> {
   if (screen.clock) await page.clock.setFixedTime(new Date(screen.clock));
-  if (screen.mocks) await mockApi(page, screen.mocks);
+  if (options.theme) await pinTheme(page, options.theme);
+  if (screen.mocks || options.theme) await mockApi(page, screen.mocks ?? [], options.theme);
   if (screen.signedIn) await signInAt(page, screen.path);
   else await page.goto(screen.path);
   await page.evaluate(() => document.fonts.ready);

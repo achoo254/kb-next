@@ -157,7 +157,7 @@ describe('ReaderScreen', () => {
     expect(document.getElementById('broadcast')?.querySelector('h2')?.textContent).toBe('Broadcast là gì');
     const steps = document.querySelector('ol.reader-steps');
     expect(steps).toBeTruthy();
-    expect([...(steps?.querySelectorAll('li') ?? [])].map((li) => li.dataset.letter)).toEqual(['D', 'O', 'R', 'A']);
+    expect([...(steps?.querySelectorAll('li') ?? [])].map((li) => li.dataset.mark)).toEqual(['D', 'O', 'R', 'A']);
     expect(screen.getByRole('link', { name: 'RFC' }).getAttribute('rel')).toBe('noopener noreferrer');
     expect(screen.getByRole('link', { name: 'ARP' }).getAttribute('target')).toBeNull();
 

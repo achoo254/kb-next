@@ -155,7 +155,7 @@
   justify-content: center;
   gap: 1px;
   color: var(--white);
-  opacity: 0.72;
+  opacity: max(0.72, var(--c-dim-floor));
   cursor: pointer;
   animation: kf-float 5s ease-in-out infinite;
   transition: transform 0.3s var(--ease-out-back);

@@ -69,6 +69,35 @@ E2E chậm (dựng web, API, IdP giả rồi mở trình duyệt), nên chỉ ch
 - Mock tải font từ Google, app tự host cùng font qua `@fontsource`. Nếu chữ lệch vài pixel do bản font khác nhau, ghi
   vào `mock-deviations.md` thay vì nới ngưỡng chung.
 
+## Kiểm chế độ Sáng
+
+Board vẽ ở Tối nên parity chỉ chụp Tối. Chế độ Sáng có bài kiểm riêng,
+[`light-theme.spec.ts`](../apps/web/e2e/light-theme.spec.ts) (project `chromium`): mở từng màn của `parity-screens.ts`
+ở đúng trạng thái board (cùng mock, seed, giờ) với giao diện của tài khoản ghim Sáng (`openScreen(page, screen,
+{ theme: 'light' })`: `/api/session`, `/api/me` và `localStorage` `kb-display`), chụp ảnh `<board>-light.png` vào
+`apps/web/test-results/` để người xem lại, rồi kiểm tương phản chữ WCAG AA (4,5:1; chữ lớn 3:1). Board máy tính ở
+1440×900, tablet 1180×820, board điện thoại và mọi route có bố cục điện thoại ở 390×844 (`<board>-phone`, bỏ các thao
+tác chỉ có trên máy tính).
+
+Hai phép kiểm, cả hai phải sạch:
+
+- axe-core (`@axe-core/playwright`, quy tắc `color-contrast`): chữ trên nền đặc, ô nhập.
+- Kiểm theo pixel ([`text-contrast.ts`](../apps/web/e2e/text-contrast.ts)): chụp trang với mọi chữ trong suốt, so màu
+  chữ với màu trung bình của các pixel ngay sau nó. axe bỏ qua chữ trên gradient, ảnh hay lớp mờ (gần hết panel của
+  kit), đúng chỗ nền tối của Tối lọt sang Sáng; phép này bắt được chúng.
+
+Chữ dưới AA ở cả Tối lẫn Sáng (đo cùng cách ở Tối, 06/11/2026) không phải lỗi lọt nền tối, nên nằm trong danh sách
+`BOTH_THEMES` của spec kèm lý do (chữ cái trắng trên avatar, nhãn loại tệp, quả cầu nhà cung cấp key, chấm thông báo;
+nhãn cố ý mờ: nút ngoài vùng chọn ở C13, chặng chưa tới ở Flow, bước khoá ở H02, bài ẩn ở A02). Sửa chúng là đổi board
+ở cả hai chế độ, cần chủ dự án quyết; lỗi khác ngoài danh sách vẫn làm bài kiểm đỏ.
+
+```sh
+KB_E2E_PORT_OFFSET=50 pnpm e2e --project=chromium light-theme.spec.ts -g C11   # một màn
+```
+
+Sửa ở token hay component dùng chung, không vá từng màn; quy tắc màu Sáng ở
+[`settings-and-roles.md`](settings-and-roles.md#giao-diện-và-giảm-chuyển-động-h03).
+
 ## Xem mock gốc
 
 Ảnh tĩnh: `design/mock-png/<board>.png`. Bản chạy được (công tắc trạng thái, animation) chỉ có trong thư mục plan của

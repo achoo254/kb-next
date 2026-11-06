@@ -83,7 +83,7 @@
 .kf-palette-key {
   padding: 5px 8px;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  background: light-dark(var(--violet-700), color-mix(in srgb, var(--violet-600) 45%, transparent));
   color: var(--white);
   font: 600 12px var(--font-display);
 }
@@ -193,8 +193,8 @@
 }
 
 .kf-palette-row-title .search-hit {
-  background: color-mix(in srgb, var(--cyan-400) 30%, transparent);
-  color: light-dark(var(--cyan-700), var(--white));
+  background: light-dark(color-mix(in srgb, var(--cyan-400) 16%, transparent), color-mix(in srgb, var(--cyan-400) 30%, transparent));
+  color: light-dark(var(--cyan-800), var(--white));
   font-weight: inherit;
   padding: 0 2px;
 }
@@ -316,8 +316,8 @@
 }
 
 .kf-palette-origin.kf-origin[data-origin="official"] {
-  background: color-mix(in srgb, var(--violet-600) 40%, transparent);
-  color: light-dark(var(--violet-700), var(--violet-100));
+  background: light-dark(color-mix(in srgb, var(--violet-600) 14%, transparent), color-mix(in srgb, var(--violet-600) 40%, transparent));
+  color: light-dark(var(--light-link), var(--violet-100));
 }
 
 .kf-palette-origin.kf-origin[data-origin="community"] {

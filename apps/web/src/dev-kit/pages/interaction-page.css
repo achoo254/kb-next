@@ -231,7 +231,7 @@
 
 .ix-copilot-text {
   font-size: 12px;
-  color: var(--violet-200);
+  color: light-dark(var(--violet-700), var(--violet-200));
 }
 
 .ix-copilot-scopes {
@@ -249,7 +249,7 @@
 .ix-global {
   padding: 10px 12px;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--night-inset) 72%, transparent);
+  background: color-mix(in srgb, var(--c-ink-inset) 72%, transparent);
   border: 1px solid color-mix(in srgb, var(--violet-300) 22%, transparent);
   color: var(--c-text);
   display: flex;
@@ -371,7 +371,7 @@
   bottom: 12px;
   padding: 6px 12px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--night-chat-avatar) 85%, transparent);
+  background: light-dark(color-mix(in srgb, var(--white) 85%, transparent), color-mix(in srgb, var(--night-chat-avatar) 85%, transparent));
   font-size: 12px;
   font-weight: 600;
   animation: ix-fade 0.45s ease-out both;
@@ -529,7 +529,7 @@
   min-height: 86px;
   padding: 10px;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--night-inset) 72%, transparent);
+  background: color-mix(in srgb, var(--c-ink-inset) 72%, transparent);
   border: 1px solid color-mix(in srgb, var(--violet-300) 18%, transparent);
   display: flex;
   flex-direction: column;

@@ -10,7 +10,7 @@
   border: 1px solid var(--c-glass-border);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  color: var(--violet-50);
+  color: light-dark(var(--light-text), var(--violet-50));
   font: 700 14px var(--font-display);
   cursor: pointer;
 }
@@ -46,8 +46,8 @@
   align-self: flex-start;
   padding: 6px 12px;
   border-radius: 9px;
-  background: color-mix(in srgb, var(--white) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--white) 14%, transparent);
+  background: color-mix(in srgb, var(--c-ghost-ink) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-ghost-ink) 14%, transparent);
   color: var(--start-ghost-text);
   font-size: 14px;
   font-weight: 500;

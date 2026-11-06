@@ -15,7 +15,12 @@ describe('ReaderMarkdown', () => {
   it('still draws an ordered list of bold terms as step cards', () => {
     const { container } = render(<ReaderMarkdown markdown={'1. **Discover**\n2. **Offer**'} />);
     expect(container.querySelector('ol')?.getAttribute('data-steps')).toBe('true');
-    expect([...container.querySelectorAll('li')].map((li) => li.getAttribute('data-letter'))).toEqual(['D', 'O']);
+    expect([...container.querySelectorAll('li')].map((li) => li.getAttribute('data-mark'))).toEqual(['D', 'O']);
+  });
+
+  it('marks numbered steps with their number, not the first letter of "Bước"', () => {
+    const { container } = render(<ReaderMarkdown markdown={'1. **Bước 1** Mở cổng\n2. **Bước 2** Gửi yêu cầu'} />);
+    expect([...container.querySelectorAll('li')].map((li) => li.getAttribute('data-mark'))).toEqual(['1', '2']);
   });
 
   it('links each [[ ]] title the server resolved, with its label, and leaves the rest as written', () => {

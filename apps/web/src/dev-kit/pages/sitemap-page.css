@@ -42,7 +42,7 @@
   height: 44px;
   padding: 0 12px;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--night-inset) 78%, transparent);
+  background: color-mix(in srgb, var(--c-ink-inset) 78%, transparent);
   color: var(--c-text);
   font-size: 13px;
   font-weight: 600;
@@ -123,6 +123,11 @@ a.z01-node:hover {
   border: 1.5px solid var(--rim-active-border);
   box-shadow: var(--rim-active-shadow);
   color: var(--white);
+}
+
+/* the screen code on the big violet node: light over the light theme's dense violet */
+.z01-node-big i {
+  color: light-dark(var(--violet-100), var(--c-link));
 }
 
 .z01-vline {

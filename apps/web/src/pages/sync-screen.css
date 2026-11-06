@@ -291,7 +291,7 @@
 
 .sync-version[data-side="server"] {
   --side: var(--violet-400);
-  --side-text: var(--violet-300);
+  --side-text: light-dark(var(--violet-700), var(--violet-300));
   --side-mark: color-mix(in srgb, var(--violet-400) 30%, transparent);
 }
 
@@ -496,7 +496,7 @@
 
 .sync-banner {
   --banner: var(--amber-500);
-  --banner-text: var(--amber-300);
+  --banner-text: light-dark(var(--c-warn-text), var(--amber-300));
   position: absolute;
   left: 50%;
   top: 850px;

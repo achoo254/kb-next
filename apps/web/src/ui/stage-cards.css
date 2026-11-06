@@ -68,7 +68,11 @@
   border-radius: 24px;
   background:
     radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--violet-300) 16%, transparent) 0%, transparent 60%),
-    linear-gradient(180deg, color-mix(in srgb, var(--stage-card-top) 55%, transparent) 0%, color-mix(in srgb, var(--stage-card-bottom) 62%, transparent) 100%);
+    linear-gradient(
+      180deg,
+      light-dark(color-mix(in srgb, var(--stage-card-top) 90%, transparent), color-mix(in srgb, var(--stage-card-top) 55%, transparent)) 0%,
+      light-dark(color-mix(in srgb, var(--stage-card-bottom) 94%, transparent), color-mix(in srgb, var(--stage-card-bottom) 62%, transparent)) 100%
+    );
   border: 1px solid color-mix(in srgb, var(--violet-300) 40%, transparent);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--white) 20%, transparent),
@@ -102,7 +106,7 @@
 .kf-stage-sub {
   font-size: 12px;
   line-height: 1.6;
-  color: var(--violet-300);
+  color: light-dark(var(--violet-200), var(--violet-300));
   white-space: pre-line;
 }
 
@@ -120,9 +124,9 @@
     radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--violet-200) 42%, transparent) 0%, transparent 60%),
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--violet-400) 55%, transparent) 0%,
-      color-mix(in srgb, var(--violet-600) 55%, transparent) 50%,
-      color-mix(in srgb, var(--violet-900) 72%, transparent) 100%
+      light-dark(color-mix(in srgb, var(--violet-600) 92%, transparent), color-mix(in srgb, var(--violet-400) 55%, transparent)) 0%,
+      light-dark(color-mix(in srgb, var(--violet-700) 94%, transparent), color-mix(in srgb, var(--violet-600) 55%, transparent)) 50%,
+      light-dark(color-mix(in srgb, var(--violet-900) 96%, transparent), color-mix(in srgb, var(--violet-900) 72%, transparent)) 100%
     );
   border: 1.5px solid color-mix(in srgb, var(--purple-100) 95%, transparent);
   box-shadow:
@@ -273,7 +277,7 @@
   align-self: flex-start;
   padding: 2px 7px;
   border-radius: 8px;
-  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  background: light-dark(var(--violet-700), color-mix(in srgb, var(--violet-600) 45%, transparent));
   color: var(--white);
   font-size: 10px;
   font-weight: 700;

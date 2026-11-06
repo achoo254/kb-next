@@ -4,8 +4,8 @@
  * stored text stays plain Markdown the reader (C11) renders the same way:
  * - `wikilink`: `[[Title]]` / `[[Title|label]]`, a link to another document by its title;
  * - `callout`: `> [!WARNING]` then `> text`, the board's amber warning box;
- * - `steps`: an ordered list whose every item starts with a bold term (`1. **Discover** …`), drawn as step cards,
- *   the reader's rule for the DORA diagram (reader-markdown.tsx).
+ * - `steps`: an ordered list whose every item starts with a bold term (`1. **Discover** …`), drawn as step cards
+ *   marked as the reader marks them (step-mark.ts), the reader's rule for the DORA diagram (reader-markdown.tsx).
  * An unclosed `[[` (a link being written) is marked as such.
  */
 import { Extension, Node, mergeAttributes, type JSONContent, type MarkdownLexerConfiguration, type MarkdownParseHelpers, type MarkdownRendererHelpers, type MarkdownToken } from '@tiptap/core';
@@ -16,6 +16,7 @@ import { Markdown } from '@tiptap/markdown';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import StarterKit from '@tiptap/starter-kit';
+import { stepMark } from './step-mark';
 
 export interface Step {
   term: string;
@@ -117,11 +118,6 @@ export function isStepList(value: unknown): value is Step[] {
   return Array.isArray(value) && value.every((s) => typeof s === 'object' && s !== null && typeof (s as Step).term === 'string' && typeof (s as Step).text === 'string');
 }
 
-/** The first letter of a step's term, shown on its card. */
-export function stepLetter(step: Step): string {
-  return Array.from(step.term.trim())[0]?.toLocaleUpperCase() ?? '·';
-}
-
 /** Step cards (the board's DORA): `1. **Term** text` per step in Markdown. Edited in the node view. */
 export const Steps = Node.create({
   name: 'steps',
@@ -150,7 +146,7 @@ export const Steps = Node.create({
   },
   renderHTML({ node, HTMLAttributes }) {
     const steps = isStepList(node.attrs.steps) ? node.attrs.steps : [];
-    return ['div', mergeAttributes(HTMLAttributes, { class: 'editor-steps' }), ...steps.map((step) => ['span', { class: 'editor-step' }, stepLetter(step)])];
+    return ['div', mergeAttributes(HTMLAttributes, { class: 'editor-steps' }), ...steps.map((step) => ['span', { class: 'editor-step' }, stepMark(step.term)])];
   },
   renderMarkdown(node: JSONContent) {
     const steps = isStepList(node.attrs?.steps) ? node.attrs.steps : [];

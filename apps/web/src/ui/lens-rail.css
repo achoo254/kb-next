@@ -23,7 +23,7 @@
 }
 
 .kf-rail-fill {
-  fill: color-mix(in srgb, var(--night-rail) 72%, transparent);
+  fill: color-mix(in srgb, var(--c-ink-rail) 72%, transparent);
 }
 
 .kf-rail-items {
@@ -74,7 +74,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(140deg, var(--violet-400), var(--violet-600));
+  /* the light theme a shade deeper: white initials over the board's violets read 4:1 only */
+  background: linear-gradient(140deg, light-dark(var(--violet-500), var(--violet-400)), light-dark(var(--violet-700), var(--violet-600)));
   border: 2px solid color-mix(in srgb, var(--white) 75%, transparent);
   box-shadow: 0 0 16px color-mix(in srgb, var(--violet-600) 80%, transparent);
   color: var(--white);

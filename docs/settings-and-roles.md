@@ -57,6 +57,13 @@ API), mới nhất trước, lọc theo Thành viên / Nội dung / API / Đăng
   `<html>`), lưu theo tài khoản trên server (`PATCH /api/me`) và một bản trong trình duyệt (`localStorage` `kb-display`)
   để lần mở sau vẽ đúng ngay từ khung đầu; `GET /api/session` trả lại hai cài đặt này sau khi đăng nhập.
 - Sáng dùng token Sáng và ảnh `bg-universe-light`. Nút đổi giao diện chỉ có ở H03.
+- Quy tắc màu cho mọi màn (06/11/2026): nền nào mang chữ theo theme (`--c-text`, `--c-link`…) thì cũng phải theo theme.
+  Không trộn trực tiếp mực đêm `--night-*` (chỉ dành cho hình nghệ thuật tối ở cả hai chế độ) vào hàng, thẻ, ô, nút;
+  dùng bản theo theme `--c-ink-*` của [`tokens.css`](../apps/web/src/ui/tokens.css) (Tối giữ mực đêm, Sáng là trắng hay
+  tím nhạt), hoặc `light-dark()` với giá trị Sáng riêng. Nền có chữ trắng (`--rim-active-bg`, `--rim-button-bg`…) ở
+  Sáng gần như đặc để chữ trắng đạt 4,5:1. Màu chữ trên thẻ cũng theo theme: sắc đậm (`--violet-700`, `--cyan-700`) ở
+  Sáng, sắc nhạt ở Tối. Kiểm bằng [`light-theme.spec.ts`](../apps/web/e2e/light-theme.spec.ts)
+  ([`parity-testing.md`](parity-testing.md#kiểm-chế-độ-sáng)).
 - "Giảm chuyển động" của app cộng thêm với cài đặt hệ điều hành: tắt animation và transition, Universe chạy 2D.
 - "Mở app ở chế độ" (Orbit / Danh sách) chỉ lưu trên máy này: C08 và A02 mở theo lựa chọn đó.
 - Cỡ chữ khi đọc: nút A−/A+ trong trình đọc (C11, tablet T02, điện thoại M05) chọn 16 / 17 (mặc định) / 18 / 20px cho

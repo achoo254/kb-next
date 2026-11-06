@@ -442,7 +442,7 @@
 
 .mine-planet[data-status="hidden"],
 .mine-planet[data-status="rejected"] {
-  opacity: 0.55;
+  opacity: max(0.55, var(--c-dim-floor));
 }
 
 .mine-planet-art {

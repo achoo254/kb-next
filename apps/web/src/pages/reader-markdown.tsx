@@ -4,7 +4,8 @@
  * like), and outside links open in a new tab without access to this page.
  *
  * One reading rule of the boards: an ordered list whose every item starts with a bold term ("1. **Discover** Hét lên
- * cả mạng xin IP") is a list of steps, drawn as step cards with the term's first letter (C11's DORA diagram). A quote
+ * cả mạng xin IP") is a list of steps, drawn as step cards marked with the step's number or the term's first letter
+ * (step-mark.ts; C11's DORA diagram). A quote
  * opening with `[!WARNING]` (as the editor, C02, writes its warning box) is drawn as that warning. A `[[Tiêu đề]]`
  * (or `[[Tiêu đề|chữ]]`) the server resolved to a document the reader may open is a link to it; any other stays as
  * written.
@@ -12,6 +13,7 @@
 import { type ReactNode, memo, useMemo } from 'react';
 import Markdown, { type Components, type ExtraProps } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { stepMark } from './step-mark';
 
 /** The syntax-tree element react-markdown hands each component (hast), and what an element may contain. */
 type Element = NonNullable<ExtraProps['node']>;
@@ -66,7 +68,7 @@ const COMPONENTS: Components = {
   li({ node, children, ...props }) {
     const term = node ? stepTerm(node) : null;
     return (
-      <li {...props} data-letter={term ? Array.from(term)[0]?.toLocaleUpperCase() : undefined}>
+      <li {...props} data-mark={term ? stepMark(term) : undefined}>
         {children}
       </li>
     );

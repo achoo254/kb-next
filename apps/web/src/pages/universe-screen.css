@@ -100,8 +100,8 @@
   align-self: flex-start;
   padding: 6px 12px;
   border-radius: 9px;
-  background: color-mix(in srgb, var(--white) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--white) 14%, transparent);
+  background: color-mix(in srgb, var(--c-ghost-ink) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-ghost-ink) 14%, transparent);
   color: var(--start-ghost-text);
   font-size: 14px;
   font-weight: 500;
@@ -309,7 +309,7 @@
   text-align: center;
   font-size: 14px;
   font-weight: 600;
-  color: var(--violet-300);
+  color: light-dark(var(--violet-700), var(--violet-300));
   animation: universe-pulse 1.8s ease-in-out infinite;
 }
 
@@ -381,8 +381,8 @@
   height: 36px;
   padding: 0 14px;
   border-radius: 24px;
-  background: color-mix(in srgb, var(--white) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  background: color-mix(in srgb, var(--c-ghost-ink) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-ghost-ink) 16%, transparent);
   color: var(--start-ghost-text);
   font: 600 12px var(--font-sans);
   cursor: pointer;
@@ -424,7 +424,7 @@
   border: 2px dashed color-mix(in srgb, var(--orbit-tint-personal) 85%, transparent);
   background: radial-gradient(circle, color-mix(in srgb, var(--glow-personal) 18%, transparent), transparent 70%);
   box-shadow: 0 0 26px color-mix(in srgb, var(--glow-personal) 35%, transparent);
-  color: var(--tint-personal);
+  color: light-dark(var(--mine-text-private), var(--tint-personal));
   font-size: 13px;
   font-weight: 700;
   text-align: center;
@@ -480,7 +480,7 @@
 
 .universe-empty-stage .kf-stage-sub,
 .universe-empty-stage .kf-stage-card[data-highlight] .kf-stage-sub {
-  color: var(--violet-300);
+  color: light-dark(var(--violet-200), var(--violet-300));
 }
 
 .universe-try.kf-panel {
@@ -529,8 +529,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 24px;
-  background: color-mix(in srgb, var(--white) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--white) 16%, transparent);
+  background: color-mix(in srgb, var(--c-ghost-ink) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-ghost-ink) 16%, transparent);
   color: var(--start-ghost-text);
   font-size: 12px;
   font-weight: 600;

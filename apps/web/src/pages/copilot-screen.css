@@ -497,7 +497,7 @@ a.copilot-source:focus-visible {
   min-width: 22px;
   height: 20px;
   border-radius: 7px;
-  background: color-mix(in srgb, var(--violet-600) 60%, transparent);
+  background: light-dark(var(--violet-700), color-mix(in srgb, var(--violet-600) 60%, transparent));
   color: var(--white);
   font: 700 11px var(--font-display);
   display: flex;
@@ -552,7 +552,7 @@ a.copilot-source:focus-visible {
 }
 
 .copilot-origin.kf-origin[data-origin="official"] {
-  background: color-mix(in srgb, var(--violet-600) 45%, transparent);
+  background: light-dark(color-mix(in srgb, var(--violet-600) 14%, transparent), color-mix(in srgb, var(--violet-600) 45%, transparent));
   color: light-dark(var(--violet-700), var(--white));
 }
 

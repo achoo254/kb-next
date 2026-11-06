@@ -291,6 +291,7 @@
 }
 
 .publish-vis-card[aria-checked="true"] {
+  color: light-dark(var(--white), var(--c-text));
   border: 1.5px solid var(--pub-vis-on-border);
   background: var(--pub-vis-on-bg);
   box-shadow: var(--pub-vis-on-shadow);
@@ -993,8 +994,13 @@
 }
 
 .publish-phone-vis-card[aria-checked="true"] {
+  color: light-dark(var(--white), var(--c-text));
   border-color: var(--rim-active-border);
   background: var(--rim-active-bg);
+}
+
+.publish-phone-vis-card[aria-checked="true"] > span {
+  color: light-dark(var(--violet-100), var(--c-text-muted));
 }
 
 .publish-phone-note {

@@ -554,18 +554,17 @@
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   gap: 8px;
-  background: color-mix(in srgb, var(--night-inset) 72%, transparent);
+  background: light-dark(color-mix(in srgb, var(--violet-100) 70%, transparent), color-mix(in srgb, var(--night-inset) 72%, transparent));
   border: 1px solid color-mix(in srgb, var(--violet-400) 14%, transparent);
   cursor: pointer;
   user-select: none;
-  color-scheme: dark;
 }
 
 .editor-step {
   border-radius: 12px;
   border: 1px solid color-mix(in srgb, var(--violet-300) 55%, transparent);
-  background: color-mix(in srgb, var(--night-card) 85%, transparent);
-  color: var(--violet-200);
+  background: color-mix(in srgb, var(--c-ink-card) 85%, transparent);
+  color: light-dark(var(--violet-700), var(--violet-200));
   font: 700 24px var(--font-display);
   display: flex;
   align-items: center;
@@ -575,7 +574,7 @@
 
 .editor-step:nth-child(even) {
   border-color: color-mix(in srgb, var(--cyan-300) 55%, transparent);
-  color: var(--cyan-200);
+  color: light-dark(var(--cyan-700), var(--cyan-200));
   box-shadow: inset 0 0 12px color-mix(in srgb, var(--cyan-400) 30%, transparent);
 }
 

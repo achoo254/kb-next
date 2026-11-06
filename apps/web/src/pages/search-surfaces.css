@@ -11,7 +11,7 @@
   --search-info-bg: light-dark(color-mix(in srgb, var(--cyan-700) 8%, transparent), color-mix(in srgb, var(--cyan-400) 10%, transparent));
   --search-info-border: light-dark(color-mix(in srgb, var(--cyan-700) 30%, transparent), color-mix(in srgb, var(--cyan-300) 40%, transparent));
   --search-hit-bg: light-dark(color-mix(in srgb, var(--cyan-700) 16%, transparent), color-mix(in srgb, var(--cyan-400) 28%, transparent));
-  --search-hit-text: light-dark(var(--cyan-700), var(--cyan-100));
+  --search-hit-text: light-dark(var(--cyan-800), var(--cyan-100));
   --search-track: light-dark(color-mix(in srgb, var(--violet-700) 14%, transparent), color-mix(in srgb, var(--white) 18%, transparent));
 }
 

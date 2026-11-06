@@ -378,13 +378,13 @@
 }
 
 .search-origin.kf-origin[data-origin="official"] {
-  background: color-mix(in srgb, var(--violet-600) 40%, transparent);
+  background: light-dark(color-mix(in srgb, var(--violet-600) 14%, transparent), color-mix(in srgb, var(--violet-600) 40%, transparent));
   color: light-dark(var(--violet-700), var(--violet-200));
 }
 
 .search-origin.kf-origin[data-origin="community"] {
   background: color-mix(in srgb, var(--cyan-400) 18%, transparent);
-  color: light-dark(var(--cyan-700), var(--cyan-300));
+  color: light-dark(var(--cyan-800), var(--cyan-300));
 }
 
 .search-origin.kf-origin[data-origin="private"] {

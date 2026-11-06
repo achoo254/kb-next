@@ -36,7 +36,7 @@
 
 .admin-chip {
   border: 1px solid color-mix(in srgb, var(--violet-400) 30%, transparent);
-  background: color-mix(in srgb, var(--night-row) 50%, transparent);
+  background: color-mix(in srgb, var(--c-ink-row) 50%, transparent);
   color: var(--c-text);
   font: 600 12px var(--font-sans);
   cursor: pointer;
@@ -48,6 +48,7 @@
   box-shadow:
     inset 0 0 10px color-mix(in srgb, var(--violet-300) 40%, transparent),
     0 0 12px color-mix(in srgb, var(--violet-500) 60%, transparent);
+  color: light-dark(var(--white), var(--c-text));
 }
 
 .admin-tag {
@@ -396,6 +397,7 @@
   border-radius: 8px;
   background: var(--violet-600);
   font: 700 11px var(--font-display);
+  color: light-dark(var(--white), var(--c-text));
 }
 
 .a01-source-name {
@@ -482,7 +484,7 @@
 
 .a01-check-value {
   font: 700 12px var(--font-display);
-  color: var(--score);
+  color: light-dark(color-mix(in srgb, var(--score) 50%, var(--light-text)), var(--score));
 }
 
 .a01-check-track {
@@ -787,12 +789,13 @@
   border: none;
   border-radius: 19px;
   background: transparent;
-  color: var(--white);
+  color: light-dark(var(--light-text), var(--white));
   font: 600 12px var(--font-sans);
   cursor: pointer;
 }
 
 .a02-views button[aria-pressed="true"] {
+  color: var(--white);
   background: var(--rim-active-bg);
   box-shadow:
     inset 0 0 10px color-mix(in srgb, var(--violet-300) 40%, transparent),
@@ -840,7 +843,7 @@
 .a02-cluster-name {
   position: absolute;
   transform: translateX(-50%);
-  color: var(--cluster);
+  color: light-dark(color-mix(in srgb, var(--cluster) 50%, var(--light-text)), var(--cluster));
   font: 700 14px var(--font-display);
   white-space: nowrap;
 }
@@ -1625,7 +1628,7 @@
 }
 
 .a03-sample-title {
-  color: var(--cyan-300);
+  color: light-dark(var(--cyan-700), var(--cyan-300));
   font: 600 12px ui-monospace, "JetBrains Mono", monospace;
 }
 
@@ -1722,7 +1725,7 @@
   justify-content: center;
   border-radius: 8px;
   background: color-mix(in srgb, var(--line) 15%, transparent);
-  color: var(--line);
+  color: light-dark(color-mix(in srgb, var(--line) 50%, var(--light-text)), var(--line));
   font: 700 12px ui-monospace, "JetBrains Mono", monospace;
 }
 

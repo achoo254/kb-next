@@ -96,8 +96,8 @@
   align-self: flex-start;
   padding: 4px 10px;
   border-radius: 9px;
-  background: color-mix(in srgb, var(--white) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--white) 14%, transparent);
+  background: color-mix(in srgb, var(--c-ghost-ink) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-ghost-ink) 14%, transparent);
   color: var(--start-ghost-text);
   font-size: 11px;
   font-weight: 700;
@@ -205,7 +205,7 @@
   padding: 12px 14px 12px 8px;
   border-radius: 22px;
   border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
-  background: color-mix(in srgb, var(--night-row) 60%, transparent);
+  background: color-mix(in srgb, var(--c-ink-row) 60%, transparent);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 5%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -345,7 +345,7 @@
   box-sizing: border-box;
   padding: 14px;
   border-radius: 20px;
-  background: color-mix(in srgb, var(--night-row) 70%, transparent);
+  background: color-mix(in srgb, var(--c-ink-row) 70%, transparent);
   border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 5%, transparent);
   backdrop-filter: blur(16px);
@@ -386,7 +386,7 @@
 }
 
 .space-doc-origin[data-origin="official"] {
-  background: color-mix(in srgb, var(--violet-600) 32%, transparent);
+  background: light-dark(color-mix(in srgb, var(--violet-600) 14%, transparent), color-mix(in srgb, var(--violet-600) 32%, transparent));
   border-color: color-mix(in srgb, var(--violet-400) 50%, transparent);
   color: light-dark(var(--violet-700), var(--violet-200));
 }
@@ -394,13 +394,13 @@
 .space-doc-origin[data-origin="community"] {
   background: color-mix(in srgb, var(--cyan-400) 16%, transparent);
   border-color: color-mix(in srgb, var(--cyan-400) 45%, transparent);
-  color: light-dark(var(--cyan-700), var(--cyan-300));
+  color: light-dark(var(--cyan-800), var(--cyan-300));
 }
 
 .space-doc-origin[data-origin="private"] {
   background: color-mix(in srgb, var(--glow-personal) 16%, transparent);
   border-color: color-mix(in srgb, var(--glow-personal) 45%, transparent);
-  color: light-dark(var(--glow-personal), var(--tint-personal));
+  color: light-dark(var(--mine-text-private), var(--tint-personal));
 }
 
 .space-doc-origin[data-origin="pending"] {
@@ -632,7 +632,7 @@
   height: 100%;
   padding: 10px 6px;
   border-radius: 18px;
-  background: color-mix(in srgb, var(--night-row) 70%, transparent);
+  background: color-mix(in srgb, var(--c-ink-row) 70%, transparent);
   border: 1px solid color-mix(in srgb, var(--violet-400) 22%, transparent);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 5%, transparent);
   color: var(--c-text);

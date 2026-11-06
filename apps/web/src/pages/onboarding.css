@@ -84,13 +84,14 @@
   box-shadow: var(--choice-shadow);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  color: var(--violet-50);
+  color: light-dark(var(--light-text), var(--violet-50));
   font: inherit;
   cursor: pointer;
   transition: transform var(--motion-feedback);
 }
 
 .onboarding-choice[aria-pressed="true"] {
+  color: var(--violet-50);
   background: var(--choice-on-bg);
   border: 1.5px solid var(--choice-on-border);
   box-shadow: var(--choice-on-shadow);

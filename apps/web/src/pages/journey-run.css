@@ -340,7 +340,7 @@
   align-items: center;
   justify-content: center;
   font: 700 26px var(--font-display);
-  color: var(--tone);
+  color: light-dark(color-mix(in srgb, var(--tone) 50%, var(--light-text)), var(--tone));
 }
 
 .jr-card-art {

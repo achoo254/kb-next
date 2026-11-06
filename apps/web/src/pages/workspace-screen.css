@@ -183,7 +183,7 @@
   font-size: 12px;
   font-weight: 700;
   background: color-mix(in srgb, var(--violet-600) 22%, transparent);
-  color: var(--violet-200);
+  color: light-dark(var(--violet-700), var(--violet-200));
 }
 
 .ws-role[data-role="admin"] {
@@ -193,12 +193,12 @@
 
 .ws-role[data-role="reviewer"] {
   background: color-mix(in srgb, var(--cyan-400) 18%, transparent);
-  color: var(--cyan-300);
+  color: light-dark(var(--cyan-700), var(--cyan-300));
 }
 
 .ws-role[data-role="removed"] {
   background: color-mix(in srgb, var(--red-500) 18%, transparent);
-  color: var(--red-300);
+  color: light-dark(var(--c-danger-text), var(--red-300));
 }
 
 .ws-outline {
