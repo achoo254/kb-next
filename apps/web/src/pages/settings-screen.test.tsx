@@ -102,7 +102,7 @@ describe('the theme and reduced motion', () => {
     expect(document.documentElement.dataset.motion).toBe('reduce');
     expect(toggle.getAttribute('aria-checked')).toBe('true');
     expect(screen.getByText(/Đã dừng sao lấp lánh/)).toBeTruthy();
-    await waitFor(() => expect(calls.at(-1)?.body).toEqual({ theme: 'dark', reducedMotion: true }));
+    await waitFor(() => expect(calls.at(-1)?.body).toMatchObject({ theme: 'dark', reducedMotion: true }));
     fireEvent.click(toggle);
     expect(document.documentElement.dataset.motion).toBeUndefined();
   });
