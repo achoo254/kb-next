@@ -437,6 +437,33 @@
     rgb(8 4 28 / 0) 100%
   );
 
+  /* Light-theme stand-ins for the neon glow (the mock is dark only): over the pale page the dark-theme halos and the
+     dark disc behind crystal labels read as smudges. Switched in by theme below, like the veils. */
+  --light-rim-active-shadow:
+    inset 0 0 12px rgb(196 181 253 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 0 10px rgb(139 92 246 / 0.3),
+    0 2px 6px rgb(91 33 182 / 0.18);
+  --light-rim-button-shadow:
+    inset 0 0 10px rgb(196 181 253 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    0 0 8px rgb(139 92 246 / 0.28),
+    0 2px 6px rgb(91 33 182 / 0.16);
+  /* the disc stays inside the stone and fades out before its edge */
+  --light-crystal-core: radial-gradient(
+    ellipse 36% 32% at 50% 54%,
+    rgb(8 4 28 / 0.55) 0%,
+    rgb(8 4 28 / 0.38) 50%,
+    rgb(8 4 28 / 0) 100%
+  );
+  --light-crystal-core-mini: radial-gradient(
+    ellipse 40% 36% at 50% 54%,
+    rgb(8 4 28 / 0.55) 0%,
+    rgb(8 4 28 / 0.38) 50%,
+    rgb(8 4 28 / 0) 100%
+  );
+  --light-text-shadow-strong: 0 1px 2px rgb(0 0 0 / 0.7);
+
   /* the veils of the theme in use (gradients, so they switch by theme below, not with light-dark()) */
   --c-veil: var(--dark-veil);
   --c-veil-strong: var(--dark-veil-strong);
@@ -450,6 +477,11 @@
 :root[data-theme="light"] {
   color-scheme: light;
   --c-dim-floor: 0.9;
+  --rim-active-shadow: var(--light-rim-active-shadow);
+  --rim-button-shadow: var(--light-rim-button-shadow);
+  --crystal-core: var(--light-crystal-core);
+  --crystal-core-mini: var(--light-crystal-core-mini);
+  --text-shadow-strong: var(--light-text-shadow-strong);
   --c-veil: var(--light-veil);
   --c-veil-strong: var(--light-veil-strong);
   --c-veil-radial: var(--light-veil-radial);
@@ -467,6 +499,11 @@
   :root:not([data-theme]) {
     color-scheme: light;
     --c-dim-floor: 0.9;
+    --rim-active-shadow: var(--light-rim-active-shadow);
+    --rim-button-shadow: var(--light-rim-button-shadow);
+    --crystal-core: var(--light-crystal-core);
+    --crystal-core-mini: var(--light-crystal-core-mini);
+    --text-shadow-strong: var(--light-text-shadow-strong);
     --c-veil: var(--light-veil);
     --c-veil-strong: var(--light-veil-strong);
     --c-veil-radial: var(--light-veil-radial);
