@@ -16,7 +16,7 @@ export const CRYSTAL_ART: Record<SpaceKind, string> = {
   docker: '/art/crystal-docker.webp',
   weekly: '/art/crystal-weekly.webp',
   personal: '/art/crystal-personal.webp',
-  // No crystal drawn for Cloud yet: the orb stands in, as in the import curation (content/hoc-cloud/curation.json).
+  // No crystal drawn for Cloud yet: the orb stands in.
   cloud: '/art/orb-universe.webp',
 };
 

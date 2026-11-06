@@ -20,7 +20,7 @@ import { seedDatabase, seedId } from '../db/seed-database';
 
 const SECRET = 'test-secret-'.padEnd(40, 'x');
 /** Above what the other tests call, so only the last one meets it. */
-const LIMIT = 20;
+const LIMIT = 32;
 
 let idp: FakeIdp;
 let server: TestServer;
@@ -129,6 +129,38 @@ describe('the admin API (token)', () => {
     const hidden = await call(`/api/admin/posts/${created.id}`, { method: 'PATCH', token, body: { hidden: true, title: 'ICMP Ping (cũ)' } });
     expect([hidden.status, await hidden.json()]).toEqual([200, { id: created.id, title: 'ICMP Ping (cũ)', status: 'approved', hidden: true }]);
     expect(await as('other', () => failure(fetchDocument(created.id)))).toBe('hidden');
+  });
+
+  it('reads a text and saves a new version of it, each call its own version', async () => {
+    const created = (await (await call('/api/admin/posts', { method: 'POST', token, body: { ...post, source: 'human' } })).json()) as { id: string };
+    const read = await call(`/api/admin/posts/${created.id}`, { token });
+    const text = (await read.json()) as { title: string; version: number; rev: string; body: string };
+    expect(text).toMatchObject({ title: 'ICMP Ping', version: 1, body: '## Echo\n\nping gửi Echo Request, máy kia trả Echo Reply.' });
+
+    const body = `${text.body}\n\n## Reply\n\nMáy kia trả Echo Reply.`;
+    const first = await call(`/api/admin/posts/${created.id}/text`, { method: 'PUT', token, body: { body, summary: 'Thêm mục Reply', baseRev: text.rev } });
+    expect(first.status).toBe(200);
+    expect(await first.json()).toMatchObject({ version: 2, changed: true });
+    const second = await call(`/api/admin/posts/${created.id}/text`, { method: 'PUT', token, body: { title: 'ICMP: ping', body: `${body} Hết.`, source: 'ai' } });
+    expect(await second.json()).toMatchObject({ version: 3, changed: true });
+    const versions = await server.database.db.select().from(documentVersions).where(eq(documentVersions.documentId, created.id));
+    expect(versions.map((v) => [v.version, v.via, v.summary, v.aiMade]).sort()).toEqual([
+      [1, 'api', null, false],
+      [2, 'api', 'Thêm mục Reply', false],
+      [3, 'api', null, true],
+    ]);
+    const reread = await as('other', () => fetchDocument(created.id));
+    expect(reread.document.title).toBe('ICMP: ping');
+    expect(reread.chunks.map((c) => c.heading)).toEqual(['Echo', 'Reply']);
+
+    const same = await call(`/api/admin/posts/${created.id}/text`, { method: 'PUT', token, body: { title: 'ICMP: ping', body: `${body} Hết.` } });
+    expect(await same.json()).toMatchObject({ version: 3, changed: false });
+    const stale = await call(`/api/admin/posts/${created.id}/text`, { method: 'PUT', token, body: { body: 'x', baseRev: text.rev } });
+    expect([stale.status, ((await stale.json()) as { error: string }).error]).toEqual([409, 'stale']);
+    const empty = await call(`/api/admin/posts/${created.id}/text`, { method: 'PUT', token, body: { body: '  ' } });
+    expect(empty.status).toBe(400);
+    const missing = await call(`/api/admin/posts/${seedId('document:nope')}`, { token });
+    expect(missing.status).toBe(404);
   });
 
   it('checks the post and where it goes', async () => {

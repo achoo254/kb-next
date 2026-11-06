@@ -31,7 +31,7 @@ import { listAuditTrail } from '../access/audit-trail';
 import { type AdminViewer, isAdminViewer } from '../access/review';
 import type { WorkspaceRole } from '../access/roles';
 import { type Member, listMembers, removeMember, restoreMember, setMemberRole } from '../access/workspace-members';
-import { filesSummary, importSummary } from '../access/workspace-status';
+import { filesSummary } from '../access/workspace-status';
 import type { IdpMetadata } from '../auth/idp-metadata';
 import { SESSION_ABSOLUTE_MS, SESSION_IDLE_MS } from '../auth/session-store';
 import { USER_ROLES, jevUsageDaily } from '../db/schema';
@@ -71,7 +71,7 @@ export interface InviteView {
   acceptedCount: number;
 }
 
-export type IntegrationId = 'hoc-cloud' | 'jev' | 'files' | 'search';
+export type IntegrationId = 'jev' | 'files' | 'search';
 export type IntegrationState = 'ok' | 'off' | 'down';
 
 export interface IntegrationView {
@@ -249,8 +249,7 @@ export function workspaceRoutes({ config, db, now, idp, sync, meili, jev }: Work
 
   router.get('/api/workspace/integrations', auth, limit, async (req, res) => {
     const viewer = await admin(req);
-    const [imported, stored, filesOk, searchOk, searchCount, jevToday] = await Promise.all([
-      importSummary(db, viewer),
+    const [stored, filesOk, searchOk, searchCount, jevToday] = await Promise.all([
       filesSummary(db, viewer),
       within(
         access(config.filesDir, constants.R_OK | constants.W_OK).then(() => true),
@@ -265,7 +264,6 @@ export function workspaceRoutes({ config, db, now, idp, sync, meili, jev }: Work
         .then((rows) => rows.reduce((total, row) => total + row.calls, 0)),
     ]);
     const integrations: IntegrationView[] = [
-      { id: 'hoc-cloud', state: imported.documents > 0 ? 'ok' : 'off', facts: { documents: imported.documents, lastImportAt: imported.lastImportAt?.toISOString() ?? null } },
       { id: 'jev', state: jev ? 'ok' : 'off', facts: { requestsToday: jevToday } },
       { id: 'files', state: filesOk ? 'ok' : 'down', facts: { files: stored.files, bytes: stored.bytes } },
       { id: 'search', state: meili ? (searchOk ? 'ok' : 'down') : 'off', facts: { documents: searchCount } },

@@ -4,8 +4,7 @@
  * The editor (C02) edits the title and the body apart; these helpers join and split them.
  */
 import { createHash } from 'node:crypto';
-import { OVERVIEW_ANCHOR, wikilinkTitles } from '../import/hoc-cloud/prepare';
-import { splitSections, titleLine } from '../import/hoc-cloud/sections';
+import { OVERVIEW_ANCHOR, splitSections, titleLine } from '../markdown/sections';
 
 /** Longest title a writer may give (the reader's heading, breadcrumbs and cards stay readable). */
 export const MAX_TITLE_CHARS = 200;
@@ -38,6 +37,20 @@ export function bodyOf(markdown: string): string {
 
 export function chunksOf(markdown: string, lang: 'vi' | 'en'): WrittenChunk[] {
   return splitSections(markdown, OVERVIEW_ANCHOR[lang]).map(({ anchor, heading, text }) => ({ anchor, heading, text }));
+}
+
+const WIKILINK = /\[\[([^\]\n|]+)(?:\|[^\]\n]*)?\]\]/g;
+
+/** The titles named by `[[Title]]` / `[[Title|label]]` outside code, in order. */
+export function wikilinkTitles(markdown: string): string[] {
+  const titles: string[] = [];
+  let inFence = false;
+  for (const line of markdown.split('\n')) {
+    if (/^\s*(`{3,}|~{3,})/.test(line)) inFence = !inFence;
+    if (inFence) continue;
+    for (const m of line.matchAll(WIKILINK)) if (m[1]) titles.push(m[1].trim());
+  }
+  return titles;
 }
 
 /** The distinct titles named by `[[Title]]` / `[[Title|label]]` outside code, in order. */

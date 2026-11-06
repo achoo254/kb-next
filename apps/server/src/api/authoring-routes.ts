@@ -155,7 +155,7 @@ function asUser(viewer: Viewer): UserViewer {
 }
 
 /** The HTTP answer of an editor access that is not `ok`. */
-function refuse(access: Exclude<EditAccess, { kind: 'ok' }> | { kind: 'not-found' | 'no-access' | 'locked' | 'not-editable' }): never {
+export function refuse(access: Exclude<EditAccess, { kind: 'ok' }> | { kind: 'not-found' | 'no-access' | 'locked' | 'not-editable' }): never {
   switch (access.kind) {
     case 'not-found':
       throw new HttpError(404, 'not-found');

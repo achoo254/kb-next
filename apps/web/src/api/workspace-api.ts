@@ -135,7 +135,7 @@ export function fetchSignInInfo(): Promise<SignInInfo> {
   return getJson(SignInInfoSchema, '/api/workspace/sign-in');
 }
 
-export const INTEGRATION_IDS = ['hoc-cloud', 'jev', 'files', 'search'] as const;
+export const INTEGRATION_IDS = ['jev', 'files', 'search'] as const;
 export type IntegrationId = (typeof INTEGRATION_IDS)[number];
 
 export const IntegrationSchema = z.object({

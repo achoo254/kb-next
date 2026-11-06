@@ -134,12 +134,7 @@ export function SignInPanel({ t }: { t: T }): ReactNode {
 
 function integrationDetail(t: T, item: Integration, locale: 'vi' | 'en'): string {
   const num = (key: string): number => (typeof item.facts[key] === 'number' ? Number(item.facts[key]) : 0);
-  const text = (key: string): string | null => (typeof item.facts[key] === 'string' ? String(item.facts[key]) : null);
   switch (item.id) {
-    case 'hoc-cloud': {
-      const last = text('lastImportAt');
-      return last ? t('ws.int.hoc-cloud.detail', { count: num('documents'), date: dayText(last) }) : t('ws.int.hoc-cloud.never');
-    }
     case 'jev':
       return t('ws.int.jev.detail', { count: num('requestsToday') });
     case 'files':
@@ -149,7 +144,7 @@ function integrationDetail(t: T, item: Integration, locale: 'vi' | 'en'): string
   }
 }
 
-const INTEGRATION_TONE: Record<IntegrationId, string> = { 'hoc-cloud': 'violet', jev: 'emerald', files: 'amber', search: 'cyan' };
+const INTEGRATION_TONE: Record<IntegrationId, string> = { jev: 'emerald', files: 'amber', search: 'cyan' };
 
 export function IntegrationsPanel({ t }: { t: T }): ReactNode {
   const { locale } = useI18n();

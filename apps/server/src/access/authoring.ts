@@ -12,7 +12,7 @@ import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, lt, max, ne, or 
 import { type BlockDiff, diffBlocks } from '../authoring/block-diff';
 import { ORIGIN_RANK, bestLinkTarget } from '../authoring/link-targets';
 import { bodyOf, chunksOf, composeMarkdown, contentHash, foldTitle, linkedTitles } from '../authoring/markdown-text';
-import { titleLine } from '../import/hoc-cloud/sections';
+import { titleLine } from '../markdown/sections';
 import type { Db } from '../db/client';
 import { PLANET_COLOURS, chunks, documentVersions, documents, files, links } from '../db/schema';
 import { TRASH_DAYS } from '../retention';
@@ -244,6 +244,8 @@ export interface SaveInput {
    * `journey` (C07) writes only journeys. Left out (an admin's title fix): any document.
    */
   editor?: 'text' | 'journey';
+  /** Saved through the admin API (token): its own version, never merged into an editor's. */
+  fromApi?: boolean;
 }
 
 export type SaveResult =
@@ -286,7 +288,7 @@ export async function saveDocument(db: Db, writer: Viewer, id: string, input: Sa
       return { kind: 'saved', rev: row?.updatedAt ?? now, version: latest.version, changed: false };
     }
 
-    const via = input.restoredFrom === undefined ? 'editor' : 'restore';
+    const via = input.restoredFrom !== undefined ? 'restore' : input.fromApi ? 'api' : 'editor';
     const merge =
       via === 'editor' &&
       latest !== null &&
@@ -294,7 +296,7 @@ export async function saveDocument(db: Db, writer: Viewer, id: string, input: Sa
       latest.restoredFrom === null &&
       latest.editorId === writer.userId &&
       now.getTime() - latest.createdAt.getTime() < MERGE_WINDOW_MS;
-    const aiMade = via === 'editor' && input.aiMade === true;
+    const aiMade = via !== 'restore' && input.aiMade === true;
     let version: number;
     if (merge) {
       version = latest.version;

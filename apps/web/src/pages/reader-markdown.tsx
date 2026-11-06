@@ -111,7 +111,7 @@ export function rehypeWarnings() {
   };
 }
 
-/** A `[[ ]]` link as written (same syntax as the server's, src/import/hoc-cloud/prepare.ts): title, then its label. */
+/** A `[[ ]]` link as written (same syntax as the server's, src/authoring/markdown-text.ts): title, then its label. */
 const WIKILINK = /\[\[([^\]\n|]+)(?:\|([^\]\n]*))?\]\]/g;
 /** Elements whose text is never turned into links: links themselves and code. */
 const NO_LINKS = new Set(['a', 'code', 'pre']);

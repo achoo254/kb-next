@@ -8,24 +8,18 @@
  *   is not an address;
  * - an SSH port or login written out (`ssh -p 2222`, `Port 2222`, `ssh user@host`).
  *
- * Imported lessons (LESSON_DIRS) may also keep the addresses they teach with (subnet exercises, public resolvers,
- * Pod networks): the list the importer redacts against, apps/server/src/import/hoc-cloud/teaching-addresses.ts.
- *
  * The patterns are generic on purpose: naming the real addresses here would publish them.
  */
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isTeachingAddress } from '../apps/server/src/import/hoc-cloud/teaching-addresses';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', '.data', 'test-results', 'playwright-report', 'generated', '.claude']);
 const TEXT_FILES = /\.(ts|tsx|js|mjs|cjs|json|md|html|css|yml|yaml|txt|conf|service|sh|sql|example|toml)$/;
 
-// Not after `section-` either: `rfc1122#section-3.2.1.7` is a spec section in a URL. The `/prefix` is kept for lessons.
-const IPV4 = /(?<![\d.§]|section-)(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?![\d.])(?:\/(\d{1,2})(?!\d))?/g;
-/** Imported lesson content and its recorded source (relative paths, `/` separated). */
-const LESSON_DIRS = ['content/', 'apps/server/test/fixtures/hoc-cloud/'];
+// Not after `section-` either: `rfc1122#section-3.2.1.7` is a spec section in a URL.
+const IPV4 = /(?<![\d.§]|section-)(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?![\d.])/g;
 const SSH_PATTERNS = [/\bssh\s+(?:-\w+\s+)*-p\s*\d{2,5}\b/, /^\s*Port\s+\d{2,5}\s*$/m, /\bssh\s+(?:-\w+\s+\S+\s+)*[\w.-]+@[\w.-]+/];
 
 /** Addresses that say nothing about a real server. */
@@ -45,12 +39,10 @@ export interface Finding {
 
 export function findPublicInfo(source: string, file: string): Finding[] {
   const findings: Finding[] = [];
-  const lesson = LESSON_DIRS.some((dir) => file.split(path.sep).join('/').startsWith(dir));
   source.split(/\r?\n/).forEach((text, index) => {
     for (const m of text.matchAll(IPV4)) {
       const octets = m.slice(1, 5).map(Number);
       if (isHarmlessIpv4(octets)) continue;
-      if (lesson && isTeachingAddress(octets, m[5] === undefined ? null : Number(m[5]))) continue;
       findings.push({ file, line: index + 1, match: m[0] });
     }
     for (const pattern of SSH_PATTERNS) {
@@ -73,8 +65,8 @@ async function textFiles(dir: string): Promise<string[]> {
   return nested.flat();
 }
 
-/** This guard, its test and the lesson allowlist spell out what they look for. */
-const SELF = new Set(['scripts/check-public-info.ts', 'scripts/check-public-info.test.ts', 'apps/server/src/import/hoc-cloud/teaching-addresses.ts']);
+/** This guard and its test spell out what they look for. */
+const SELF = new Set(['scripts/check-public-info.ts', 'scripts/check-public-info.test.ts']);
 
 async function main(): Promise<number> {
   const files = (await textFiles(ROOT)).filter((file) => path.basename(file) !== '.env' && !SELF.has(path.relative(ROOT, file)));

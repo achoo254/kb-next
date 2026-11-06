@@ -103,7 +103,6 @@ beforeEach(() => {
       if (url === '/api/workspace/integrations')
         return answer(200, {
           integrations: [
-            { id: 'hoc-cloud', state: 'ok', facts: { documents: 16, lastImportAt: '2026-11-01T00:00:00.000Z' } },
             { id: 'jev', state: 'ok', facts: { requestsToday: 42 } },
             { id: 'files', state: 'ok', facts: { files: 3, bytes: 5 * 1024 * 1024 } },
             { id: 'search', state: 'down', facts: { documents: null } },
@@ -274,7 +273,7 @@ describe('the other tabs', () => {
     expect(screen.getAllByRole('switch').every((s) => s.getAttribute('aria-readonly') === 'true')).toBe(true);
 
     fireEvent.click(screen.getByRole('tab', { name: 'Tích hợp' }));
-    expect(await screen.findByText('16 bài chính thức · lần chép gần nhất 01/11/2026')).toBeTruthy();
+    expect(await screen.findByText('Hôm nay 42 request · không có Jev thì chỉ tìm từ khoá')).toBeTruthy();
     expect(screen.getByText('Lỗi kết nối')).toBeTruthy();
     fireEvent.click(screen.getAllByRole('button', { name: 'Kiểm tra kết nối' })[0] as HTMLElement);
     await waitFor(() => expect(vi.mocked(fetch).mock.calls.filter(([u]) => u === '/api/workspace/integrations')).toHaveLength(2));

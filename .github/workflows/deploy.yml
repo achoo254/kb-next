@@ -1,6 +1,5 @@
 # Continuous deploy of kb.hoandat.com: after `ci` passes on a push to main,
-# build the web app, the server bundle and the migrations, upload them with
-# content/ (what the importer reads) as the restricted `kb-deploy` user to /var/www/kb/ci-incoming/<id> and switch
+# build the web app, the server bundle and the migrations, upload them as the restricted `kb-deploy` user to /var/www/kb/ci-incoming/<id> and switch
 # through the one sudo command that user has (infra/activate-incoming.sh:
 # release, `current`, restart, healthz + origin check, previous release back on
 # failure). Building (which runs dependency code) happens in a job without the
@@ -49,10 +48,9 @@ jobs:
         run: |
           echo "id=$(date -u +%Y%m%d-%H%M%S)-${SHA:0:12}" >>"$GITHUB_OUTPUT"
           pnpm build
-          # The same four folders infra/deploy.sh ships: the server bundle needs only Node, the migrations and
-          # content/ (read by the importer).
+          # The same three folders infra/deploy.sh ships: the server bundle needs only Node and the migrations.
           mkdir release
-          tar cf - apps/web/dist apps/server/dist apps/server/drizzle content | tar xf - -C release
+          tar cf - apps/web/dist apps/server/dist apps/server/drizzle | tar xf - -C release
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release

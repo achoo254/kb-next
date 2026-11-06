@@ -11,8 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:check": "drizzle-kit check",
     "reindex": "tsx --env-file-if-exists=.env src/cli/reindex.ts",
-    "seed": "tsx --env-file-if-exists=.env src/db/seed.ts",
-    "import:hoc-cloud": "tsx --env-file-if-exists=.env src/cli/import-hoc-cloud.ts"
+    "seed": "tsx --env-file-if-exists=.env src/db/seed.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",

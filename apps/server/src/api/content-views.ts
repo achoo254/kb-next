@@ -4,7 +4,7 @@
  */
 import type { CollectionRow, DocumentRow, SpaceRow } from '../access/content';
 import type { Caption } from '../captions/space-captions';
-import { splitSections } from '../import/hoc-cloud/sections';
+import { splitSections } from '../markdown/sections';
 
 export type Lang = 'vi' | 'en';
 

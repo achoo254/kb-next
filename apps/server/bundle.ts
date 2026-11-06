@@ -3,10 +3,9 @@
 import { build } from 'esbuild';
 
 await build({
-  // index.mjs: the API; reindex.mjs and import-hoc-cloud.mjs: `pnpm reindex` and `pnpm import:hoc-cloud` on the
-  // server (same env file; the importer reads content/ shipped in the release).
+  // index.mjs: the API; reindex.mjs: `pnpm reindex` on the server (same env file).
   // pdf-worker.mjs: the extraction's PDF worker thread (src/extract/pdf-work.ts starts it from beside index.mjs).
-  entryPoints: { index: 'src/server.ts', reindex: 'src/cli/reindex.ts', 'import-hoc-cloud': 'src/cli/import-hoc-cloud.ts', 'pdf-worker': 'src/extract/pdf-worker.ts' },
+  entryPoints: { index: 'src/server.ts', reindex: 'src/cli/reindex.ts', 'pdf-worker': 'src/extract/pdf-worker.ts' },
   bundle: true,
   platform: 'node',
   format: 'esm',

@@ -1,5 +1,5 @@
 {
-  "hoc-cloud/lab/tcp-ip-packet-journey": {
+  "f492c25b-7948-4446-8331-e6baf730fc15": {
     "vi": {
       "title": "Mô hình OSI và TCP/IP: hành trình một gói tin",
       "summary": "So sánh mô hình OSI 7 tầng với TCP/IP 4 tầng qua hành trình của một lệnh ping: DNS phân giải tên, đóng gói ICMP, IP header, Ethernet frame và ARP, router chuyển tiếp rồi server trả lời. Giải thích vì sao ping thông mà curl vẫn có thể lỗi."
@@ -9,7 +9,7 @@
       "summary": "Compares the 7-layer OSI model with the 4-layer TCP/IP model by following one ping: DNS resolution, ICMP, the IP header, the Ethernet frame and ARP, router forwarding and the server's reply. Explains why curl can fail even when ping works."
     }
   },
-  "hoc-cloud/lab/subnet-cidr": {
+  "a784a9b3-6db2-4fa7-8b0c-cb91d071aa4d": {
     "vi": {
       "title": "IPv4: subnet và CIDR",
       "summary": "Ôn lớp địa chỉ IPv4, IP private và public, NAT, rồi thực hành chia một mạng thành bốn subnet /26: tính số bit mượn, kích thước subnet, subnet mask, kiểm chứng bằng nhị phân và gán dải cho từng phòng ban kèm gateway."
@@ -19,7 +19,7 @@
       "summary": "Reviews IPv4 address classes, private and public addresses and NAT, then walks through splitting a network into four /26 subnets: borrowed bits, subnet size, subnet mask, a binary check, and assigning each range and gateway to a department."
     }
   },
-  "hoc-cloud/lab/arp": {
+  "b6041855-2988-48f7-8e63-2279317e481a": {
     "vi": {
       "title": "Giao thức ARP",
       "summary": "Giải thích ARP ánh xạ IPv4 sang MAC: request broadcast, reply unicast, ARP cache xem bằng ip neigh, vì sao ping ra ngoài LAN lại hỏi MAC của gateway. Có quan sát bằng tcpdump, Wireshark, arping, cùng gratuitous ARP và cách nhận biết ARP spoofing."
@@ -29,7 +29,7 @@
       "summary": "Explains how ARP maps IPv4 to MAC addresses: broadcast requests, unicast replies, the ARP cache seen with ip neigh, and why off-LAN traffic asks for the gateway's MAC. Uses tcpdump, Wireshark and arping, and covers gratuitous ARP and spotting ARP spoofing."
     }
   },
-  "hoc-cloud/lab/icmp-ping": {
+  "a97d4a46-a1ed-4643-8813-ae5fb55a78fd": {
     "vi": {
       "title": "ICMP: ping và traceroute",
       "summary": "Tìm hiểu ICMP qua ping và traceroute: Echo Request/Reply, Time Exceeded, các loại Destination Unreachable, mẹo TTL của traceroute và ý nghĩa dấu sao. Đọc RTT, packet loss, bắt gói bằng Wireshark và tcpdump, và hiểu vì sao ping thông chưa chắc dịch vụ chạy."
@@ -39,7 +39,7 @@
       "summary": "Covers ICMP through ping and traceroute: Echo Request/Reply, Time Exceeded, Destination Unreachable subtypes, the TTL trick behind traceroute and what the asterisks mean. Reads RTT and packet loss, captures with Wireshark and tcpdump, and shows why a working ping does not prove a service is up."
     }
   },
-  "hoc-cloud/lab/dhcp": {
+  "cf854c31-85b0-4f22-80c2-e76d202b26f7": {
     "vi": {
       "title": "Giao thức DHCP",
       "summary": "Đi qua chu trình DHCP DORA, gia hạn lease, DHCP relay và cách debug khi máy không nhận được IP. Thực hành trên VMware: dựng DHCP server, bắt gói bằng tcpdump, tái hiện xung đột IP khi đặt IP tĩnh trước hoặc sau, ARP probe, DHCPDECLINE và APIPA."
@@ -49,7 +49,7 @@
       "summary": "Walks through the DHCP DORA exchange, lease renewal, DHCP relay and debugging a host that gets no address. Hands-on in VMware: set up a DHCP server, capture with tcpdump, and reproduce IP conflicts from static addresses set before or after, with ARP probes, DHCPDECLINE and APIPA."
     }
   },
-  "hoc-cloud/lab/dns": {
+  "06292683-c54b-4173-8fe7-63a7bbe7c0f1": {
     "vi": {
       "title": "Giao thức DNS",
       "summary": "Giải thích cách DNS phân giải tên qua stub resolver, recursive resolver, root, TLD và authoritative server. Thực hành dig, dig +trace, các loại record, TTL và cache, hỏi thẳng authoritative, tra ngược PTR và kiểm tra DNS over HTTPS."
@@ -59,7 +59,7 @@
       "summary": "Explains how DNS resolves a name through the stub resolver, recursive resolver, root, TLD and authoritative servers. Practises dig and dig +trace, record types, TTL and caching, querying the authoritative server directly, PTR reverse lookups and DNS over HTTPS."
     }
   },
-  "hoc-cloud/lab/tcp-udp": {
+  "906d25b8-84da-4c27-8d01-e0e7fe30b700": {
     "vi": {
       "title": "TCP và UDP",
       "summary": "So sánh TCP và UDP bằng thực hành: mở listener với nc, bắt bắt tay ba bước và đóng kết nối FIN bằng tcpdump, thử UDP không cần handshake, kiểm tra cổng đang listen, xem DNS chạy trên UDP, kích thước header và vì sao HTTP/3 dùng QUIC trên UDP."
@@ -69,7 +69,7 @@
       "summary": "Compares TCP and UDP hands-on: open a listener with nc, capture the three-way handshake and FIN teardown with tcpdump, try handshake-free UDP, list listening ports, see DNS over UDP, compare header sizes, and learn why HTTP/3 runs QUIC over UDP."
     }
   },
-  "hoc-cloud/lab/http": {
+  "8a966e67-5d0c-43ed-871c-ba4d6cde2095": {
     "vi": {
       "title": "Giao thức HTTP",
       "summary": "Đọc cấu trúc request và response HTTP qua curl -v, các nhóm status code, so sánh HTTP/1.1 với HTTP/2 và xem TLS handshake bằng openssl. Học cách phân biệt lỗi 400, 401, 403, 404, khi nào gặp 502, và bắt gói bằng Wireshark và tcpdump."
@@ -79,7 +79,7 @@
       "summary": "Reads the structure of HTTP requests and responses with curl -v, the status code classes, HTTP/1.1 versus HTTP/2, and the TLS handshake via openssl. Shows how to tell 400, 401, 403 and 404 apart, when 502 appears, and how to capture traffic with Wireshark and tcpdump."
     }
   },
-  "hoc-cloud/lab/k8s-fundamentals": {
+  "8179149a-1865-4552-80a4-4f328acff36a": {
     "vi": {
       "title": "Kubernetes: khái niệm và mô hình cụm lab",
       "summary": "Giới thiệu khái niệm Kubernetes: trạng thái mong muốn, spec và status, apiserver và etcd, scheduler, kubelet gọi containerd qua CRI, CNI cấp IP cho Pod, Service và CoreDNS. Thực hành kiểm kê VM lab theo yêu cầu kubeadm và chốt ba mặt phẳng địa chỉ của cụm."
@@ -89,7 +89,7 @@
       "summary": "Introduces Kubernetes concepts: desired state, spec and status, the apiserver and etcd, the scheduler, kubelet calling containerd over CRI, CNI giving Pods IPs, Services and CoreDNS. Hands-on: check the lab VMs against kubeadm's requirements and settle the cluster's three address planes."
     }
   },
-  "hoc-cloud/lab/k8s-cluster-bootstrap": {
+  "8fe922f1-99f6-4d14-8b96-44a318d18c1d": {
     "vi": {
       "title": "Dựng cụm Kubernetes bằng kubeadm",
       "summary": "Dựng cụm Kubernetes 1.31 ba node bằng kubeadm: cấu hình containerd với cgroup driver và registry mirror qua certs.d, cài các gói preflight hay thiếu như conntrack, chạy kubeadm init, cài CNI flannel, join hai worker và kiểm tra luật FORWARD của Docker trong iptables."
@@ -99,7 +99,7 @@
       "summary": "Builds a three-node Kubernetes 1.31 cluster with kubeadm: configure containerd's cgroup driver and a registry mirror via certs.d, install often-missed preflight packages such as conntrack, run kubeadm init, install flannel as the CNI, join two workers and check Docker's iptables FORWARD rule."
     }
   },
-  "hoc-cloud/lab/k8s-pod-lifecycle": {
+  "9695a4be-fa7e-4a17-8577-d38e7676f3fa": {
     "vi": {
       "title": "Tạo và quản lý Pod",
       "summary": "Thực hành với Pod trên cụm thật: tạo Deployment, dùng get, describe, logs và exec, scale qua ReplicaSet, expose NodePort và đọc Endpoints, quan sát self-healing. Chẩn đoán các lỗi ImagePullBackOff, CrashLoopBackOff, Pending và taint của control plane."
@@ -109,7 +109,7 @@
       "summary": "Works with Pods on a real cluster: create a Deployment, use get, describe, logs and exec, scale through the ReplicaSet, expose a NodePort and read its Endpoints, and watch self-healing. Diagnoses ImagePullBackOff, CrashLoopBackOff, Pending and the control-plane taint."
     }
   },
-  "hoc-cloud/exercise/linux-boot-process": {
+  "681b9953-dc20-4dca-8603-1a0007764490": {
     "vi": {
       "title": "Bài tập: quá trình khởi động Linux",
       "summary": "Bài tập đo thời gian khởi động Linux và tìm service làm chậm boot bằng systemd-analyze blame, critical-chain và systemctl --failed, so sánh với máy boot nhanh. Giải thích năm tầng firmware, GRUB, kernel, initramfs, systemd và cách khắc phục chờ mạng khi boot."
@@ -119,7 +119,7 @@
       "summary": "An exercise in measuring Linux boot time and finding the slow service with systemd-analyze blame, critical-chain and systemctl --failed, compared against a fast-booting machine. Explains the five stages from firmware, GRUB and kernel to initramfs and systemd, and how to fix a boot stuck waiting for the network."
     }
   },
-  "hoc-cloud/exercise/linux-swap": {
+  "627f8b78-da78-4215-856b-5e10815bff9c": {
     "vi": {
       "title": "Bài tập: swap trên Linux",
       "summary": "Bài tập về swap trên Linux: đọc trạng thái swap bằng swapon, free và /proc/meminfo, tạo và bật một swapfile phụ rồi dọn lại, chỉnh vm.swappiness, theo dõi paging bằng vmstat và rút ra khi nào nên hoặc không nên dùng swap."
@@ -129,7 +129,7 @@
       "summary": "An exercise on Linux swap: read the current swap state with swapon, free and /proc/meminfo, create and enable an extra swapfile then remove it, tune vm.swappiness, watch paging with vmstat, and decide when swap is or is not worth using."
     }
   },
-  "hoc-cloud/exercise/syslog": {
+  "909b2af7-6ed4-49bb-853b-5f7c2f0914bc": {
     "vi": {
       "title": "Bài tập: syslog tập trung với rsyslog",
       "summary": "Bài tập dựng log tập trung bằng rsyslog trên hai máy Linux: server nhận log qua cổng 514 và lưu tách theo host và chương trình, client forward toàn bộ log về. Gồm xử lý lỗi quyền ghi của rsyslog và kiểm chứng hàng đợi giữ log khi server tạm ngừng."
@@ -139,7 +139,7 @@
       "summary": "An exercise building central logging with rsyslog on two Linux machines: a server receives logs on port 514 and stores them per host and program, while a client forwards everything to it. Includes fixing rsyslog's write-permission error and testing the queue that keeps logs while the server is down."
     }
   },
-  "hoc-cloud/exercise/linux-login-shell-cmdlog": {
+  "20141997-f2e3-4652-8f06-542886adb559": {
     "vi": {
       "title": "Bài tập: file khởi động shell khi SSH và command logging",
       "summary": "Bài tập tìm hiểu file nào chạy khi SSH vào Linux: login và non-login shell, interactive hay không, vai trò của PAM, kiểm chứng bằng strace. Sau đó cấu hình ghi mọi lệnh người dùng gõ qua PROMPT_COMMAND và logger ra rsyslog thành file JSON, kèm logrotate và xử lý log trùng."
@@ -149,7 +149,7 @@
       "summary": "An exercise on which files run when you SSH into Linux: login versus non-login and interactive versus non-interactive shells, the role of PAM, verified with strace. Then set up logging of every user command via PROMPT_COMMAND and logger into rsyslog as JSON, with logrotate and duplicate-log fixes."
     }
   },
-  "hoc-cloud/exercise/cmdlog-rsyslog": {
+  "02ba54a4-e214-4b4e-87ff-94e69135b54d": {
     "vi": {
       "title": "Hướng dẫn: command logging tập trung với rsyslog",
       "summary": "Hướng dẫn bật command logging cho root và mọi user trên Linux: PROMPT_COMMAND gọi logger ghi vào facility local6, rsyslog đưa ra /var/log/cmdlog.log và đẩy về syslog server trung tâm. Gồm timestamp cho history, logrotate và cách xử lý log bị ghi trùng."
@@ -159,7 +159,7 @@
       "summary": "A guide to enabling command logging for root and all users on Linux: PROMPT_COMMAND calls logger on the local6 facility, and rsyslog writes it to /var/log/cmdlog.log and forwards it to a central syslog server. Covers history timestamps, logrotate and fixing duplicated log lines."
     }
   },
-  "hoc-cloud/lab/victorialogs": {
+  "ec39231e-fbf2-41ab-8ab4-2df917795bbc": {
     "vi": {
       "title": "VictoriaLogs: thu thập và truy vấn log tập trung",
       "summary": "Cài VictoriaLogs single-node chạy bằng systemd và cho rsyslog forward log về. Hiểu các field _msg, _time, _stream và cách lưu nén theo cột, truy vấn bằng LogsQL qua HTTP API với word, field và stream filter, thống kê bằng pipe stats, xem trên vmui hoặc Grafana."
@@ -169,7 +169,7 @@
       "summary": "Installs single-node VictoriaLogs under systemd and has rsyslog forward logs to it. Explains the _msg, _time and _stream fields and columnar compressed storage, then queries with LogsQL over the HTTP API using word, field and stream filters, stats pipes, and views results in vmui or Grafana."
     }
   },
-  "hoc-cloud/lab/docker-fundamentals": {
+  "81c5048b-0001-482a-8a53-e75b604c35c8": {
     "vi": {
       "title": "Docker: nền tảng và kiến trúc container",
       "summary": "Giải thích vì sao có container và bản chất của nó: một process cô lập dùng chung kernel host nhờ namespaces và cgroups, khác máy ảo ở đâu. Tìm hiểu image gồm các layer read-only dùng chung, kiến trúc daemon, CLI và registry, rồi quan sát Docker sau khi cài đặt."
@@ -179,7 +179,7 @@
       "summary": "Explains why containers exist and what they are: isolated processes sharing the host kernel through namespaces and cgroups, and how that differs from virtual machines. Covers images built from shared read-only layers, the daemon, CLI and registry architecture, and inspecting Docker after installation."
     }
   },
-  "hoc-cloud/lab/docker-image-lifecycle": {
+  "cfa95821-cacf-4c2e-8e9b-dd39317f57dc": {
     "vi": {
       "title": "Docker: image và vòng đời container",
       "summary": "Thực hành quản lý image và vòng đời container với Nginx: pull, tag, chạy với port mapping, stop, start, pause, rename, vào trong bằng exec. Chứng minh image bất biến bằng sửa nóng rồi tạo lại container, và theo dõi bằng inspect, logs, stats, events."
@@ -189,7 +189,7 @@
       "summary": "Hands-on image management and container lifecycle with Nginx: pull, tag, run with port mapping, stop, start, pause, rename and enter with exec. Proves images are immutable by hot-editing then recreating a container, and monitors with inspect, logs, stats and events."
     }
   },
-  "hoc-cloud/exercise/docker-lifecycle-immutability": {
+  "828d4193-70e8-49e7-842b-78ed65ff1ab2": {
     "vi": {
       "title": "Bài tập: vòng đời container và tính bất biến của image",
       "summary": "Bài tập cài Docker trên Linux, chạy container Nginx và đi qua toàn bộ vòng đời container. Trọng tâm là chứng minh image bất biến: sửa nóng index.html, xoá rồi chạy lại từ cùng image thì nội dung trở về mặc định. Kết thúc bằng xem log realtime, stats và docker events."
@@ -199,7 +199,7 @@
       "summary": "An exercise: install Docker on Linux, run an Nginx container and go through its whole lifecycle. The core is proving image immutability: hot-edit index.html, delete and rerun from the same image, and the content returns to default. Ends with live logs, stats and docker events."
     }
   },
-  "hoc-cloud/lab/docker-image-build": {
+  "ec0ad384-3c6f-4de6-835c-275923f7ba6b": {
     "vi": {
       "title": "Docker: Dockerfile, build image và registry",
       "summary": "Đóng gói ứng dụng thành image riêng: kiểm tra quyền gọi Docker, viết Dockerfile và .dockerignore, hiểu build context, layer và cache khi build. Chạy image vừa tạo, sửa và build phiên bản mới, rồi tag và push lên registry."
@@ -209,7 +209,7 @@
       "summary": "Packages an app into your own image: check Docker permissions, write a Dockerfile and .dockerignore, and understand the build context, layers and build cache. Run the new image, change it and build a new version, then tag it and push it to a registry."
     }
   },
-  "hoc-cloud/exercise/docker-image-build-push": {
+  "7ca2b006-a5f9-4cd7-8ab4-54c411d073b6": {
     "vi": {
       "title": "Bài tập: viết Dockerfile, build và push image",
       "summary": "Bài tập viết Dockerfile và .dockerignore để đóng gói một trang web qua ba phiên bản, đến landing page hoàn chỉnh, đọc docker history để thấy layer tự thêm. Sau đó tag và push lên Docker Hub hoặc registry khác, xử lý lỗi denied và kiểm chứng người khác pull về chạy được."
@@ -219,7 +219,7 @@
       "summary": "An exercise writing a Dockerfile and .dockerignore to package a web page through three versions up to a full landing page, reading docker history to see your own layers. Then tag and push it to Docker Hub or another registry, fix denied errors, and confirm someone else can pull and run it."
     }
   },
-  "hoc-cloud/lab/docker-storage-logging": {
+  "243ff1e0-c5af-4f6b-8b90-ecf7fbcf0349": {
     "vi": {
       "title": "Docker: lưu trữ dữ liệu và log tập trung",
       "summary": "Tìm hiểu nơi container ghi dữ liệu: volume sống lâu hơn container, bind mount do host cấp, chế độ chỉ đọc, dọn volume an toàn và kiểm dung lượng bằng docker system df. Giới hạn kích thước log, rồi dựng thu log tập trung mọi container bằng Vector và VictoriaLogs."
@@ -229,7 +229,7 @@
       "summary": "Covers where containers keep data: volumes that outlive containers, host-provided bind mounts, read-only mode, safe volume cleanup and checking disk use with docker system df. Then caps log size and builds central logging for every container with Vector and VictoriaLogs."
     }
   },
-  "hoc-cloud/exercise/docker-volume-bind-logging": {
+  "7a961a59-1687-480b-87e3-3298b4225ff8": {
     "vi": {
       "title": "Bài tập: volume, bind mount và thu log tập trung",
       "summary": "Bài tập giữ dữ liệu bằng volume và bind mount: container mới đọc lại dữ liệu của container đã xoá, sửa file trên host thấy web đổi ngay, chế độ chỉ đọc chặn ghi. Kiểm dung lượng, giới hạn log, rồi dựng thu log tập trung bằng Vector và VictoriaLogs, lọc theo tên container."
@@ -239,7 +239,7 @@
       "summary": "An exercise on keeping data with volumes and bind mounts: a new container reads data left by a deleted one, host edits show up on the web at once, and read-only mode blocks writes. Check disk use, cap logs, then set up central logging with Vector and VictoriaLogs filtered by container name."
     }
   },
-  "hoc-cloud/lab/docker-compose-basics": {
+  "55680d87-6938-4737-879b-3a789e66e864": {
     "vi": {
       "title": "Docker Compose: một file, nhiều container",
       "summary": "Học Docker Compose v2: viết compose.yaml thay chuỗi lệnh docker run, validate bằng docker compose config, chạy một rồi ba service web, tách network và đo cách ly bằng ping. Phân biệt up, stop, down, xem log hai mức và truy container về đúng compose file."
@@ -249,7 +249,7 @@
       "summary": "Learns Docker Compose v2: write a compose.yaml in place of docker run commands, validate with docker compose config, run one and then three web services, split networks and test isolation with ping. Distinguishes up, stop and down, reads logs at two levels, and traces containers back to their compose file."
     }
   },
-  "hoc-cloud/exercise/docker-compose-multi-web-network": {
+  "5a64b023-3db2-4695-8d76-e493df37e027": {
     "vi": {
       "title": "Bài tập: Compose nhiều service và cách ly network",
       "summary": "Bài tập viết compose.yaml chạy ba service web trên ba cổng, cố ý để một service ngoài network chung rồi dùng docker inspect và ping chứng minh sự cách ly. Đọc nhãn Compose để truy về file đã sinh container, và chứng minh stop khác down mà bind mount trên host vẫn còn."
@@ -259,7 +259,7 @@
       "summary": "An exercise writing a compose.yaml with three web services on three ports, deliberately leaving one off the shared network and proving the isolation with docker inspect and ping. Read Compose labels to trace a container to its file, and show that stop differs from down while host bind mounts survive."
     }
   },
-  "hoc-cloud/lab/docker-compose-observability": {
+  "ebd7b12f-f203-435f-81d1-c4e71f1d1a40": {
     "vi": {
       "title": "Compose stack thu log: VictoriaLogs, Vector và rsyslog",
       "summary": "Dựng stack thu log bằng Compose gồm VictoriaLogs và Vector với ba nguồn: HTTP JSON, log mọi container và syslog từ rsyslog trên máy khác. Hiểu vì sao gọi nhau bằng tên service, validate hai lớp trước khi up, truy vấn LogsQL trên vmui, giữ log qua down/up và chuẩn bị sang Kubernetes."
@@ -269,7 +269,7 @@
       "summary": "Builds a Compose logging stack of VictoriaLogs and Vector with three sources: HTTP JSON, logs from every container, and syslog from rsyslog on another machine. Explains calling services by name, two-layer validation before up, LogsQL queries in vmui, keeping logs across down and up, and preparing for Kubernetes."
     }
   },
-  "hoc-cloud/exercise/docker-compose-log-stack": {
+  "9030730b-54fc-4624-81ff-565a6cbfadab": {
     "vi": {
       "title": "Bài tập: dựng stack thu log bằng Compose",
       "summary": "Bài tập viết lại hệ thống thu log thành một file compose.yaml gồm VictoriaLogs và Vector với ba nguồn log: HTTP, container trên host và rsyslog từ máy client. Validate bằng docker compose config và vector validate, kiểm cổng, xử lý bẫy giờ và protocol, truy vấn LogsQL và nghiệm thu persistence."
@@ -279,7 +279,7 @@
       "summary": "An exercise rewriting the logging system as one compose.yaml with VictoriaLogs, Vector and three log sources: HTTP, containers on the host, and rsyslog from a client machine. Validate with docker compose config and vector validate, check ports, handle time and protocol traps, query LogsQL and verify persistence."
     }
   },
-  "hoc-cloud/exercise/docker-build-run-compose": {
+  "48c6470b-0e4a-4a08-8a02-10a4bc6cefc1": {
     "vi": {
       "title": "Bài tập: đóng gói app và dựng stack web + database bằng Compose",
       "summary": "Bài tập đóng gói một API Node nhỏ bằng Dockerfile, chạy container với port mapping, rồi ghép nginx, app và PostgreSQL thành stack Compose. Dùng named volume để dữ liệu còn sau khi tạo lại container và gọi nhau bằng tên service; nghiệm thu bằng curl thấy giờ trả về từ database."
@@ -289,7 +289,7 @@
       "summary": "An exercise packaging a small Node API with a Dockerfile, running it with port mapping, then combining nginx, the app and PostgreSQL into a Compose stack. Uses a named volume so data survives container recreation and service names for discovery; verified with curl returning the time from the database."
     }
   },
-  "hoc-cloud/lab/cloud-nist-model": {
+  "dd098c90-6f76-4952-8d82-74af83f6f8ed": {
     "vi": {
       "title": "Bản chất Cloud: mô hình NIST 5-3-4",
       "summary": "Giải thích bản chất cloud theo định nghĩa NIST SP 800-145: năm đặc điểm phải có đủ, ba mô hình dịch vụ IaaS, PaaS, SaaS và ranh giới trách nhiệm, bốn mô hình triển khai. Thực hành chấm điểm một dịch vụ theo NIST, quan sát thành phần IaaS trên OpenStack và xếp dịch vụ vào mô hình 5-3-4."
@@ -299,7 +299,7 @@
       "summary": "Explains what cloud is under the NIST SP 800-145 definition: five characteristics that must all hold, the IaaS, PaaS and SaaS service models and their responsibility lines, and four deployment models. Hands-on: score a service against NIST, inspect IaaS components on OpenStack, and place services in the 5-3-4 model."
     }
   },
-  "hoc-cloud/weekly/2026-08-08/docker-co-ban-ubuntu": {
+  "6afd0842-89fa-49a6-89fb-8b4bcaf11160": {
     "vi": {
       "title": "08-08 · Thực hành Docker cơ bản trên Ubuntu 24.04",
       "summary": "Nhật ký buổi học ngày 08-08: thực hành Docker cơ bản trên Ubuntu Server 24.04, từ cài Docker Engine qua repository chính thức, quản lý image và vòng đời container, log và giám sát, volume, bind mount, network tự tạo, Dockerfile, Compose đến dọn dẹp và xử lý lỗi thường gặp."
@@ -309,7 +309,7 @@
       "summary": "Class journal from 8 August: Docker basics on Ubuntu Server 24.04, from installing Docker Engine from the official repository through image management, container lifecycle, logs and monitoring, volumes, bind mounts, user-defined networks, Dockerfiles and Compose, to cleanup and common errors."
     }
   },
-  "hoc-cloud/weekly/2026-08-08/docker-nang-cao-compose-victorialogs": {
+  "e65ec7b2-8148-4332-87f7-b2f7e999bf7a": {
     "vi": {
       "title": "08-08 · Docker nâng cao: Docker Hub, Compose, VictoriaLogs và Vector",
       "summary": "Nhật ký buổi học ngày 08-08 phần nâng cao: build web image bằng Dockerfile, chạy bằng Compose với bind mount, tag và push lên Docker Hub, rồi triển khai VictoriaLogs và Vector bằng Compose, gửi log, kiểm persistence, làm bài tập tổng hợp và xử lý lỗi thường gặp."
@@ -319,7 +319,7 @@
       "summary": "Class journal from 8 August, advanced part: build a web image with a Dockerfile, run it with Compose and a bind mount, tag and push it to Docker Hub, then deploy VictoriaLogs and Vector with Compose, send logs, test persistence, do combined exercises and troubleshoot common errors."
     }
   },
-  "hoc-cloud/weekly/2026-09-17/kien-truc-cum-lab-k8s": {
+  "0bac74b8-9840-4bb5-8276-56f22ea00d3d": {
     "vi": {
       "title": "17-09 · Kiến trúc cụm lab Kubernetes",
       "summary": "Nhật ký buổi học ngày 17-09: vẽ lại kiến trúc cụm Kubernetes lab ba node dựng bằng kubeadm với containerd, flannel và kube-proxy. Giải thích ba mặt phẳng địa chỉ node, Pod, Service, thành phần chạy trên từng máy, đường đi khi mở trang web và vì sao Docker chạy song song không làm đứt mạng Pod."
@@ -329,7 +329,7 @@
       "summary": "Class journal from 17 September: a map of the three-node lab Kubernetes cluster built with kubeadm, containerd, flannel and kube-proxy. Explains the node, Pod and Service address planes, what runs on each machine, the path of a web request, and why Docker running alongside does not break Pod networking."
     }
   },
-  "hoc-cloud/weekly/2026-09-17/dung-cum-k8s-tung-buoc": {
+  "de39c147-81a8-423c-8acb-c0702baaad7e": {
     "vi": {
       "title": "17-09 · Dựng cụm Kubernetes từng bước",
       "summary": "Nhật ký buổi học ngày 17-09: dựng từng bước cụm Kubernetes 1.31 ba node bằng kubeadm trên Ubuntu 22.04, gồm đặt tên máy, tắt swap, cấu hình containerd, cài kubeadm, kubelet, kubectl, khởi tạo cụm, cài flannel, join worker và chạy thử nginx qua NodePort, kèm bảng xử lý lỗi."

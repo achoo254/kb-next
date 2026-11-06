@@ -1,15 +1,14 @@
 /**
  * Document Normalizer: what Tika (or the file itself) gave, as one Markdown text in page order, cut into the chunks
- * search and the Copilot read. Chunks follow the same rules as written documents (src/import/hoc-cloud/sections.ts:
+ * search and the Copilot read. Chunks follow the same rules as written documents (src/markdown/sections.ts:
  * a chunk per `##`/`###` heading, anchors from the heading, unique per document); a PDF page starts with its own
  * `## Trang N` / `## Page N` heading, so a citation lands on its page. A section longer than MAX_CHUNK_CHARS is cut
  * at paragraph breaks into parts anchored `<anchor>--2`, `<anchor>--3`… (a slug never holds `--`, so these never
  * collide with a heading's anchor).
  */
 import type { WrittenChunk } from '../authoring/markdown-text';
-import { htmlToMarkdown } from '../import/hoc-cloud/html-to-markdown';
-import { OVERVIEW_ANCHOR } from '../import/hoc-cloud/prepare';
-import { splitSections } from '../import/hoc-cloud/sections';
+import { htmlToMarkdown } from '../markdown/html-to-markdown';
+import { OVERVIEW_ANCHOR, splitSections } from '../markdown/sections';
 
 export const MAX_CHUNK_CHARS = 4_000;
 const PAGE_HEADING = { vi: 'Trang', en: 'Page' } as const;

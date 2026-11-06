@@ -33,7 +33,7 @@ Phase 9 cho chọn CodeMirror 6 hoặc TipTap, lấy cái dựng lại board C02
 
 ## Dữ liệu vẫn là Markdown
 
-Bài lưu ở máy chủ là một đoạn Markdown (dòng đầu `# Tiêu đề`, như bài nhập từ Học Cloud), cắt thành các đoạn cho
+Bài lưu ở máy chủ là một đoạn Markdown (dòng đầu `# Tiêu đề`), cắt thành các đoạn cho
 reader, tìm kiếm và Copilot. Trình soạn đọc và ghi đúng dạng đó ([`editor-schema.ts`](../apps/web/src/pages/editor-schema.ts)):
 
 | Khối trên board | Node TipTap | Markdown |

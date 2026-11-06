@@ -84,10 +84,13 @@ Dành cho pipeline đăng bài chạy ở server khác. Xác thực bằng token
 |---|---|---|
 | `POST /api/admin/posts` | `title`, `lang` (`vi`/`en`), `space` (slug Space công khai) hoặc `collection` (id Collection, hoặc slug Space), `tags?`, `markdown`, `type?` (`note`/`lab`/`process`), `source?` (`ai`/`human`), `hidden?` | 201 `{id, url, status: "approved", hidden}` |
 | `PATCH /api/admin/posts/:id` | `hidden?`, `title?`, `tags?`, `space?`, `collection?` | 200 `{id, title, status, hidden}` |
+| `GET /api/admin/posts/:id` | — | 200 `{id, title, lang, type, status, hidden, version, rev, body}`: bản mới nhất, `body` là thân bài không gồm dòng tiêu đề |
+| `PUT /api/admin/posts/:id/text` | `body`, `title?`, `summary?` (tóm tắt thay đổi, hiện ở lịch sử C17), `baseRev?` (`rev` đã đọc), `source?` (`ai`/`human`) | 200 `{id, version, rev, changed}`: mỗi lần gọi là một phiên bản riêng (không gộp với lần lưu của trình soạn); nội dung y hệt thì `changed: false` |
 | `GET /api/admin/review` | — | 200 `{documents: [...]}`: bài chờ duyệt, mới gửi trước, kèm `preReview` của Jev |
 
 Lỗi: 401 `token-required` (thiếu header), 401 `invalid-token` (sai, đã thu hồi, người tạo không còn là quản trị),
-400 `invalid-body` / `space-required`, 404 `not-found`, 409 `not-approved` (ẩn bài chưa duyệt), 429 `rate-limited`.
+400 `invalid-body` / `space-required`, 404 `not-found`, 409 `not-approved` (ẩn bài chưa duyệt), 409 `stale` (bài đã
+đổi sau `baseRev`, kèm `rev` mới), 409 `not-editable` / `journey` (tệp Office, lối đi), 429 `rate-limited`.
 
 ```sh
 curl -sS https://kb.hoandat.com/api/admin/posts \

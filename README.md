@@ -4,7 +4,7 @@ Thư mục repo: `kb-next` (tên hiển thị lấy từ [`brand.config.json`](b
 Chạy tại `https://kb.hoandat.com`, thuộc hệ sinh thái hoandat.com.
 
 Knowledge base công khai, song ngữ Anh – Việt, đủ thể loại nhưng phần lớn về công nghệ thông tin, xếp thành một
-"Universe" để đọc, tìm và hỏi AI. Nguồn đầu tiên là nội dung Học Cloud; về sau AI tìm và bổ sung nội dung từ web. Giao diện bám sát bộ mock Universe đã chốt (51 board trong [`design/`](design)).
+"Universe" để đọc, tìm và hỏi AI. kb tự giữ nội dung trong database: bài chính thức sửa bằng trình soạn hoặc API quản trị ([`docs/admin-api.md`](docs/admin-api.md)); về sau AI tìm và bổ sung nội dung từ web. Giao diện bám sát bộ mock Universe đã chốt (51 board trong [`design/`](design)).
 
 **Trạng thái:** nền móng. Đăng nhập bằng tài khoản hoandat.com chạy được (kể cả đăng xuất từ IdP), mọi route đã có
 và hiện nền Universe kèm mã board; nội dung các màn được dựng dần theo mock.
@@ -61,7 +61,6 @@ Tìm kiếm và dữ liệu mẫu khi dev (máy dev không có Docker):
 pnpm meili        # Meilisearch bản ghim ở 127.0.0.1:5322, dữ liệu trong .data/meili/data (Ctrl-C để dừng)
 pnpm seed         # 7 Space của board C09/C10 + tài liệu, rồi dựng chỉ mục nếu có MEILI_URL
 pnpm reindex      # dựng lại kb_public và kb_private từ database (khi chỉ mục lệch hoặc bị xoá)
-pnpm import:hoc-cloud  # nhập lab, bài tập, trang tuần của Học Cloud theo content/hoc-cloud/curation.json
 ```
 
 Lần đầu `pnpm meili` tải binary Meilisearch (khoảng 350 MB) vào `.data/meili/` và chỉ giữ khi sha256 khớp giá trị

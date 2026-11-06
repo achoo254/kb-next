@@ -311,7 +311,7 @@ describe('read-only panels', () => {
   it('describe sign-in and the integrations without changing anything', async () => {
     expect(await as('admin', () => fetchSignInInfo())).toMatchObject({ issuer: idp.issuer, clientId: 'kb-web', enabled: true, reachable: true, idleDays: 14, absoluteDays: 30 });
     const integrations = await as('admin', () => fetchIntegrations());
-    expect(integrations.map((i) => i.id)).toEqual(['hoc-cloud', 'jev', 'files', 'search']);
+    expect(integrations.map((i) => i.id)).toEqual(['jev', 'files', 'search']);
     // No Jev key and no Meilisearch in tests: both read as off, never as broken.
     expect(integrations.find((i) => i.id === 'jev')?.state).toBe('off');
     expect(integrations.find((i) => i.id === 'search')?.state).toBe('off');

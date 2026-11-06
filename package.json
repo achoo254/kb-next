@@ -19,7 +19,6 @@
     "e2e": "pnpm --filter @kb/web e2e",
     "meili": "tsx scripts/meili-dev.ts",
     "reindex": "pnpm --filter @kb/server reindex",
-    "import:hoc-cloud": "pnpm --filter @kb/server import:hoc-cloud",
     "seed": "pnpm --filter @kb/server seed",
     "check:public": "tsx scripts/check-public-info.ts"
   },

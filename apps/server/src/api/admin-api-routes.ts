@@ -11,6 +11,10 @@
  *   Collection's id or a public Space's slug; one of `space` / `collection` is required (400 `space-required`).
  * - PATCH /api/admin/posts/:id `{hidden?, title?, tags?, space?, collection?}` → `{id, title, status, hidden}`: a
  *   published text only (409 `not-approved` before any change), all of the patch or none of it.
+ * - GET /api/admin/posts/:id → `{id, title, lang, type, status, hidden, version, rev, body}`: a text's latest version.
+ * - PUT /api/admin/posts/:id/text `{title?, body, summary?, baseRev?, source?}` → `{id, version, rev, changed}`: a new
+ *   version of the text (never merged into an editor's), 409 `stale` when it changed since `baseRev`; a file (Office) or
+ *   a journey is 409 `not-editable` / `journey`.
  * - GET /api/admin/review → `{documents: ReviewQueueItem[]}`: the review queue with Jev's pre-review.
  * Errors: 401 `token-required` (no header), 401 `invalid-token` (malformed, unknown, revoked, or its admin is no
  * longer one or left the workspace), 400 `invalid-body`, 404 `not-found`, 409 `not-approved`.
@@ -23,7 +27,7 @@
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response, type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
-import { createDocument } from '../access/authoring';
+import { createDocument, editAccess, saveDocument } from '../access/authoring';
 import { type AdminViewer, isAdminViewer, listReviewQueue } from '../access/review';
 import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
@@ -31,10 +35,10 @@ import { MAX_BODY_CHARS, bodyOf } from '../authoring/markdown-text';
 import { HttpError } from '../http-error';
 import { safeErrorText } from '../log-error';
 import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
-import { titleLine } from '../import/hoc-cloud/sections';
+import { titleLine } from '../markdown/sections';
 import { type ModerationDeps, cleanTags, queueItems, resolvePlacement, updatePost } from '../review/moderation';
 import { perAccountLimit, signedIn } from './account-limit';
-import { DOCUMENT_BODY_LIMIT } from './authoring-routes';
+import { DOCUMENT_BODY_LIMIT, refuse } from './authoring-routes';
 import { type RequestContextDeps, readerOf } from './request-context';
 import { PostPatchBody, PostTitle, Tags, idParam } from './review-routes';
 import { parseBody } from './validate';
@@ -52,6 +56,16 @@ const PostBody = z.strictObject({
   /** `ai`: written by AI (its version is marked so); `human` otherwise. */
   source: z.enum(['ai', 'human']).optional().default('human'),
   hidden: z.boolean().optional().default(false),
+});
+
+/** A new text for a published post: a version of its own, with what changed in `summary` (shown in its history). */
+const TextBody = z.strictObject({
+  title: PostTitle.optional(),
+  body: z.string().max(MAX_BODY_CHARS).refine((text) => text.trim().length > 0),
+  summary: z.string().trim().min(1).max(200).optional(),
+  /** The `rev` the caller read: another save since then answers 409 `stale`. */
+  baseRev: z.iso.datetime({ offset: true }).optional(),
+  source: z.enum(['ai', 'human']).optional().default('human'),
 });
 
 const TokenBody = z.strictObject({ label: z.string().trim().min(1).max(80) });
@@ -157,6 +171,48 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     const doc = await updatePost(deps, admin, idParam(req), body);
     Object.assign(callOf(res), { documentId: doc.id, documentTitle: doc.title });
     res.json({ id: doc.id, title: doc.title, status: doc.status, hidden: doc.hidden });
+  });
+
+  api.get('/posts/:id', async (req, res) => {
+    const access = await editAccess(db, adminOf(res), idParam(req));
+    if (access.kind !== 'ok') refuse(access);
+    const { doc, latest } = access;
+    Object.assign(callOf(res), { documentId: doc.id, documentTitle: doc.title });
+    res.set('Cache-Control', 'no-store').json({
+      id: doc.id,
+      title: doc.title,
+      lang: doc.lang,
+      type: doc.type,
+      status: doc.status,
+      hidden: doc.hidden,
+      version: latest.version,
+      rev: doc.updatedAt.toISOString(),
+      body: bodyOf(latest.markdown),
+    });
+  });
+
+  api.put('/posts/:id/text', async (req, res) => {
+    const admin = adminOf(res);
+    const id = idParam(req);
+    const body = parseBody(TextBody, req.body);
+    const access = await editAccess(db, admin, id);
+    if (access.kind !== 'ok') refuse(access);
+    const title = body.title ?? access.doc.title;
+    Object.assign(callOf(res), { documentId: id, documentTitle: title });
+    const saved = await saveDocument(
+      db,
+      admin,
+      id,
+      { title, body: body.body, summary: body.summary ?? null, baseRev: body.baseRev ? new Date(body.baseRev) : undefined, aiMade: body.source === 'ai', editor: 'text', fromApi: true },
+      now(),
+    );
+    if (saved.kind === 'stale') {
+      res.status(409).json({ error: 'stale', rev: saved.rev.toISOString() });
+      return;
+    }
+    if (saved.kind !== 'saved') refuse(saved);
+    if (saved.changed) deps.sync?.enqueue([id]);
+    res.json({ id, version: saved.version, rev: saved.rev.toISOString(), changed: saved.changed });
   });
 
   api.get('/review', async (_req, res) => {

@@ -101,7 +101,6 @@ chép thành file env của `apps/server`.
 | `ADMIN_SUBS` | `sub` IdP của các quản trị gốc, cách nhau bằng dấu phẩy (không ai hạ được từ app; họ cấp vai trò cho người khác ở C19, không có đường tự nâng quyền) |
 | `MEILI_URL` | `http://127.0.0.1:5322` |
 | `MEILI_MASTER_KEY` | khoá ngẫu nhiên sinh trên server (≥ 16 ký tự, nên `openssl rand -hex 32`); container `kb-meili` đọc cùng dòng này |
-| `HOC_CLOUD_URL` | không cần đặt: lệnh nhập Học Cloud mặc định đọc `https://hoc-cloud.inetdev.io.vn` (API công khai) |
 | `TYPESAFE_API_KEY` | không bắt buộc: key TypeSafe cho Jev (chọn chú thích dưới pha lê ở Universe). Không đặt thì chú thích là "<số> bài" |
 | `USER_KEYS_SECRET_PATH` | `/etc/kb-keys/user-keys-secret` (mục Key riêng). Không bắt buộc: không đặt, thiếu tệp hay tệp sai thì Key riêng, Copilot và dịch bằng AI tắt (503), phần còn lại vẫn chạy |
 | `TIKA_URL` | không cần đặt: mặc định `http://127.0.0.1:9998` (Tika dùng chung); `http` chỉ được trên loopback |
@@ -246,26 +245,14 @@ bundle phải có `apps/server/dist/server/pdf-worker.mjs` cạnh `index.mjs` (`
 Kiểm sau khi deploy: `sudo -u nginx test -r /var/lib/kb/files/<một khoá>` đúng; tải một tệp từ C11 trả 200 và log
 `kb-server` không có dòng nào của request đó ngoài API. Xoá vĩnh viễn một bài trong thùng rác xoá cả các tệp của nó.
 
-## Nhập nội dung Học Cloud
+## Nội dung chính thức
 
-Lệnh nhập đọc API công khai của Học Cloud (lab, bài tập) và `content/` đi kèm bản release (trang học hàng tuần đã chỉnh,
-bản dịch EN, `content/summaries.json`, cách xếp Space và Collection trong `content/hoc-cloud/curation.json`, đoạn mở đầu bước lab viết lại trong
-`content/hoc-cloud/step-intros.json`), ghi qua
-tầng dữ liệu trong một transaction, rồi đẩy các bài đổi sang Meilisearch. Bài nhập vào là "Chính thức", đã duyệt, tác
-giả là tài khoản hệ thống `system:hoc-cloud` (không đăng nhập được). Địa chỉ máy chủ trong bài gốc được thay bằng
-`<ADDR-n>` trước khi ghi. Chạy lại an toàn: bài không đổi thì không ghi, bài đổi (nguồn hay curation) thêm đúng một phiên
-bản; API trả sai định dạng thì dừng trước khi ghi gì.
-
-```sh
-# trên server, sau khi sao lưu database kb
-ssh <alias> 'systemd-run --uid=kb --gid=kb -p EnvironmentFile=/etc/kb/production.env --pipe --wait \
-  /opt/node22/bin/node /var/www/kb/current/apps/server/dist/server/import-hoc-cloud.mjs'
-```
-
-Kết quả in số lab, bài tập, trang tuần, bản dịch đã đọc, số bài tạo, cập nhật, giữ nguyên, và cảnh báo (bài mới trên Học
-Cloud chưa có trong curation, bản dịch cũ hơn bản gốc, đoạn viết lại mà Học Cloud đã sửa nguồn: khi đó hiện lại
-bản gốc cho tới khi xem lại). Máy dev: `pnpm import:hoc-cloud` (PGlite dev hoặc
-`DATABASE_URL`, cùng `MEILI_*` nếu có).
+Database `kb` là bản chuẩn của mọi bài, kể cả 37 bài kb khởi đầu (06/11/2026 bỏ lệnh nhập cũ, kb không đọc nguồn ngoài
+nào). Sửa bài chính thức bằng trình soạn (C02, quản trị) hoặc `PUT /api/admin/posts/:id/text` ([admin-api.md](admin-api.md)):
+mỗi lần là một phiên bản, xem và khôi phục ở lịch sử (C17). Sửa hàng loạt thì sao lưu database trước. Ảnh minh hoạ của
+các bài này nằm trong bản build web, đường dẫn `/content-img/<bài>/<tệp>`
+([`apps/web/public/content-img`](../apps/web/public/content-img)). Tiêu đề và tóm tắt song ngữ mà Jev đọc khi tìm theo ý
+nằm ở [`content/summaries.json`](../content/summaries.json) (khoá là `translation_group_id`), gói vào server lúc build.
 
 ## Lần đầu (đã làm 04/11/2026)
 
