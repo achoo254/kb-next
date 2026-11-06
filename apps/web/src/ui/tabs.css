@@ -46,7 +46,8 @@
 }
 
 .kf-tab[aria-selected="true"] .kf-tab-count {
-  background: color-mix(in srgb, var(--white) 20%, transparent);
+  /* darker than the violet pill, not lighter: white digits on a white wash read under 4:1 */
+  background: color-mix(in srgb, var(--ink) 25%, transparent);
 }
 
 .kf-tabs[data-variant="segment"] {

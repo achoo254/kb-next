@@ -109,6 +109,7 @@ chép thành file env của `apps/server`.
 | `FILE_DELIVERY` | không cần đặt: production mặc định `x-accel` (nginx gửi tệp, mục Tệp tải lên); `node` chỉ dùng khi không có nginx phía trước (dev, test) |
 | `OFFICE_EDITOR_ORIGIN` | không cần đặt: production mặc định `https://kb-office.hoandat.com`; phải `https` và khác origin của kb. **Phải trùng** origin trong `frame-src` của CSP ở `infra/nginx/kb.hoandat.com.conf` và `frame-ancestors` của `infra/nginx/kb-office.hoandat.com.conf`: đổi một chỗ mà không đổi chỗ kia thì khung editor bị chặn ([office-editor.md](office-editor.md)) |
 | `KB_SEED` | không đặt: chỉ dùng khi dev/E2E (`mock` nạp dữ liệu mẫu lúc khởi động); production từ chối khởi động nếu có |
+| `SIGN_IN_LIMIT_PER_15_MIN` | không đặt (mặc định 100 lần bắt đầu đăng nhập / 15 phút / địa chỉ): chỉ E2E nâng lên vì mỗi bài kiểm đăng nhập lại; production từ chối khởi động nếu có |
 
 Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi động, log nêu tên biến (không bao giờ in giá trị).
 

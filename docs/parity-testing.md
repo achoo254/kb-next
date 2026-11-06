@@ -86,13 +86,21 @@ Hai phép kiểm, cả hai phải sạch:
   chữ với màu trung bình của các pixel ngay sau nó. axe bỏ qua chữ trên gradient, ảnh hay lớp mờ (gần hết panel của
   kit), đúng chỗ nền tối của Tối lọt sang Sáng; phép này bắt được chúng.
 
-Chữ dưới AA ở cả Tối lẫn Sáng (đo cùng cách ở Tối, 06/11/2026) không phải lỗi lọt nền tối, nên nằm trong danh sách
-`BOTH_THEMES` của spec kèm lý do (chữ cái trắng trên avatar, nhãn loại tệp, quả cầu nhà cung cấp key, chấm thông báo;
-nhãn cố ý mờ: nút ngoài vùng chọn ở C13, chặng chưa tới ở Flow, bước khoá ở H02, bài ẩn ở A02). Sửa chúng là đổi board
-ở cả hai chế độ, cần chủ dự án quyết; lỗi khác ngoài danh sách vẫn làm bài kiểm đỏ.
+Cùng spec chạy lại phép kiểm theo pixel ở Tối (`<board>-dark.png`, tài khoản ghim Tối), để chữ không đọc được ở chế độ
+nào cũng lộ ra. Chỉ một ngoại lệ, danh sách `FADED` của spec: trạng thái cố ý làm mờ, chữ mờ dưới AA theo thiết kế, nhưng
+mỗi trạng thái có thêm một dấu hiệu không phải độ mờ (06/11/2026):
+
+| Màn | Trạng thái mờ | Dấu hiệu khác |
+|---|---|---|
+| C13 | Nút ngoài vùng của nút đang chọn | Chỉ hàng xóm còn đường nối và có trong danh sách "Nối trực tiếp"; tên đọc màn hình thêm "không nối với bài đang chọn" |
+| Flow | Chặng chưa tới | Chặng đã xong có dấu ✓, chặng đang ở có người đi; tên đọc màn hình thêm "chưa tới" |
+| H02 | Mục khoá tới khi đăng nhập | Ổ khoá trên từng mục khoá, kèm "mở khi đăng nhập" cho trình đọc màn hình |
+| A02 | Bài đã ẩn | Mắt gạch chéo trên hành tinh (như chú thích); tên nút thêm "Đã ẩn" |
+
+Lỗi khác ngoài danh sách làm bài kiểm đỏ, ở cả hai chế độ.
 
 ```sh
-KB_E2E_PORT_OFFSET=50 pnpm e2e --project=chromium light-theme.spec.ts -g C11   # một màn
+KB_E2E_PORT_OFFSET=50 pnpm e2e --project=chromium light-theme.spec.ts -g C11   # một màn, cả Sáng lẫn Tối
 ```
 
 Sửa ở token hay component dùng chung, không vá từng màn; quy tắc màu Sáng ở

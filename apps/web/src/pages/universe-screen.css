@@ -480,7 +480,7 @@
 
 .universe-empty-stage .kf-stage-sub,
 .universe-empty-stage .kf-stage-card[data-highlight] .kf-stage-sub {
-  color: light-dark(var(--violet-200), var(--violet-300));
+  color: var(--violet-200);
 }
 
 .universe-try.kf-panel {

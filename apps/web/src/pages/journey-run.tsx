@@ -198,7 +198,7 @@ function Run({ journey }: { journey: Journey }): ReactNode {
                       className="jr-stop-button"
                       data-viewed={i === viewed}
                       data-done={step.done}
-                      aria-label={t(step.done ? 'run.stop.done' : 'run.stop', { n: i + 1, title: step.title })}
+                      aria-label={t(step.done ? 'run.stop.done' : i === now ? 'run.stop' : 'run.stop.ahead', { n: i + 1, title: step.title })}
                       aria-current={i === now ? 'step' : undefined}
                       aria-pressed={i === viewed}
                       onClick={() => run.view(i)}
@@ -207,7 +207,11 @@ function Run({ journey }: { journey: Journey }): ReactNode {
                       <img src={STOP_ART[i % STOP_ART.length]} alt="" aria-hidden="true" />
                       <span className="jr-stop-core" aria-hidden="true" />
                       <span className="jr-stop-label">
-                        <span className="jr-stop-n">{i + 1}</span>
+                        {/* a done stop carries a check, so the stops ahead are told apart by more than their fade */}
+                        <span className="jr-stop-n">
+                          {step.done && <Icon name="check" size={10} className="jr-stop-check" />}
+                          {i + 1}
+                        </span>
                         <span className="jr-stop-name">{step.title}</span>
                       </span>
                     </button>

@@ -89,7 +89,7 @@ describe('JourneyRunScreen (Flow)', () => {
     expect(screen.getByText('Under way · 2/5')).toBeTruthy();
     expect(screen.getByText('5 steps · ~30 min')).toBeTruthy();
     const path = within(screen.getByRole('list', { name: 'The path through the steps' }));
-    expect(path.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual(['Step 1: Cắm mạng, done', 'Step 2: DHCP, done', 'Step 3: ARP', 'Step 4: DNS', 'Step 5: Nghỉ']);
+    expect(path.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual(['Step 1: Cắm mạng, done', 'Step 2: DHCP, done', 'Step 3: ARP', 'Step 4: DNS, not reached yet', 'Step 5: Nghỉ, not reached yet']);
     expect(path.getByRole('button', { name: 'Step 3: ARP' }).getAttribute('aria-current')).toBe('step');
     expect(card().getByText('Step 3 / 5 · ARP')).toBeTruthy();
     expect(card().getByText('Hỏi: router ở địa chỉ MAC nào?')).toBeTruthy();
@@ -115,7 +115,7 @@ describe('JourneyRunScreen (Flow)', () => {
     expect(await screen.findByText('Not started')).toBeTruthy();
     expect(card().getByText('Step 1 / 5 · Cắm mạng')).toBeTruthy();
     expect(card().getByRole('link', { name: 'Open Packet Journey →' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Step 2: DHCP' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Step 2: DHCP, not reached yet' }));
     fireEvent.click(card().getByRole('button', { name: 'Done' }));
     await waitFor(() => expect(screen.getByText('Under way · 1/5')).toBeTruthy());
     fireEvent.click(screen.getByRole('button', { name: 'Step 2: DHCP, done' }));
@@ -138,8 +138,8 @@ describe('JourneyRunScreen (Flow)', () => {
     const hidden = { ...journey, steps: journey.steps.map((s, i) => (i === 1 ? { ...s, title: '', restricted: true, document: null } : s)) };
     reply = () => answer(200, hidden);
     renderWithI18n(<JourneyRunScreen id={ID} />);
-    expect(await screen.findByRole('button', { name: 'Step 2: Private document' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Step 2: Private document' }));
+    expect(await screen.findByRole('button', { name: 'Step 2: Private document, not reached yet' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Step 2: Private document, not reached yet' }));
     expect(card().getByText('Step 2 / 5 · Private document')).toBeTruthy();
     expect(card().queryByRole('link')).toBeNull();
   });
@@ -199,8 +199,8 @@ describe('JourneyRunScreen on a phone', () => {
       'Step 1: Cắm mạng, done',
       'Step 2: DHCP, done',
       'Step 3: ARP',
-      'Step 4: DNS',
-      'Step 5: Nghỉ',
+      'Step 4: DNS, not reached yet',
+      'Step 5: Nghỉ, not reached yet',
     ]);
     const arp = path.getByRole('button', { name: 'Step 3: ARP' });
     expect(arp.getAttribute('aria-current')).toBe('step');

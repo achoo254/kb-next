@@ -201,7 +201,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--violet-500);
+  background: var(--violet-600);
   color: var(--white);
   font-size: 10px;
   font-weight: 700;
@@ -843,7 +843,7 @@
 .a02-cluster-name {
   position: absolute;
   transform: translateX(-50%);
-  color: light-dark(color-mix(in srgb, var(--cluster) 50%, var(--light-text)), var(--cluster));
+  color: light-dark(color-mix(in srgb, var(--cluster) 50%, var(--light-text)), color-mix(in srgb, var(--cluster) 75%, var(--white)));
   font: 700 14px var(--font-display);
   white-space: nowrap;
 }
@@ -935,6 +935,22 @@
   background: var(--cyan-400);
 }
 
+/* a hidden text says so by shape, not only by its fade: the crossed eye, as on the legend */
+.a02-badge-hidden {
+  position: absolute;
+  left: -4px;
+  bottom: -4px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--admin-hidden-planet);
+  border: 1px solid var(--mine-label-border);
+  color: var(--white);
+}
+
 .a02-planet-name {
   position: absolute;
   top: 100%;
@@ -988,6 +1004,10 @@
 .a02-legend-hidden {
   background: var(--admin-hidden-planet);
   opacity: 0.6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
 }
 
 .a02-list {

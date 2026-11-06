@@ -117,7 +117,10 @@ function GuestCard({ token, preview }: { token: string; preview: SharedPreview }
           <div className="open-steps">
             {doc.sections.slice(0, 5).map((section, i) => (
               <span key={`${i}-${section}`} className="open-step" data-tone={TONES[i % TONES.length]} data-first={i === 0 || undefined}>
-                {section}
+                {/* the sections after the first open once signed in: a lock says so, not only their fade */}
+                {i > 0 && <Icon name="lock" size={11} className="open-step-lock" />}
+                <span className="open-step-text">{section}</span>
+                {i > 0 && <span className="kf-visually-hidden">{` (${t('open.stepLocked')})`}</span>}
               </span>
             ))}
           </div>

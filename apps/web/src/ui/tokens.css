@@ -165,6 +165,8 @@
   --red-400: #f87171;
   --red-500: #ef4444;
   --rose-500: #f43f5e;
+  /* the unread count's dot: white digits read 4.7:1 on it (3.7:1 on rose-500) */
+  --rose-600: #e11d48;
   --slate-300: #cbd5e1;
   --slate-400: #94a3b8;
   /* the night inks of the rim kit (rgb() of the mock as hex) */
@@ -542,13 +544,14 @@
   /* the secondary link button of the start boards (Về trang chủ, Bỏ qua…) and its text */
   --start-ghost-text: light-dark(var(--light-sub), #e5e7eb);
   /* the "waiting" step mark of the sign-in board (S02) */
-  --step-wait: #6b6890;
+  /* the board's #6B6890 reads 3.5:1 on the night card; a lighter grey violet reads AA */
+  --step-wait: #8f8bb3;
   /* the warp streaks of the sign-in gate (S02) */
   --sky-100: #e0f2fe;
   /* the small print of the landing (S01): the note under the sign-in button and the footer */
-  --landing-note: light-dark(var(--light-muted), #a9a3c9);
-  /* the footer runs over the neon stage, dark in both themes */
-  --landing-footer: light-dark(var(--violet-100), #9c96bd);
+  /* the board's #A9A3C9 and #9C96BD read 4.1:1 and 3.6:1 over the night sky and the neon stage the footer runs over */
+  --landing-note: light-dark(var(--light-muted), var(--dark-sub));
+  --landing-footer: var(--violet-100);
 }
 
 :root[data-theme="light"] {
@@ -573,10 +576,12 @@
   --amber-700: #b45309;
   --emerald-300: #6ee7b7;
   --emerald-700: #047857;
-  --avatar-violet: linear-gradient(140deg, var(--violet-400), var(--violet-600));
-  --avatar-cyan: linear-gradient(140deg, var(--cyan-300), var(--cyan-700));
-  --avatar-amber: linear-gradient(140deg, var(--amber-300), var(--amber-700));
-  --avatar-emerald: linear-gradient(140deg, var(--emerald-300), var(--emerald-700));
+  /* white initials sit on them in both themes: each gradient runs from a shade that already reads 4.5:1 under white to
+     its deepest end (the boards' lighter 300/400 starts read 2–4:1) */
+  --avatar-violet: linear-gradient(140deg, var(--violet-600), var(--violet-900));
+  --avatar-cyan: linear-gradient(140deg, var(--cyan-700), var(--cyan-900));
+  --avatar-amber: linear-gradient(140deg, var(--amber-700), var(--amber-900));
+  --avatar-emerald: linear-gradient(140deg, var(--emerald-700), var(--emerald-900));
 }
 
 /* ── Own keys (F03) and AI translation (F04) ──────────────────────────────────────────────────────────────────── */
@@ -628,8 +633,9 @@
   --mine-text-dim: light-dark(#334155, #cbd5e1);
   /* C03, C16, H04: the badge of each kind of file (W, X, P, PDF, M; anything else) */
   --file-word: var(--blue-600);
-  --file-excel: #16a34a;
-  --file-powerpoint: #ea580c;
+  /* white letters on them: the boards' #16A34A and #EA580C read 3.3:1 and 3.6:1, one shade deeper reads AA */
+  --file-excel: #15803d;
+  --file-powerpoint: var(--orange-700);
   --file-pdf: #dc2626;
   --file-markdown: #7c3aed;
   --file-other: var(--slate-500);
@@ -637,9 +643,10 @@
   --import-row: light-dark(rgb(255 255 255 / 0.72), rgb(22 17 54 / 0.7));
   --import-well: light-dark(rgb(237 233 254 / 0.7), rgb(14 11 38 / 0.8));
   --import-node-wait: light-dark(rgb(237 233 254 / 0.95), rgb(14 11 38 / 0.85));
-  --import-ok-node: radial-gradient(circle at 40% 35%, #6ee7b7, #059669 75%);
-  --import-run-node: radial-gradient(circle at 40% 35%, #a5f3fc, #0891b2 75%);
-  --import-err-node: radial-gradient(circle at 40% 35%, #fde68a, #d97706 75%);
+  /* the step nodes carry a white mark: deep shades of the same hues (the boards' light highlights read under 2.5:1) */
+  --import-ok-node: radial-gradient(circle at 40% 35%, var(--emerald-700), var(--emerald-900) 75%);
+  --import-run-node: radial-gradient(circle at 40% 35%, var(--cyan-700), var(--cyan-900) 75%);
+  --import-err-node: radial-gradient(circle at 40% 35%, var(--amber-700), var(--amber-900) 75%);
   --import-ok-glow: #34d399;
   --import-ok-rim: var(--emerald-200);
   --import-run-rim: var(--cyan-100);
@@ -775,7 +782,7 @@
   --pub-card-chip: rgb(20 10 60 / 0.45);
   --pub-card-chip-border: rgb(255 255 255 / 0.2);
   --pub-badge-private: rgb(236 72 153 / 0.3);
-  --pub-badge-pending: light-dark(rgb(245 158 11 / 0.12), rgb(245 158 11 / 0.3));
+  --pub-badge-pending: light-dark(rgb(245 158 11 / 0.12), rgb(245 158 11 / 0.18));
   --pub-badge-public: rgb(34 211 238 / 0.3);
   --pub-card-pending: light-dark(var(--amber-200), #fcd34d);
   --pub-card-private: #f9a8d4;
@@ -856,9 +863,10 @@
   --share-perm-bg: light-dark(rgb(109 40 217 / 0.1), rgb(167 139 250 / 0.16));
   --share-perm-border: light-dark(rgb(109 40 217 / 0.25), rgb(196 181 253 / 0.3));
   --share-orb-border: rgb(255 255 255 / 0.55);
-  --share-orb-cyan: #06b6d4;
-  --share-orb-accent: #22d3ee;
-  --share-orb-success: #10b981;
+  /* white initials on the people's orbs: deep shades (the boards' #06B6D4, #22D3EE, #10B981 read 1.8–2.5:1) */
+  --share-orb-cyan: var(--cyan-700);
+  --share-orb-accent: var(--cyan-800);
+  --share-orb-success: var(--emerald-700);
   --share-orb-violet: #7c3aed;
   --share-track: linear-gradient(180deg, rgb(167 139 250 / 0.85), rgb(103 232 249 / 0.7));
   --share-track-glow: 0 0 6px rgb(139 92 246 / 0.85);

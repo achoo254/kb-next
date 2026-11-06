@@ -64,6 +64,11 @@ API), mới nhất trước, lọc theo Thành viên / Nội dung / API / Đăng
   Sáng gần như đặc để chữ trắng đạt 4,5:1. Màu chữ trên thẻ cũng theo theme: sắc đậm (`--violet-700`, `--cyan-700`) ở
   Sáng, sắc nhạt ở Tối. Kiểm bằng [`light-theme.spec.ts`](../apps/web/e2e/light-theme.spec.ts)
   ([`parity-testing.md`](parity-testing.md#kiểm-chế-độ-sáng)).
+- Chữ trắng trên nền màu (avatar, chữ cái loại tệp, nút bước của Trung tâm nhập, chấm số thông báo, quả cầu nhà cung cấp
+  key) đặt trên sắc đậm đạt 4,5:1 ở cả hai chế độ (06/11/2026). Trạng thái thể hiện bằng làm mờ luôn kèm một dấu hiệu
+  khác (biểu tượng, chữ cho trình đọc màn hình), không chỉ dựa vào độ mờ.
+- Canvas (C15) giữ thẻ và hộp công cụ kính tối ở cả hai chế độ, chữ sáng trên đó (quyết định 06/11/2026): đây là lựa
+  chọn của board, không phải lỗi lọt nền tối.
 - "Giảm chuyển động" của app cộng thêm với cài đặt hệ điều hành: tắt animation và transition, Universe chạy 2D.
 - "Mở app ở chế độ" (Orbit / Danh sách) chỉ lưu trên máy này: C08 và A02 mở theo lựa chọn đó.
 - Cỡ chữ khi đọc: nút A−/A+ trong trình đọc (C11, tablet T02, điện thoại M05) chọn 16 / 17 (mặc định) / 18 / 20px cho

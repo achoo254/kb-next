@@ -92,6 +92,21 @@ describe('server config', () => {
     expect(() => loadConfig({ ...production, KB_SEED: 'mock' })).toThrow(/KB_SEED is dev\/test only/);
   });
 
+  it('raises the sign-in limit only outside production (E2E), 100 per 15 minutes by default', () => {
+    expect(loadConfig({}).signInLimitPer15Min).toBe(100);
+    expect(loadConfig({ SIGN_IN_LIMIT_PER_15_MIN: '1000' }).signInLimitPer15Min).toBe(1000);
+    expect(() => loadConfig({ SIGN_IN_LIMIT_PER_15_MIN: '0' })).toThrow(/SIGN_IN_LIMIT_PER_15_MIN/);
+    const production = {
+      NODE_ENV: 'production',
+      PUBLIC_URL: 'https://kb.example',
+      DATABASE_URL: 'postgres://kb@127.0.0.1/kb',
+      AUTH_CLIENT_SECRET: SECRET,
+      MEILI_URL: 'http://127.0.0.1:5322',
+      MEILI_MASTER_KEY: SECRET,
+    };
+    expect(() => loadConfig({ ...production, SIGN_IN_LIMIT_PER_15_MIN: '1000' })).toThrow(/SIGN_IN_LIMIT_PER_15_MIN is dev\/test only/);
+  });
+
   it('keeps PGlite in memory for `memory`, else in the given directory', () => {
     expect(loadConfig({ PGLITE_DIR: 'memory' }).pgliteDir).toBeNull();
     expect(loadConfig({ PGLITE_DIR: '/tmp/x' }).pgliteDir).toBe('/tmp/x');

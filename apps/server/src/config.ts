@@ -61,6 +61,11 @@ const Env = z.object({
   KB_SEED: z.preprocess(emptyIsUnset, z.enum(['mock']).optional()),
   /** IdP sub that owns the seed's personal Space and private documents (KB_SEED and `pnpm seed`). */
   SEED_OWNER_SUB: z.preprocess(emptyIsUnset, z.string().trim().min(1).optional()),
+  /**
+   * Sign-in starts allowed per 15 minutes from one address (default 100). Dev/test only, refused in production: an E2E
+   * run signs in once per screen and test, past 100 in one run.
+   */
+  SIGN_IN_LIMIT_PER_15_MIN: z.preprocess(emptyIsUnset, z.coerce.number().int().min(1).max(100_000).optional()),
 });
 
 export interface AuthConfig {
@@ -159,6 +164,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     if (publicUrl.protocol !== 'https:') throw new Error('Invalid server env: PUBLIC_URL must be https in production');
     if (e.PGLITE_DIR) throw new Error('Invalid server env: PGLITE_DIR is dev/test only');
     if (e.KB_SEED) throw new Error('Invalid server env: KB_SEED is dev/test only');
+    if (e.SIGN_IN_LIMIT_PER_15_MIN) throw new Error('Invalid server env: SIGN_IN_LIMIT_PER_15_MIN is dev/test only');
   }
   // https only; plain http only for a local fake IdP outside production (E2E).
   if (issuerUrl.protocol !== 'https:' && (production || issuerUrl.protocol !== 'http:' || !LOOPBACK_HOSTS.includes(issuerUrl.hostname))) {
@@ -199,7 +205,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       : null,
     adminSubs: new Set((e.ADMIN_SUBS ?? '').split(',').map((sub) => sub.trim()).filter((sub) => sub.length > 0)),
     meili: e.MEILI_URL && e.MEILI_MASTER_KEY ? { url: e.MEILI_URL.replace(/\/$/, ''), apiKey: e.MEILI_MASTER_KEY, indexPrefix: '' } : null,
-    signInLimitPer15Min: 100,
+    signInLimitPer15Min: e.SIGN_IN_LIMIT_PER_15_MIN ?? 100,
     backchannelLimitPer15Min: 300,
     searchLimitPerMinute: 120,
     typesafeApiKey: e.TYPESAFE_API_KEY ?? null,

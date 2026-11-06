@@ -283,11 +283,16 @@ export function AdminContentScreen(): ReactNode {
                   const on = !bulk && item.id === current?.id;
                   return (
                     <div key={item.id} className="a02-planet" data-hidden={item.hidden || undefined} style={{ left: x - d / 2, top: y - d / 2, width: d, height: d }}>
-                      <button type="button" className="a02-planet-btn" aria-label={item.title} aria-pressed={bulk ? chosen.has(item.id) : on} data-on={on || undefined} onClick={() => pick(item)} data-id={`content-planet-${item.id}`}>
+                      <button type="button" className="a02-planet-btn" aria-label={item.hidden ? `${item.title}, ${t('content.state.hidden')}` : item.title} aria-pressed={bulk ? chosen.has(item.id) : on} data-on={on || undefined} onClick={() => pick(item)} data-id={`content-planet-${item.id}`}>
                         <img src={item.space.art} alt="" aria-hidden="true" style={{ width: d + 22, height: d + 22 }} />
                         {item.origin === 'official' && item.aiMade && <span className="a02-badge-ai">AI</span>}
                         {item.origin !== 'official' && <span className="a02-badge-user">{(Array.from(item.authorName ?? '·')[0] ?? '·').toLocaleUpperCase()}</span>}
                         {bulk && chosen.has(item.id) && <span className="a02-badge-check" aria-hidden="true" />}
+                        {item.hidden && (
+                          <span className="a02-badge-hidden" aria-hidden="true">
+                            <Icon name="eye-off" size={12} />
+                          </span>
+                        )}
                       </button>
                       <span className="a02-planet-name">{shortTitle(item.title)}</span>
                     </div>
@@ -305,7 +310,9 @@ export function AdminContentScreen(): ReactNode {
                 {t('content.legend.community')}
               </span>
               <span>
-                <span className="a02-legend-dot a02-legend-hidden" />
+                <span className="a02-legend-dot a02-legend-hidden">
+                  <Icon name="eye-off" size={9} />
+                </span>
                 {t('content.legend.hidden')}
               </span>
             </div>

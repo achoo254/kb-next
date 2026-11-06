@@ -74,8 +74,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  /* the light theme a shade deeper: white initials over the board's violets read 4:1 only */
-  background: linear-gradient(140deg, light-dark(var(--violet-500), var(--violet-400)), light-dark(var(--violet-700), var(--violet-600)));
+  background: var(--avatar-violet);
   border: 2px solid color-mix(in srgb, var(--white) 75%, transparent);
   box-shadow: 0 0 16px color-mix(in srgb, var(--violet-600) 80%, transparent);
   color: var(--white);

@@ -79,7 +79,7 @@ export function JourneyRunPhone({ journey, run }: { journey: Journey; run: Journ
                     <button
                       type="button"
                       className="jrp-stop"
-                      aria-label={t(step.done ? 'run.stop.done' : 'run.stop', { n: i + 1, title: step.title })}
+                      aria-label={t(step.done ? 'run.stop.done' : i === now ? 'run.stop' : 'run.stop.ahead', { n: i + 1, title: step.title })}
                       aria-current={i === now ? 'step' : undefined}
                       aria-pressed={open}
                       onClick={() => run.view(i)}

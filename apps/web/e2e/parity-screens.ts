@@ -195,7 +195,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // signed out (H02).
   { board: 'C04-Publish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
   { board: 'C05-Preview', path: `/d/${PUBLISH_DOCUMENT_ID}/preview`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="preview-stage"]' },
-  { board: 'C18-Share', path: `/d/${C13_DHCP_ID}/share`, signedIn: true, status: 'built', mocks: ['share-c18'], clock: C18_CLOCK, waitFor: '[data-id="share-history"]' },
+  // maxDiff: the people's orbs are deeper than the board's so their white initials read AA; docs/mock-deviations.md.
+  { board: 'C18-Share', path: `/d/${C13_DHCP_ID}/share`, signedIn: true, status: 'built', maxDiff: 0.031, mocks: ['share-c18'], clock: C18_CLOCK, waitFor: '[data-id="share-history"]' },
   { board: 'H02-SharedOpen', path: `/l/${H02_TOKEN}`, signedIn: false, status: 'built', mocks: ['open-h02'], waitFor: '[data-id="open-card"]' },
   // The admin station on the boards' data (the E2E account answered as an admin): the queue with TCP vs UDP picked,
   // published texts by Space with DHCP picked, the API with its token and calls.

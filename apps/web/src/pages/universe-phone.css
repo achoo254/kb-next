@@ -197,7 +197,7 @@
   position: relative;
   font-size: 10px;
   font-weight: 700;
-  color: var(--tint);
+  color: color-mix(in srgb, var(--tint) 55%, var(--white));
   text-shadow: 0 0 6px var(--glow), var(--text-shadow-strong);
 }
 

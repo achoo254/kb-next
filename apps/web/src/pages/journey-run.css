@@ -264,6 +264,13 @@
 .jr-stop-n {
   font: 700 12px var(--font-display);
   opacity: 0.9;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.jr-stop-check {
+  flex: none;
 }
 
 .jr-stop-name {

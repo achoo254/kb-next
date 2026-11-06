@@ -384,7 +384,7 @@ h3.reader-heading {
   height: 36px;
   flex: none;
   border-radius: 50%;
-  background: var(--cyan-600);
+  background: var(--cyan-700);
   color: var(--white);
   display: flex;
   align-items: center;

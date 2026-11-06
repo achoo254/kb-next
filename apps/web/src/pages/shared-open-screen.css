@@ -172,6 +172,17 @@
   opacity: 1;
 }
 
+.open-step-lock {
+  flex: none;
+  margin-right: 3px;
+}
+
+.open-step-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .open-content [data-tone="cyan"] {
   --tone: var(--open-cyan);
 }

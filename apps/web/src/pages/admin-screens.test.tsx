@@ -206,7 +206,8 @@ describe('published texts (A02)', () => {
     await waitFor(() => expect(calls[0]).toEqual({ method: 'PATCH', url: '/api/moderation/documents/p1', body: { hidden: true } }));
     expect(await screen.findByRole('switch', { name: /Đang ẩn/ })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Đã ẩn' }));
-    expect(screen.getByRole('button', { name: 'Ghi chú: swap trên Ubuntu' })).toBeTruthy();
+    // a hidden text's planet says so in its name, not only by its fade
+    expect(screen.getByRole('button', { name: 'Ghi chú: swap trên Ubuntu, Đã ẩn' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Tìm hiểu giao thức DNS' })).toBeNull();
   });
 

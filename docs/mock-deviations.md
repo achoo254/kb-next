@@ -20,6 +20,25 @@ của bộ kiểm giống mock ([`parity-testing.md`](parity-testing.md)) chỉ 
 |---|---|---|---|
 | DesignSystem (token) | Accent của chế độ Sáng là `#0E718C` thay cho `#0E7490` của board; focus Sáng giữ `#0E7490` | `#0E7490` chỉ đạt 4,48:1 trên nền `bg2` (`#ECE8FF`), nơi chữ accent thật sự nằm; `#0E718C` đạt chuẩn chữ 4,5:1 mà mắt gần như không phân biệt (04/11/2026) | |
 | DesignSystem (token) | Chế độ Sáng: accent `#0D6D87` (trước là `#0E718C`), muted `#554583` thay `#5B4B8A`, link `#5B21B6` thay `#6D28D9`, successText `#065F46` thay `#047857`; Tối không đổi | Kiểm chế độ Sáng theo pixel (`light-theme.spec.ts`): chữ accent trên nền cyan nhạt, chữ muted và link trên phong cảnh Sáng (breadcrumb, nhãn board), chữ xanh trên huy hiệu xanh nhạt chỉ đạt 4,2–4,45:1; mỗi màu đậm thêm một chút để đạt 4,5:1. Bảng token của board DesignSystem hiện giá trị mới ở cột Sáng (06/11/2026) | |
+| Mọi màn có thanh bên (token) | Avatar tài khoản ở thanh bên chuyển `#7C3AED → #4C1D95` (board `#A78BFA → #7C3AED`), cả hai chế độ | Chữ cái trắng trên tím nhạt của board chỉ đạt 4:1; mọi avatar chữ trắng giờ đi từ một sắc đã đạt 4,5:1 tới sắc sâu nhất (06/11/2026) | |
+| C10 (token) | Avatar thành viên (`--avatar-*`) từ sắc 600/700 tới 900 thay cho 300/400 tới 600/700 | Chữ cái trắng trên các đầu sáng của board đạt 2,4–4:1 (06/11/2026) | |
+| C17 | Avatar người duyệt và người sửa: cyan 700, emerald 700 thay cho 500 | Chữ cái trắng trên cyan/emerald 500 đạt 2,4–2,5:1 (06/11/2026) | |
+| C18 (token) | Quả cầu người có quyền: cyan 700, cyan 800, emerald 700 thay cho `#06B6D4`, `#22D3EE`, `#10B981` | Chữ cái trắng đạt 1,8–2,5:1 trên màu của board (06/11/2026) | 0.031 (3,04% khi đo) |
+| C20 (token) | Avatar người nhắc: emerald 700; số thông báo chưa đọc: rose 600 `#E11D48` thay cho rose 500 | Chữ trắng đạt 2,5:1 và 3,7:1 trên màu của board (06/11/2026) | |
+| A01 | Avatar tác giả: violet 600 thay cho violet 500 | Chữ cái trắng đạt 4,2:1 trên violet 500 (06/11/2026) | |
+| C03, C16, H04 (token) | Chữ cái loại tệp: Excel `#15803D` thay `#16A34A`, PowerPoint `#C2410C` thay `#EA580C` | Chữ trắng đạt 3,3:1 và 3,6:1 trên màu của board (06/11/2026) | |
+| C16 (token) | Nút bước (xong, đang chạy, lỗi): sắc 700 tới 900 thay cho điểm sáng 200/300 tới 600 | Dấu trắng đạt 1,7–2,2:1 trên điểm sáng của board (06/11/2026) | |
+| F03 | Quả cầu nhà cung cấp: điểm sáng nhỏ, phần dưới chữ là sắc sâu (900) thay cho phần giữa 500 rộng | Chữ trắng (AI, G, C) đạt 1,8–2:1 trên phần giữa của board (06/11/2026) | |
+| C08 | Số đếm trên tab đang chọn: nền tối hơn viên tím (mực 25%) thay cho trắng 20% | Số trắng trên lớp trắng mờ đạt 4:1 (06/11/2026) | |
+| C04 | Huy hiệu "Chờ duyệt" trên thẻ xem trước: nền hổ phách 18% thay cho 30% | Chữ hổ phách đạt 4,25:1 trên nền 30% (06/11/2026) | |
+| S01 (token) | Dòng ghi chú dưới nút đăng nhập `#C8C4DC` thay `#A9A3C9`; chân trang `#EDE9FE` thay `#9C96BD` | Đạt 4,1:1 và 3,6:1 trên trời đêm và sân khấu neon (06/11/2026) | |
+| S02 (token) | Bước "chờ" của cổng đăng nhập `#8F8BB3` thay `#6B6890` | Đạt 3,5:1 trên thẻ tối (06/11/2026) | |
+| S05 | Dòng phụ của thẻ nổi bật trên sân khấu trống: violet 200 thay violet 300 | Đạt 3,75:1 trên thẻ tím (06/11/2026) | |
+| M06 | Số kết quả và "Xem tất cả": violet 200 ở Tối thay cho muted/link | Đạt 3,9–4,49:1 trên trời của điện thoại (06/11/2026) | |
+| Mobile | Số bài dưới tên hành tinh: màu của hành tinh pha 45% trắng | Màu tint thuần đạt 3,1–3,8:1 trên hành tinh đang mờ (06/11/2026) | |
+| A02 | Hành tinh của bài ẩn có thêm mắt gạch chéo (như chú thích); tên cụm sáng hơn ở Tối (pha 25% trắng) | Trạng thái ẩn không chỉ dựa vào độ mờ; tên cụm violet 500 đạt 4,3:1 trên nền đêm (06/11/2026) | |
+| Flow | Chặng đã xong có dấu ✓ trước số | Chặng chưa tới không chỉ phân biệt bằng độ mờ (06/11/2026) | |
+| H02 | Mục khoá có ổ khoá trước tên | Mục khoá tới khi đăng nhập không chỉ phân biệt bằng độ mờ (06/11/2026) | |
 | X01 (token) | Nút đỏ đặc (xác nhận "Xoá") dùng `#DC2626` thay cho `#EF4444` của board, cả hai chế độ | Chữ trắng trên `#EF4444` chỉ đạt 3,76:1; `#DC2626` đạt 4,83:1 (chuẩn chữ 4,5:1). Nút này không nằm trong khung so pixel của board (04/11/2026) | |
 | DesignSystem, C10, C11 và mọi chỗ có nhãn nguồn gốc | Không còn nhãn "Chính thức · AI tạo"; bài chính thức (kể cả do AI viết hay dịch) chỉ mang nhãn "Chính thức" | Người dùng chốt 04/11/2026: chỉ giữ một nhãn chính thức. Bản dịch AI vẫn được đánh dấu riêng qua `aiTranslated` | |
 | S02 | Ngoài 3 cột của board, `/login` còn một trạng thái chờ: thẻ A (cổng đăng nhập) kèm nút "Đăng nhập bằng tài khoản hoandat". Nút ở landing (`?go=1`) thì bỏ qua bước chờ, hiện ngay "Đang mở cổng…" như board. Ảnh so pixel là trang `/dev/kit/sign-in` đặt 3 thẻ thật cạnh nhau như board | Khách mở một link cần đăng nhập (vd `/d/…`) được đưa về `/login?return=…`: tự chuyển sang IdP ngay sẽ đẩy họ đi mà không biết vì sao, và lặp lại nếu IdP trả lỗi. App chỉ hiện một trạng thái mỗi lúc, nên board 3 cột được so trên trang kit ghép đúng các thẻ đó (04/11/2026) | |

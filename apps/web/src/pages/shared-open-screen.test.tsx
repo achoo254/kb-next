@@ -65,6 +65,9 @@ describe('signed out', () => {
     expect(screen.getByText('· 5 mục · ~4 phút')).toBeTruthy();
     expect(screen.getByText('dattqh')).toBeTruthy();
     expect(screen.getAllByText(/^(Wi-Fi|DHCP|ARP|DNS|HTTP)$/)).toHaveLength(5);
+    // the sections after the first are locked until sign-in: a lock and words say so, not only their fade
+    expect(screen.getAllByText('(mở khi đăng nhập)')).toHaveLength(4);
+    expect(document.querySelectorAll('.open-step-lock')).toHaveLength(4);
     expect(screen.getByRole('link', { name: 'Đăng nhập để mở' }).getAttribute('href')).toBe(`/login?return=%2Fl%2F${TOKEN}`);
     fireEvent.click(screen.getByRole('button', { name: 'Xem trước 1 mục' }));
     expect(screen.getByText('Cắm mạng: máy mới chưa có IP, chưa biết ai.')).toBeTruthy();

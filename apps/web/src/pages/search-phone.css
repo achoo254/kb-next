@@ -131,7 +131,7 @@
   min-height: 40px;
   display: flex;
   align-items: center;
-  color: var(--c-text-muted);
+  color: light-dark(var(--light-muted), var(--violet-200));
   font-size: 13px;
   font-weight: 600;
 }
@@ -173,7 +173,7 @@
   min-height: 44px;
   display: flex;
   align-items: center;
-  color: var(--c-link);
+  color: light-dark(var(--light-link), var(--violet-200));
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;

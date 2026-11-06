@@ -129,7 +129,8 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  background: radial-gradient(circle at 32% 28%, var(--provider-hi), var(--provider) 45%, var(--provider-deep));
+  /* a small highlight, then the deep end under the white letters (the board's wide bright middle reads 1.8–2:1) */
+  background: radial-gradient(circle at 32% 28%, var(--provider-hi), var(--provider) 8%, var(--provider-deep) 40%);
   box-shadow: 0 0 26px var(--provider);
   color: var(--white);
   font: 700 15px var(--font-display);

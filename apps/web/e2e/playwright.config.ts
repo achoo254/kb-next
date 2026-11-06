@@ -51,6 +51,9 @@ export default defineConfig({
         OFFICE_EDITOR_ORIGIN,
         // The mock's data, "Của bạn" content owned by the fake IdP's account (fake-idp-server.ts); Đạt is the admin.
         KB_SEED: 'mock', SEED_OWNER_SUB: 'e2e-account', ADMIN_SUBS: 'seed:dat',
+        // Every test signs in afresh: a run of many screens (light-theme.spec.ts shoots each in two themes) is past the
+        // 100 sign-ins per 15 minutes a real address gets.
+        SIGN_IN_LIMIT_PER_15_MIN: '1000',
       },
     },
     {

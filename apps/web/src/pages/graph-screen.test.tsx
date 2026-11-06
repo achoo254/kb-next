@@ -96,6 +96,8 @@ describe('GraphScreen', () => {
     expect(within(panel).getByRole('list', { name: 'Suggested path' }).textContent).toBe('Giao thức DHCP→Giao thức ARP→Tìm hiểu DNS');
     expect(within(panel).getByRole('link', { name: 'Follow this path' }).getAttribute('href')).toBe('/d/arp');
     expect(node(/^Giao thức DHCP,/).getAttribute('aria-pressed')).toBe('true');
+    // a node outside the picked one's neighbourhood is faded, and its name says why
+    expect(node(/^Ghi chú: DHCP giả mạo,/).getAttribute('aria-label')).toBe('Ghi chú: DHCP giả mạo, Networking, 0 links, not linked to the picked text');
     // Jev is off on this server: no suggestion button.
     expect(screen.queryByRole('button', { name: 'Jev suggests links' })).toBeNull();
     // A neighbour picks that node; Escape on a node clears the pick.

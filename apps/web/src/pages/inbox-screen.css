@@ -399,7 +399,7 @@
 
 /* The person on the line under the message: the board's member green, whatever the kind. */
 .inbox-avatar {
-  --tone: var(--emerald-500);
+  --tone: var(--emerald-700);
   width: 28px;
   height: 28px;
   display: flex;

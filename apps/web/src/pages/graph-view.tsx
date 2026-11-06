@@ -210,6 +210,8 @@ export function GraphView({ t, nodes, edges, positions, visible, selected, colou
               if (!p) return null;
               const colour = colours.get(node.spaceSlug);
               const isSelected = node.id === selected;
+              // outside the picked node's neighbourhood: faded, its edges gone, and said so to a screen reader
+              const away = selected !== null && !near.has(node.id);
               const style = {
                 left: p.x - p.r,
                 top: p.y - p.r,
@@ -218,7 +220,7 @@ export function GraphView({ t, nodes, edges, positions, visible, selected, colou
                 '--node-glow': colour?.glow,
               } as CSSProperties;
               return (
-                <div key={node.id} className="graph-node" data-selected={isSelected} data-dim={selected !== null && !near.has(node.id)} style={style}>
+                <div key={node.id} className="graph-node" data-selected={isSelected} data-dim={away} style={style}>
                   <button
                     type="button"
                     ref={(el) => {
@@ -230,7 +232,7 @@ export function GraphView({ t, nodes, edges, positions, visible, selected, colou
                     style={{ width: p.r * 2, height: p.r * 2 }}
                     tabIndex={node.id === tabStop ? 0 : -1}
                     aria-pressed={isSelected}
-                    aria-label={t('graph.node', { title: node.title, space: colour?.name ?? '', degree: node.degree })}
+                    aria-label={t(away ? 'graph.nodeAway' : 'graph.node', { title: node.title, space: colour?.name ?? '', degree: node.degree })}
                     onClick={() => onSelect(node.id)}
                     onFocus={() => setFocusId(node.id)}
                     onKeyDown={(event) => onNodeKey(event, node.id)}

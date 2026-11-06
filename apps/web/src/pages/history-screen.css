@@ -223,7 +223,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  --avatar: var(--cyan-500);
+  --avatar: var(--cyan-700);
   background: var(--avatar);
   border: 1.5px solid color-mix(in srgb, var(--white) 55%, transparent);
   box-shadow: 0 0 10px var(--avatar);
@@ -237,7 +237,7 @@
 }
 
 .history-avatar[data-tone="reviewer"] {
-  --avatar: var(--emerald-500);
+  --avatar: var(--emerald-700);
 }
 
 .history-avatar[data-tone="ai"] {
