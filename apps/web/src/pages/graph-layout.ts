@@ -128,7 +128,10 @@ export function layoutGraph(
     .stop();
   simulation.tick(TICKS);
 
-  return fit(sim, new Set(nodes.map((n) => n.space)).size === 1);
+  // Centred when the graph shows one public Space (with or without the reader's own): the board's left/right split is
+  // for several Spaces, and with one it left the cluster in a corner of the stage (seen on prod 06/11/2026).
+  const shared = new Set(nodes.filter((n) => spots.get(n.space) !== PERSONAL_SPOT).map((n) => n.space));
+  return fit(sim, shared.size <= 1);
 }
 
 /**

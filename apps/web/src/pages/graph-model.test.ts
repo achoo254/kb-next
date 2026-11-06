@@ -109,6 +109,22 @@ describe('layout', () => {
     expect(Math.abs(middle - WORLD.width / 2)).toBeLessThan(5);
   });
 
+  it("centres one public Space with the reader's own beside it", () => {
+    const nodes = [...['a', 'b', 'c'].map((id) => ({ id, space: 'networking', degree: 1 })), { id: 'p', space: 'personal-x', degree: 1 }];
+    const spots2 = spaceSpots(
+      [
+        { slug: 'networking', personal: false },
+        { slug: 'personal-x', personal: true },
+      ],
+      'networking',
+    );
+    const placed = [...layoutGraph(nodes, [{ source: 'a', target: 'b' }, { source: 'b', target: 'p' }], spots2).values()];
+    const xs = placed.map((p) => p.x);
+    const ys = placed.map((p) => p.y);
+    expect(Math.abs((Math.min(...xs) + Math.max(...xs)) / 2 - WORLD.width / 2)).toBeLessThan(5);
+    expect(Math.abs((Math.min(...ys) + Math.max(...ys)) / 2 - (WORLD.height + 0) / 2)).toBeLessThan(80);
+  });
+
   it('sizes nodes by their links, up to a cap', () => {
     expect(nodeRadius(0)).toBe(12);
     expect(nodeRadius(6)).toBe(36);
