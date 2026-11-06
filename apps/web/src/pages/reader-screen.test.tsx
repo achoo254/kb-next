@@ -428,15 +428,19 @@ describe('ReaderScreen "Favourite"', () => {
     const { unmount } = renderWithI18n(<ReaderScreen id="dhcp" />);
     await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
-    act(() => {
-      window.dispatchEvent(new Event('offline'));
-    });
-    expect(favoriteButton().disabled).toBe(true);
-    expect(favoriteButton().title).toBe('Offline · reconnect to save favourites');
-    fireEvent.click(favoriteButton());
-    expect(calls).toEqual([]);
-    vi.restoreAllMocks();
-    unmount();
+    try {
+      act(() => {
+        window.dispatchEvent(new Event('offline'));
+      });
+      await waitFor(() => expect(favoriteButton().disabled).toBe(true));
+      expect(favoriteButton().title).toBe('Offline · reconnect to save favourites');
+      fireEvent.click(favoriteButton());
+      expect(calls).toEqual([]);
+    } finally {
+      // never leave the next tests offline
+      vi.restoreAllMocks();
+      unmount();
+    }
 
     serveFavorite(null, () => new Response(null, { status: 204 }));
     renderWithI18n(<ReaderScreen id="dhcp" />);

@@ -75,6 +75,8 @@ function useOffline(): boolean {
     const update = (): void => setOffline(!navigator.onLine);
     window.addEventListener('online', update);
     window.addEventListener('offline', update);
+    // the connection may have dropped between the first render and this effect, with no event left to hear
+    update();
     return () => {
       window.removeEventListener('online', update);
       window.removeEventListener('offline', update);
