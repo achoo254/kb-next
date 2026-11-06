@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useSyncExternalStore } from 'react';
 import { useI18n } from '../i18n/i18n';
 import { MobileTabBar, type MobileTab } from '../ui/mobile-tab-bar';
 import { type Star, UniverseBackdrop } from '../ui/universe-backdrop';
@@ -7,6 +7,26 @@ import './phone-shell.css';
 
 /** The tabs of the phone tab bar. */
 export type PhoneTab = 'universe' | 'graph' | 'create' | 'mine' | 'copilot';
+
+/** The width the phone boards are drawn at (Mobile, M02–M06). */
+export const PHONE_BOARD_WIDTH = 390;
+
+function subscribeResize(onChange: () => void): () => void {
+  window.addEventListener('resize', onChange);
+  return () => window.removeEventListener('resize', onChange);
+}
+
+/**
+ * How much a part drawn at the board's 390px width shrinks to fit a narrower phone (1 from 390px up): the 2D orbit
+ * and the create bloom keep their shape and stay inside the screen on a 320–389px phone.
+ */
+export function usePhoneScale(): number {
+  return useSyncExternalStore(
+    subscribeResize,
+    () => Math.min(1, window.innerWidth / PHONE_BOARD_WIDTH),
+    () => 1,
+  );
+}
 
 /** The stars of the phone boards: 40 points by the boards' own formula, in the top 480px. */
 export const PHONE_STARS: readonly Star[] = Array.from({ length: 40 }, (_, j) => ({
@@ -47,7 +67,7 @@ export function PhoneShell({ screen, tab, tabBar = true, createOpen = false, sta
     { id: 'copilot', label: t('shell.tabs.copilot'), href: SHELL_PATHS.copilot, icon: 'tab-copilot' },
   ];
   return (
-    <UniverseBackdrop veil="phone" stars={stars} starField={PHONE_STARS} artPosition="16% 50%" className={className ? `phone-shell ${className}` : 'phone-shell'}>
+    <UniverseBackdrop veil="phone" stars={stars} starField={PHONE_STARS} starFieldWidth={PHONE_BOARD_WIDTH} artPosition="16% 50%" className={className ? `phone-shell ${className}` : 'phone-shell'}>
       <main id="content" className="phone-main" data-screen={screen} data-id={`screen-${screen}`}>
         {children}
       </main>

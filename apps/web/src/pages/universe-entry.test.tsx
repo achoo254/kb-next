@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithI18n } from '../test/render';
+import { resetOpeningClock } from './opening-pace';
 import { UniverseEntry, showOnboarding } from './universe-entry';
 
 const ME = {
@@ -47,9 +48,18 @@ function serve(me: Response): void {
   );
 }
 
+// The opening card's beats (opening-pace.ts) are tested on their own: here they are the short reduced-motion one,
+// waited for with room to spare on a busy test machine.
+const OPENED = { timeout: 3000 };
+beforeEach(() => {
+  document.documentElement.dataset.motion = 'reduce';
+});
+
 afterEach(() => {
   vi.unstubAllGlobals();
   window.history.replaceState(null, '', '/');
+  delete document.documentElement.dataset.motion;
+  resetOpeningClock();
 });
 
 describe('showOnboarding', () => {
@@ -72,7 +82,7 @@ describe('UniverseEntry', () => {
       </UniverseEntry>,
     );
     expect(screen.getByRole('progressbar')).toBeTruthy();
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy(), OPENED);
     expect(screen.getByText('universe')).toBeTruthy();
     screen.getByRole('button', { name: 'Next' }).click();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Networking' })).toBeTruthy());
@@ -86,7 +96,7 @@ describe('UniverseEntry', () => {
         <p>universe</p>
       </UniverseEntry>,
     );
-    await waitFor(() => expect(screen.getByText('universe')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('universe')).toBeTruthy(), OPENED);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -97,7 +107,7 @@ describe('UniverseEntry', () => {
         <p>universe</p>
       </UniverseEntry>,
     );
-    await waitFor(() => expect(screen.getByText('universe')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('universe')).toBeTruthy(), OPENED);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

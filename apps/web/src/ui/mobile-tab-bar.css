@@ -2,9 +2,10 @@
 
 .kf-tabbar {
   position: fixed;
-  left: 12px;
-  right: 12px;
-  bottom: 14px;
+  left: calc(12px + env(safe-area-inset-left, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  min-width: 0;
   z-index: 20;
   box-sizing: content-box;
   height: 72px;
@@ -20,7 +21,9 @@
 }
 
 .kf-tabbar-item {
-  min-width: 52px;
+  /* five tabs share a 296px bar on a 320px phone: 44px each at least */
+  min-width: 44px;
+  flex: 1 1 0;
   min-height: 52px;
   display: flex;
   flex-direction: column;

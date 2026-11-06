@@ -254,9 +254,9 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'M05-MobileDocs', path: `/d/${F04_DOCUMENT_ID}`, signedIn: true, status: 'built', maxDiff: 0.16, clock: SEED_CLOCK, waitFor: '[data-id="reader-article"]' },
   { board: 'M06-MobileSearch', path: '/search?q=l%E1%BA%A5y%20IP', signedIn: true, status: 'built', maxDiff: 0.12, mocks: ['search-m06'], waitFor: '[data-id="search-screen"][data-state="results"]' },
   { board: 'M03-MobilePublish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', maxDiff: 0.14, mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
-  { board: 'M04-MobileCopilot', path: C14_PATH, signedIn: true, status: 'built', maxDiff: 0.27, mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },
+  { board: 'M04-MobileCopilot', path: C14_PATH, signedIn: true, status: 'built', maxDiff: 0.33, mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },
   { board: 'M02-MobileCreate', path: '/create', signedIn: true, status: 'built', waitFor: '[data-id="create-screen"]' },
-  { board: 'Mobile', path: '/u', signedIn: true, status: 'built', maxDiff: 0.045, mocks: ['onboarded'], clock: UNIVERSE_CLOCK, waitFor: '.phone-sheet-chips' },
+  { board: 'Mobile', path: '/u', signedIn: true, status: 'built', maxDiff: 0.05, mocks: ['onboarded'], clock: UNIVERSE_CLOCK, waitFor: '.phone-sheet-chips' },
 ];
 
 /** Boards drawn for a tablet (1180×820) or a phone (390×844): the app shows them only in that layout. */

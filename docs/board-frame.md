@@ -44,9 +44,24 @@ Bề ngang cửa sổ chọn một trong ba bố cục ([`apps/web/src/layout/de
   Space" của M06.
 - Trình soạn trên điện thoại dùng chung tự lưu, bản offline trong trình duyệt và trợ lý AI với C02 (trợ lý mở thành
   sheet); `toBoardPx()` trả 1 trên màn điện thoại (không có khung board).
-- Màn điện thoại không bao giờ cuộn ngang ở 390px và mọi điều khiển từ 44×44px:
-  [`apps/web/e2e/phone-layout.spec.ts`](../apps/web/e2e/phone-layout.spec.ts) kiểm các route trên, kể cả trình soạn,
-  các bước sau "Gửi duyệt" (đã gửi, mất mạng) và tải tệp.
+- Màn điện thoại co giãn từ 320 tới 640px: không có bề ngang cố định 390px (quỹ đạo 2D và vòng tạo của M02 thu nhỏ
+  theo `usePhoneScale()`, sao trải theo tỉ lệ bề ngang), hàng chip và thẻ hoặc xuống dòng hoặc cuộn ngang trong chính
+  nó (đánh dấu `data-scroll-row`), mọi phần tránh tai thỏ và thanh home (`--safe-top`, `--safe-bottom`… trên
+  `.phone-shell`, từ `env(safe-area-inset-*)`). Sheet Space của Mobile đóng bằng nút ×, thanh kéo, kéo xuống, chạm vào
+  bầu trời hay Esc; đóng rồi còn nút "Mở <Space>" phía trên thanh dưới.
+- Màn điện thoại không bao giờ cuộn ngang và mọi điều khiển từ 44×44px, ở 320×640, 360×780, 375×812, 390×844 và
+  430×932:
+  [`apps/web/e2e/phone-layout.spec.ts`](../apps/web/e2e/phone-layout.spec.ts) kiểm các route trên (không phần nào
+  vượt mép phải, trừ trong hàng cuộn ngang), kể cả trình soạn, các bước sau "Gửi duyệt" (đã gửi, mất mạng) và tải tệp.
+
+## Thẻ mở vũ trụ
+
+Trong lúc kiểm phiên đăng nhập (mọi trang cần đăng nhập) và lúc `/u` tải dữ liệu, màn hiện thẻ B của S02 (quả cầu,
+"Đang mở cửa vũ trụ của bạn", Xác thực · Tải vũ trụ · Sẵn sàng). Mỗi bước xong giữ dấu ✓ khoảng 350ms, cả ba cùng xong
+rồi mới sang màn, tổng tối thiểu 1,2 giây; việc chậm hơn thì không chờ thêm ngoài nhịp của bước cuối. Giảm chuyển động:
+các bước theo đúng tiến độ thật, chỉ giữ trạng thái cuối một nhịp
+([`apps/web/src/pages/opening-pace.ts`](../apps/web/src/pages/opening-pace.ts)). E2E đăng nhập
+([`sign-in.ts`](../apps/web/e2e/sign-in.ts)) chờ thẻ này nhường chỗ rồi mới chụp.
 
 ## Dựng một màn mới
 

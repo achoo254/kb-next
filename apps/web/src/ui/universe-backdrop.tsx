@@ -42,6 +42,11 @@ interface UniverseBackdropProps {
   stars?: boolean;
   /** The stars' places when a board lays them out its own way (the phone boards); C09's by default. */
   starField?: readonly Star[];
+  /**
+   * The width the star field is drawn for: given, the stars spread over the screen's width in proportion (a phone of
+   * any width) instead of sitting at the field's px.
+   */
+  starFieldWidth?: number;
   /** CSS object-position of the landscape, e.g. `16% 40%` (Interaction board); centred by default. */
   artPosition?: string;
   className?: string;
@@ -53,7 +58,7 @@ interface UniverseBackdropProps {
  * (`data-theme`, else the system scheme), the veil and the stars. The art is decorative and hidden from assistive
  * technology; the screen's content goes in `children`.
  */
-export function UniverseBackdrop({ veil = 'scene', stars = true, starField = STARS, artPosition, className, children }: UniverseBackdropProps): ReactNode {
+export function UniverseBackdrop({ veil = 'scene', stars = true, starField = STARS, starFieldWidth, artPosition, className, children }: UniverseBackdropProps): ReactNode {
   const theme = useTheme();
   const artStyle: CSSProperties | undefined = artPosition ? { objectPosition: artPosition } : undefined;
   return (
@@ -65,7 +70,9 @@ export function UniverseBackdrop({ veil = 'scene', stars = true, starField = STA
       <div className="universe-veil" aria-hidden="true" />
       {stars &&
         starField.map((star, index) => {
-          const style: CSSProperties = { left: star.x, top: star.y, width: star.r, height: star.r, animationDelay: `${star.delay}s` };
+          // in proportion of the screen, kept inside its right edge
+          const left = starFieldWidth ? `calc((100% - ${star.r}px) * ${(star.x / starFieldWidth).toFixed(4)})` : star.x;
+          const style: CSSProperties = { left, top: star.y, width: star.r, height: star.r, animationDelay: `${star.delay}s` };
           return <span key={index} className="universe-star" aria-hidden="true" style={style} />;
         })}
       {children}

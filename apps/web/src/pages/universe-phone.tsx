@@ -1,7 +1,7 @@
-import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, type PointerEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { type DocumentSummary, type SpaceDetail, type SpaceListItem, fetchSpace } from '../api/content-api';
 import { type Locale, useI18n } from '../i18n/i18n';
-import { PhoneShell } from '../layout/phone-shell';
+import { PHONE_BOARD_WIDTH, PhoneShell, usePhoneScale } from '../layout/phone-shell';
 import { signedInUser, useSessionState } from '../layout/session-context';
 import { SHELL_PATHS, journeyPath } from '../layout/shell-paths';
 import { accountInitial } from '../layout/app-shell';
@@ -144,7 +144,10 @@ function Planet({ planet, name, focused, onPick, label }: { planet: PhonePlanet;
   );
 }
 
-function SpaceSheet({ planet, open, onToggle }: { planet: PhonePlanet | undefined; open: boolean; onToggle(): void }): ReactNode {
+/** How far a finger drags the sheet's top down to close it. */
+const SWIPE_CLOSE_PX = 60;
+
+function SpaceSheet({ planet, onClose }: { planet: PhonePlanet | undefined; onClose(): void }): ReactNode {
   const { t, locale } = usePhoneText();
   const load = useSpaceSheet(planet?.space.slug ?? null, locale);
   const space = planet?.space;
@@ -160,17 +163,34 @@ function SpaceSheet({ planet, open, onToggle }: { planet: PhonePlanet | undefine
     { key: 'pending', label: 'sheet.pending' },
   ];
   const tint = { '--tint': space?.glow } as CSSProperties;
+  const dragFrom = useRef<number | null>(null);
+  // dragging the handle or the title row down closes the sheet
+  const grab = {
+    onPointerDown: (event: PointerEvent<HTMLElement>) => {
+      dragFrom.current = event.clientY;
+    },
+    onPointerUp: (event: PointerEvent<HTMLElement>) => {
+      const from = dragFrom.current;
+      dragFrom.current = null;
+      if (from !== null && event.clientY - from > SWIPE_CLOSE_PX) onClose();
+    },
+  };
   return (
-    <RimPanel variant="sheet" className={open ? 'phone-sheet phone-sheet-open' : 'phone-sheet'} dataId="space-sheet" label={space ? spaceName(space, locale) : undefined} style={tint}>
+    <RimPanel variant="sheet" className="phone-sheet" dataId="space-sheet" label={space ? spaceName(space, locale) : undefined} style={tint}>
       <div className="phone-sheet-body">
-        <SheetHandle label={open ? t('sheet.collapse') : t('sheet.expand')} onPress={onToggle} />
+        <div className="phone-sheet-grab" {...grab}>
+          <SheetHandle label={t('sheet.close')} onPress={onClose} />
+        </div>
         {space ? (
           <>
-            <div className="phone-sheet-head">
+            <div className="phone-sheet-head" {...grab}>
               <h2 className="phone-sheet-name">{spaceName(space, locale)}</h2>
               <a className="phone-sheet-open" href={spaceHref(space.slug)} data-id="sheet-open-space">
                 {t('sheet.open')}
               </a>
+              <button type="button" className="phone-round phone-sheet-close" aria-label={t('sheet.close')} onClick={onClose} data-id="sheet-close">
+                <Icon name="close" size={18} />
+              </button>
             </div>
             {tally && (
               <div className="phone-sheet-chips">
@@ -187,7 +207,7 @@ function SpaceSheet({ planet, open, onToggle }: { planet: PhonePlanet | undefine
             {!load && <p className="phone-sheet-note">{t('sheet.loading')}</p>}
             {load?.status === 'ready' && texts.length === 0 && <p className="phone-sheet-note">{t('sheet.empty')}</p>}
             {texts.length > 0 && (
-              <ul className="phone-sheet-texts">
+              <ul className="phone-sheet-texts" data-scroll-row>
                 {texts.map((doc) => (
                   <li key={doc.id}>
                     <a href={documentHref(doc.id)} className="phone-sheet-text">
@@ -229,10 +249,23 @@ export function UniversePhone({ data, online, onRetry }: UniversePhoneProps): Re
   const spaces = data.status === 'ready' ? data.spaces : null;
   const planets = useMemo(() => (spaces ? placePhonePlanets(spaces) : []), [spaces]);
   const [focusSlug, setFocusSlug] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
+  const scale = usePhoneScale();
   const focus = planets.find((planet) => planet.space.slug === focusSlug) ?? planets.find((planet) => planet.kind === 'networking') ?? planets[0];
   const tints: OrbitTint[] = planets.map((planet) => ({ cx: planet.x, cy: planet.y, space: planet.kind ?? 'networking', color: planet.space.glow }));
   const orbTitle = app.t('landing.orbTitle');
+  const close = (): void => setOpen(false);
+
+  // Esc closes the Space sheet, as its ×, its handle, a drag down and a tap on the sky do
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
   return (
     <PhoneShell screen="Mobile" tab="universe">
       <div className="phone-universe" data-id="phone-universe" data-state={data.status}>
@@ -252,9 +285,12 @@ export function UniversePhone({ data, online, onRetry }: UniversePhoneProps): Re
           <Icon name="device-phone" size={12} />
           {t('universe.note')}
         </span>
-        <div className="phone-orbit">
+        <div
+          className="phone-orbit"
+          style={scale < 1 ? { transform: `scale(${scale})`, left: `calc(50% - ${(PHONE_BOARD_WIDTH / 2) * scale}px)` } : undefined}
+        >
           <OrbitField width={390} height={520} orbits={ORBITS} gradientX={[10, 380]} tints={tints} tintRadius={70} dots={DOTS} guides={GUIDES} className="phone-orbit-field" />
-          <button type="button" className="phone-orb" aria-label={t('universe.orb', { name: orbTitle })} onClick={() => setOpen(false)}>
+          <button type="button" className="phone-orb" aria-label={t('universe.orb', { name: orbTitle })} onClick={close}>
             <img className="phone-orb-art" src={ORB_ART} alt="" />
             <span className="phone-orb-title">{orbTitle}</span>
           </button>
@@ -269,15 +305,25 @@ export function UniversePhone({ data, online, onRetry }: UniversePhoneProps): Re
                 label={t('universe.planet', { name: spaceName(planet.space, locale), count: planet.space.documentCount })}
                 onPick={() => {
                   setFocusSlug(planet.space.slug);
-                  setOpen(false);
+                  setOpen(true);
                 }}
               />
             );
           })}
         </div>
-        {data.status === 'ready' ? (
-          <SpaceSheet planet={focus} open={open} onToggle={() => setOpen((value) => !value)} />
-        ) : (
+        {data.status === 'ready' && open && (
+          <>
+            <button type="button" className="phone-sheet-scrim" aria-label={t('sheet.close')} tabIndex={-1} onClick={close} />
+            <SpaceSheet planet={focus} onClose={close} />
+          </>
+        )}
+        {data.status === 'ready' && !open && focus && (
+          <button type="button" className="phone-sheet-reopen" onClick={() => setOpen(true)} data-id="sheet-reopen">
+            <Icon name="step-up" size={16} />
+            {t('sheet.reopen', { name: spaceName(focus.space, locale) })}
+          </button>
+        )}
+        {data.status !== 'ready' && (
           <RimPanel variant="sheet" className="phone-sheet" dataId="space-sheet">
             <div className="phone-sheet-body">
               <SheetHandle />

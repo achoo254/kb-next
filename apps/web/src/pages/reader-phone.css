@@ -118,7 +118,7 @@
 
 .phone-reader-page {
   box-sizing: border-box;
-  padding: 12px 20px 190px;
+  padding: 12px 20px calc(190px + var(--safe-bottom));
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -275,7 +275,7 @@
   position: fixed;
   left: 12px;
   right: 12px;
-  bottom: 98px;
+  bottom: calc(98px + var(--safe-bottom));
   z-index: 10;
   display: flex;
   justify-content: space-between;

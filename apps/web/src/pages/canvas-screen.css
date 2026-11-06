@@ -767,7 +767,7 @@
 .canvas-phone {
   box-sizing: border-box;
   height: 100%;
-  padding: 24px 20px 110px;
+  padding: 24px 20px calc(110px + var(--safe-bottom));
   display: flex;
   align-items: center;
   justify-content: center;

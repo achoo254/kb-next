@@ -581,19 +581,35 @@ a.copilot-source:focus-visible {
   }
 }
 
-/* ── phone (M04, 390×844): head at 14px, scopes at 76px, Jev and key chips at 122px, the thread from 178px to the
-   field 96px from the bottom ── */
+/* ── phone (M04, 320–640px wide): one column — the glass panel on top (title, status, scopes, Jev and key, where it
+   was opened from, the question), the answer scrolling under it, the field over the tab bar ── */
 
 .copilot-phone {
-  position: relative;
+  box-sizing: border-box;
   height: 100%;
+  padding: 12px 12px calc(96px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.copilot-phone > * {
+  min-width: 0;
+}
+
+.copilot-phone-top.kf-panel {
+  flex: none;
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.copilot-phone-top > * {
+  min-width: 0;
 }
 
 .copilot-phone-head {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  top: 14px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -635,14 +651,12 @@ a.copilot-source:focus-visible {
 
 .copilot-phone-status {
   font-size: 12px;
-  color: var(--c-text-muted);
+  color: var(--c-text-sub);
 }
 
 .copilot-phone-scopes {
-  position: absolute;
-  left: 16px;
-  right: 0;
-  top: 72px;
+  margin: 0 -12px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -656,31 +670,44 @@ a.copilot-source:focus-visible {
 }
 
 .copilot-phone-chips {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  top: 122px;
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow: hidden;
 }
 
 .copilot-phone-chips > * {
   box-sizing: border-box;
+  max-width: 100%;
   min-height: 44px;
   display: flex;
   align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+}
+
+.copilot-phone-from {
+  align-self: flex-start;
+  max-width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  color: var(--c-text-sub);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.copilot-phone-top .copilot-q.kf-bubble[data-from="user"] {
+  align-self: flex-end;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .copilot-phone-thread {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  top: 178px;
-  bottom: 170px;
+  flex: 1;
+  min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   display: flex;
@@ -688,25 +715,22 @@ a.copilot-source:focus-visible {
   gap: 12px;
 }
 
-.copilot-phone-from {
-  align-self: flex-start;
-  min-height: 44px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  border-radius: 10px;
-  color: var(--c-text-muted);
-  font-size: 11px;
-  font-weight: 600;
-  text-decoration: none;
+.copilot-phone-thread > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* the answer reads over the nebula: an almost opaque card */
+.copilot-phone .copilot-box {
+  background: var(--phone-answer-bg);
+  border-color: var(--phone-line);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .copilot-phone .copilot-ask {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 96px;
+  flex: none;
+  min-width: 0;
 }
 
 .copilot-phone .copilot-ask .kf-ask-box {
@@ -714,7 +738,12 @@ a.copilot-source:focus-visible {
   border-radius: 30px;
 }
 
+.copilot-phone .copilot-ask .kf-ask-input {
+  min-width: 0;
+}
+
 .copilot-phone .copilot-ask .kf-ask-send {
+  flex: none;
   width: 48px;
   height: 48px;
 }
@@ -748,4 +777,20 @@ a.copilot-source:focus-visible {
 .copilot-phone-limit {
   font-size: 12px;
   color: var(--c-text-muted);
+}
+
+/* the sequence diagram fits a phone's width: the two actors share it with the messages */
+.copilot-phone .copilot-seq {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 6px;
+}
+
+.copilot-phone .copilot-seq-actor {
+  box-sizing: border-box;
+  min-width: 0;
+  height: auto;
+  min-height: 40px;
+  padding: 4px 6px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
 }

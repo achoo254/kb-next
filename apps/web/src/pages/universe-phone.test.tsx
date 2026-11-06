@@ -73,10 +73,44 @@ describe('UniversePhone', () => {
     expect(screen.getByText('1 community')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'See the path' })).toBeNull();
 
-    const handle = screen.getByRole('button', { name: 'Expand' });
-    fireEvent.click(handle);
-    expect(document.querySelector('.phone-sheet-open')).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Collapse' })).toBeTruthy();
+  });
+
+  it('closes the Space sheet from its ×, its handle, a drag down, the sky and Esc, and brings it back', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => json(detailOf('networking', [doc('dhcp', { title: 'Giao thức DHCP' })]))));
+    renderWithI18n(<UniversePhone data={{ status: 'ready', spaces: BOARD_SPACES, recent: [] }} online onRetry={() => undefined} />);
+    await screen.findByRole('link', { name: 'Giao thức DHCP' });
+    const sheet = (): HTMLElement | null => document.querySelector('[data-id="space-sheet"]');
+    const reopen = (): void => {
+      fireEvent.click(screen.getByRole('button', { name: 'Open Networking' }));
+      expect(sheet()).not.toBeNull();
+    };
+
+    fireEvent.click(document.querySelector('[data-id="sheet-close"]') as HTMLElement);
+    expect(sheet()).toBeNull();
+    reopen();
+
+    // the sky behind (scrim), the handle and the × all close it
+    const closers = (): HTMLElement[] => screen.getAllByRole('button', { name: 'Close the Space' });
+    expect(closers().map((button) => button.className.split(' ')[0])).toEqual(['phone-sheet-scrim', 'kf-sheet-handle', 'phone-round']);
+    fireEvent.click(closers()[1] as HTMLElement);
+    expect(sheet()).toBeNull();
+    reopen();
+
+    fireEvent.click(closers()[0] as HTMLElement);
+    expect(sheet()).toBeNull();
+    reopen();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(sheet()).toBeNull();
+    reopen();
+
+    const head = document.querySelector('.phone-sheet-head') as HTMLElement;
+    fireEvent.pointerDown(head, { clientY: 400 });
+    fireEvent.pointerUp(head, { clientY: 480 });
+    expect(sheet()).toBeNull();
+    // a tap on a planet opens its Space
+    fireEvent.click(screen.getByRole('button', { name: 'docker, 2 texts' }));
+    expect(sheet()).not.toBeNull();
   });
 
   it('offers to try again when the Universe did not load', () => {

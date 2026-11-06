@@ -204,17 +204,10 @@ function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): 
 }
 
 function Screen({ route, path, session }: { route: ScreenRoute; path: string; session: SessionState }): ReactNode {
-  const { t } = useI18n();
   if (!canShow(route, session)) {
-    // The Universe opens with its own waiting card (S02 B); other screens say the session is being checked.
-    if (route.code === 'C09') return <UniverseOpening stage="auth" />;
-    return (
-      <ScreenPage code={route.code}>
-        <p className="screen-lead" role="status" data-id="checking-session">
-          {t('layout.checkingSession')}
-        </p>
-      </ScreenPage>
-    );
+    // The session is being checked: the opening card of S02 B with "Xác thực" running, on every page, so it flows
+    // into the sign-in page (S02) or the Universe's own opening without a jump.
+    return <UniverseOpening stage="auth" code={route.code} />;
   }
   switch (route.code) {
     case 'S01':

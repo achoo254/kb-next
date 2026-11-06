@@ -6,23 +6,42 @@ import { PUBLISH_DOCUMENT_ID } from './share-boards';
 import { signInAt } from './sign-in';
 
 /**
- * The phone screens (boards Mobile, M02–M06; apps/web/src/layout/device.ts) at 390×844: laid out at the window's own
- * width, so the page never scrolls sideways, and every control a finger presses is at least 44×44 px. As in WCAG
- * 2.5.8, links inside a line of text (a [[wikilink]], a source number in a sentence) are exempt; a field counts with
- * the label around it (pressing the label focuses it); the skip link counts only once it shows (focus).
+ * The phone screens (boards Mobile, M02–M06; apps/web/src/layout/device.ts) on phones from 320 to 430 CSS px wide:
+ * laid out at the window's own width, so the page never scrolls sideways and nothing reaches past the right edge
+ * (rows marked `data-scroll-row`, and a text's steps, scroll sideways inside themselves on purpose), and every control a finger presses is
+ * at least 44×44 px. As in WCAG 2.5.8, links inside a line of text (a [[wikilink]], a source number in a sentence) are
+ * exempt; a field counts with the label around it (pressing the label focuses it); the skip link counts only once it
+ * shows (focus).
  */
-const PHONE = { width: 390, height: 844 };
+const PHONES = [
+  { width: 320, height: 640 },
+  { width: 360, height: 780 },
+  { width: 375, height: 812 },
+  { width: 390, height: 844 },
+  { width: 430, height: 932 },
+] as const;
+/** The phone screens without a board of their own are checked on the narrowest phone. */
+const PHONE = PHONES[0];
 const TOUCH = 44;
 const PHONE_SCREENS = PARITY_SCREENS.filter((screen) => layoutOf(screen) === 'phone');
 
 const CONTROLS = 'a[href], button, input:not([type="hidden"]), select, textarea, [role="button"], [role="tab"], [role="switch"], [role="radio"]';
 
 /** The controls smaller than the touch target, as `tag.class "text" w×h`; and whether the page scrolls sideways. */
-async function measure(page: Page): Promise<{ small: string[]; sideways: boolean; layout: string | undefined }> {
+async function measure(page: Page): Promise<{ small: string[]; sideways: boolean; past: string[]; layout: string | undefined }> {
   return page.evaluate(
     ({ selector, touch }) => {
       const root = document.documentElement;
       const small: string[] = [];
+      const past = new Set<string>();
+      const name = (element: Element): string => `${element.tagName.toLowerCase()}.${(element.getAttribute('class') ?? '').split(' ')[0]}`;
+      for (const element of document.querySelectorAll('body *')) {
+        // rows that scroll sideways inside themselves on purpose (chips, cards, a text's steps)
+        if (element.closest('[data-scroll-row], [data-steps]')) continue;
+        const box = element.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0 || box.right <= 0) continue;
+        if (box.right > window.innerWidth + 0.5) past.add(`${name(element)} right ${Math.round(box.right)}`);
+      }
       for (const element of document.querySelectorAll<HTMLElement>(selector)) {
         if (element.closest('[aria-hidden="true"], [hidden], .kf-visually-hidden')) continue;
         const style = getComputedStyle(element);
@@ -36,25 +55,23 @@ async function measure(page: Page): Promise<{ small: string[]; sideways: boolean
         // off the screen until focused (the skip link)
         if (box.bottom <= 0 || box.right <= 0) continue;
         if (box.width + 0.5 < touch || box.height + 0.5 < touch) {
-          const name = `${element.tagName.toLowerCase()}.${(element.getAttribute('class') ?? '').split(' ')[0]}`;
-          small.push(`${name} "${(element.textContent ?? '').trim().slice(0, 24)}" ${Math.round(box.width)}×${Math.round(box.height)}`);
+          small.push(`${name(element)} "${(element.textContent ?? '').trim().slice(0, 24)}" ${Math.round(box.width)}×${Math.round(box.height)}`);
         }
       }
-      return { small, sideways: root.scrollWidth > root.clientWidth + 1, layout: root.dataset.device };
+      return { small, sideways: root.scrollWidth > window.innerWidth + 0.5 || root.scrollWidth > root.clientWidth + 1, past: [...past], layout: root.dataset.device };
     },
     { selector: CONTROLS, touch: TOUCH },
   );
 }
 
 for (const screen of PHONE_SCREENS) {
-  test(`${screen.board} is a phone layout without sideways scroll and with 44px touch targets`, async ({ page }) => {
-    await page.setViewportSize(PHONE);
-    await openScreen(page, screen);
-    const result = await measure(page);
-    expect(result.layout).toBe('phone');
-    expect(result.sideways).toBe(false);
-    expect(result.small).toEqual([]);
-  });
+  for (const size of PHONES) {
+    test(`${screen.board} at ${size.width}×${size.height}: a phone layout within the width, 44px touch targets`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await openScreen(page, screen);
+      await checkPhone(page);
+    });
+  }
 }
 
 /** The phone screens with no board of their own: the editor stage of M02, the stages after M03, the upload. */
@@ -62,6 +79,7 @@ async function checkPhone(page: Page): Promise<void> {
   const result = await measure(page);
   expect(result.layout).toBe('phone');
   expect(result.sideways).toBe(false);
+  expect(result.past).toEqual([]);
   expect(result.small).toEqual([]);
 }
 

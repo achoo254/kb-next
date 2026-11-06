@@ -431,10 +431,12 @@ interface TurnViewProps {
   size: TurnSize;
   /** Actions under a finished answer (C14: copy, retry, create from the answer). */
   footer?: ReactNode;
+  /** Left out where the question is shown apart, over the answer (the phone's top panel, M04). */
+  question?: boolean;
 }
 
 /** The question and its answer or state. */
-export function TurnView({ turn, keys, actions, size, footer }: TurnViewProps): ReactNode {
+export function TurnView({ turn, keys, actions, size, footer, question = true }: TurnViewProps): ReactNode {
   const { t } = useCopilotText();
   let body: ReactNode;
   switch (turn.stage) {
@@ -489,7 +491,7 @@ export function TurnView({ turn, keys, actions, size, footer }: TurnViewProps): 
   }
   return (
     <>
-      <QuestionBubble turn={turn} size={size} />
+      {question && <QuestionBubble turn={turn} size={size} />}
       {turn.jev === 'off' && turn.stage !== 'failed' && turn.stage !== 'queued' && <JevOffNote turn={turn} />}
       {body}
     </>

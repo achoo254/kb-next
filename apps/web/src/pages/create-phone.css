@@ -31,8 +31,8 @@
 
 .create-phone-option {
   position: absolute;
-  left: calc(50% - 195px + var(--x));
-  top: calc(100% - var(--from-bottom));
+  left: calc(50% + var(--from-middle));
+  top: calc(100% - var(--from-bottom) - var(--safe-bottom));
   width: 64px;
   padding: 0;
   border: none;

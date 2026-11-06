@@ -4,6 +4,7 @@ import { type Me, type SpaceListItem, fetchMe, fetchSpaces } from '../api/conten
 import { useI18n } from '../i18n/i18n';
 import { Toast } from '../ui/toast';
 import { UniverseOpening } from './login-page';
+import { useOpeningFinished } from './opening-pace';
 import { Onboarding, interestSpaces } from './onboarding';
 import './universe-entry.css';
 
@@ -50,6 +51,7 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   const [closed, setClosed] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const device = useDevice();
+  const opened = useOpeningFinished(account.status !== 'loading');
 
   useEffect(() => {
     let live = true;
@@ -61,7 +63,8 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
     };
   }, []);
 
-  if (account.status === 'loading') return <UniverseOpening stage="universe" />;
+  // the card stays until every step has shown done for a beat (opening-pace.ts)
+  if (!opened) return <UniverseOpening stage={account.status === 'loading' ? 'universe' : 'ready'} />;
   // The tour points at the desktop's rail, panel and stage, which a phone does not have: it waits for a bigger screen.
   const open = device !== 'phone' && !closed && showOnboarding(account, window.location.search);
   return (

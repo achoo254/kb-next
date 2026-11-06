@@ -1,5 +1,5 @@
 import { type CSSProperties, type ReactNode, useState } from 'react';
-import { PhoneShell } from '../layout/phone-shell';
+import { PHONE_BOARD_WIDTH, PhoneShell, usePhoneScale } from '../layout/phone-shell';
 import { CRYSTAL_ART, type SpaceKind } from '../ui/art';
 import { Icon, type IconName } from '../ui/icon';
 import { CREATE_OPTIONS, type OptionId } from './create-options';
@@ -44,6 +44,7 @@ export function CreatePhone(): ReactNode {
   const { t } = usePhoneText();
   const create = useCreateText();
   const [note, setNote] = useState<string | null>(null);
+  const scale = usePhoneScale();
   return (
     <PhoneShell screen="M02" tab="create" createOpen>
       <div className="create-phone" data-id="create-screen">
@@ -53,7 +54,9 @@ export function CreatePhone(): ReactNode {
         </div>
         {PHONE_OPTIONS.map((option) => {
           const { x, y } = bloomPlace(option.angle);
-          const style = { '--x': `${x}px`, '--from-bottom': `${844 - y}px` } as CSSProperties;
+          // the arc keeps its middle on the screen's middle and narrows with a phone under 390px
+          const fromMiddle = (x + 32 - PHONE_BOARD_WIDTH / 2) * scale - 32;
+          const style = { '--from-middle': `${fromMiddle.toFixed(1)}px`, '--from-bottom': `${844 - y}px` } as CSSProperties;
           const href = option.id === 'canvas' ? null : hrefOf(option.id);
           const body = (
             <>

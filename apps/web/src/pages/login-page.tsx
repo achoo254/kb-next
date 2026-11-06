@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/i18n';
 import { LegalLinks } from '../layout/legal-links';
 import { ScreenPage } from '../layout/screen-page';
 import { Button } from '../ui/button';
+import { usePacedStage } from './opening-pace';
 import { AuthGateCard, type OpeningStage, type SignInFailure, SignInFailedCard, UniverseOpeningCard } from './auth-cards';
 import './login-page.css';
 
@@ -84,13 +85,16 @@ export function LoginPage({ session }: { session: SessionState }): ReactNode {
 
 /**
  * B of S02 as a whole screen: shown on /u between the IdP sending the visitor back and the Universe drawing (the
- * session, then the screen's data). The Universe screen renders it with `stage="universe"` while its data loads.
+ * session, then the screen's data), and on any other page while the session is checked. The Universe screen renders it
+ * with `stage="universe"` while its data loads, then `ready` until the opening's last beat.
  */
 export function UniverseOpening({ stage, code = 'C09' }: { stage: OpeningStage; code?: string }): ReactNode {
+  // each finished step shows its tick for a beat (opening-pace.ts)
+  const shown = usePacedStage(stage);
   return (
     <ScreenPage code={code} veil="gate" layout="board" responsive>
       <div className="login-stage">
-        <UniverseOpeningCard stage={stage} />
+        <UniverseOpeningCard stage={shown} />
       </div>
     </ScreenPage>
   );

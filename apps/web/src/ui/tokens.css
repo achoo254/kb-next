@@ -913,6 +913,8 @@
     light-dark(#f5f3ff, rgb(13 10 36 / 0.97)) 100%
   );
   --drawer-scrim: light-dark(rgb(26 16 51 / 0.3), rgb(6 4 26 / 0.55));
+  /* M04: the answer card, nearly opaque so long answers read over the nebula */
+  --phone-answer-bg: light-dark(rgb(255 255 255 / 0.95), rgb(16 11 42 / 0.92));
   --phone-tabbar-bg: light-dark(rgb(255 255 255 / 0.88), rgb(12 9 32 / 0.82));
   --phone-tabbar-border: light-dark(rgb(109 40 217 / 0.28), rgb(196 181 253 / 0.5));
   --phone-tabbar-shadow:

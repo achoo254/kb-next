@@ -19,13 +19,14 @@ import { AskInput } from '../ui/ask-input';
 import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
 import { OriginTag } from '../ui/origin-tag';
+import { RimPanel } from '../ui/rim-panel';
 import { Skeleton } from '../ui/skeleton';
 import { Tooltip } from '../ui/tooltip';
 import { sourceHref, sourceTitle } from './copilot-answer';
 import { copilotHref, readCopilotLink, sameScope } from './copilot-links';
 import { type CopilotMessageKey, useCopilotText } from './copilot-messages';
 import { type CopilotTurn, type KeysLoad, historyTurn, useAiKeys, useCopilot } from './copilot-run';
-import { CheckChip, LaterButton, TurnView } from './copilot-turn';
+import { CheckChip, LaterButton, QuestionBubble, TurnView } from './copilot-turn';
 import { PROVIDERS } from './keys-messages';
 import { usePhoneText } from './phone-messages';
 import { originOf } from './space-labels';
@@ -484,42 +485,48 @@ export function CopilotScreen(): ReactNode {
   );
 
   if (device === 'phone') {
-    // M04: the same conversation at the phone's width, the scopes in one scrolling row, the field over the tab bar
+    // M04: the same conversation at the phone's width: what is asked and where in a glass panel on top (the scopes in
+    // one scrolling row), the answer under it on an opaque card, the field over the tab bar
     return (
       <PhoneShell screen="M04" tab="copilot" stars={false}>
         <div className="copilot-phone" data-id="copilot-screen" data-state={turn ? (turn.failure ?? turn.stage) : 'empty'}>
-          <div className="copilot-phone-head">
-            <div className="copilot-phone-orb" aria-hidden="true">
-              <span className="copilot-hero-ring" />
-              <span className="copilot-hero-ring copilot-hero-ring-inner" />
-              <img src={ILLUSTRATIONS['ai-core']} alt="" width={48} height={48} />
+          <RimPanel as="div" variant="rim" radius="section" className="copilot-phone-top" dataId="copilot-top">
+            <div className="copilot-phone-head">
+              <div className="copilot-phone-orb" aria-hidden="true">
+                <span className="copilot-hero-ring" />
+                <span className="copilot-hero-ring copilot-hero-ring-inner" />
+                <img src={ILLUSTRATIONS['ai-core']} alt="" width={48} height={48} />
+              </div>
+              <div className="copilot-phone-heading">
+                <h1 className="copilot-phone-title">{t('copilot.title')}</h1>
+                <span className="copilot-phone-status">{t(statusLine(keys))}</span>
+              </div>
+              <a className="phone-round" href={SHELL_PATHS.universe} aria-label={phone.t('copilot.close')}>
+                <Icon name="close" size={18} />
+              </a>
             </div>
-            <div className="copilot-phone-heading">
-              <h1 className="copilot-phone-title">{t('copilot.title')}</h1>
-              <span className="copilot-phone-status">{t(statusLine(keys))}</span>
+            <div className="copilot-phone-scopes" role="group" aria-label={t('copilot.scopes')} data-id="copilot-scopes" data-scroll-row>
+              <span className="copilot-scopes-label" aria-hidden="true">
+                {t('copilot.scopes')}
+              </span>
+              {scopeButtons}
             </div>
-            <a className="phone-round" href={SHELL_PATHS.universe} aria-label={phone.t('copilot.close')}>
-              <Icon name="close" size={18} />
-            </a>
-          </div>
-          <div className="copilot-phone-scopes" role="group" aria-label={t('copilot.scopes')} data-id="copilot-scopes">
-            <span className="copilot-scopes-label" aria-hidden="true">
-              {t('copilot.scopes')}
-            </span>
-            {scopeButtons}
-          </div>
-          <div className="copilot-phone-chips">
-            <span className="copilot-jev-chip">{t('copilot.jevChip')}</span>
-            <KeyChip keys={keys} />
-          </div>
-          <div className="copilot-phone-thread" data-id="copilot-thread">
+            <div className="copilot-phone-chips">
+              <span className="copilot-jev-chip">{t('copilot.jevChip')}</span>
+              <KeyChip keys={keys} />
+            </div>
             {context.from && (
               <a className="copilot-phone-from" href={context.from.href} data-id="copilot-from">
                 {t('copilot.openedFrom', { title: context.from.title })}
               </a>
             )}
+            {!opening && turn && <QuestionBubble turn={turn} size="compact" />}
+          </RimPanel>
+          <div className="copilot-phone-thread" data-id="copilot-thread">
             {thread}
-            {!opening && turn && <TurnView turn={turn} keys={keys} actions={actions} size="compact" footer={turn.stage === 'done' ? <PhoneAnswerFooter turn={turn} /> : undefined} />}
+            {!opening && turn && (
+              <TurnView turn={turn} keys={keys} actions={actions} size="compact" question={false} footer={turn.stage === 'done' ? <PhoneAnswerFooter turn={turn} /> : undefined} />
+            )}
             {!opening && !turn && <EmptyConversation />}
           </div>
           {askInput}

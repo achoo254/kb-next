@@ -1,15 +1,25 @@
 /* The phone frame (Mobile, M02–M06): exactly the window, never wider; screens scroll inside. */
 
 .phone-shell {
+  /* the notch, the rounded corners and the home bar of a phone (viewport-fit=cover in index.html) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
   height: 100vh;
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
 }
 
+/* the screen's own area: inside the safe insets, never wider than the window */
 .phone-main {
-  position: relative;
-  height: 100%;
+  position: absolute;
+  top: var(--safe-top);
+  right: var(--safe-right);
+  bottom: 0;
+  left: var(--safe-left);
+  min-width: 0;
 }
 
 /* Parts every phone screen uses: the round glass button, the scrim under a sheet, the two board buttons. */

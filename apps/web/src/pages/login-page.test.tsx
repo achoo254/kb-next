@@ -1,8 +1,9 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SessionState } from '../api/session-api';
 import { renderWithI18n } from '../test/render';
 import { LoginPage, UniverseOpening, gateHref, loginView } from './login-page';
+import { OPENING_STEP_MS, resetOpeningClock } from './opening-pace';
 
 const OUT: SessionState = { status: 'ready', signedIn: false, signInAvailable: true };
 const IN: SessionState = { status: 'ready', signedIn: true, signInAvailable: true };
@@ -69,16 +70,36 @@ describe('LoginPage', () => {
 });
 
 describe('UniverseOpening', () => {
-  it('walks the three steps with the progress bar', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    resetOpeningClock();
+  });
+
+  const state = (step: string): string | null | undefined => document.querySelector(`[data-id="opening-step-${step}"]`)?.getAttribute('data-state');
+
+  it('walks the three steps, each finished one ticked for a beat even when the work is quicker', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    resetOpeningClock();
     const first = renderWithI18n(<UniverseOpening stage="auth" />);
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('24');
-    expect(document.querySelector('[data-id="opening-step-auth"]')?.getAttribute('data-state')).toBe('running');
+    expect(state('auth')).toBe('running');
+    // the session is back at once: "Xác thực" still runs until its beat is over
     first.unmount();
     renderWithI18n(<UniverseOpening stage="universe" />);
-    expect(document.querySelector('[data-id="opening-step-auth"]')?.getAttribute('data-state')).toBe('done');
+    expect(state('auth')).toBe('running');
+    act(() => vi.advanceTimersByTime(OPENING_STEP_MS));
+    expect(state('auth')).toBe('done');
     expect(document.querySelector('[data-id="opening-step-universe"]')?.textContent).toContain('running');
     expect(document.querySelector('[data-id="opening-step-ready"]')?.textContent).toContain('waiting');
     expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('62');
     expect(document.querySelector('[data-screen="C09"]')).not.toBeNull();
+  });
+
+  it('is the card of the session check on any page', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    resetOpeningClock();
+    renderWithI18n(<UniverseOpening stage="auth" code="C08" />);
+    expect(document.querySelector('[data-screen="C08"] [data-id="universe-opening"]')).not.toBeNull();
+    expect(state('auth')).toBe('running');
   });
 });
