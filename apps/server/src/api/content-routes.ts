@@ -22,6 +22,7 @@ import {
 import type { Viewer } from '../access/viewer';
 import { editRight } from '../access/authoring';
 import { currentFileOf } from '../access/files';
+import { favoriteIds } from '../access/my-content';
 import { EDITABLE_KINDS, type FileKind, kindOfMime } from '../files/file-kinds';
 import { type Caption, type SpaceCaptions, captionInputsFor, fallbackCaption, textTotal } from '../captions/space-captions';
 import type { ServerConfig } from '../config';
@@ -101,6 +102,8 @@ export interface DocumentResponse {
     reviewedAt: string | null;
     /** Anchor of the passage the signed-in viewer read last (resume there); null for a guest or not started. */
     readAnchor: string | null;
+    /** The signed-in viewer marked it as favourite (C08 "Yêu thích"); null for a guest. */
+    favorite: boolean | null;
     collection: CollectionBrief | null;
     space: SpaceBrief & { art: string; kind: 'public' | 'personal' };
   };
@@ -295,7 +298,8 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
 
     const names = await userNames(db, [doc.authorId, ...(versions ?? []).map((v) => v.editorId), ...(approval ? [approval.actorId] : [])]);
     const [summary] = await summaries(viewer, [{ doc, langs }]);
-    const progress = viewer.kind === 'user' ? (await progressOf(db, viewer.userId, [doc.id])).get(doc.id) : undefined;
+    const [progress, favorite] =
+      viewer.kind === 'user' ? await Promise.all([progressOf(db, viewer.userId, [doc.id]).then((rows) => rows.get(doc.id)), favoriteIds(db, viewer.userId, [doc.id]).then((ids) => ids.has(doc.id))]) : [undefined, null];
     if (!summary) throw new Error('document summary missing');
     const collection = collectionRows.find((c) => c.id === doc.collectionId);
     const stored = doc.type === 'office' ? await currentFileOf(db, viewer, doc.id) : null;
@@ -313,6 +317,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
         reviewedBy: approval ? (names.get(approval.actorId) ?? null) : null,
         reviewedAt: approval ? approval.at.toISOString() : null,
         readAnchor: progress?.anchor ?? null,
+        favorite,
         collection: collection ? collectionBrief(collection) : null,
         space: { ...spaceBrief(space), art: space.art, kind: space.kind },
       },

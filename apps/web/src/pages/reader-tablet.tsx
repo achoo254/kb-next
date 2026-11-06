@@ -3,7 +3,8 @@ import type { DocumentView } from '../api/content-api';
 import { SHELL_PATHS } from '../layout/shell-paths';
 import { Icon } from '../ui/icon';
 import { usePhoneText } from './phone-messages';
-import { orderBacklinks } from './reader-side';
+import { type FavoriteToggle, FavoriteStatus, favoriteNote, orderBacklinks } from './reader-side';
+import { useReaderText } from './reader-messages';
 import { relevanceText } from './space-labels';
 
 /**
@@ -71,8 +72,11 @@ export function TocDrawer({ open, onClose, children }: { open: boolean; onClose(
   );
 }
 
-export function TabletActions({ id, canShare }: { id: string; canShare: boolean }): ReactNode {
+/** `favorite`: null for a guest (no "Yêu thích" to keep). */
+export function TabletActions({ id, canShare, favorite }: { id: string; canShare: boolean; favorite: FavoriteToggle | null }): ReactNode {
   const { t } = usePhoneText();
+  const reader = useReaderText();
+  const note = favorite ? favoriteNote(reader.t, favorite) : '';
   const encoded = encodeURIComponent(id);
   return (
     <div className="reader-tablet-actions" data-id="reader-tablet-actions">
@@ -84,9 +88,23 @@ export function TabletActions({ id, canShare }: { id: string; canShare: boolean 
       <a className="reader-round" href={SHELL_PATHS.mine} aria-label={t('tablet.edit')} data-id="reader-edit">
         <Icon name="pencil" size={20} />
       </a>
-      <button type="button" className="reader-round" aria-label={t('tablet.favorite')} disabled data-id="reader-favorite">
-        <Icon name="star" size={20} />
-      </button>
+      {favorite && (
+        <>
+          <button
+            type="button"
+            className="reader-round"
+            aria-label={reader.t('reader.favorite')}
+            aria-pressed={favorite.on}
+            disabled={favorite.offline}
+            title={note || undefined}
+            onClick={favorite.toggle}
+            data-id="reader-favorite"
+          >
+            <Icon name="favorite" size={20} />
+          </button>
+          <FavoriteStatus note={note} />
+        </>
+      )}
     </div>
   );
 }

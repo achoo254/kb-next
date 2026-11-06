@@ -9,8 +9,9 @@
  * - GET /api/documents/:id/edit → EditableDocument. 404 `not-found`, 403 `hidden` / `no-access` (not theirs),
  *   403 `locked` (waiting for review or published: changes go through review), 409 `not-editable` (a stored file),
  *   409 `journey` (a journey: its steps are edited at /journey/:id/edit, src/api/journey-routes.ts).
- * - PUT /api/documents/:id `{title, body, planet?, baseRev}` → SaveResponse; 409 `{error: 'stale', rev}` when
- *   another save landed since `baseRev` (the copy the writer started from), same 403/404/409 as above.
+ * - PUT /api/documents/:id `{title, body, planet?, baseRev, aiMade?}` → SaveResponse; 409 `{error: 'stale', rev}` when
+ *   another save landed since `baseRev` (the copy the writer started from), same 403/404/409 as above. `aiMade`: the
+ *   text holds an accepted AI suggestion, so the version this save writes (the writer's own) is marked AI-made.
  * - DELETE /api/documents/:id → 204: to the trash (30 days, then deleted for good). An admin deletes any document,
  *   its author any of theirs that is not published (403 `no-access` otherwise).
  *   POST /api/documents/:id/restore → 204: out of the trash, by whoever deleted it or an admin (404 otherwise).
@@ -82,6 +83,8 @@ const SaveBody = z.strictObject({
   body: Body,
   planet: PlanetField.nullable().optional(),
   baseRev: z.iso.datetime({ offset: true }),
+  /** The save carries text accepted from an "AI viết hộ" suggestion: the version it writes is marked AI-made. */
+  aiMade: z.boolean().optional(),
 });
 
 const SuggestQuery = z.object({ q: z.string().max(MAX_QUERY_CHARS).optional().default(''), exclude: Uuid.optional() });
@@ -238,7 +241,7 @@ export function authoringRoutes({ config, db, now, sync }: AuthoringRoutesOption
     const viewer = await reader(req);
     const body = parseBody(SaveBody, req.body);
     const id = idOf(req);
-    const saved = await saveDocument(db, viewer, id, { title: body.title, body: body.body, planet: body.planet, baseRev: new Date(body.baseRev), editor: 'text' }, now());
+    const saved = await saveDocument(db, viewer, id, { title: body.title, body: body.body, planet: body.planet, baseRev: new Date(body.baseRev), aiMade: body.aiMade, editor: 'text' }, now());
     if (saved.kind === 'stale') {
       res.status(409).json({ error: 'stale', rev: saved.rev.toISOString() });
       return;

@@ -40,6 +40,7 @@ interface Put {
   body: string;
   planet?: string | null;
   baseRev: string;
+  aiMade?: boolean;
 }
 
 let puts: Put[];
@@ -184,6 +185,10 @@ describe('EditorScreen', () => {
   });
 
   it('streams AI writing, and inserts it only when accepted (undoable)', async () => {
+    // jsdom has no layout: scrolling the caret into view after the insert measures a Range.
+    Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+    Range.prototype.getBoundingClientRect = () => new DOMRect(0, 0, 10, 10);
+    const scrollBy = vi.spyOn(window, 'scrollBy').mockImplementation(() => undefined);
     writeReply = () =>
       eventStream([
         ['delta', { text: 'Gần hết hạn, máy ' }],
@@ -200,8 +205,16 @@ describe('EditorScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
     expect(document.querySelector('.editor-content')?.textContent).toContain('Gần hết hạn, máy tự xin gia hạn.');
     expect(screen.getByText('Inserted · ⌘Z to undo')).toBeTruthy();
+    // The save that carries the accepted text tells the server it holds AI text; the next one does not.
+    const withAi = (): Put[] => puts.filter((put) => put.body.includes('tự xin gia hạn.'));
+    await waitFor(() => expect(withAi()).toHaveLength(1));
+    expect(withAi()[0]?.aiMade).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Undo (⌘Z)' }));
     expect(document.querySelector('.editor-content')?.textContent).not.toContain('tự xin gia hạn');
+    const after = puts.length;
+    await waitFor(() => expect(puts.length).toBeGreaterThan(after));
+    expect(puts.at(-1)?.aiMade).toBeUndefined();
+    scrollBy.mockRestore();
   });
 
   it('without an own key: the AI actions wait and the card leads to Own keys', async () => {

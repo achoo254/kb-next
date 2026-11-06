@@ -1,7 +1,7 @@
 /**
  * Writing on the seed, through the web app's own client (apps/web/src/api/authoring-api.ts, so the two sides cannot
  * drift): a new note is a draft only its author sees, `[[ ]]` links give backlinks to the author only, saves merge
- * within two minutes, an old copy never overwrites a newer save, nobody else can read, edit, restore, delete or
+ * within two minutes (a version stays AI-made when either merged save carried accepted AI text), an old copy never overwrites a newer save, nobody else can read, edit, restore, delete or
  * favourite someone's draft, published texts are locked for their author, the trash keeps 30 days, and Spaces and
  * Collections follow who may make them.
  */
@@ -30,6 +30,7 @@ import { signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
 import { MERGE_WINDOW_MS, TRASH_DAYS, purgeTrash } from '../access/authoring';
 import { findDocument } from '../access/content';
+import { saveAiTranslation } from '../access/translation-write';
 import { sql } from 'drizzle-orm';
 import { seedDatabase, seedId } from '../db/seed-database';
 
@@ -184,6 +185,77 @@ describe('saving', () => {
     const dhcp = await as('admin', () => fetchEditable(DHCP));
     expect(dhcp.body).toContain('## Broadcast là gì');
     expect(await as('owner', () => failure(fetchEditable(seedId('document:lab-notes'))))).toBe('not-editable');
+  });
+});
+
+/** Whether each version of a document, newest first, is marked AI-made (C17's "AI" badge). */
+async function aiMarks(who: keyof typeof sessions, id: string): Promise<Array<[number, boolean]>> {
+  const events = (await as(who, () => fetchHistory(id))).events;
+  const marks = events.flatMap((e): Array<[number, boolean]> => (e.kind === 'version' ? [[e.version, e.aiMade]] : []));
+  // By version: a translation's version carries the real clock, not the test's.
+  return marks.sort((a, b) => b[0] - a[0]);
+}
+
+describe('versions with accepted AI text', () => {
+  it('marks the version a save with accepted AI text writes, and keeps the mark through merged saves', async () => {
+    const note = await as('owner', () => createDocument({ title: 'Gợi ý AI', body: 'Một' }));
+    expect(await aiMarks('owner', note.id)).toEqual([[1, false]]);
+    clock = new Date(clock.getTime() + 10_000);
+    // A plain save then one carrying an accepted suggestion, within two minutes: the same version, now AI-made.
+    const plain = await as('owner', () => saveDocument(note.id, { title: 'Gợi ý AI', body: 'Một hai', baseRev: note.rev }));
+    clock = new Date(clock.getTime() + 10_000);
+    const ai = await as('owner', () => saveDocument(note.id, { title: 'Gợi ý AI', body: 'Một hai — AI viết tiếp', baseRev: plain.rev, aiMade: true }));
+    expect(ai.version).toBe(1);
+    // A later save without the flag, still in the window, never clears it.
+    clock = new Date(clock.getTime() + 10_000);
+    const after = await as('owner', () => saveDocument(note.id, { title: 'Gợi ý AI', body: 'Một hai — AI viết tiếp, đã sửa tay', baseRev: ai.rev, aiMade: false }));
+    expect(after.version).toBe(1);
+    expect(await aiMarks('owner', note.id)).toEqual([[1, true]]);
+    // Past the window: a new version, written by hand.
+    clock = new Date(clock.getTime() + MERGE_WINDOW_MS);
+    const next = await as('owner', () => saveDocument(note.id, { title: 'Gợi ý AI', body: 'Viết lại hết', baseRev: after.rev }));
+    expect(next.version).toBe(2);
+    expect(await aiMarks('owner', note.id)).toEqual([
+      [2, false],
+      [1, true],
+    ]);
+  });
+
+  it("marks only the caller's own version: an admin's AI save never marks the author's version", async () => {
+    const note = await as('owner', () => createDocument({ title: 'Của chủ', body: 'Tay viết' }));
+    clock = new Date(clock.getTime() + 5_000);
+    const own = await as('admin', () => fetchEditable(note.id));
+    const admin = await as('admin', () => saveDocument(note.id, { title: 'Của chủ', body: 'Tay viết, AI thêm', baseRev: own.rev, aiMade: true }));
+    expect(admin.version).toBe(2);
+    expect(await aiMarks('owner', note.id)).toEqual([
+      [2, true],
+      [1, false],
+    ]);
+  });
+
+  it('keeps an AI translation marked when its writer edits it by hand', async () => {
+    const db = server.database.db;
+    const anyone = { kind: 'user' as const, userId: '00000000-0000-4000-8000-000000000000', isAdmin: true, canReview: true };
+    const probe = await as('owner', () => createDocument({ title: 'Ai viết', body: '.' }));
+    const source = await findDocument(db, anyone, DHCP);
+    const mine = await findDocument(db, anyone, probe.id);
+    if (!source || !mine) throw new Error('seed documents missing');
+    const id = await saveAiTranslation(db, { source, authorId: mine.authorId, lang: 'en', title: 'DHCP', markdown: '# DHCP\n\nTranslated.', chunks: [] });
+    const translated = await as('owner', () => fetchEditable(id));
+    clock = new Date(clock.getTime() + 5_000);
+    await as('owner', () => saveDocument(id, { title: 'DHCP', body: 'Edited by hand.', baseRev: translated.rev }));
+    expect(await aiMarks('owner', id)).toEqual([
+      [2, false],
+      [1, true],
+    ]);
+  });
+
+  it('refuses a flag that is not true or false', async () => {
+    const note = await as('owner', () => createDocument({ title: 'Cờ lạ', body: 'Một' }));
+    current = sessions.owner;
+    const res = await fetch(`/api/documents/${note.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: 'Cờ lạ', body: 'Hai', baseRev: note.rev, aiMade: 'yes' }) });
+    expect(res.status).toBe(400);
+    expect(await aiMarks('owner', note.id)).toEqual([[1, false]]);
   });
 });
 

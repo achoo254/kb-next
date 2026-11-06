@@ -255,15 +255,16 @@ describe('GET /api/documents/:id', () => {
     expect(body.versions[0]?.createdAt).toBe('2026-11-02T14:30:00.000Z');
     expect(body.document.reviewedAt).toBe('2026-11-03T03:02:00.000Z');
     // Another member has not started it; a guest has no progress at all.
-    expect(body.document).toMatchObject({ readProgress: 0, readAnchor: null });
+    expect(body.document).toMatchObject({ readProgress: 0, readAnchor: null, favorite: false });
     const guest = await get<DocumentResponse>(`/api/documents/${doc('dhcp')}`);
-    expect(guest.body.document).toMatchObject({ readProgress: null, readAnchor: null });
+    expect(guest.body.document).toMatchObject({ readProgress: null, readAnchor: null, favorite: null });
     expect(guest.body.related.every((d) => d.readProgress === null)).toBe(true);
   });
 
   it('gives its reader their progress and where to resume (seeded as C10 shows)', async () => {
     const { body } = await get<DocumentResponse>(`/api/documents/${doc('dhcp')}`, owner);
-    expect(body.document).toMatchObject({ readProgress: 72, readAnchor: 'broadcast-la-gi' });
+    // DHCP is one of the owner's favourites (C08 "Yêu thích"): C11's star starts on.
+    expect(body.document).toMatchObject({ readProgress: 72, readAnchor: 'broadcast-la-gi', favorite: true });
     expect(body.related.find((d) => d.title === 'Giao thức ARP')?.readProgress).toBe(100);
   });
 

@@ -234,6 +234,12 @@ export interface SaveInput {
   restoredFrom?: number;
   summary?: string | null;
   /**
+   * This save carries text the writer accepted from an AI suggestion: the version it writes (a new one, or the
+   * writer's own latest editor version it merges into) is marked AI-made. Only ever sets the mark: a save without it
+   * never clears a version already marked. Ignored for a restore.
+   */
+  aiMade?: boolean;
+  /**
    * Which editor saves: `text` (C02, a C17 restore) never writes a journey, whose Markdown is made from its steps;
    * `journey` (C07) writes only journeys. Left out (an admin's title fix): any document.
    */
@@ -288,10 +294,15 @@ export async function saveDocument(db: Db, writer: Viewer, id: string, input: Sa
       latest.restoredFrom === null &&
       latest.editorId === writer.userId &&
       now.getTime() - latest.createdAt.getTime() < MERGE_WINDOW_MS;
+    const aiMade = via === 'editor' && input.aiMade === true;
     let version: number;
     if (merge) {
       version = latest.version;
-      await tx.update(documentVersions).set({ markdown, updatedAt: now }).where(eq(documentVersions.id, latest.id));
+      // A merged version stays AI-made when either save carried accepted AI text.
+      await tx
+        .update(documentVersions)
+        .set(aiMade ? { markdown, updatedAt: now, aiMade: true } : { markdown, updatedAt: now })
+        .where(eq(documentVersions.id, latest.id));
     } else {
       version = (latest?.version ?? 0) + 1;
       await tx.insert(documentVersions).values({
@@ -302,6 +313,7 @@ export async function saveDocument(db: Db, writer: Viewer, id: string, input: Sa
         via,
         restoredFrom: input.restoredFrom ?? null,
         summary: input.summary ?? null,
+        aiMade,
         createdAt: now,
         updatedAt: now,
       });

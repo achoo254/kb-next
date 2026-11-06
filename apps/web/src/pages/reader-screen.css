@@ -531,6 +531,13 @@ a.reader-action-main {
   cursor: not-allowed;
 }
 
+/* "Yêu thích" once on: the star filled amber, as in C08 */
+.reader-action[aria-pressed="true"] svg,
+.reader-round[aria-pressed="true"] svg {
+  color: var(--amber-400);
+  fill: currentColor;
+}
+
 .reader-card {
   padding: 14px;
   border-radius: 22px;

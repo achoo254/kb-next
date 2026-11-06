@@ -186,6 +186,8 @@ const ReaderDocumentSchema = z.extend(DocumentSummarySchema, {
   tags: z.optional(z.array(z.string())),
   /** The viewer manages its share link (its author or an admin, C18). */
   canShare: z.optional(z.boolean()),
+  /** The signed-in reader marked it as favourite (C08 "Yêu thích"); null for a guest. */
+  favorite: z.optional(z.nullable(z.boolean())),
 });
 
 const DocumentSchema = z.object({

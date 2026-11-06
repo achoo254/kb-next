@@ -76,6 +76,9 @@ export class DocumentAutosave {
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private draftTimer: ReturnType<typeof setTimeout> | null = null;
   private disposed = false;
+  /** AI suggestions accepted into the text so far, and how many of them the server has in a saved version. */
+  private aiAccepts = 0;
+  private savedAiAccepts = 0;
   state: AutosaveState;
 
   constructor(
@@ -86,8 +89,11 @@ export class DocumentAutosave {
     opened: 'clean' | 'unsaved' | 'conflict' | 'offline' = 'clean',
     baseRev: string = doc.rev,
     private readonly deps: AutosaveDeps = LIVE_DEPS,
+    /** The opened copy holds an accepted AI suggestion the server has not saved yet. */
+    aiMade = false,
   ) {
     this.rev = baseRev;
+    if (aiMade) this.aiAccepts = 1;
     this.read = () => start;
     this.state = initialAutosaveState(doc, opened);
     if (opened !== 'clean') this.edits = 1;
@@ -118,7 +124,27 @@ export class DocumentAutosave {
   }
 
   private draftOf(snapshot: Snapshot): EditorDraft {
-    return { id: this.doc.id, ...snapshot, baseRev: this.rev, editedAt: Date.now(), doc: this.doc };
+    return { id: this.doc.id, ...snapshot, baseRev: this.rev, editedAt: Date.now(), doc: this.doc, aiMade: this.aiPending };
+  }
+
+  /** The text holds an accepted AI suggestion no saved version has yet. */
+  private get aiPending(): boolean {
+    return this.aiAccepts > this.savedAiAccepts;
+  }
+
+  /**
+   * An AI suggestion was just accepted into the text (after its edit): the next save that carries it tells the server,
+   * which marks the version it writes AI-made. Once a save carrying it succeeds, later saves no longer say so.
+   */
+  aiAccepted(): void {
+    if (this.disposed) return;
+    this.aiAccepts += 1;
+    this.keepDraft();
+  }
+
+  /** The request of one save: the text, the rev it started from, and whether it carries accepted AI text. */
+  private request(snapshot: Snapshot): SaveRequest {
+    return { ...snapshot, baseRev: this.rev, ...(this.aiPending ? { aiMade: true } : {}) };
   }
 
   private keepDraft(): void {
@@ -159,12 +185,14 @@ export class DocumentAutosave {
     }
     this.inFlight = true;
     const edits = this.edits;
+    const aiAccepts = this.aiAccepts;
     const snapshot = this.read();
     this.set({ status: 'saving' });
     try {
-      const saved = await this.deps.save(this.doc.id, { ...snapshot, baseRev: this.rev });
+      const saved = await this.deps.save(this.doc.id, this.request(snapshot));
       this.rev = saved.rev;
       this.savedEdits = edits;
+      this.savedAiAccepts = aiAccepts;
       this.set({ savedAt: saved.savedAt, version: saved.version, status: this.dirty ? 'typing' : 'saved' });
       if (this.dirty) this.schedule(SAVE_DELAY_MS);
       else {
@@ -230,12 +258,14 @@ export class DocumentAutosave {
     this.saveTimer = null;
     this.inFlight = true;
     const edits = this.edits;
+    const aiAccepts = this.aiAccepts;
     this.deps
-      .save(this.doc.id, { ...this.read(), baseRev: this.rev }, true)
+      .save(this.doc.id, this.request(this.read()), true)
       .then(
         (saved) => {
           this.rev = saved.rev;
           this.savedEdits = edits;
+          this.savedAiAccepts = aiAccepts;
           this.set({ savedAt: saved.savedAt, version: saved.version, status: this.dirty ? 'typing' : 'saved' });
           if (!this.dirty) void this.deps.deleteDraft(this.doc.id);
         },
@@ -264,6 +294,8 @@ export interface OpenedDocument {
   openedAs: OpenedAs;
   /** The rev the start text was edited from. */
   baseRev: string;
+  /** The opened copy holds an accepted AI suggestion the server has not saved yet (a browser copy). */
+  aiMade: boolean;
 }
 
 /**
@@ -277,24 +309,24 @@ export async function openForEditing(id: string, deps: { fetchDoc(id: string): P
   } catch (error) {
     const draft = error instanceof ApiError && error.code === NETWORK_ERROR ? await deps.readDraft(id) : null;
     if (!draft) throw error;
-    return { doc: draft.doc, start: { title: draft.title, body: draft.body, planet: draft.planet }, openedAs: 'offline', baseRev: draft.baseRev };
+    return { doc: draft.doc, start: { title: draft.title, body: draft.body, planet: draft.planet }, openedAs: 'offline', baseRev: draft.baseRev, aiMade: draft.aiMade === true };
   }
   const server: Snapshot = { title: doc.title, body: doc.body, planet: doc.planet };
   const draft = await deps.readDraft(id);
-  if (!draft) return { doc, start: server, openedAs: 'clean', baseRev: doc.rev };
+  if (!draft) return { doc, start: server, openedAs: 'clean', baseRev: doc.rev, aiMade: false };
   const copy: Snapshot = { title: draft.title, body: draft.body, planet: draft.planet };
   if (sameText(copy, server)) {
     await deps.deleteDraft(id);
-    return { doc, start: server, openedAs: 'clean', baseRev: doc.rev };
+    return { doc, start: server, openedAs: 'clean', baseRev: doc.rev, aiMade: false };
   }
-  return { doc, start: copy, openedAs: draft.baseRev === doc.rev ? 'unsaved' : 'conflict', baseRev: draft.baseRev };
+  return { doc, start: copy, openedAs: draft.baseRev === doc.rev ? 'unsaved' : 'conflict', baseRev: draft.baseRev, aiMade: draft.aiMade === true };
 }
 
 /** The autosave of the open document as React state; saves pending work on leaving and when the connection returns. */
 export function useDocumentAutosave(opened: OpenedDocument): { state: AutosaveState; autosave: DocumentAutosave } {
   const [state, setState] = useState<AutosaveState>(() => initialAutosaveState(opened.doc, opened.openedAs));
   // One autosave per opened document (the screen remounts for another one); it starts nothing until the effect runs.
-  const [autosave] = useState(() => new DocumentAutosave(opened.doc, opened.start, setState, opened.openedAs, opened.baseRev));
+  const [autosave] = useState(() => new DocumentAutosave(opened.doc, opened.start, setState, opened.openedAs, opened.baseRev, LIVE_DEPS, opened.aiMade));
 
   useEffect(() => {
     autosave.begin();

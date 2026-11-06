@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod/mini';
 import { answer } from '../test/api-fakes';
 import { ApiError, PREFETCH_TTL_MS, apiFetch, clearPrefetched, getJson, prefetchGets } from './api-client';
+import { setFavorite } from './authoring-api';
 
 const Item = z.object({ n: z.number() });
 
@@ -52,6 +53,13 @@ describe('answers fetched ahead of time', () => {
     await prefetchGets(() => getJson(Item, '/api/x'));
     await apiFetch('/api/x', { method: 'PUT', body: '{}' });
     expect(await getJson(Item, '/api/x')).toEqual({ n: 3 });
+  });
+
+  it('forgets the favourites fetched ahead for C08 once the reader stars or unstars a text', async () => {
+    await prefetchGets(() => getJson(Item, '/api/me/favorites'));
+    await setFavorite('dhcp', false);
+    expect(fetchMock.mock.calls[1]?.[1]?.method).toBe('DELETE');
+    expect(await getJson(Item, '/api/me/favorites')).toEqual({ n: 3 });
   });
 
   it('never serves a failed prefetch: the screen asks and gets its own error', async () => {

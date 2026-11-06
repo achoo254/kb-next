@@ -23,7 +23,7 @@ import { ReaderMarkdown } from './reader-markdown';
 import { shortDate, useReaderText } from './reader-messages';
 import { useReading } from './reader-progress';
 import { type PassageSelection, type ReaderAi, ReaderAiCard, SelectionToolbar, usePassageSelection, useReaderAi } from './reader-ai';
-import { AiPanel, Backlinks, KeyHints, ReaderActions, RelatedDocuments, Versions } from './reader-side';
+import { AiPanel, Backlinks, KeyHints, ReaderActions, RelatedDocuments, Versions, useFavoriteToggle } from './reader-side';
 import { originOf } from './space-labels';
 import { TabletActions, TabletLinks, TocButton, TocDrawer } from './reader-tablet';
 import { ReaderPhone } from './reader-phone';
@@ -210,6 +210,10 @@ function ReaderBody({ view, loadedAt, tablet }: { view: DocumentView; loadedAt: 
     track: view.document.readProgress !== null,
   });
   const ai = useReaderAi(view.document.id);
+  const signedInFavorite = view.document.favorite;
+  const favoriteToggle = useFavoriteToggle(view.document.id, signedInFavorite === true, offline);
+  // A guest has no favourites: the button is not shown.
+  const favorite = signedInFavorite === null || signedInFavorite === undefined ? null : favoriteToggle;
   const selection = usePassageSelection(articleRef);
   const sidePressed = ai.asked && ai.asked.about !== 'selection' ? ai.asked.task : null;
   const time = new Date(loadedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
@@ -230,7 +234,7 @@ function ReaderBody({ view, loadedAt, tablet }: { view: DocumentView; loadedAt: 
       <>
         <TocButton open={drawer} onOpen={() => setDrawer(true)} />
         {panel}
-        <TabletActions id={view.document.id} canShare={view.document.canShare ?? false} />
+        <TabletActions id={view.document.id} canShare={view.document.canShare ?? false} favorite={favorite} />
         <TocDrawer open={drawer} onClose={closeDrawer}>
           <TableOfContents
             view={view}
@@ -254,7 +258,7 @@ function ReaderBody({ view, loadedAt, tablet }: { view: DocumentView; loadedAt: 
       </nav>
       {panel}
       <aside className="reader-side" aria-label={view.document.title} data-id="reader-side">
-        <ReaderActions id={view.document.id} canShare={view.document.canShare ?? false} />
+        <ReaderActions id={view.document.id} canShare={view.document.canShare ?? false} favorite={favorite} />
         <AiPanel
           offline={offline}
           keys={ai.keys}
@@ -309,7 +313,7 @@ export function ReaderScreen({ id }: { id: string }): ReactNode {
     >
       <div className="reader-screen" data-id="reader-screen" data-state={load.status === 'failed' ? load.error : load.status}>
         {load.status === 'ready' ? (
-          <ReaderBody view={load.view} loadedAt={load.loadedAt} tablet={tablet} />
+          <ReaderBody key={load.view.document.id} view={load.view} loadedAt={load.loadedAt} tablet={tablet} />
         ) : (
           <>
             <nav className="reader-toc" aria-label={t('reader.toc')}>

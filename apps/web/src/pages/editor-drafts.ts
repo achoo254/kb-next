@@ -20,6 +20,8 @@ export interface EditorDraft {
   doc: EditableDocument;
   /** The account that wrote it (H04 lists only the signed-in account's); absent on copies written before. */
   userId?: string;
+  /** The copy holds an accepted AI suggestion the server has not saved yet; absent on copies written before. */
+  aiMade?: boolean;
 }
 
 const DB_NAME = 'kb-editor';

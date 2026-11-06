@@ -79,8 +79,11 @@ function useKeys(): KeyState {
   return state;
 }
 
-/** Runs one AI writing task on the editor's text; the suggestion is inserted only when accepted. */
-export function useAiWriting(editor: Editor | null, title: () => string): { run: AiRun; start(task: WriteTask): void; stop(): void; accept(): void; discard(): void } {
+/**
+ * Runs one AI writing task on the editor's text; the suggestion is inserted only when accepted, then `onAccepted`
+ * runs (the autosave marks the save that carries it as AI-made).
+ */
+export function useAiWriting(editor: Editor | null, title: () => string, onAccepted?: () => void): { run: AiRun; start(task: WriteTask): void; stop(): void; accept(): void; discard(): void } {
   const [run, setRun] = useState<AiRun>({ stage: 'idle' });
   const controller = useRef<AbortController | null>(null);
   const selection = useRef<{ from: number; to: number } | null>(null);
@@ -141,8 +144,9 @@ export function useAiWriting(editor: Editor | null, title: () => string): { run:
     if (run.task === 'shorten' && range) chain.insertContentAt(range, run.text, { contentType: 'markdown' }).run();
     else if (run.task === 'continue') chain.insertContentAt(editor.state.doc.content.size, run.text, { contentType: 'markdown' }).run();
     else chain.insertContent(run.text, { contentType: 'markdown' }).run();
+    onAccepted?.();
     setRun({ stage: 'accepted' });
-  }, [editor, run]);
+  }, [editor, run, onAccepted]);
 
   const discard = useCallback(() => {
     controller.current?.abort();

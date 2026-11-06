@@ -198,6 +198,65 @@ describe('autosave', () => {
   });
 });
 
+describe('autosave of accepted AI text', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    states = [];
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('flags the save that carries an accepted suggestion, then stops flagging once the server has it', async () => {
+    const server = fakeServer();
+    const autosave = new DocumentAutosave(DOC, DOC, (s) => states.push(s), 'clean', DOC.rev, server.deps);
+    autosave.edited(text('Viết tay'));
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+    autosave.edited(text('Viết tay. AI viết tiếp.'));
+    autosave.aiAccepted();
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+    autosave.edited(text('Viết tay. AI viết tiếp. Sửa tay.'));
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+    expect(server.saved.map((r) => r.aiMade ?? false)).toEqual([false, true, false]);
+  });
+
+  it('keeps the flag through a failed save and an offline spell, in the browser copy too', async () => {
+    const server = fakeServer();
+    const autosave = new DocumentAutosave(DOC, DOC, (s) => states.push(s), 'clean', DOC.rev, server.deps);
+    server.control.fail = true;
+    autosave.edited(text('AI tóm tắt'));
+    autosave.aiAccepted();
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+    expect(autosave.state.status).toBe('failed');
+    server.control.fail = false;
+    server.control.online = false;
+    autosave.edited(text('AI tóm tắt, thêm chữ'));
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS);
+    expect(server.kept.get(DOC.id)).toMatchObject({ body: 'AI tóm tắt, thêm chữ', aiMade: true });
+    server.control.online = true;
+    autosave.reconnected();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(server.saved).toEqual([expect.objectContaining({ body: 'AI tóm tắt, thêm chữ', aiMade: true })]);
+  });
+
+  it('sends the flag of a browser copy opened with accepted AI text, and on leaving the page', async () => {
+    const server = fakeServer();
+    const restored = new DocumentAutosave(DOC, { ...DOC, body: 'Bản trên máy' }, (s) => states.push(s), 'unsaved', DOC.rev, server.deps, true);
+    restored.begin();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(server.saved.at(-1)).toMatchObject({ body: 'Bản trên máy', aiMade: true });
+
+    const other = fakeServer();
+    const leaving = new DocumentAutosave(DOC, DOC, (s) => states.push(s), 'clean', DOC.rev, other.deps);
+    leaving.edited(text('AI giải thích'));
+    leaving.aiAccepted();
+    leaving.leave();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(other.saved).toEqual([expect.objectContaining({ body: 'AI giải thích', aiMade: true })]);
+  });
+});
+
 describe('opening a document', () => {
   beforeEach(async () => {
     await resetDraftStore();
@@ -226,6 +285,8 @@ describe('opening a document', () => {
     const offline = { fetchDoc: () => Promise.reject(new ApiError(0, NETWORK_ERROR)), readDraft, deleteDraft };
     await expect(openForEditing(DOC.id, offline)).rejects.toMatchObject({ code: NETWORK_ERROR });
     await writeDraft(draft({}));
-    expect(await openForEditing(DOC.id, offline)).toMatchObject({ openedAs: 'offline', start: { body: 'Bản trên máy' }, doc: { id: DOC.id } });
+    expect(await openForEditing(DOC.id, offline)).toMatchObject({ openedAs: 'offline', start: { body: 'Bản trên máy' }, doc: { id: DOC.id }, aiMade: false });
+    await writeDraft(draft({ aiMade: true }));
+    expect(await openForEditing(DOC.id, offline)).toMatchObject({ openedAs: 'offline', aiMade: true });
   });
 });

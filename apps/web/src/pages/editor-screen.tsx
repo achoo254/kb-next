@@ -557,7 +557,8 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
     return () => window.removeEventListener('keydown', onKey);
   }, [autosave]);
 
-  const writing = useAiWriting(editor, () => titleRef.current);
+  const aiAccepted = useCallback(() => autosave.aiAccepted(), [autosave]);
+  const writing = useAiWriting(editor, () => titleRef.current, aiAccepted);
 
   const space = doc.space;
   const crumbs: BreadcrumbItem[] = [

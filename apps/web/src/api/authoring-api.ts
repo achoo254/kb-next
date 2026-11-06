@@ -89,6 +89,8 @@ export interface SaveRequest {
   body: string;
   planet?: Planet | null;
   baseRev: string;
+  /** The text holds an accepted "AI viết hộ" suggestion not saved yet: the version this save writes is marked AI-made. */
+  aiMade?: boolean;
 }
 
 /**

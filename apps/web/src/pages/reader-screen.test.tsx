@@ -375,6 +375,92 @@ describe('ReaderScreen', () => {
   });
 });
 
+describe('ReaderScreen "Favourite"', () => {
+  /** Serves the document as `favorite`, and answers the star's PUT / DELETE with `star` (recorded in `calls`). */
+  function serveFavorite(favorite: boolean | null, star: Route): Array<{ url: string; method: string }> {
+    const calls: Array<{ url: string; method: string }> = [];
+    serve((url, init) => {
+      if (url.endsWith('/favorite')) {
+        calls.push({ url, method: init?.method ?? 'GET' });
+        return star(url, init);
+      }
+      return answer(200, view({}, { favorite }));
+    });
+    return calls;
+  }
+
+  const favoriteButton = (): HTMLButtonElement => screen.getByRole('button', { name: 'Favourite' });
+
+  it('starts from the document payload and turns off at once, before the server answers', async () => {
+    let release: (res: Response) => void = () => undefined;
+    const calls = serveFavorite(true, () => new Promise<Response>((resolve) => (release = resolve)));
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+    expect(favoriteButton().getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(favoriteButton());
+    expect(favoriteButton().getAttribute('aria-pressed')).toBe('false');
+    // A second click while the first is on its way changes nothing.
+    fireEvent.click(favoriteButton());
+    expect(calls).toEqual([{ url: '/api/documents/dhcp/favorite', method: 'DELETE' }]);
+    await act(async () => {
+      release(new Response(null, { status: 204 }));
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(favoriteButton().getAttribute('aria-pressed')).toBe('false'));
+    fireEvent.click(favoriteButton());
+    expect(favoriteButton().getAttribute('aria-pressed')).toBe('true');
+    await waitFor(() => expect(calls.at(-1)).toEqual({ url: '/api/documents/dhcp/favorite', method: 'PUT' }));
+  });
+
+  it('puts the star back and says so when the server refuses', async () => {
+    serveFavorite(false, () => answer(500, { error: 'internal' }));
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+    fireEvent.click(favoriteButton());
+    expect(favoriteButton().getAttribute('aria-pressed')).toBe('true');
+    await waitFor(() => expect(favoriteButton().getAttribute('aria-pressed')).toBe('false'));
+    expect(document.querySelector('[data-id="reader-favorite-status"]')?.textContent).toBe('The favourite was not saved · try again');
+    expect(favoriteButton().title).toBe('The favourite was not saved · try again');
+  });
+
+  it('is off while offline, with the reason, and absent for a guest', async () => {
+    const calls = serveFavorite(false, () => new Response(null, { status: 204 }));
+    const { unmount } = renderWithI18n(<ReaderScreen id="dhcp" />);
+    await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    act(() => {
+      window.dispatchEvent(new Event('offline'));
+    });
+    expect(favoriteButton().disabled).toBe(true);
+    expect(favoriteButton().title).toBe('Offline · reconnect to save favourites');
+    fireEvent.click(favoriteButton());
+    expect(calls).toEqual([]);
+    vi.restoreAllMocks();
+    unmount();
+
+    serveFavorite(null, () => new Response(null, { status: 204 }));
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+    expect(screen.queryByRole('button', { name: 'Favourite' })).toBeNull();
+  });
+
+  it('toggles from the round button of the tablet actions (T02)', async () => {
+    document.documentElement.dataset.device = 'tablet';
+    try {
+      const calls = serveFavorite(false, () => new Response(null, { status: 204 }));
+      renderWithI18n(<ReaderScreen id="dhcp" />);
+      await screen.findByRole('heading', { level: 1, name: 'Giao thức DHCP' });
+      const star = within(document.querySelector<HTMLElement>('[data-id="reader-tablet-actions"]') ?? document.body).getByRole('button', { name: 'Favourite' });
+      expect(star.getAttribute('aria-pressed')).toBe('false');
+      fireEvent.click(star);
+      expect(star.getAttribute('aria-pressed')).toBe('true');
+      await waitFor(() => expect(calls).toEqual([{ url: '/api/documents/dhcp/favorite', method: 'PUT' }]));
+    } finally {
+      delete document.documentElement.dataset.device;
+    }
+  });
+});
+
 describe('reader helpers', () => {
   it('says how long ago and how far down', () => {
     const now = new Date('2026-11-03T14:05:00.000Z').getTime();

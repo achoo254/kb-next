@@ -47,6 +47,11 @@ hiện với tác giả cho tới khi bài được duyệt.
   khác, người viết chọn giữ bản nào. Mở bài khi offline: dùng bản trên máy nếu có.
 - Mỗi lần lưu cùng một người trong 2 phút tính từ lúc tạo phiên bản thì cập nhật phiên bản đó, quá 2 phút thì tạo phiên
   bản mới. Lịch sử, so sánh và khôi phục: `/d/<id>/history` (board C17).
+- Phiên bản "AI tạo" (`document_versions.ai_made`, huy hiệu AI ở C17 và A02): sau khi người viết bấm "Chấp nhận" một
+  gợi ý "AI viết hộ", lần lưu mang đoạn đó gửi `aiMade: true` (giữ cả trong bản trên máy nếu đang offline); máy chủ
+  chỉ đánh dấu phiên bản mà chính lần lưu đó ghi (của người lưu), lưu thành công thì các lần sau không gửi nữa. Gộp
+  trong 2 phút giữ dấu AI nếu một trong các lần lưu có AI; lưu không có cờ không bao giờ xoá dấu đã có. Bản dịch AI
+  (F04) đã được đánh dấu khi tạo, sửa tay sau đó là phiên bản mới không có dấu AI.
 - Ai sửa được: tác giả khi bài là nháp, riêng tư, bị yêu cầu sửa hay bị từ chối; quản trị luôn sửa được. Bài đang chờ
   duyệt hoặc đã đăng thì khoá với tác giả (sửa qua hàng duyệt ở phase 11).
 - Xoá: tác giả xoá được bài của mình chưa đăng (kể cả đang chờ duyệt, bị yêu cầu sửa); bài đã đăng chỉ quản trị xoá.

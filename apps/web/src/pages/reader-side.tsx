@@ -5,7 +5,9 @@
  * "Giải thích đoạn này" and "Tóm tắt" ask Copilot about the current passage or the whole text with the reader's own
  * key; the answer (or why there is none) shows in the AI card of the article (reader-ai.tsx).
  */
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
+import { ApiError } from '../api/api-client';
+import { setFavorite } from '../api/authoring-api';
 import type { DocumentView, LinkedDocument } from '../api/content-api';
 import { SHELL_PATHS } from '../layout/app-shell';
 import { sharePagePath } from '../layout/shell-paths';
@@ -50,7 +52,73 @@ function ShareAction({ id, canShare }: { id: string; canShare: boolean }): React
   );
 }
 
-export function ReaderActions({ id, canShare }: { id: string; canShare: boolean }): ReactNode {
+export interface FavoriteToggle {
+  on: boolean;
+  /** Offline: the button is disabled and says why. */
+  offline: boolean;
+  /** The last change did not reach the server and was undone. */
+  failed: boolean;
+  toggle(): void;
+}
+
+/**
+ * The reader's "Yêu thích" (C11, T02): on or off at once, sent to the server, and put back as it was when the server
+ * refuses or cannot be reached. One change at a time: a click while one is on its way is ignored.
+ */
+export function useFavoriteToggle(id: string, initial: boolean, offline: boolean): FavoriteToggle {
+  const [on, setOn] = useState(initial);
+  const [failed, setFailed] = useState(false);
+  const pending = useRef(false);
+  const toggle = (): void => {
+    if (offline || pending.current) return;
+    const next = !on;
+    pending.current = true;
+    setOn(next);
+    setFailed(false);
+    setFavorite(id, next)
+      .catch((error: unknown) => {
+        if (!(error instanceof ApiError)) console.error('favourite change failed', error);
+        setOn(!next);
+        setFailed(true);
+      })
+      .finally(() => {
+        pending.current = false;
+      });
+  };
+  return { on, offline, failed, toggle };
+}
+
+/** Why "Yêu thích" is unavailable or did not save, for its title and the screen reader; empty when all is well. */
+export function favoriteNote(t: ReturnType<typeof useReaderText>['t'], favorite: FavoriteToggle): string {
+  if (favorite.offline) return t('reader.favoriteOffline');
+  return favorite.failed ? t('reader.favoriteFailed') : '';
+}
+
+/** Says aloud why "Yêu thích" is off or did not save (out of the layout: positioned away from the grid). */
+export function FavoriteStatus({ note }: { note: string }): ReactNode {
+  return (
+    <span className="kf-visually-hidden" role="status" data-id="reader-favorite-status">
+      {note}
+    </span>
+  );
+}
+
+function FavoriteAction({ favorite }: { favorite: FavoriteToggle }): ReactNode {
+  const { t } = useReaderText();
+  const note = favoriteNote(t, favorite);
+  return (
+    <>
+      <button type="button" className="reader-action" aria-pressed={favorite.on} disabled={favorite.offline} title={note || undefined} onClick={favorite.toggle} data-id="reader-favorite">
+        <Icon name="favorite" size={15} />
+        {t('reader.favorite')}
+      </button>
+      <FavoriteStatus note={note} />
+    </>
+  );
+}
+
+/** `favorite`: null for a guest (no "Yêu thích" to keep). */
+export function ReaderActions({ id, canShare, favorite }: { id: string; canShare: boolean; favorite: FavoriteToggle | null }): ReactNode {
   const { t } = useReaderText();
   return (
     <div className="reader-actions" role="group" aria-label={t('reader.actions')} data-id="reader-actions">
@@ -62,10 +130,7 @@ export function ReaderActions({ id, canShare }: { id: string; canShare: boolean 
       <a className="reader-action" href={SHELL_PATHS.canvas} data-id="reader-canvas">
         {t('reader.canvas')}
       </a>
-      <button type="button" className="reader-action" disabled title={t('reader.soon')} data-id="reader-favorite">
-        <Icon name="star" size={15} />
-        {t('reader.favorite')}
-      </button>
+      {favorite && <FavoriteAction favorite={favorite} />}
     </div>
   );
 }
