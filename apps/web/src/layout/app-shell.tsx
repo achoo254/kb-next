@@ -9,6 +9,7 @@ import { ViewNav, type ViewNavItem } from '../ui/view-nav';
 import { CommandPalette } from '../palette/command-palette';
 import { useRouterState } from '../router/navigation';
 import { BrandLogo } from './brand-logo';
+import { readLastSpace, rememberSpace, spaceSlugOf } from './last-space';
 import { useDevice } from './device';
 import { SHELL_PATHS } from './shell-paths';
 import { type ShellHostStore, createShellHostStore } from './shell-host-store';
@@ -46,8 +47,10 @@ interface AppShellProps {
   veil?: BackdropVeil;
   /** The twinkling stars (C09); off on work screens. */
   stars?: boolean;
-  /** The Space the rail's "Spaces" and the view pill's links open (the current or last Space); the Universe otherwise. */
+  /** The Space on view (`/s/<slug>`): the view pill's links and the rail's "Spaces" open it; the Universe otherwise. */
   spaceHref?: string;
+  /** Where "Spaces" goes on a screen without a Space when this browser has opened none yet (the Universe's first). */
+  fallbackSpaceHref?: string;
   /** The document the "Docs" view opens (the current or last one); "My content" otherwise. */
   docHref?: string;
   /** Unread notifications (the red dot on the bell); default: the account's count (unread-context.tsx). */
@@ -67,18 +70,19 @@ interface AppShellProps {
 
 /** The Graph or Canvas of the Space `spaceHref` opens (`/s/<slug>`), else of no Space in particular. */
 export function spaceViewHref(base: string, spaceHref: string): string {
-  const slug = /^\/s\/([A-Za-z0-9_-]+)$/.exec(spaceHref)?.[1];
+  const slug = spaceSlugOf(spaceHref);
   return slug ? `${base}?${new URLSearchParams({ space: slug }).toString()}` : base;
 }
 
-function railItems(t: Translate, spaceHref: string): LensRailItem[] {
+/** `spacesHref`: where the rail's "Spaces" goes (the Space on view, else the last one opened, else the first). */
+function railItems(t: Translate, spaceHref: string, spacesHref: string): LensRailItem[] {
   return [
     { id: 'universe', label: t('shell.rail.universe'), href: SHELL_PATHS.universe, icon: 'home', spaceAfter: 6 },
     { id: 'graph', label: t('shell.rail.graph'), href: spaceViewHref(SHELL_PATHS.graph, spaceHref), icon: 'graph', spaceAfter: 22 },
     { id: 'create', label: t('shell.rail.create'), href: SHELL_PATHS.create, icon: 'plus', kind: 'create', spaceAfter: 8 },
     { id: 'search', label: t('shell.rail.search'), href: SHELL_PATHS.search, icon: 'search' },
     { id: 'copilot', label: t('shell.rail.copilot'), href: SHELL_PATHS.copilot, icon: 'sparkles' },
-    { id: 'spaces', label: t('shell.rail.spaces'), href: spaceHref, icon: 'orbit' },
+    { id: 'spaces', label: t('shell.rail.spaces'), href: spacesHref, icon: 'orbit' },
     { id: 'mine', label: t('shell.rail.mine'), href: SHELL_PATHS.mine, icon: 'bars' },
     { id: 'settings', label: t('shell.rail.settings'), href: SHELL_PATHS.settings, icon: 'settings' },
   ];
@@ -192,6 +196,7 @@ function ShellFrame({
   veil = 'scene',
   stars = true,
   spaceHref = SHELL_PATHS.universe,
+  fallbackSpaceHref,
   docHref = SHELL_PATHS.mine,
   unread,
   admin = false,
@@ -208,6 +213,12 @@ function ShellFrame({
   const user = signedInUser(useSessionState());
   const palette = usePalette();
   const staffRole = useStaffRole();
+  const spaceSlug = spaceSlugOf(spaceHref);
+  useEffect(() => {
+    if (spaceSlug) rememberSpace(spaceSlug);
+  }, [spaceSlug]);
+  const lastSpace = spaceSlug ? null : readLastSpace();
+  const spacesHref = spaceSlug ? spaceHref : lastSpace ? `/s/${encodeURIComponent(lastSpace)}` : (fallbackSpaceHref ?? SHELL_PATHS.universe);
   const account = user
     ? {
         label: user.name ? t('shell.account', { name: user.name }) : t('shell.accountUnnamed'),
@@ -250,7 +261,7 @@ function ShellFrame({
         />
         <LensRail
           label={admin ? t('shell.admin.rail') : t('shell.rail')}
-          items={admin ? adminRailItems(t, staffRole) : railItems(t, spaceHref)}
+          items={admin ? adminRailItems(t, staffRole) : railItems(t, spaceHref, spacesHref)}
           activeId={rail}
           account={account}
           className={admin ? 'app-shell-rail app-shell-rail-admin' : 'app-shell-rail'}

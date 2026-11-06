@@ -1,8 +1,9 @@
-import { screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { SessionState } from '../api/session-api';
 import { renderWithI18n } from '../test/render';
 import { AppShell, accountInitial } from './app-shell';
+import { LAST_SPACE_KEY } from './last-space';
 import { SessionProvider } from './session-context';
 
 const SIGNED_IN: SessionState = {
@@ -64,6 +65,29 @@ describe('AppShell', () => {
     expect(within(crumbs).getByText('Giao thức DHCP').getAttribute('aria-current')).toBe('page');
     // Signed out (no session in context): no avatar.
     expect(screen.queryByRole('link', { name: /Account/ })).toBeNull();
+  });
+
+  describe('"Spaces" off a Space', () => {
+    beforeEach(() => localStorage.removeItem(LAST_SPACE_KEY));
+    const spacesLink = (): string | null =>
+      within(screen.getByRole('navigation', { name: 'Main navigation' }))
+        .getByRole('link', { name: 'Spaces' })
+        .getAttribute('href');
+
+    it('opens the first Space until one is opened, then the last one opened', () => {
+      renderWithI18n(<AppShell screen="C09" rail="universe" view="orbit" fallbackSpaceHref="/s/networking" />);
+      expect(spacesLink()).toBe('/s/networking');
+      cleanup();
+
+      renderWithI18n(<AppShell screen="C10" rail="spaces" spaceHref="/s/docker" />);
+      expect(spacesLink()).toBe('/s/docker');
+      cleanup();
+
+      renderWithI18n(<AppShell screen="C09" rail="universe" view="orbit" fallbackSpaceHref="/s/networking" />);
+      expect(spacesLink()).toBe('/s/docker');
+      // the Graph stays the whole Universe's off a Space
+      expect(within(screen.getByRole('navigation', { name: 'Main navigation' })).getByRole('link', { name: 'Graph' }).getAttribute('href')).toBe('/graph');
+    });
   });
 
   it('leaves the breadcrumb out on the Universe', () => {

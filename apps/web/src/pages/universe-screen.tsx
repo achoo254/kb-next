@@ -311,6 +311,8 @@ export function UniverseScreen(): ReactNode {
     state = 'ready';
     body = <UniverseMain spaces={data.spaces} recent={data.recent} tablet={device === 'tablet'} />;
   }
+  // "Spaces" on the rail opens the first Space shown here until this browser has opened one (layout/last-space.ts)
+  const firstSpace = data.status === 'ready' ? data.spaces[0]?.slug : undefined;
   // T01 is the Universe itself; its loading and empty states (S04, S05) keep their desktop board on a tablet
   const tablet = device === 'tablet' && state === 'ready';
 
@@ -319,6 +321,7 @@ export function UniverseScreen(): ReactNode {
       screen="C09"
       rail="universe"
       view="orbit"
+      fallbackSpaceHref={firstSpace ? `/s/${encodeURIComponent(firstSpace)}` : undefined}
       tabletBoard={tablet ? 'universe' : undefined}
       topExtra={
         tablet ? (
