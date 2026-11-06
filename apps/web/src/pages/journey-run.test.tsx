@@ -180,3 +180,54 @@ describe('JourneyRunScreen (Flow)', () => {
     await waitFor(() => expect(runState()).toBe('forbidden'));
   });
 });
+
+describe('JourneyRunScreen on a phone', () => {
+  beforeEach(() => {
+    document.documentElement.dataset.device = 'phone';
+  });
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+  });
+
+  it('lists the steps top to bottom with the open step’s card under its step, and moves on when it is done', async () => {
+    renderWithI18n(<JourneyRunScreen id={ID} />);
+    expect(await screen.findByRole('heading', { name: 'Máy mới vào mạng' })).toBeTruthy();
+    expect(document.querySelector('[data-screen="Flow"]')?.closest('.phone-shell')).not.toBeNull();
+    expect(screen.getByText('Under way · 2/5')).toBeTruthy();
+    const path = within(screen.getByRole('list', { name: 'The path through the steps' }));
+    expect(path.getAllByRole('button', { name: /^Step \d/ }).map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Step 1: Cắm mạng, done',
+      'Step 2: DHCP, done',
+      'Step 3: ARP',
+      'Step 4: DNS',
+      'Step 5: Nghỉ',
+    ]);
+    const arp = path.getByRole('button', { name: 'Step 3: ARP' });
+    expect(arp.getAttribute('aria-current')).toBe('step');
+    expect(arp.closest('li')?.querySelector('[data-id="journey-card"]')).not.toBeNull();
+    expect(card().getByText('Hỏi: router ở địa chỉ MAC nào?')).toBeTruthy();
+    expect(card().getByRole('link', { name: 'Open the ARP lab →' }).getAttribute('href')).toBe('/d/d-s3');
+
+    fireEvent.click(card().getByRole('button', { name: 'Done' }));
+    await waitFor(() => expect(card().getByText('Step 4 / 5 · DNS')).toBeTruthy());
+    expect(marks).toEqual([{ step: 's3', done: true }]);
+    expect(screen.getByText('Under way · 3/5')).toBeTruthy();
+    fireEvent.click(card().getByRole('button', { name: 'Next step' }));
+    expect(card().getByText('Step 5 / 5 · Nghỉ')).toBeTruthy();
+    fireEvent.click(path.getByRole('button', { name: 'Step 1: Cắm mạng, done' }));
+    expect(card().getByRole('button', { name: 'Mark as not done' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Remix' })).toBeTruthy();
+  });
+
+  it('shows a walked journey as completed, and the states before it opens in the phone frame', async () => {
+    reply = () => answer(200, journeyOf([true, true, true, true, true]));
+    const { unmount } = renderWithI18n(<JourneyRunScreen id={ID} />);
+    expect(await screen.findByText('You walked the whole journey')).toBeTruthy();
+    expect(runState()).toBe('done');
+    unmount();
+    reply = () => answer(404, { error: 'not-found' });
+    renderWithI18n(<JourneyRunScreen id={ID} />);
+    await waitFor(() => expect(runState()).toBe('not-found'));
+    expect(document.querySelector('[data-id="journey-run"]')?.closest('.phone-shell')).not.toBeNull();
+  });
+});

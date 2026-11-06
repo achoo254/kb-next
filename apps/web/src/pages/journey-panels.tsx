@@ -2,7 +2,7 @@
  * The three panels of the journey builder (board C07): what to add (Jev's next steps, the documents of the universe),
  * the steps themselves, and the selected step with the journey's story card.
  */
-import { type CSSProperties, type DragEvent, type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, type DragEvent, type KeyboardEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { MAX_STEPS, type NextStep, type PoolDocument, STEP_KINDS, STEP_NOTE_MAX, STEP_TITLE_MAX, type StepKind } from '../api/journey-api';
 import { brand } from '../brand';
 import type { Locale } from '../i18n/i18n';
@@ -25,7 +25,7 @@ export const KIND_LOOK: Record<StepKind, { label: JourneyMessageKey; crystal: st
 };
 
 /** The kind a document is added as (a lab is done as a lab). */
-const kindOfDocument = (doc: Pick<PoolDocument, 'type'>): StepKind => (doc.type === 'lab' ? 'lab' : 'read');
+export const kindOfDocument = (doc: Pick<PoolDocument, 'type'>): StepKind => (doc.type === 'lab' ? 'lab' : 'read');
 
 export type SuggestionsLoad = { status: 'off' } | { status: 'loading' } | { status: 'ready'; items: NextStep[] } | { status: 'failed' };
 
@@ -138,7 +138,7 @@ interface ListProps {
 type Control = 'pick' | 'up' | 'down';
 
 /** What a step row says under its title: its source document, or a note's first words. */
-function sourceOf(t: T, step: EditStep, documents: ReadonlyMap<string, PoolDocument>): string {
+export function sourceOf(t: T, step: EditStep, documents: ReadonlyMap<string, PoolDocument>): string {
   if (step.kind === 'note') return step.note?.trim() || t('journey.kind.note');
   const doc = step.documentId ? documents.get(step.documentId) : undefined;
   return doc?.title ?? t('journey.step.noSource');
@@ -291,6 +291,80 @@ export function StepList({ t, state, selected, documents, onTitle, onSelect, onM
   );
 }
 
+interface FieldsProps {
+  t: T;
+  step: EditStep;
+  documents: ReadonlyMap<string, PoolDocument>;
+  onChange(patch: StepPatch): void;
+}
+
+/** A step's fields: its one-line title, kind, estimated time, and its source document or a note's text. */
+export function StepFields({ t, step, documents, onChange }: FieldsProps): ReactNode {
+  const kindLabel = useId();
+  const options = [...documents.values()];
+  return (
+    <>
+      <label className="jb-field">
+        {t('journey.edit.title')}
+        <input
+          type="text"
+          value={step.title}
+          maxLength={STEP_TITLE_MAX}
+          onChange={(event) => onChange({ title: event.target.value.replace(/[\r\n]+/g, ' ') })}
+          data-id="journey-step-title"
+        />
+      </label>
+      <div className="jb-field">
+        <span id={kindLabel}>{t('journey.edit.kind')}</span>
+        <div className="jb-kinds" role="group" aria-labelledby={kindLabel}>
+          {STEP_KINDS.map((kind) => (
+            <button key={kind} type="button" className="jb-kind" data-kind={kind} aria-pressed={step.kind === kind} onClick={() => onChange({ kind })}>
+              {t(KIND_LOOK[kind].label)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="jb-time">
+        <span className="jb-time-label">{t('journey.edit.time')}</span>
+        <button type="button" className="jb-round" aria-label={t('journey.edit.less')} disabled={step.minutes <= 1} onClick={() => onChange({ minutes: step.minutes - 1 })}>
+          −
+        </button>
+        <span className="jb-time-value" data-id="journey-step-minutes">
+          {t('journey.edit.minutes', { minutes: step.minutes })}
+        </span>
+        <button type="button" className="jb-round" aria-label={t('journey.edit.more')} onClick={() => onChange({ minutes: step.minutes + 1 })}>
+          +
+        </button>
+      </div>
+      {step.kind === 'note' ? (
+        <label className="jb-field">
+          {t('journey.edit.note')}
+          <textarea
+            value={step.note ?? ''}
+            maxLength={STEP_NOTE_MAX}
+            rows={2}
+            placeholder={t('journey.edit.notePlaceholder')}
+            onChange={(event) => onChange({ note: event.target.value })}
+            data-id="journey-step-note"
+          />
+        </label>
+      ) : (
+        <label className="jb-field">
+          {t('journey.edit.source')}
+          <select value={step.documentId ?? ''} onChange={(event) => onChange({ documentId: event.target.value || null })} data-id="journey-step-source">
+            <option value="">{t('journey.edit.noSource')}</option>
+            {options.map((doc) => (
+              <option key={doc.id} value={doc.id}>
+                {doc.title}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+    </>
+  );
+}
+
 interface EditorProps {
   t: T;
   state: BuilderState;
@@ -303,69 +377,12 @@ interface EditorProps {
 
 /** Right: the selected step's fields, then the journey's story card and its cover colour. */
 export function StepEditor({ t, state, index, step, documents, onChange, onCover }: EditorProps): ReactNode {
-  const options = [...documents.values()];
   return (
     <aside className="jb-panel jb-editor" aria-label={t('journey.edit.panel')} data-id="journey-editor">
       {step ? (
         <>
           <span className="jb-editor-step">{t('journey.edit.step', { n: index + 1 })}</span>
-          <label className="jb-field">
-            {t('journey.edit.title')}
-            <input
-              type="text"
-              value={step.title}
-              maxLength={STEP_TITLE_MAX}
-              onChange={(event) => onChange({ title: event.target.value.replace(/[\r\n]+/g, ' ') })}
-              data-id="journey-step-title"
-            />
-          </label>
-          <div className="jb-field">
-            <span id="journey-kind-label">{t('journey.edit.kind')}</span>
-            <div className="jb-kinds" role="group" aria-labelledby="journey-kind-label">
-              {STEP_KINDS.map((kind) => (
-                <button key={kind} type="button" className="jb-kind" data-kind={kind} aria-pressed={step.kind === kind} onClick={() => onChange({ kind })}>
-                  {t(KIND_LOOK[kind].label)}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="jb-time">
-            <span className="jb-time-label">{t('journey.edit.time')}</span>
-            <button type="button" className="jb-round" aria-label={t('journey.edit.less')} disabled={step.minutes <= 1} onClick={() => onChange({ minutes: step.minutes - 1 })}>
-              −
-            </button>
-            <span className="jb-time-value" data-id="journey-step-minutes">
-              {t('journey.edit.minutes', { minutes: step.minutes })}
-            </span>
-            <button type="button" className="jb-round" aria-label={t('journey.edit.more')} onClick={() => onChange({ minutes: step.minutes + 1 })}>
-              +
-            </button>
-          </div>
-          {step.kind === 'note' ? (
-            <label className="jb-field">
-              {t('journey.edit.note')}
-              <textarea
-                value={step.note ?? ''}
-                maxLength={STEP_NOTE_MAX}
-                rows={2}
-                placeholder={t('journey.edit.notePlaceholder')}
-                onChange={(event) => onChange({ note: event.target.value })}
-                data-id="journey-step-note"
-              />
-            </label>
-          ) : (
-            <label className="jb-field">
-              {t('journey.edit.source')}
-              <select value={step.documentId ?? ''} onChange={(event) => onChange({ documentId: event.target.value || null })} data-id="journey-step-source">
-                <option value="">{t('journey.edit.noSource')}</option>
-                {options.map((doc) => (
-                  <option key={doc.id} value={doc.id}>
-                    {doc.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+          <StepFields t={t} step={step} documents={documents} onChange={onChange} />
         </>
       ) : (
         <span className="jb-editor-none">{t('journey.edit.none')}</span>

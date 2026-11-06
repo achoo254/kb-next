@@ -1,15 +1,18 @@
 import { type CSSProperties, type ReactNode, useState } from 'react';
 import { PHONE_BOARD_WIDTH, PhoneShell, usePhoneScale } from '../layout/phone-shell';
+import { PhoneSheet } from '../layout/phone-sheet';
 import { CRYSTAL_ART, type SpaceKind } from '../ui/art';
 import { Icon, type IconName } from '../ui/icon';
 import { CREATE_OPTIONS, type OptionId } from './create-options';
 import { useCreateText } from './create-messages';
+import { TemplateCards } from './create-template-picker';
 import { type PhoneMessageKey, usePhoneText } from './phone-messages';
 import './create-phone.css';
 
 /**
  * The create bloom on a phone (board M02): five crystals on an arc above the tab bar, whose "+" turns into "×". A phone
- * has no Canvas (Z02), so its crystal stays but only says so; "Từ URL" waits like on the desktop ring.
+ * has no Canvas (Z02), so its crystal stays but only says so; "Từ URL" waits like on the desktop ring. "Từ mẫu" under
+ * the title opens the template cards in a sheet (the board has no template crystal; C01 has).
  */
 
 interface PhoneOption {
@@ -44,6 +47,7 @@ export function CreatePhone(): ReactNode {
   const { t } = usePhoneText();
   const create = useCreateText();
   const [note, setNote] = useState<string | null>(null);
+  const [templates, setTemplates] = useState(false);
   const scale = usePhoneScale();
   return (
     <PhoneShell screen="M02" tab="create" createOpen>
@@ -51,6 +55,10 @@ export function CreatePhone(): ReactNode {
         <div className="create-phone-head">
           <h1 className="create-phone-title">{t('create.title')}</h1>
           <p className="create-phone-sub">{t('create.sub')}</p>
+          <button type="button" className="create-phone-template" aria-haspopup="dialog" aria-expanded={templates} onClick={() => setTemplates(true)} data-id="create-template">
+            <Icon name="create-template" size={18} />
+            {t('create.template')}
+          </button>
         </div>
         {PHONE_OPTIONS.map((option) => {
           const { x, y } = bloomPlace(option.angle);
@@ -96,6 +104,12 @@ export function CreatePhone(): ReactNode {
           <p id="create-phone-note" className="create-phone-note" role="status">
             {note === 'canvas' ? t('limit.canvas') : create.t('create.soon')}
           </p>
+        )}
+        {templates && (
+          <PhoneSheet title={create.t('create.templatePane.title')} closeLabel={create.t('create.close')} onClose={() => setTemplates(false)} dataId="create-template-sheet">
+            <TemplateCards layout="list" />
+            <p className="create-phone-sheet-note">{create.t('create.templatePane.note')}</p>
+          </PhoneSheet>
         )}
       </div>
     </PhoneShell>

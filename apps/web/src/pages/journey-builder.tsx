@@ -4,20 +4,23 @@
  * Alt + ↑/↓ or by the selected step's arrows; right: the selected step (title, kind, time, source document or note)
  * and the story card. Every change autosaves (journey-autosave.ts). States: loading, the journey, no step yet
  * (`ill-journey-path`), saving / saved / not saved / offline / changed in another tab, locked (waiting for review or
- * published), and a journey not found, someone else's, or failing to load.
+ * published), and a journey not found, someone else's, or failing to load. On a phone the same builder is a list of
+ * step cards with sheets (journey-builder-phone.tsx).
  */
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '../api/api-client';
-import { type Journey, type NextStep, type PoolDocument, createJourney, fetchJourneyForEditing, fetchNextSteps, fetchStepPool } from '../api/journey-api';
+import { type Journey, createJourney, fetchJourneyForEditing } from '../api/journey-api';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
+import { useDevice } from '../layout/device';
+import { PhoneShell } from '../layout/phone-shell';
 import { journeyEditPath, journeyPath, publishPath } from '../layout/shell-paths';
 import { EmptyState } from '../ui/empty-state';
 import { Icon } from '../ui/icon';
 import { ErrorPanel } from './error-screen';
-import { useJourneyAutosave } from './journey-autosave';
-import { type BuilderState, type StepPatch, addDocument, draftOf, moveStep, nextPlanet, removeStep, startState, updateStep, withSavedIds } from './journey-model';
+import { SAVE_LABEL, saveStatusLine, useJourneyBuilder } from './journey-builder-state';
+import { JourneyBuilderPhone } from './journey-builder-phone';
 import { type JourneyMessageKey, useJourneyText } from './journey-messages';
-import { StepEditor, StepList, StepSources, type SuggestionsLoad } from './journey-panels';
+import { StepEditor, StepList, StepSources } from './journey-panels';
 import { spaceName } from './space-panels';
 import type { ScreenTranslate } from './space-messages';
 import type { Locale } from '../i18n/i18n';
@@ -70,7 +73,17 @@ function crumbs(t: ScreenTranslate<JourneyMessageKey>, locale: Locale, journey: 
   ];
 }
 
+/** The frame of the builder's states: the C07 board, or on a phone the full-screen phone frame (no tab bar). */
 function BuilderFrame({ breadcrumb, state, children }: { breadcrumb: BreadcrumbItem[]; state: string; children: ReactNode }): ReactNode {
+  if (useDevice() === 'phone') {
+    return (
+      <PhoneShell screen="C07" tabBar={false} stars={false}>
+        <div className="jbp jbp-state-frame" data-id="journey-builder" data-state={state}>
+          {children}
+        </div>
+      </PhoneShell>
+    );
+  }
   return (
     <AppShell screen="C07" veil="strong" breadcrumb={breadcrumb} className="jb-shell">
       <div className="jb-screen" data-id="journey-builder" data-state={state}>
@@ -141,163 +154,14 @@ export function NewJourney(): ReactNode {
   );
 }
 
-type PoolLoad = { status: 'loading' } | { status: 'ready'; documents: PoolDocument[] } | { status: 'failed' };
-
-function usePool(id: string): PoolLoad {
-  const [load, setLoad] = useState<PoolLoad>({ status: 'loading' });
-  useEffect(() => {
-    let current = true;
-    fetchStepPool(id).then(
-      (documents) => {
-        if (current) setLoad({ status: 'ready', documents });
-      },
-      (error: unknown) => {
-        if (!(error instanceof ApiError)) console.error('journey pool failed', error);
-        if (current) setLoad({ status: 'failed' });
-      },
-    );
-    return () => {
-      current = false;
-    };
-  }, [id]);
-  return load;
-}
-
-/** Jev's next steps, asked when the builder opens and again after a save changes which documents the steps read. */
-function useSuggestions(id: string, available: boolean): { load: SuggestionsLoad; refresh(): void } {
-  const [load, setLoad] = useState<SuggestionsLoad>(available ? { status: 'loading' } : { status: 'off' });
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    if (!available) return;
-    let current = true;
-    fetchNextSteps(id).then(
-      (items) => {
-        if (current) setLoad({ status: 'ready', items });
-      },
-      (error: unknown) => {
-        if (!current) return;
-        if (error instanceof ApiError && error.code === 'jev-off') {
-          setLoad({ status: 'off' });
-          return;
-        }
-        if (!(error instanceof ApiError)) console.error('journey suggestions failed', error);
-        setLoad({ status: 'failed' });
-      },
-    );
-    return () => {
-      current = false;
-    };
-  }, [id, available, attempt]);
-  const refresh = useCallback(() => {
-    if (!available) return;
-    setLoad((previous) => (previous.status === 'ready' ? previous : { status: 'loading' }));
-    setAttempt((n) => n + 1);
-  }, [available]);
-  return { load, refresh };
-}
-
-const SAVE_LABEL = {
-  idle: 'journey.save.idle',
-  pending: 'journey.save.pending',
-  saving: 'journey.save.saving',
-  saved: 'journey.save.saved',
-  failed: 'journey.save.failed',
-  offline: 'journey.save.offline',
-  stale: 'journey.save.stale',
-} as const satisfies Record<string, JourneyMessageKey>;
-
-const documentKey = (state: BuilderState): string =>
-  state.steps
-    .map((s) => s.documentId ?? '')
-    .filter(Boolean)
-    .join(',');
-
 function Builder({ journey }: { journey: Journey }): ReactNode {
   const { t, locale } = useJourneyText();
-  const [state, setState] = useState<BuilderState>(() => startState(journey, t('journey.privateStep')));
-  const [selected, setSelected] = useState<string | null>(() => journey.steps[0]?.id ?? null);
-  const [announce, setAnnounce] = useState('');
-  const pool = usePool(journey.id);
-  const suggestions = useSuggestions(journey.id, journey.jev);
-  const stateRef = useRef(state);
-  useEffect(() => {
-    stateRef.current = state;
-  });
-  const suggestedFor = useRef(documentKey(state));
-
-  const untitled = useCallback((n: number) => t('journey.stepUntitled', { n }), [t]);
-  const autosave = useJourneyAutosave({
-    id: journey.id,
-    rev: journey.rev,
-    snapshot: () => ({ draft: draftOf(stateRef.current, untitled), steps: stateRef.current.steps }),
-    onSaved: (sent, ids) => {
-      setState((current) => withSavedIds(current, sent, ids));
-      const key = sent
-        .map((s) => (s.kind === 'note' ? '' : (s.documentId ?? '')))
-        .filter(Boolean)
-        .join(',');
-      if (key !== suggestedFor.current) {
-        suggestedFor.current = key;
-        suggestions.refresh();
-      }
-    },
-  });
-
-  const edit = useCallback(
-    (change: (current: BuilderState) => BuilderState) => {
-      setState(change);
-      autosave.changed();
-    },
-    [autosave],
-  );
-
-  // Every document the screen can name: the steps', the pool's and Jev's.
-  const documents = useMemo(() => {
-    const known = new Map<string, PoolDocument>();
-    for (const step of journey.steps) if (step.document) known.set(step.document.id, step.document);
-    if (pool.status === 'ready') for (const doc of pool.documents) known.set(doc.id, doc);
-    if (suggestions.load.status === 'ready') for (const doc of suggestions.load.items) known.set(doc.id, doc);
-    return known;
-  }, [journey.steps, pool, suggestions.load]);
-
-  const index = state.steps.findIndex((s) => s.key === selected);
-  const current = index >= 0 ? state.steps[index] : undefined;
-
-  const add = (doc: PoolDocument | NextStep): void => {
-    if (state.steps.some((s) => s.documentId === doc.id)) return;
-    const next = addDocument(state, doc);
-    const added = next.steps.at(-1);
-    if (next === state || !added) return;
-    edit(() => next);
-    setSelected(added.key);
-    setAnnounce(t('journey.step.added', { title: added.title }));
-  };
-  const move = (from: number, to: number): void => {
-    const next = moveStep(stateRef.current, from, to);
-    if (next === stateRef.current) return;
-    const moved = next.steps.find((s) => s.key === stateRef.current.steps[from]?.key);
-    edit(() => next);
-    if (moved) {
-      setSelected(moved.key);
-      setAnnounce(t('journey.step.moved', { title: moved.title, n: next.steps.indexOf(moved) + 1, count: next.steps.length }));
-    }
-  };
-  const remove = (at: number): void => {
-    const gone = state.steps[at];
-    if (!gone) return;
-    const next = removeStep(state, at);
-    edit(() => next);
-    setSelected(next.steps[Math.min(at, next.steps.length - 1)]?.key ?? null);
-    setAnnounce(t('journey.step.removed', { title: gone.title }));
-  };
-  const change = (patch: StepPatch): void => {
-    if (index < 0) return;
-    edit((s) => updateStep(s, index, patch));
-  };
-
+  const builder = useJourneyBuilder(journey);
+  const phone = useDevice() === 'phone';
+  if (phone) return <JourneyBuilderPhone journey={journey} builder={builder} />;
+  const { state, selected, index, current, announce, pool, suggestions, documents, autosave } = builder;
   const status = autosave.status;
-  const statusLine: JourneyMessageKey | null =
-    status === 'saving' ? 'journey.status.saving' : status === 'saved' ? 'journey.status.saved' : status === 'failed' ? 'journey.status.failed' : status === 'offline' ? 'journey.status.offline' : status === 'stale' ? 'journey.status.stale' : null;
+  const statusLine = saveStatusLine(status);
 
   return (
     <BuilderFrame breadcrumb={crumbs(t, locale, journey, state.title)} state={state.steps.length === 0 ? 'empty' : 'ready'}>
@@ -324,26 +188,18 @@ function Builder({ journey }: { journey: Journey }): ReactNode {
       <p className="jb-live" aria-live="polite">
         {announce}
       </p>
-      <StepSources t={t} locale={locale} state={state} pool={pool} suggestions={suggestions.load} onRetry={suggestions.refresh} onAdd={add} />
+      <StepSources t={t} locale={locale} state={state} pool={pool} suggestions={suggestions.load} onRetry={suggestions.refresh} onAdd={builder.add} />
       <StepList
         t={t}
         state={state}
         selected={selected}
         documents={documents}
-        onTitle={(title) => edit((s) => ({ ...s, title }))}
-        onSelect={setSelected}
-        onMove={move}
-        onRemove={remove}
+        onTitle={builder.setTitle}
+        onSelect={builder.select}
+        onMove={builder.move}
+        onRemove={builder.remove}
       />
-      <StepEditor
-        t={t}
-        state={state}
-        index={index}
-        step={current}
-        documents={documents}
-        onChange={change}
-        onCover={() => edit((s) => ({ ...s, planet: nextPlanet(s.planet) }))}
-      />
+      <StepEditor t={t} state={state} index={index} step={current} documents={documents} onChange={builder.change} onCover={builder.nextCover} />
     </BuilderFrame>
   );
 }

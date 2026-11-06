@@ -153,22 +153,22 @@
   flex-direction: column;
 }
 
-.jb-content [data-kind="read"] {
+:is(.jb-content, .jbp) [data-kind="read"] {
   --kind: var(--journey-read);
   --kind-text: var(--journey-read-text);
 }
 
-.jb-content [data-kind="lab"] {
+:is(.jb-content, .jbp) [data-kind="lab"] {
   --kind: var(--journey-lab);
   --kind-text: var(--journey-lab-text);
 }
 
-.jb-content [data-kind="quiz"] {
+:is(.jb-content, .jbp) [data-kind="quiz"] {
   --kind: var(--journey-quiz);
   --kind-text: var(--journey-quiz-text);
 }
 
-.jb-content [data-kind="note"] {
+:is(.jb-content, .jbp) [data-kind="note"] {
   --kind: var(--journey-note);
   --kind-text: var(--journey-note-text);
 }

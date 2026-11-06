@@ -151,6 +151,136 @@ describe('making and managing the link', () => {
   });
 });
 
+describe('the QR code and the story picture', () => {
+  const STORY = 'Tải ảnh story';
+
+  function storyButton(): HTMLButtonElement {
+    return screen.getByRole('button', { name: STORY }) as HTMLButtonElement;
+  }
+
+  /** Puts `value` at `key` of `target` (jsdom lacks image decoding and blob URLs); the returned function takes it back. */
+  function define(target: object, key: string, value: unknown): () => void {
+    const before = Object.getOwnPropertyDescriptor(target, key);
+    Object.defineProperty(target, key, { value, configurable: true, writable: true });
+    return () => {
+      if (before) Object.defineProperty(target, key, before);
+      else Reflect.deleteProperty(target, key);
+    };
+  }
+
+  /** A 2D context that records what is drawn (jsdom has no canvas). */
+  function fakeCanvas(): { texts: string[]; images: unknown[]; downloads: string[]; restore(): void } {
+    const texts: string[] = [];
+    const images: unknown[] = [];
+    const downloads: string[] = [];
+    const ctx = {
+      createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+      fillRect: vi.fn(),
+      fillText: vi.fn((text: string) => texts.push(text)),
+      measureText: vi.fn((text: string) => ({ width: text.length * 40 })),
+      drawImage: vi.fn((image: unknown) => images.push(image)),
+      beginPath: vi.fn(),
+      roundRect: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+    };
+    const spies = [
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation((() => ctx) as unknown as HTMLCanvasElement['getContext']),
+      vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((done: BlobCallback) => done(new Blob(['png'], { type: 'image/png' }))),
+      vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+        downloads.push(this.download);
+      }),
+    ];
+    const undo = [
+      define(HTMLImageElement.prototype, 'decode', () => Promise.resolve()),
+      define(URL, 'createObjectURL', () => 'blob:story'),
+      define(URL, 'revokeObjectURL', () => undefined),
+    ];
+    return {
+      texts,
+      images,
+      downloads,
+      restore: () => {
+        spies.forEach((spy) => spy.mockRestore());
+        undo.forEach((back) => back());
+      },
+    };
+  }
+
+  it('has no QR code before a link is made; making one shows it and turns the story picture on', async () => {
+    const card = await linkCard();
+    expect(screen.queryByRole('img', { name: 'Mã QR mở link chia sẻ' })).toBeNull();
+    expect(screen.getByText('Tạo link để có mã QR và ảnh story.')).toBeTruthy();
+    expect(storyButton().disabled).toBe(true);
+    expect(storyButton().getAttribute('aria-describedby')).toBe('share-story-hint');
+    fireEvent.click(card.getByRole('button', { name: 'Tạo link' }));
+    const qr = await screen.findByRole('img', { name: 'Mã QR mở link chia sẻ' });
+    expect(qr.outerHTML).not.toContain(TOKEN);
+    expect(qr.querySelector('path')?.getAttribute('d')).toMatch(/^M\d/);
+    expect(storyButton().disabled).toBe(false);
+    expect(screen.queryByText('Tạo link để có mã QR và ảnh story.')).toBeNull();
+  });
+
+  it('has no QR code for a link made earlier, nor once the link is revoked', async () => {
+    view = shareView({ link: LINK });
+    const card = await linkCard();
+    expect(screen.queryByRole('img', { name: 'Mã QR mở link chia sẻ' })).toBeNull();
+    expect(screen.getByText('Mã QR chỉ có lúc vừa tạo link. Tạo link mới để có lại.')).toBeTruthy();
+    expect(storyButton().disabled).toBe(true);
+    fireEvent.click(card.getByRole('button', { name: 'Tạo link mới' }));
+    fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Tạo link mới' }));
+    expect(await screen.findByRole('img', { name: 'Mã QR mở link chia sẻ' })).toBeTruthy();
+    fireEvent.click(card.getByRole('button', { name: 'Thu hồi link' }));
+    await waitFor(() => expect(screen.queryByRole('img', { name: 'Mã QR mở link chia sẻ' })).toBeNull());
+    expect(storyButton().disabled).toBe(true);
+  });
+
+  it('keeps the story picture off, with its reason, while the text is locked', async () => {
+    view = shareView({ shareable: false, approverName: null, history: [] }, { status: 'pending', origin: 'own' });
+    renderWithI18n(<ShareScreen id={ID} />);
+    expect(await screen.findByText('Mã QR và ảnh story có khi bài đã được duyệt.')).toBeTruthy();
+    expect(storyButton().disabled).toBe(true);
+  });
+
+  it('draws the story with the title and the art, downloads it by the title, and never keeps the token', async () => {
+    const canvas = fakeCanvas();
+    try {
+      const card = await linkCard();
+      fireEvent.click(card.getByRole('button', { name: 'Tạo link' }));
+      await screen.findByRole('img', { name: 'Mã QR mở link chia sẻ' });
+      fireEvent.click(storyButton());
+      await waitFor(() => expect(canvas.downloads).toEqual(['giao-thuc-dhcp-story.png']));
+      expect(canvas.texts).toContain('Giao thức DHCP');
+      expect(canvas.texts).toContain('Networking');
+      expect(canvas.texts).toContain(`Quét mã để đọc · ${window.location.host}`);
+      expect(canvas.texts.some((text) => text.includes(TOKEN))).toBe(false);
+      expect(canvas.images).toHaveLength(1);
+      await waitFor(() => expect(storyButton().disabled).toBe(false));
+      const stored = [...Object.values(localStorage), ...Object.values(sessionStorage)].join('\n');
+      expect(stored).not.toContain(TOKEN);
+    } finally {
+      canvas.restore();
+    }
+  });
+
+  it('says so when the picture cannot be drawn', async () => {
+    const spy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation((() => null) as unknown as HTMLCanvasElement['getContext']);
+    const decode = define(HTMLImageElement.prototype, 'decode', () => Promise.resolve());
+    try {
+      const card = await linkCard();
+      fireEvent.click(card.getByRole('button', { name: 'Tạo link' }));
+      await screen.findByRole('img', { name: 'Mã QR mở link chia sẻ' });
+      fireEvent.click(storyButton());
+      expect((await screen.findByRole('alert')).textContent).toBe('Chưa tạo được ảnh story. Thử lại.');
+    } finally {
+      spy.mockRestore();
+      decode();
+    }
+  });
+});
+
 describe('the states of the text', () => {
   it('locks sharing until the text is approved', async () => {
     view = shareView({ shareable: false, approverName: null, history: [] }, { status: 'pending', origin: 'own' });

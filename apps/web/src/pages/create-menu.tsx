@@ -3,8 +3,9 @@
  * four groups, and the panel on the right describing the one under the pointer or keyboard focus. A note opens the
  * editor (/new), a journey the journey builder with a new draft (/journey/new, C07), Canvas its list (/canvas), an
  * Office file the upload (/upload, C03), bulk import the Import Center (/import, C16); "Space cá nhân" and "Collection"
- * open their form in the panel. What a later phase brings (URL, templates) stays on the ring, marked "Sắp có", and
- * does nothing. Escape closes a form, then the ring (back to the page that opened it).
+ * open their form in the panel, "Tài liệu từ mẫu" the template cards (a draft from the template, opened in the editor).
+ * What a later phase brings (URL) stays on the ring, marked "Sắp có", and does nothing. Escape closes a form, then the
+ * ring (back to the page that opened it).
  */
 import { type CSSProperties, type ReactNode, useEffect, useState } from 'react';
 import { AppShell } from '../layout/app-shell';
@@ -14,6 +15,7 @@ import { CRYSTAL_ART, ORB_ART } from '../ui/art';
 import { Icon } from '../ui/icon';
 import { CREATE_OPTIONS, CREATE_PANES, type CreateOption, GROUP_CRYSTAL, type GroupId, type OptionId, type PaneId, ringPlace } from './create-options';
 import { CollectionPane, SpacePane, usePlaces } from './create-panes';
+import { TemplatePane } from './create-template-picker';
 import { type CreateMessageKey, useCreateText } from './create-messages';
 import './create-menu.css';
 import { navigate } from '../router/navigation';
@@ -126,7 +128,7 @@ function CreateRing(): ReactNode {
   const { t } = useCreateText();
   const [hover, setHover] = useState<OptionId>('note');
   const [pane, setPane] = useState<PaneId>('hint');
-  const places = usePlaces(pane !== 'hint');
+  const places = usePlaces(pane === 'space' || pane === 'collection');
   const hovered = CREATE_OPTIONS.find((option) => option.id === hover) ?? CREATE_OPTIONS[0];
 
   useEffect(() => {
@@ -232,6 +234,7 @@ function CreateRing(): ReactNode {
             </a>
           </div>
           {pane === 'hint' && <OptionHint option={hovered} />}
+          {pane === 'template' && <TemplatePane />}
           {pane === 'space' && <SpacePane places={places} onCancel={() => setPane('hint')} onCollection={() => setPane('collection')} />}
           {pane === 'collection' && <CollectionPane places={places} onCancel={() => setPane('hint')} />}
         </section>

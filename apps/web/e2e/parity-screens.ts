@@ -280,6 +280,7 @@ const PHONE_ROUTES: readonly RegExp[] = [
   /^\/d\/[^/?]+(\?|$)/,
   /^\/d\/[^/?]+\/(publish|submit|edit)$/,
   /^\/canvas(\/|$)/,
+  /^\/journey\/[^/?]+(\/edit)?$/,
 ];
 
 export function hasPhoneLayout(path: string): boolean {

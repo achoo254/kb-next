@@ -1,0 +1,247 @@
+/* A journey's run on a phone (no phone board: Flow's parts in the phone kit): the head and the steps scroll above the
+   tab bar; the path is a column of crystals joined by a line, the open step's card under its step. */
+
+.jrp {
+  position: relative;
+  height: 100%;
+  color: var(--c-text);
+}
+
+.jrp-state-frame .jr-loading {
+  left: 20px;
+  top: 24px;
+}
+
+.jrp-state-frame .jr-error {
+  width: calc(100% - 32px);
+}
+
+.jrp-scroll {
+  position: absolute;
+  inset: 0 0 calc(96px + var(--safe-bottom));
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.jrp-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jrp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.jrp-title.kf-gradient-title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  padding-bottom: 0;
+  overflow-wrap: anywhere;
+}
+
+.jrp-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.jrp-actions .phone-button {
+  gap: 8px;
+  min-width: 0;
+}
+
+/* the path */
+.jrp-steps {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* the line through the crystals */
+.jrp-steps::before {
+  content: "";
+  position: absolute;
+  left: 27px;
+  top: 28px;
+  bottom: 28px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--rim-border);
+}
+
+.jrp-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jrp-stop {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--c-text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.jrp-step[data-open="true"] .jrp-stop {
+  background: var(--rim-bg);
+  border-color: var(--tone);
+}
+
+.jrp-crystal {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 44px;
+}
+
+.jrp-crystal img {
+  position: absolute;
+  inset: 0;
+  width: 40px;
+  height: 44px;
+  object-fit: contain;
+  opacity: 0.6;
+}
+
+.jrp-step:is([data-done="true"], [data-now="true"], [data-open="true"]) .jrp-crystal img {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px var(--tone));
+}
+
+.jrp-crystal-n {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--journey-crystal-n-bg);
+  border: 1px solid var(--journey-crystal-n-border);
+  color: var(--white);
+  font: 700 12px var(--font-display);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jrp-stop-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jrp-stop-name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.jrp-stop-meta {
+  font-size: 12px;
+  color: var(--c-text-muted);
+}
+
+.jrp-step[data-done="true"] .jrp-stop-meta {
+  color: var(--c-success-text);
+}
+
+/* the open step's card, and the finished card */
+.jrp-card {
+  position: relative;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+}
+
+.jrp-card-line {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.jrp-card-link {
+  align-self: flex-start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-link);
+  overflow-wrap: anywhere;
+}
+
+.jrp-card-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.jrp-card-buttons .phone-button {
+  gap: 8px;
+}
+
+.jrp-card-buttons .phone-button:disabled {
+  cursor: progress;
+  opacity: 0.8;
+}
+
+.jrp-next {
+  flex: none;
+  width: 52px;
+  min-height: 48px;
+  border-radius: 24px;
+  border: 1px solid var(--phone-ghost-border);
+  background: none;
+  color: var(--c-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.jrp-finished {
+  align-items: center;
+  text-align: center;
+}
+
+.jrp-message {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-warn-text);
+}

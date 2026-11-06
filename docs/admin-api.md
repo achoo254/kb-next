@@ -43,7 +43,10 @@ sau khi việc chính đã lưu thì dùng `notifyAfter()` (lỗi chỉ ghi log,
 Chỉ bài đã duyệt và đang hiện mới có link, do tác giả hoặc quản trị tạo ở C18 (`/d/:id/share`; nút "Chia sẻ" của C11
 và C08 mở trang này; người đọc khác bấm "Chia sẻ" ở C11 thì chép địa chỉ bài). Mỗi bài một link đang chạy: tạo link
 mới thì link cũ bị thu hồi. Token 32 ký tự ngẫu nhiên, server chỉ lưu sha256 và 4 ký tự cuối, nên link chỉ hiện đủ lúc
-vừa tạo; sau đó C18 hiện `…/l/••••abcd` và "Tạo link mới" (có hỏi lại) để chép lại.
+vừa tạo; sau đó C18 hiện `…/l/••••abcd` và "Tạo link mới" (có hỏi lại) để chép lại. Mã QR của link và "Tải ảnh story"
+(PNG 1080 × 1920: tiêu đề, Space, art `ill-doc-planet`, mã QR) cũng chỉ có trong lúc trang còn giữ link đủ (vừa tạo,
+chưa tải lại trang); cả hai làm ngay trên trình duyệt (`apps/web/src/pages/share-story.ts`), không gọi mạng, không lưu
+token vào đâu.
 
 - Hạn link: không hạn, 7 ngày, 30 ngày, tính từ lúc chọn. Chỉ đổi được hạn hay quyền của link đang chạy; link đã hết
   hạn hay đã thu hồi tắt hẳn (409 `link-expired`), muốn chia sẻ lại thì tạo link mới.

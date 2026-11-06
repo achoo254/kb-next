@@ -8,6 +8,16 @@ Trên điện thoại (đến 640px) cùng trình soạn đó hiện theo bướ
 chip tự lưu, "Tiếp" sang M03), tiêu đề với hành tinh, màu, nội dung, thanh công cụ `/`, `[[`, ảnh, sơ đồ, AI (trợ lý mở
 thành sheet). Tự lưu, bản offline và xung đột y như trên máy tính ([`board-frame.md`](board-frame.md#tablet-và-điện-thoại)).
 
+## Tài liệu từ mẫu
+
+"Tài liệu từ mẫu" trên vòng tạo mới (C01: thẻ mẫu trong panel phải; điện thoại M02: nút "Từ mẫu" dưới tiêu đề, mở
+sheet) mở `/new?template=<id>`: bản nháp mới nằm trong Space cá nhân, có sẵn tiêu đề và khung Markdown theo ngôn ngữ
+giao diện (vi hoặc en), rồi mở trình soạn. Năm mẫu dựng sẵn trong code, không có bảng hay migration:
+[`apps/web/src/pages/create-templates.ts`](../apps/web/src/pages/create-templates.ts) (`lab` thực hành: Mục tiêu,
+Chuẩn bị, Các bước, Kiểm tra, Lỗi thường gặp; `meeting` ghi chú họp; `runbook` sự cố, loại `process`; `exercise` bài
+tập kèm câu hỏi ôn tập; `compare` so sánh hai công nghệ). Chỗ cần điền ghi trong `[ngoặc vuông]`; danh sách đánh số
+là danh sách thường, không thành thẻ bước. `template` lạ thì tạo ghi chú trống như `/new`.
+
 ## Chọn TipTap thay vì CodeMirror 6
 
 Phase 9 cho chọn CodeMirror 6 hoặc TipTap, lấy cái dựng lại board C02 với ít ghi đè style nhất. Chọn **TipTap 3**

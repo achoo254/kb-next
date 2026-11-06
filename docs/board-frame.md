@@ -33,7 +33,7 @@ Bề ngang cửa sổ chọn một trong ba bố cục ([`apps/web/src/layout/de
 |---|---|---|---|
 | `desktop` | từ 1280px | (board 1440×900) | board 1440×900 như trên |
 | `tablet` | 641–1279px | Universe (T01) và reader (T02) dựng trên board 1180×820, co bằng `--tablet-zoom` cùng công thức (`AppShell tabletBoard`, lớp `.board-frame-tablet`) | board 1440×900 |
-| `phone` | đến 640px | `/u` (Mobile), `/create` (M02), trình soạn `/new` và `/d/:id/edit` (bước soạn của M02), `/d/:id/publish` (M03) và các bước gửi duyệt sau đó (`/d/:id/submit`: đang gửi, đã gửi, chưa gửi được), `/copilot` (M04), `/d/:id` (M05), `/search` (M06), `/upload` (chọn và tải tệp, không sửa): bố cục thật theo bề ngang cửa sổ, không zoom, chỉ 2D, trong `PhoneShell`; thanh pill dưới `MobileTabBar` thay lens rail (trình soạn và các bước gửi duyệt che cả màn, không có thanh) | board 1440×900 ở mức co nhỏ nhất, cuộn ngang |
+| `phone` | đến 640px | `/u` (Mobile), `/create` (M02), trình soạn `/new` và `/d/:id/edit` (bước soạn của M02), `/d/:id/publish` (M03) và các bước gửi duyệt sau đó (`/d/:id/submit`: đang gửi, đã gửi, chưa gửi được), `/copilot` (M04), `/d/:id` (M05), `/search` (M06), `/upload` (chọn và tải tệp, không sửa), trình dựng lối đi `/journey/new` và `/journey/:id/edit`, lối đi `/journey/:id` (không có board điện thoại, dựng từ C07 và Flow bằng bộ phần điện thoại): bố cục thật theo bề ngang cửa sổ, không zoom, chỉ 2D, trong `PhoneShell`; thanh pill dưới `MobileTabBar` thay lens rail (trình soạn, trình dựng lối đi và các bước gửi duyệt che cả màn, không có thanh) | board 1440×900 ở mức co nhỏ nhất, cuộn ngang |
 
 - Tablet: T01 là 3D nhẹ (`TABLET_SCENE.light3d`: không quầng blur quanh quỹ đạo, nửa số chấm sáng, không
   supersampling), không có panel AI (nút "Copilot" trên thanh trên mở C14); T02 bỏ cột mục lục và cột phải, mục lục
@@ -45,6 +45,12 @@ Bề ngang cửa sổ chọn một trong ba bố cục ([`apps/web/src/layout/de
   Space" của M06.
 - Trình soạn trên điện thoại dùng chung tự lưu, bản offline trong trình duyệt và trợ lý AI với C02 (trợ lý mở thành
   sheet); `toBoardPx()` trả 1 trên màn điện thoại (không có khung board).
+- Trình dựng lối đi trên điện thoại (`journey-builder-phone.tsx`, cùng trạng thái và tự lưu với C07 qua
+  `journey-builder-state.ts`): thanh trên (quay lại, Space, chip tự lưu bấm để lưu ngay, "Gửi duyệt" sang M03), tên lối
+  đi, các bước là thẻ đổi thứ tự bằng nút lên/xuống 44px (không kéo thả), "Thêm bước" mở sheet tìm tài liệu (không phân
+  biệt dấu) kèm gợi ý của Jev, bấm thẻ mở sheet sửa tiêu đề, kiểu bước, số phút, tài liệu nguồn hay nội dung ghi chú, bỏ
+  bước. Lối đi (`journey-run-phone.tsx`): các bước thành cột từ trên xuống, thẻ của bước đang mở nằm ngay dưới bước đó.
+  Sheet dùng chung `PhoneSheet` (`layout/phone-sheet.tsx`: thanh kéo, chạm nền mờ hay Esc để đóng).
 - Màn điện thoại co giãn từ 320 tới 640px: không có bề ngang cố định 390px (quỹ đạo 2D và vòng tạo của M02 thu nhỏ
   theo `usePhoneScale()`, sao trải theo tỉ lệ bề ngang), hàng chip và thẻ hoặc xuống dòng hoặc cuộn ngang trong chính
   nó (đánh dấu `data-scroll-row`), mọi phần tránh tai thỏ và thanh home (`--safe-top`, `--safe-bottom`… trên
@@ -53,7 +59,8 @@ Bề ngang cửa sổ chọn một trong ba bố cục ([`apps/web/src/layout/de
 - Màn điện thoại không bao giờ cuộn ngang và mọi điều khiển từ 44×44px, ở 320×640, 360×780, 375×812, 390×844 và
   430×932:
   [`apps/web/e2e/phone-layout.spec.ts`](../apps/web/e2e/phone-layout.spec.ts) kiểm các route trên (không phần nào
-  vượt mép phải, trừ trong hàng cuộn ngang), kể cả trình soạn, các bước sau "Gửi duyệt" (đã gửi, mất mạng) và tải tệp.
+  vượt mép phải, trừ trong hàng cuộn ngang), kể cả trình soạn, các bước sau "Gửi duyệt" (đã gửi, mất mạng), tải tệp,
+  sheet mẫu của M02, trình dựng lối đi (cả hai sheet) và lối đi ở cả năm cỡ.
 
 ## Thẻ mở vũ trụ
 

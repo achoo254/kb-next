@@ -1,7 +1,8 @@
 import { type Page, expect, test } from '@playwright/test';
 import { C02_DRAFT_ID } from './graph-canvas-boards';
 import { openScreen } from './open-screen';
-import { PARITY_SCREENS, layoutOf } from './parity-screens';
+import { JOURNEY_ID } from './journey-boards';
+import { PARITY_SCREENS, type ParityScreen, layoutOf } from './parity-screens';
 import { PUBLISH_DOCUMENT_ID } from './share-boards';
 import { signInAt } from './sign-in';
 
@@ -117,6 +118,49 @@ for (const outcome of ['sent', 'failed'] as const) {
     await checkPhone(page);
   });
 }
+
+/**
+ * The journey screens have no phone board: the builder (C07's journey, its five steps, Jev's suggestions and the pool)
+ * and the run (Flow's journey, two steps done) are checked at every phone width, the builder with its sheets open too.
+ */
+const JOURNEY_PHONE_SCREENS: readonly ParityScreen[] = [
+  { board: 'C07-FlowBuilder', path: `/journey/${JOURNEY_ID}/edit`, signedIn: true, status: 'built', mocks: ['journey-c07'], waitFor: '[data-id="journey-builder"][data-state="ready"]' },
+  { board: 'Flow', path: `/journey/${JOURNEY_ID}`, signedIn: true, status: 'built', mocks: ['journey-flow'], waitFor: '[data-id="journey-card"]' },
+];
+
+for (const screen of JOURNEY_PHONE_SCREENS) {
+  for (const size of PHONES) {
+    test(`${screen.path} at ${size.width}×${size.height}: the phone journey layout within the width, 44px touch targets`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await openScreen(page, screen);
+      await checkPhone(page);
+      if (screen.board !== 'C07-FlowBuilder') return;
+      await page.locator('[data-id="journey-add"]').click();
+      await page.locator('[data-id="journey-add-sheet"] [data-id="journey-jev"][data-state="ready"]').waitFor();
+      await checkPhone(page);
+      await page.keyboard.press('Escape');
+      await page.locator('[data-id="journey-step"] .jbp-step-main').nth(1).click();
+      await page.locator('[data-id="journey-step-sheet"]').waitFor();
+      await checkPhone(page);
+    });
+  }
+}
+
+test('a new journey opens in the phone builder', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await signInAt(page, '/journey/new');
+  await page.waitForURL(/\/journey\/[^/]+\/edit$/);
+  await page.locator('[data-id="journey-builder"][data-state="empty"]').waitFor();
+  await checkPhone(page);
+});
+
+test('the template picker on the phone create bloom (M02)', async ({ page }) => {
+  await page.setViewportSize(PHONE);
+  await signInAt(page, '/create');
+  await page.locator('[data-id="create-template"]').click();
+  await page.locator('[data-id="create-template-sheet"]').waitFor();
+  await checkPhone(page);
+});
 
 test('uploading on a phone', async ({ page }) => {
   await page.setViewportSize(PHONE);

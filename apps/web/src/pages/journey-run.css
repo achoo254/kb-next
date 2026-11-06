@@ -149,23 +149,23 @@
   list-style: none;
 }
 
-.jr-screen [data-tone="0"] {
+:is(.jr-screen, .jrp) [data-tone="0"] {
   --tone: var(--run-tone-0);
 }
 
-.jr-screen [data-tone="1"] {
+:is(.jr-screen, .jrp) [data-tone="1"] {
   --tone: var(--run-tone-1);
 }
 
-.jr-screen [data-tone="2"] {
+:is(.jr-screen, .jrp) [data-tone="2"] {
   --tone: var(--run-tone-2);
 }
 
-.jr-screen [data-tone="3"] {
+:is(.jr-screen, .jrp) [data-tone="3"] {
   --tone: var(--run-tone-3);
 }
 
-.jr-screen [data-tone="4"] {
+:is(.jr-screen, .jrp) [data-tone="4"] {
   --tone: var(--run-tone-4);
 }
 

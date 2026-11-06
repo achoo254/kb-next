@@ -228,6 +228,62 @@
   object-fit: contain;
 }
 
+/* the QR code of the link and "Tải ảnh story" under the card (the board's 76px white tile and 44px pill) */
+.share-story-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.share-qr {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  box-sizing: border-box;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--white);
+  box-shadow: var(--share-qr-shadow);
+  fill: var(--share-qr-ink);
+}
+
+.share-story[data-dim] .share-qr {
+  opacity: 0.45;
+}
+
+.share-story-save {
+  box-sizing: border-box;
+  min-height: var(--tap);
+  padding: 0 14px;
+  border-radius: 22px;
+  border: 1px solid var(--share-off-toggle-border);
+  background: var(--share-off-toggle);
+  color: var(--c-text);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+
+.share-story-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* a phone shows this board at its smallest zoom: keep the button a full touch target on the screen */
+:root[data-device="phone"] .share-story-save {
+  min-height: calc(var(--tap) / var(--board-zoom, 1));
+}
+
+.share-story-hint {
+  width: 100%;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--c-text-muted);
+}
+
+.share-story-hint[data-tone="warn"] {
+  color: var(--c-warn-text);
+}
+
 /* the middle column */
 .share-middle {
   position: absolute;

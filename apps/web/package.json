@@ -28,6 +28,7 @@
     "@tiptap/suggestion": "^3.32.2",
     "d3-force": "^3.0.1",
     "mermaid": "^12.3.0",
+    "qrcode-generator": "2.0.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-markdown": "^10.1.0",

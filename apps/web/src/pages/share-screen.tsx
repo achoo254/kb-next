@@ -8,11 +8,14 @@
  * later the field shows its last four characters, and "Tạo link mới" (confirmed) replaces it to copy again. An expired
  * or revoked link stays off (the server refuses to change it): "Tạo link mới" makes a new one with the settings shown.
  *
+ * The QR code of the link and the story picture ("Tải ảnh story", share-story.ts) need the full link, so they are there
+ * only while it is known in the page (after "Tạo link" or "Tạo link mới"); otherwise a hint says to make a new link.
+ *
  * States: loading, failed (not found, no access, server), locked (not approved), no link yet, live (just made or
  * not), expired, revoked, paused (an admin hid the text: the banner from the account's "permission" notice), and an
  * action that failed.
  */
-import { type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import {
   type ShareAccess,
@@ -35,6 +38,7 @@ import { Modal } from '../ui/modal';
 import { ErrorPanel } from './error-screen';
 import { type ReaderFailure, readerLoadError } from './reader-states';
 import { type ShareMessageKey, isToday, shareDate, shareTime, useShareText } from './share-messages';
+import { downloadStory, qrMatrix, qrPath } from './share-story';
 import type { ScreenTranslate } from './space-messages';
 import './share-screen.css';
 
@@ -158,9 +162,17 @@ interface BodyProps {
   reload(): Promise<void>;
 }
 
+/** A link made in this page and its full address (with the token): kept in memory only, never logged or stored. */
+interface FreshLink {
+  linkId: string;
+  url: string;
+}
+
 function ShareBody({ view, onChanged, reload }: BodyProps): ReactNode {
   const { t } = useShareText();
   const state = shareState(view);
+  const [fresh, setFresh] = useState<FreshLink | null>(null);
+  const shownUrl = fresh && view.link && fresh.linkId === view.link.id ? fresh.url : null;
   const doc = view.document;
   const banner = view.permission;
   const badge: ShareMessageKey =
@@ -182,7 +194,7 @@ function ShareBody({ view, onChanged, reload }: BodyProps): ReactNode {
           </a>
         </div>
       )}
-      <StoryCard view={view} state={state} />
+      <StoryCard view={view} state={state} url={state === 'live' ? shownUrl : null} />
       <section className="share-middle">
         <Provenance view={view} />
         {state === 'locked' ? (
@@ -194,7 +206,7 @@ function ShareBody({ view, onChanged, reload }: BodyProps): ReactNode {
             </Button>
           </div>
         ) : (
-          <LinkCard view={view} state={state} onChanged={onChanged} reload={reload} />
+          <LinkCard view={view} state={state} shownUrl={shownUrl} onMade={setFresh} onChanged={onChanged} reload={reload} />
         )}
       </section>
       <section className="share-right">
@@ -205,9 +217,36 @@ function ShareBody({ view, onChanged, reload }: BodyProps): ReactNode {
   );
 }
 
-function StoryCard({ view, state }: { view: ShareView; state: ShareState }): ReactNode {
-  const { t } = useShareText();
+/** Why there is no QR code (and no story picture) to show. */
+function qrHint(state: ShareState): ShareMessageKey {
+  if (state === 'locked') return 'share.qr.hint.locked';
+  if (state === 'paused') return 'share.qr.hint.paused';
+  return state === 'none' ? 'share.qr.hint.make' : 'share.qr.hint.new';
+}
+
+/** `url`: the full link of a running link made in this page, else null (no QR code, the story picture is off). */
+function StoryCard({ view, state, url }: { view: ShareView; state: ShareState; url: string | null }): ReactNode {
+  const { t, locale } = useShareText();
   const doc = view.document;
+  const [drawing, setDrawing] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const qr = useMemo(() => (url ? qrMatrix(url) : null), [url]);
+
+  const save = (): void => {
+    if (!url) return;
+    setDrawing(true);
+    setFailed(false);
+    downloadStory({
+      title: doc.title,
+      space: locale === 'vi' ? doc.space.nameVi : doc.space.nameEn,
+      appName: brand.appName,
+      url,
+      caption: t('share.story.scan', { host: window.location.host }),
+    })
+      .catch(() => setFailed(true))
+      .finally(() => setDrawing(false));
+  };
+
   const letters = doc.sections.slice(0, 4).map((s) => Array.from(s)[0]?.toLocaleUpperCase() ?? '');
   return (
     <aside className="share-story" aria-label={t('share.story')} data-dim={state === 'locked' || state === 'revoked' || undefined}>
@@ -234,9 +273,52 @@ function StoryCard({ view, state }: { view: ShareView; state: ShareState }): Rea
           </span>
         )}
       </div>
+      <div className="share-story-tools">
+        {qr ? (
+          <svg className="share-qr" role="img" aria-label={t('share.qr')} viewBox={`0 0 ${qr.length} ${qr.length}`} shapeRendering="crispEdges" data-id="share-qr">
+            <path d={qrPath(qr)} />
+          </svg>
+        ) : (
+          <svg className="share-qr" data-off="" aria-hidden="true" viewBox="0 0 21 21" data-id="share-qr-off">
+            {/* the three corner marks of a QR code, without the code */}
+            <path d={QR_FINDERS} fillRule="evenodd" />
+          </svg>
+        )}
+        <button
+          type="button"
+          className="share-story-save"
+          disabled={!url || drawing}
+          aria-describedby={url ? undefined : 'share-story-hint'}
+          onClick={save}
+          data-id="share-story-save"
+        >
+          {drawing ? t('share.story.saving') : t('share.story.save')}
+        </button>
+      </div>
+      {!url && (
+        <span className="share-story-hint" id="share-story-hint" data-id="share-story-hint">
+          {t(qrHint(state))}
+        </span>
+      )}
+      {failed && (
+        <span className="share-story-hint" data-tone="warn" role="alert">
+          {t('share.story.failed')}
+        </span>
+      )}
     </aside>
   );
 }
+
+/** The finder patterns of a 21-module QR code (top left, top right, bottom left): 7×7 rings around 3×3 squares. */
+const QR_FINDERS = (
+  [
+    [0, 0],
+    [14, 0],
+    [0, 14],
+  ] as const
+)
+  .map(([x, y]) => `M${x} ${y}h7v7h-7zM${x + 1} ${y + 1}v5h5v-5zM${x + 2} ${y + 2}h3v3h-3z`)
+  .join('');
 
 function Provenance({ view }: { view: ShareView }): ReactNode {
   const { t } = useShareText();
@@ -262,15 +344,17 @@ function Provenance({ view }: { view: ShareView }): ReactNode {
 interface LinkCardProps {
   view: ShareView;
   state: ShareState;
+  /** The full link while it is known (just made in this page), else null. */
+  shownUrl: string | null;
+  onMade(fresh: FreshLink | null): void;
   onChanged(view: ShareView): void;
   reload(): Promise<void>;
 }
 
-function LinkCard({ view, state, onChanged, reload }: LinkCardProps): ReactNode {
+function LinkCard({ view, state, shownUrl, onMade, onChanged, reload }: LinkCardProps): ReactNode {
   const { t, locale } = useShareText();
   const doc = view.document;
   const link = view.link;
-  const [fresh, setFresh] = useState<{ linkId: string; url: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
@@ -281,7 +365,6 @@ function LinkCard({ view, state, onChanged, reload }: LinkCardProps): ReactNode 
   const usable = state === 'live';
   const frozen = state === 'paused';
   const settings = usable && link ? { expiry: link.expiry, access: link.access } : draft;
-  const shownUrl = fresh && link && fresh.linkId === link.id ? fresh.url : null;
 
   const run = async (action: () => Promise<void>): Promise<void> => {
     setBusy(true);
@@ -298,7 +381,7 @@ function LinkCard({ view, state, onChanged, reload }: LinkCardProps): ReactNode 
   const make = (): Promise<void> =>
     run(async () => {
       const made = await createShareLink(doc.id, settings);
-      setFresh({ linkId: made.link.id, url: `${window.location.origin}${made.path}` });
+      onMade({ linkId: made.link.id, url: `${window.location.origin}${made.path}` });
       setCopied(false);
       onChanged({ ...view, link: made.link });
       void reload();
@@ -319,7 +402,7 @@ function LinkCard({ view, state, onChanged, reload }: LinkCardProps): ReactNode 
   const revoke = (): Promise<void> =>
     run(async () => {
       const next = await revokeShareLink(doc.id);
-      setFresh(null);
+      onMade(null);
       onChanged({ ...view, link: next });
       void reload();
     });

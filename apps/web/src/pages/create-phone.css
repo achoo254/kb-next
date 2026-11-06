@@ -109,3 +109,37 @@
   font-size: 13px;
   text-align: center;
 }
+
+/* "Từ mẫu" under the title: a glass pill opening the template sheet */
+.create-phone-template {
+  align-self: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 22px;
+  background: var(--rim-bg);
+  border: 1.5px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: var(--c-text);
+  font: 600 14px var(--font-sans);
+  cursor: pointer;
+}
+
+.create-phone-template:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.create-phone-sheet-note {
+  margin: 0;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--c-text-muted);
+}

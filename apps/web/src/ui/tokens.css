@@ -761,6 +761,13 @@
   --share-story-text: #f5f3ff;
   --share-story-url: #c4b5fd;
   --share-story-lock: rgb(6 4 26 / 0.6);
+  /* the ends of the story card's glow (also the 1080×1920 story picture, drawn dark in both themes), its art's glow
+     and the dark modules of the QR code on its white tile */
+  --share-story-sky: #3a2a9e;
+  --share-story-deep: #120c38;
+  --share-story-glow: rgb(139 92 246 / 0.6);
+  --share-qr-ink: #120a3a;
+  --share-qr-shadow: 0 0 16px rgb(196 181 253 / 0.45);
   --share-chip-violet-bg: rgb(124 58 237 / 0.3);
   --share-chip-violet-border: rgb(196 181 253 / 0.7);
   --share-chip-violet-text: #ddd6fe;

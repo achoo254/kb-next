@@ -24,3 +24,7 @@ Space Grotesk and Inter, self-hosted through [Fontsource](https://fontsource.org
 ## Code
 
 The code of this repository is under the [MIT License](LICENSE).
+
+The QR code of a share link and of its story picture (C18) is made in the browser with
+[qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) 2.0.4 by Kazuhiko Arase, under the MIT License.
+"QR Code" is a registered trademark of DENSO WAVE INCORPORATED.

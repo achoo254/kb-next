@@ -1,6 +1,6 @@
 /**
  * The create ring (C01) in jsdom: nine options clockwise in four groups, the description of the one under the pointer
- * or focus ("Sắp có" for what a later phase brings, which does nothing), the personal Space form (make it, or open the
+ * or focus ("Sắp có" for what a later phase brings, which does nothing), the template cards, the personal Space form (make it, or open the
  * one there is), the Collection form (only the personal Space for a member, every Space for an admin; a name is
  * required), a failed load, and Escape closing a form, then the ring.
  */
@@ -68,7 +68,7 @@ describe('the ring', () => {
     const ring = screen.getByRole('navigation', { name: 'Lựa chọn tạo mới' });
     expect([...ring.querySelectorAll('a, button')].map((el) => el.getAttribute('aria-label'))).toEqual([
       'Ghi chú · Nội dung',
-      'Tài liệu từ mẫu · Nội dung · Sắp có',
+      'Tài liệu từ mẫu · Nội dung',
       'Space cá nhân mới · Tổ chức',
       'Collection mới · Tổ chức',
       'Tải file Office · Nhập',
@@ -110,7 +110,35 @@ describe('the ring', () => {
     fireEvent.focus(ringItem('Lối đi'));
     expect(panel().queryByText(/Sắp có/)).toBeNull();
     fireEvent.focus(ringItem('Tài liệu từ mẫu'));
-    expect(panel().getByText('Sắp có · mở khi có thư viện mẫu')).toBeTruthy();
+    expect(panel().getByText('Lab, quy trình, so sánh')).toBeTruthy();
+    expect(panel().queryByText(/Sắp có/)).toBeNull();
+  });
+});
+
+describe('a document from a template', () => {
+  it('opens the template cards in the panel, each creating its draft in the editor; Escape goes back to the description', async () => {
+    renderWithI18n(<CreateMenu />);
+    const option = ringItem('Tài liệu từ mẫu');
+    expect(option.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(option);
+    expect(option.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByText('Chọn mẫu tài liệu', { selector: '.create-form-title' })).toBeTruthy();
+    const cards = within(panel().getByRole('list', { name: 'Chọn mẫu tài liệu' })).getAllByRole('link');
+    expect(cards.map((card) => [card.getAttribute('aria-label'), card.getAttribute('href')])).toEqual([
+      ['Tạo từ mẫu Lab thực hành', '/new?template=lab'],
+      ['Tạo từ mẫu Ghi chú họp', '/new?template=meeting'],
+      ['Tạo từ mẫu Runbook sự cố', '/new?template=runbook'],
+      ['Tạo từ mẫu Bài tập', '/new?template=exercise'],
+      ['Tạo từ mẫu So sánh hai công nghệ', '/new?template=compare'],
+    ]);
+    expect(within(cards[0] ?? document.body).getByText('Mục tiêu · chuẩn bị · các bước · kiểm tra')).toBeTruthy();
+    // the cards need no Space list: nothing is fetched until one is picked
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+    await act(async () => {
+      fireEvent.keyDown(document, { key: 'Escape' });
+    });
+    expect(panel().queryByRole('list', { name: 'Chọn mẫu tài liệu' })).toBeNull();
+    expect(screen.getByText('Mô tả')).toBeTruthy();
   });
 });
 

@@ -1,0 +1,81 @@
+/* The template cards of the create ring (C01 "Chọn mẫu tài liệu": three to a row, a colour block, the name, what it
+   holds) and of the phone sheet (M02: one card per row, the colour block on the left). */
+
+.create-templates {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.create-templates[data-layout="grid"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.create-templates[data-layout="list"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.create-template {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 44px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 18px;
+  background: var(--rim-bg);
+  border: 1px solid var(--rim-border);
+  box-shadow: var(--rim-shadow);
+  color: var(--c-text);
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.create-template:hover,
+.create-template:focus-visible {
+  border-color: var(--rim-active-border);
+}
+
+.create-template:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.create-template-swatch {
+  flex: none;
+  height: 64px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, var(--tone), var(--tone-deep));
+}
+
+.create-template-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.create-template-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.create-template-sub {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--c-text-muted);
+}
+
+.create-templates[data-layout="list"] .create-template {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.create-templates[data-layout="list"] .create-template-swatch {
+  width: 44px;
+  height: 44px;
+}

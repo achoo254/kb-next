@@ -245,3 +245,103 @@ describe('NewJourney', () => {
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/journey/new-j/edit'));
   });
 });
+
+describe('JourneyBuilderScreen on a phone', () => {
+  beforeEach(() => {
+    document.documentElement.dataset.device = 'phone';
+  });
+  afterEach(() => {
+    delete document.documentElement.dataset.device;
+  });
+
+  function cards(): string[] {
+    return within(screen.getByRole('list', { name: 'Steps of the journey' }))
+      .getAllByRole('listitem')
+      .map((li) => li.querySelector('.jbp-step-name')?.textContent ?? '');
+  }
+
+  it('lays the steps out as cards in the phone frame, with the autosave chip and "Send for review" to the phone publish', async () => {
+    renderWithI18n(<JourneyBuilderScreen id={ID} />);
+    expect(await screen.findByRole('list', { name: 'Steps of the journey' })).toBeTruthy();
+    expect(document.querySelector('[data-screen="C07"]')?.closest('.phone-shell')).not.toBeNull();
+    expect(document.querySelector('[data-id="tab-bar"]')).toBeNull();
+    expect(cards()).toEqual(['Packet Journey', 'DHCP xin IP']);
+    expect(screen.getByText('Journey · Networking')).toBeTruthy();
+    expect(screen.getByText('2 steps · ~16 min')).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Journey name' })).toHaveProperty('value', 'Máy mới vào mạng');
+    expect(screen.getByRole('link', { name: 'Send for review' }).getAttribute('href')).toBe('/d/j1/publish');
+    expect(screen.getByRole('link', { name: /Preview/ }).getAttribute('href')).toBe('/journey/j1');
+    expect(screen.getByRole('button', { name: 'Save' }).getAttribute('data-state')).toBe('idle');
+  });
+
+  it('reorders with the up and down buttons and autosaves', async () => {
+    renderWithI18n(<JourneyBuilderScreen id={ID} />);
+    await screen.findByRole('list', { name: 'Steps of the journey' });
+    expect(screen.getByRole('button', { name: 'Move step 1 up' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'Move step 2 down' })).toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', { name: 'Move step 1 down' }));
+    expect(cards()).toEqual(['DHCP xin IP', 'Packet Journey']);
+    expect(screen.getByText('Packet Journey: now step 2 of 2.')).toBeTruthy();
+    await waitFor(() => expect(saves.at(-1)?.body.steps.map((s) => s.id)).toEqual(['s2', 's1']), { timeout: 2000 });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saved ✓' }).getAttribute('data-state')).toBe('saved'));
+  });
+
+  it('adds steps from a sheet: searching the documents without marks, and taking Jev’s suggestion', async () => {
+    renderWithI18n(<JourneyBuilderScreen id={ID} />);
+    await screen.findByRole('list', { name: 'Steps of the journey' });
+    fireEvent.click(screen.getByRole('button', { name: 'Add a step' }));
+    const sheet = within(screen.getByRole('dialog', { name: 'Add a step' }));
+    expect(await sheet.findByRole('button', { name: 'Add Ping kiểm tra đường to the journey' })).toBeTruthy();
+    expect(await sheet.findByRole('button', { name: 'Packet Journey is already in the journey' })).toHaveProperty('disabled', true);
+    fireEvent.change(sheet.getByRole('searchbox', { name: 'Search documents' }), { target: { value: 'LOG mang' } });
+    expect(sheet.getByRole('button', { name: 'Add Xem log mạng to the journey' })).toBeTruthy();
+    expect(sheet.queryByRole('button', { name: 'Add ARP to the journey' })).toBeNull();
+    expect(sheet.queryByRole('button', { name: 'Add Ping kiểm tra đường to the journey' })).toBeNull();
+    fireEvent.change(sheet.getByRole('searchbox', { name: 'Search documents' }), { target: { value: 'giao thuc khong co' } });
+    expect(sheet.getByText('No document matches "giao thuc khong co".')).toBeTruthy();
+    fireEvent.change(sheet.getByRole('searchbox', { name: 'Search documents' }), { target: { value: '' } });
+    fireEvent.click(sheet.getByRole('button', { name: 'Add ARP to the journey' }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Add Ping kiểm tra đường to the journey' }));
+    expect(sheet.getByRole('button', { name: 'ARP is already in the journey' })).toHaveProperty('disabled', true);
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(cards()).toEqual(['Packet Journey', 'DHCP xin IP', 'ARP', 'Ping kiểm tra đường']);
+    await waitFor(() => expect(saves.at(-1)?.body.steps.map((s) => s.documentId)).toEqual(['osi', 'dhcp', 'arp', 'icmp']), { timeout: 2000 });
+  });
+
+  it('edits a step in a sheet: kind, minutes, a note instead of a document, and removing it', async () => {
+    renderWithI18n(<JourneyBuilderScreen id={ID} />);
+    await screen.findByRole('list', { name: 'Steps of the journey' });
+    fireEvent.click(screen.getByRole('button', { name: 'Edit step 2: DHCP xin IP' }));
+    const sheet = within(screen.getByRole('dialog', { name: 'Step 2' }));
+    expect(sheet.getByRole('combobox', { name: 'Source document' })).toHaveProperty('value', 'dhcp');
+    fireEvent.click(sheet.getByRole('button', { name: '1 minute more' }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Note' }));
+    fireEvent.change(sheet.getByRole('textbox', { name: 'Note' }), { target: { value: 'Ôn lại 4 bước.' } });
+    fireEvent.click(sheet.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByText(/13 min · Ôn lại 4 bước\./)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(saves).toHaveLength(1));
+    expect(saves[0]?.body.steps[1]).toEqual({ id: 's2', kind: 'note', title: 'DHCP xin IP', minutes: 13, documentId: null, note: 'Ôn lại 4 bước.' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit step 1: Packet Journey' }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Step 1' })).getByRole('button', { name: 'Remove step' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(cards()).toEqual(['DHCP xin IP']);
+  });
+
+  it('shows the empty journey with the phone hint, and the loading and failed states in the phone frame', async () => {
+    journey = () => answer(200, journeyOf({ steps: [], jev: false }));
+    const { unmount } = renderWithI18n(<JourneyBuilderScreen id={ID} />);
+    expect(await screen.findByText('No steps yet')).toBeTruthy();
+    expect(screen.getByText('Press "Add a step" to pick a document or take a suggestion from Jev.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Add a step' }));
+    expect(within(screen.getByRole('dialog', { name: 'Add a step' })).queryByText('Jev suggests the next step')).toBeNull();
+    unmount();
+    journey = () => answer(404, { error: 'not-found' });
+    renderWithI18n(<JourneyBuilderScreen id={ID} />);
+    await waitFor(() => expect(document.querySelector('[data-id="journey-builder"]')?.getAttribute('data-state')).toBe('not-found'));
+    expect(document.querySelector('[data-id="journey-builder"]')?.closest('.phone-shell')).not.toBeNull();
+  });
+});

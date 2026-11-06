@@ -6,9 +6,9 @@ import type { IconName } from '../ui/icon';
 export type GroupId = 'content' | 'organise' | 'import' | 'journey';
 export type OptionId = 'note' | 'template' | 'space' | 'collection' | 'office' | 'bulk' | 'url' | 'journey' | 'canvas';
 /** What the panel on the right shows: the description of the option under the pointer, or a form. */
-export type PaneId = 'hint' | 'space' | 'collection';
+export type PaneId = 'hint' | 'template' | 'space' | 'collection';
 /** Why an option waits: the phase that brings it. */
-export type LaterReason = 'import' | 'template';
+export type LaterReason = 'import';
 
 export type OptionAction = { kind: 'link'; href: string } | { kind: 'pane'; pane: Exclude<PaneId, 'hint'> } | { kind: 'later'; when: LaterReason };
 
@@ -22,7 +22,7 @@ export interface CreateOption {
 /** Clockwise from the top, as on the board. */
 export const CREATE_OPTIONS: readonly [CreateOption, ...CreateOption[]] = [
   { id: 'note', group: 'content', icon: 'create-note', action: { kind: 'link', href: '/new' } },
-  { id: 'template', group: 'content', icon: 'create-template', action: { kind: 'later', when: 'template' } },
+  { id: 'template', group: 'content', icon: 'create-template', action: { kind: 'pane', pane: 'template' } },
   { id: 'space', group: 'organise', icon: 'create-space', action: { kind: 'pane', pane: 'space' } },
   { id: 'collection', group: 'organise', icon: 'create-collection', action: { kind: 'pane', pane: 'collection' } },
   { id: 'office', group: 'import', icon: 'create-office', action: { kind: 'link', href: '/upload' } },
@@ -36,7 +36,12 @@ export const CREATE_OPTIONS: readonly [CreateOption, ...CreateOption[]] = [
 export const GROUP_CRYSTAL: Record<GroupId, SpaceKind> = { content: 'networking', organise: 'personal', import: 'linux', journey: 'observability' };
 
 /** The panel's title for each pane. */
-export const CREATE_PANES: Record<PaneId, CreateMessageKey> = { hint: 'create.pane.hint', space: 'create.pane.space', collection: 'create.pane.collection' };
+export const CREATE_PANES: Record<PaneId, CreateMessageKey> = {
+  hint: 'create.pane.hint',
+  template: 'create.pane.template',
+  space: 'create.pane.space',
+  collection: 'create.pane.collection',
+};
 
 /** The ring's centre and radius in board px. */
 const CENTRE = { x: 580, y: 470 };

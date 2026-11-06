@@ -29,7 +29,7 @@ liệu thì sửa trang này cùng lúc. Link tới hai trang ở chân landing,
 
 Ảnh AI trong `apps/web/public/art/`: xem [`CREDITS.md`](CREDITS.md). Deploy: [`docs/deployment-guide.md`](docs/deployment-guide.md).
 Kiểm giống mock: [`docs/parity-testing.md`](docs/parity-testing.md); chỗ buộc phải khác mock: [`docs/mock-deviations.md`](docs/mock-deviations.md).
-Trình soạn bài (C02, TipTap, Markdown, tự lưu và offline): [`docs/editor.md`](docs/editor.md).
+Trình soạn bài (C02, TipTap, Markdown, tự lưu và offline, tài liệu từ mẫu): [`docs/editor.md`](docs/editor.md).
 Trích chữ và OCR tệp tải lên (Tika, chọn trang OCR, cờ chất lượng, hàng đợi): [`docs/text-extraction.md`](docs/text-extraction.md).
 Tải tệp, Trung tâm nhập, trình sửa Office nhúng và đồng bộ offline (C03, C16, H04, ranuts/document ở tên miền riêng):
 [`docs/office-editor.md`](docs/office-editor.md).
@@ -40,7 +40,7 @@ Cài đặt cá nhân và workspace, vai trò (Quản trị, Người duyệt, T
 Sáng/Tối, xoá dữ liệu của tôi (H03, C19): [`docs/settings-and-roles.md`](docs/settings-and-roles.md).
 Tablet và điện thoại: tablet (641–1279px) dựng Universe và reader trên board 1180×820 (T01, T02: 3D nhẹ, mục lục
 dạng ngăn kéo); điện thoại (đến 640px) có bố cục riêng, chỉ 2D, thanh pill dưới thay lens rail cho Universe, tạo bài,
-gửi duyệt, Copilot, reader và tìm kiếm (Mobile, M02–M06), kể cả trình soạn và các bước gửi duyệt; không có Canvas,
+gửi duyệt, Copilot, reader và tìm kiếm (Mobile, M02–M06), kể cả trình soạn, các bước gửi duyệt, trình dựng và chạy lối đi; không có Canvas,
 Graph chỉ xem, tệp Office chỉ tải lên và đọc:
 [`docs/board-frame.md`](docs/board-frame.md#tablet-và-điện-thoại).
 Chuyển màn trong app không tải lại trang (khung app giữ nguyên, thanh tiến trình, prefetch, Back/Forward):
