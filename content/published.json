@@ -11,6 +11,12 @@
       "space": "doi-song",
       "collectionId": "a0fe527e-4126-4a0d-a219-e5bfb01da880",
       "at": "2026-11-07T13:12:56.160Z"
+    },
+    {
+      "slug": "tim-viec",
+      "space": "cong-viec",
+      "collectionId": "80a93bce-f952-4d53-88cf-90406f1ca525",
+      "at": "2026-11-07T14:07:07.935Z"
     }
   ],
   "posts": [
@@ -55,6 +61,24 @@
       "id": "91ab2b30-a0f8-4ab7-8b29-237c4ac840a1",
       "title": "Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm",
       "at": "2026-11-07T13:12:57.447Z"
+    },
+    {
+      "slug": "tim-viec/thu-cam-on-va-theo-doi-sau-phong-van",
+      "id": "83d08942-611b-4b47-be25-5130e4f5b0e1",
+      "title": "Thư cảm ơn và theo dõi sau phỏng vấn: kết thúc buổi phỏng vấn một cách chu đáo",
+      "at": "2026-11-07T14:07:08.354Z"
+    },
+    {
+      "slug": "tim-viec/chuan-bi-phong-van-theo-cach-star",
+      "id": "b1dbe490-26c1-4f9b-be45-2b6296de2b9f",
+      "title": "Chuẩn bị phỏng vấn theo cách STAR: kể một câu chuyện có đầu có cuối",
+      "at": "2026-11-07T14:07:10.430Z"
+    },
+    {
+      "slug": "tim-viec/viet-cv-mot-trang",
+      "id": "4795eea1-3df8-48b9-8a5a-0cd95d652c20",
+      "title": "Viết CV một trang: chọn gì, bỏ gì để nhà tuyển dụng đọc hết",
+      "at": "2026-11-07T14:07:10.840Z"
     }
   ]
 }
