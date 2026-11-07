@@ -38,7 +38,7 @@
       "nameEn": "Lunar New Year",
       "tech": false,
       "brief": "Gợi ý 3 bài: ông Công ông Táo và ngày 23 tháng Chạp; mâm ngũ quả và bánh chưng, bánh tét; xông đất, lì xì và các phong tục mùng một. Đối chiếu Wikipedia.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "mang-tren-ubuntu",
