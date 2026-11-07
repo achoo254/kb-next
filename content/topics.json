@@ -28,7 +28,7 @@
       "nameEn": "Finding a job",
       "tech": false,
       "brief": "Gợi ý 3 bài: viết CV một trang; chuẩn bị phỏng vấn theo cách STAR; viết thư cảm ơn và theo dõi sau phỏng vấn.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "tet-nguyen-dan",
