@@ -2,11 +2,11 @@
  * Reads of Spaces, collections, documents, versions, chunks and links, each filtered by the viewer
  * (src/access/visibility.ts). Nothing outside src/access/ reads those tables.
  */
-import { and, asc, count, desc, eq, inArray, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, ne, or } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { chunks, collections, documentVersions, documents, links, spaces } from '../db/schema';
 import { isUuid } from './ids';
-import type { Viewer } from './viewer';
+import { GUEST, type Viewer } from './viewer';
 import { visibleTo } from './visibility';
 
 export type DocumentRow = Omit<typeof documents.$inferSelect, 'contentHash'>;
@@ -190,4 +190,17 @@ export async function listLinks(db: Db, viewer: Viewer, documentId: string): Pro
       ),
     )
     .orderBy(asc(links.createdAt));
+}
+
+/**
+ * The texts a guest can read, newest change first, for the sitemap: journeys are left out (they open in their own
+ * signed-in player). At most `limit` rows.
+ */
+export async function listPublicTexts(db: Db, limit: number): Promise<Array<{ id: string; updatedAt: Date }>> {
+  return db
+    .select({ id: documents.id, updatedAt: documents.updatedAt })
+    .from(documents)
+    .where(and(visibleTo(GUEST), ne(documents.type, 'journey')))
+    .orderBy(desc(documents.updatedAt))
+    .limit(limit);
 }

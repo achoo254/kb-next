@@ -5,6 +5,8 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react';
 import { ApiError } from '../api/api-client';
 import { type DocumentComment, type DocumentComments, MAX_COMMENT_CHARS, fetchComments, postComment } from '../api/content-api';
+import { gateHref } from '../api/session-api';
+import { useSessionState } from '../layout/session-context';
 import { Button } from '../ui/button';
 import { timeAgo, useReaderText } from './reader-messages';
 import { useSpaceText } from './space-messages';
@@ -93,6 +95,9 @@ export function ReaderComments({ documentId, offline }: { documentId: string; of
   }
 
   const comments = load.status === 'ready' ? load.data.comments : [];
+  // A guest reads the comments; writing one needs an account.
+  const session = useSessionState();
+  const guest = session.status === 'ready' && !session.signedIn;
   return (
     <section id={COMMENTS_ANCHOR} className="reader-comments" aria-labelledby="reader-comments-title" data-id="reader-comments">
       <h2 id="reader-comments-title" className="reader-comments-title">
@@ -108,7 +113,12 @@ export function ReaderComments({ documentId, offline }: { documentId: string; of
           ))}
         </ul>
       )}
-      {load.status === 'ready' && load.data.open && (
+      {load.status === 'ready' && load.data.open && guest && (
+        <Button variant="rim" icon="sign-in" href={gateHref(`${window.location.pathname}${window.location.search}#${COMMENTS_ANCHOR}`)} dataId="reader-comment-sign-in">
+          {t('reader.commentSignIn')}
+        </Button>
+      )}
+      {load.status === 'ready' && load.data.open && !guest && (
         <form className="reader-composer" onSubmit={(event) => void send(event)} data-id="reader-composer">
           <label className="reader-composer-field">
             <span className="kf-visually-hidden">{t('reader.commentLabel')}</span>

@@ -2,6 +2,7 @@ import { useDevice } from '../layout/device';
 import { type ReactNode, useEffect, useState } from 'react';
 import { type Me, type SpaceListItem, fetchMe, fetchSpaces } from '../api/content-api';
 import { useI18n } from '../i18n/i18n';
+import { useSessionState } from '../layout/session-context';
 import { hasNavigatedInApp } from '../router/navigation';
 import { Toast } from '../ui/toast';
 import { UniverseOpening } from './login-page';
@@ -12,10 +13,12 @@ import './universe-entry.css';
 /** `?tour=1` opens the first-visit dialog again (a replay from Settings, and the S03 parity shot). */
 export const TOUR_PARAM = 'tour';
 
-type AccountState = { status: 'loading' } | { status: 'ready'; onboarded: boolean; spaces: readonly SpaceListItem[] } | { status: 'failed' };
+/** `guest`: no account to read or onboard (reading is open to everyone); the Universe shows without the dialog. */
+type AccountState = { status: 'loading' } | { status: 'ready'; onboarded: boolean; spaces: readonly SpaceListItem[] } | { status: 'failed' } | { status: 'guest' };
 
 /** Whether the first-visit dialog shows: on request, or for an account that has not been through it. */
 export function showOnboarding(account: Pick<AccountState, 'status'> & { onboarded?: boolean }, search: string): boolean {
+  if (account.status === 'guest') return false;
   if (new URLSearchParams(search).get(TOUR_PARAM) === '1') return account.status !== 'loading';
   return account.status === 'ready' && account.onboarded === false;
 }
@@ -49,7 +52,9 @@ async function loadAccount(search: string): Promise<{ me: Me; spaces: SpaceListI
  */
 export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   const { t, locale } = useI18n();
-  const [account, setAccount] = useState<AccountState>({ status: 'loading' });
+  const session = useSessionState();
+  const guest = session.status === 'ready' && !session.signedIn;
+  const [account, setAccount] = useState<AccountState>(guest ? { status: 'guest' } : { status: 'loading' });
   const [closed, setClosed] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const device = useDevice();
@@ -57,6 +62,7 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
   const opened = useOpeningFinished(account.status !== 'loading');
 
   useEffect(() => {
+    if (guest) return;
     let live = true;
     loadAccount(window.location.search)
       .then(({ me, spaces }) => live && setAccount({ status: 'ready', onboarded: me.onboardedAt !== null, spaces }))
@@ -64,7 +70,7 @@ export function UniverseEntry({ children }: UniverseEntryProps): ReactNode {
     return () => {
       live = false;
     };
-  }, []);
+  }, [guest]);
 
   // the card stays until every step has shown done for a beat (opening-pace.ts)
   if (!opened && !inApp) return <UniverseOpening stage={account.status === 'loading' ? 'universe' : 'ready'} />;

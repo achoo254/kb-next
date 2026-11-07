@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getRouterState, installRouter, navigate, resetRouter } from '../router/navigation';
 import { renderWithI18n } from '../test/render';
 import { resetOpeningClock } from './opening-pace';
+import { SessionProvider } from '../layout/session-context';
 import { UniverseEntry, showOnboarding } from './universe-entry';
 
 const ME = {
@@ -110,6 +111,22 @@ describe('UniverseEntry', () => {
     );
     await waitFor(() => expect(screen.getByText('universe')).toBeTruthy(), OPENED);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('opens the Universe for a guest without reading an account or showing the dialog, even with ?tour=1', async () => {
+    serve(json(ME));
+    window.history.replaceState(null, '', '/u?tour=1');
+    renderWithI18n(
+      <SessionProvider value={{ status: 'ready', signedIn: false, signInAvailable: true }}>
+        <UniverseEntry>
+          <p>universe</p>
+        </UniverseEntry>
+      </SessionProvider>,
+    );
+    await waitFor(() => expect(screen.getByText('universe')).toBeTruthy(), OPENED);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).not.toContain('/api/me');
+    window.history.replaceState(null, '', '/');
   });
 
   it('shows the Universe at once, without the opening card, when reached by in-app navigation', async () => {

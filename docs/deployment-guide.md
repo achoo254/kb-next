@@ -16,7 +16,7 @@ hay user máy chủ vào đây; dùng alias SSH (`SSH_TARGET`) và placeholder n
 | Trình sửa Office | `kb-office.hoandat.com`, bản build nguyên của ranuts/document ở `/var/www/kb-office/current`, nginx phục vụ tĩnh ([office-editor.md](office-editor.md)) |
 | Trích chữ tệp tải lên | Apache Tika 2.9.3 dùng chung trên `.65` (loopback `127.0.0.1:9998`, có Tesseract `vie`/`eng`), gọi từ ngay process `kb-server`, một tệp một lúc ([text-extraction.md](text-extraction.md)) |
 | Database | Postgres dùng chung trên `.65`, database `kb`, role `kb` (dòng `host kb kb 127.0.0.1/32 scram-sha-256` trong `pg_hba.conf`); migration chạy khi server khởi động |
-| Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/l/`, `/healthz` sang API |
+| Đường vào | Cloudflare (bản ghi `A` `kb.hoandat.com` proxied, SSL "full") → nginx `conf.d/kb.hoandat.com.conf` (chứng chỉ origin dùng chung `/etc/pki/nginx/server.crt`) → `/api/`, `/auth/`, `/l/`, `/healthz`, `/sitemap.xml` sang API |
 | Đăng nhập | client `kb-web` trên `auth.hoandat.com` (mục Đăng nhập) |
 
 Việc định kỳ chạy ngay trong process `kb-server` (không cần cron): dọn phiên hết hạn (lúc khởi động, rồi mỗi giờ), xoá

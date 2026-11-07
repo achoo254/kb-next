@@ -14,6 +14,20 @@ const SIGNED_IN: SessionState = {
 };
 
 describe('AppShell', () => {
+  it('gives a guest a sign-in button back to the page on view, and no inbox', () => {
+    window.history.replaceState(null, '', '/d/abc?lang=en');
+    renderWithI18n(
+      <SessionProvider value={{ status: 'ready', signedIn: false, signInAvailable: true }}>
+        <AppShell screen="C11" view="docs">
+          <p>content</p>
+        </AppShell>
+      </SessionProvider>,
+    );
+    expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toBe('/login?return=%2Fd%2Fabc%3Flang%3Den&go=1');
+    expect(screen.queryByRole('link', { name: 'Notifications' })).toBeNull();
+    window.history.replaceState(null, '', '/');
+  });
+
   it('links every rail section and view to its route and lights the current ones', () => {
     renderWithI18n(
       <SessionProvider value={SIGNED_IN}>

@@ -1,7 +1,8 @@
 import { type ReactNode, createContext, useContext, useEffect, useId, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { SessionUser } from '../api/session-api';
+import { type SessionUser, gateHref } from '../api/session-api';
 import { type Translate, useI18n } from '../i18n/i18n';
+import { Button } from '../ui/button';
 import { LensRail, type LensRailItem } from '../ui/lens-rail';
 import { TopActions } from '../ui/top-actions';
 import { type BackdropVeil, UniverseBackdrop } from '../ui/universe-backdrop';
@@ -250,10 +251,21 @@ function ShellFrame({
           <ViewNav label={t('shell.views')} items={viewItems(t, docHref, spaceHref)} activeId={view ?? ''} className="app-shell-nav" />
         )}
         <TopActions
-          inboxHref={SHELL_PATHS.inbox}
+          inboxHref={user ? SHELL_PATHS.inbox : undefined}
           unread={unread ?? accountUnread}
           inboxOpen={screen === 'C20'}
-          extra={topExtra}
+          extra={
+            user ? (
+              topExtra
+            ) : (
+              <>
+                {topExtra}
+                <Button variant="glass" icon="sign-in" href={gateHref(`${window.location.pathname}${window.location.search}`)} dataId="top-sign-in">
+                  {t('landing.signIn')}
+                </Button>
+              </>
+            )
+          }
           searchHref={SHELL_PATHS.search}
           onCommand={palette.toggle}
           commandOpen={palette.open}

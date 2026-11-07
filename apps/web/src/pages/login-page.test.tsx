@@ -1,8 +1,8 @@
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { SessionState } from '../api/session-api';
+import { type SessionState, gateHref } from '../api/session-api';
 import { renderWithI18n } from '../test/render';
-import { LoginPage, UniverseOpening, gateHref, loginView } from './login-page';
+import { LoginPage, UniverseOpening, loginView } from './login-page';
 import { OPENING_STEP_MS, resetOpeningClock } from './opening-pace';
 
 const OUT: SessionState = { status: 'ready', signedIn: false, signInAvailable: true };

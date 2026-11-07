@@ -50,9 +50,11 @@ import { NavigationProgress } from './router/navigation-progress';
 import { hasNavigatedInApp, installRouter, useRouterState } from './router/navigation';
 import { type ScreenRoute, matchRoute, routeParam, routePath } from './routes';
 
-/** Whether the screen can show now: public screens always, the others once the session says signed in. */
+/** Whether the screen can show now: public screens always, open ones once the session is known, the rest once signed in. */
 export function canShow(route: ScreenRoute, session: SessionState): boolean {
-  return route.access === 'public' || (session.status === 'ready' && session.signedIn);
+  if (route.access === 'public') return true;
+  if (route.access === 'open') return session.status === 'ready';
+  return session.status === 'ready' && session.signedIn;
 }
 
 /** Where a visitor without a session goes for a signed-in screen: the sign-in page, then back here. */
@@ -107,10 +109,10 @@ function PendingCard({ route, signedIn }: { route: ScreenRoute; signedIn: boolea
 export { routeParam };
 
 /**
- * A signed-in screen. The built screens live in their own files (pages/*-screen.tsx); the others show the app shell
+ * A screen inside the app's shell (open to guests, or signed-in only). The built screens live in their own files (pages/*-screen.tsx); the others show the app shell
  * around a "being built" card. The Universe goes through its entry (opening, first visit).
  */
-function SignedInScreen({ route, path }: { route: ScreenRoute; path: string }): ReactNode {
+function AppScreen({ route, path }: { route: ScreenRoute; path: string }): ReactNode {
   switch (route.code) {
     case 'C09':
       return (
@@ -223,7 +225,7 @@ function Screen({ route, path, session }: { route: ScreenRoute; path: string; se
     case 'Terms':
       return <LegalPage kind="terms" />;
     default:
-      if (route.access === 'signed-in') return <SignedInScreen route={route} path={path} />;
+      if (route.access !== 'public') return <AppScreen route={route} path={path} />;
       return (
         <ScreenPage code={route.code}>
           <PendingCard route={route} signedIn={false} />

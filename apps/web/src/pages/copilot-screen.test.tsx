@@ -186,6 +186,15 @@ describe('CopilotScreen (C14)', () => {
     await waitFor(() => expect(asks()).toEqual([{ question: 'Còn ICMP?', scope: { kind: 'universe' } }]));
   });
 
+  it('asks a guest to sign in, back to the same page (401 sign-in-required)', async () => {
+    routes.ask = () => answer(401, { error: 'sign-in-required' });
+    window.history.replaceState(null, '', '/copilot?q=DHCP');
+    renderWithI18n(<CopilotScreen />);
+    await waitFor(() => expect(state()).toBe('signed-out'));
+    expect(screen.getByText('Reading needs no account. Asking AI needs a free hoandat.com account, then an AI key of your own.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Sign in to ask AI' }).getAttribute('href')).toMatch(/^\/login\?return=%2Fcopilot.*&go=1$/);
+  });
+
   it('asks for a key when the reader has none (403 NO_USER_KEY)', async () => {
     routes.keys = () => answer(200, KEYS_NONE);
     routes.ask = () => answer(403, { error: 'NO_USER_KEY' });

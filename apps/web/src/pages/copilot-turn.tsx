@@ -6,6 +6,7 @@
  */
 import { type ReactNode, useState } from 'react';
 import type { AiProvider } from '../api/keys-api';
+import { gateHref } from '../api/session-api';
 import { SHELL_PATHS } from '../layout/shell-paths';
 import { ILLUSTRATIONS } from '../ui/art';
 import { Button } from '../ui/button';
@@ -388,6 +389,17 @@ function Failure({ turn, keys, actions, size }: { turn: CopilotTurn; keys: KeysL
         <>
           <StateRow art={<Art name="satellite-repair" />} title={t('copilot.rateLimited.title')} text={t('copilot.rateLimited.text')} />
           <div className="copilot-actions">{retry}</div>
+        </>
+      );
+    case 'signed-out':
+      return (
+        <>
+          <StateRow art={<Art name="key-crystal" size={64} />} title={t('copilot.signedOut.title')} text={t('copilot.signedOut.text')} />
+          <div className="copilot-actions">
+            <Button variant="rim" size="lg" icon="sign-in" className="copilot-btn copilot-btn-grow" href={gateHref(`${window.location.pathname}${window.location.search}`)} dataId="copilot-sign-in">
+              {t('copilot.signedOut.title')}
+            </Button>
+          </div>
         </>
       );
     case 'off':

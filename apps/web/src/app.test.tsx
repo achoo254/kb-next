@@ -53,14 +53,20 @@ describe('routes', () => {
 });
 
 describe('sign-in gate', () => {
-  it('shows public screens at once and signed-in screens only to a signed-in account', () => {
+  it('shows public screens at once, reading screens to everyone once the session is known, the rest only signed in', () => {
     expect(canShow(matchRoute('/'), { status: 'loading' })).toBe(true);
     expect(canShow(matchRoute('/l/tok'), READY_OUT)).toBe(true);
     expect(canShow(matchRoute('/privacy'), { status: 'loading' })).toBe(true);
     expect(canShow(matchRoute('/terms'), READY_OUT)).toBe(true);
-    expect(canShow(matchRoute('/u'), { status: 'loading' })).toBe(false);
-    expect(canShow(matchRoute('/u'), READY_OUT)).toBe(false);
-    expect(canShow(matchRoute('/u'), READY_IN)).toBe(true);
+    for (const path of ['/u', '/s/networking', '/d/dhcp', '/search', '/graph']) {
+      expect(canShow(matchRoute(path), { status: 'loading' })).toBe(false);
+      expect(canShow(matchRoute(path), READY_OUT)).toBe(true);
+      expect(canShow(matchRoute(path), READY_IN)).toBe(true);
+    }
+    for (const path of ['/me', '/new', '/d/dhcp/edit', '/settings', '/inbox', '/admin']) {
+      expect(canShow(matchRoute(path), READY_OUT)).toBe(false);
+      expect(canShow(matchRoute(path), READY_IN)).toBe(true);
+    }
   });
 
   it('sends a signed-out visitor to sign in and back to the same page', () => {

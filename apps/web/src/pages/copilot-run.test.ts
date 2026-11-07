@@ -112,6 +112,7 @@ describe('runAsk', () => {
     [403, 'USER_KEY_UNREADABLE', 'key-unreadable'],
     [503, 'USER_KEYS_DISABLED', 'off'],
     [429, 'rate-limited', 'rate-limited'],
+    [401, 'sign-in-required', 'signed-out'],
     [404, 'not-found', 'scope-missing'],
     [400, 'invalid-body', 'too-long'],
     [500, 'boom', 'other'],

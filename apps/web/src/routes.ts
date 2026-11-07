@@ -1,7 +1,11 @@
 import type { MessageKey } from './i18n/messages';
 
-/** Who may open a screen: anyone, or only a signed-in account (others go to the sign-in page first). */
-export type ScreenAccess = 'public' | 'signed-in';
+/**
+ * Who may open a screen: anyone (`public`, a page outside the app's shell); anyone in the app's shell (`open`: the
+ * reading screens, a guest sees the public texts and signs in to write, save or ask AI); or only a signed-in account
+ * (`signed-in`, others go to the sign-in page first). Owner's decision (07/11/2026): reading never needs an account.
+ */
+export type ScreenAccess = 'public' | 'open' | 'signed-in';
 
 /** A screen of the app and the mock board it is built from. */
 export interface ScreenRoute {
@@ -15,8 +19,9 @@ export interface ScreenRoute {
 const segment = '([A-Za-z0-9_-]+)';
 
 /**
- * The app's screens. Every page needs a signed-in account except the landing page (S01), the sign-in page (S02),
- * a share link (H02), the privacy and terms pages (no board) and the error page (X02, any unknown path).
+ * The app's screens. Reading is open to everyone: the Universe (C09), a Space (C10), a text (C11), search (C12) and
+ * the graph (C13). The landing page (S01), the sign-in page (S02), a share link (H02), the privacy and terms pages and
+ * the error page (X02, any unknown path) are public pages. Everything else needs a signed-in account.
  */
 export const ROUTES: readonly ScreenRoute[] = [
   { code: 'S01', titleKey: 'screen.S01', access: 'public', pattern: /^\/$/ },
@@ -25,9 +30,9 @@ export const ROUTES: readonly ScreenRoute[] = [
   // The privacy policy and terms of use: text pages with no board of their own (pages/legal-page.tsx).
   { code: 'Privacy', titleKey: 'screen.Privacy', access: 'public', pattern: /^\/privacy$/ },
   { code: 'Terms', titleKey: 'screen.Terms', access: 'public', pattern: /^\/terms$/ },
-  { code: 'C09', titleKey: 'screen.C09', access: 'signed-in', pattern: /^\/u$/ },
-  { code: 'C10', titleKey: 'screen.C10', access: 'signed-in', pattern: new RegExp(`^/s/${segment}$`) },
-  { code: 'C11', titleKey: 'screen.C11', access: 'signed-in', pattern: new RegExp(`^/d/${segment}$`) },
+  { code: 'C09', titleKey: 'screen.C09', access: 'open', pattern: /^\/u$/ },
+  { code: 'C10', titleKey: 'screen.C10', access: 'open', pattern: new RegExp(`^/s/${segment}$`) },
+  { code: 'C11', titleKey: 'screen.C11', access: 'open', pattern: new RegExp(`^/d/${segment}$`) },
   // The editor of a document, and /new, which creates a note and opens it there.
   { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/edit$`) },
   { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: /^\/new$/ },
@@ -39,9 +44,9 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C05', titleKey: 'screen.C05', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/preview$`) },
   { code: 'C06', titleKey: 'screen.C06', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/submit$`) },
   { code: 'C18', titleKey: 'screen.C18', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/share$`) },
-  { code: 'C12', titleKey: 'screen.C12', access: 'signed-in', pattern: /^\/search$/ },
+  { code: 'C12', titleKey: 'screen.C12', access: 'open', pattern: /^\/search$/ },
   { code: 'C14', titleKey: 'screen.C14', access: 'signed-in', pattern: /^\/copilot$/ },
-  { code: 'C13', titleKey: 'screen.C13', access: 'signed-in', pattern: /^\/graph$/ },
+  { code: 'C13', titleKey: 'screen.C13', access: 'open', pattern: /^\/graph$/ },
   // /canvas lists the account's canvases (and creates one), /canvas/:id opens one.
   { code: 'C15', titleKey: 'screen.C15', access: 'signed-in', pattern: new RegExp(`^/canvas(?:/${segment})?$`) },
   // Knowledge journeys: /journey/new creates a draft and opens its builder (C07), /journey/:id/edit builds one,

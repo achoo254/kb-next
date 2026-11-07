@@ -26,6 +26,7 @@ import {
   streamAsk,
 } from '../api/copilot-api';
 import { type AiProvider, type KeysResponse, fetchKeys, saveKeyPrefs } from '../api/keys-api';
+import { useSessionState } from '../layout/session-context';
 
 export type CopilotStage = 'queued' | 'searching' | 'writing' | 'done' | 'stopped' | 'failed';
 
@@ -43,6 +44,8 @@ export type CopilotFailure =
   | 'off'
   | 'scope-missing'
   | 'too-long'
+  /** A guest asked: the Copilot needs an account (reading does not). */
+  | 'signed-out'
   | 'other';
 
 /** A source of the answer; `available: false` only in the history, for a document the reader can no longer open. */
@@ -107,6 +110,8 @@ export function requestFailure(error: unknown): CopilotFailure {
       return 'off';
     case 'rate-limited':
       return 'rate-limited';
+    case 'sign-in-required':
+      return 'signed-out';
     case 'not-found':
       return 'scope-missing';
     case 'invalid-body':
@@ -277,8 +282,12 @@ export type KeysLoad = { status: 'loading' } | { status: 'ready'; keys: KeysResp
  * `switchTo` makes another provider with a working key the Copilot's (its default model) and answers whether it did.
  */
 export function useAiKeys(): { load: KeysLoad; switchTo(provider: AiProvider): Promise<boolean> } {
-  const [load, setLoad] = useState<KeysLoad>({ status: 'loading' });
+  const session = useSessionState();
+  // A guest has no keys to read (and asking answers `signed-out`).
+  const guest = session.status === 'ready' && !session.signedIn;
+  const [load, setLoad] = useState<KeysLoad>(guest ? { status: 'failed' } : { status: 'loading' });
   useEffect(() => {
+    if (guest) return;
     let current = true;
     const refresh = (): void => {
       fetchKeys().then(
@@ -301,7 +310,7 @@ export function useAiKeys(): { load: KeysLoad; switchTo(provider: AiProvider): P
       current = false;
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, []);
+  }, [guest]);
   const switchTo = useCallback(async (provider: AiProvider): Promise<boolean> => {
     if (load.status !== 'ready') return false;
     const model = load.keys.models[provider][0];

@@ -1,7 +1,7 @@
 import { writePreference } from '@achoo254/app-shell/preferences';
 import { type ReactNode, useEffect, useState } from 'react';
 import { type SpaceListItem, fetchSpaces } from '../api/content-api';
-import type { SessionState } from '../api/session-api';
+import { type SessionState, gateHref } from '../api/session-api';
 import { brand } from '../brand';
 import { type Locale, type Translate, useI18n } from '../i18n/i18n';
 import { BRAND_WORDS } from '../layout/brand-words';
@@ -11,7 +11,6 @@ import { SCENE_SLOTS, type SceneSpace, UniverseScene } from '../layout/universe-
 import { Button } from '../ui/button';
 import { GradientTitle } from '../ui/gradient-title';
 import { type StageCard, StageCards } from '../ui/stage-cards';
-import { gateHref } from './login-page';
 import { sceneSpaces } from './universe-spaces';
 import './landing-page.css';
 

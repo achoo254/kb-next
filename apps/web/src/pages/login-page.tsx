@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from 'react';
-import { LOGIN_PATH, type SessionState, loginReturnPath, safeReturnPath, signInHref } from '../api/session-api';
+import { GO_PARAM, type SessionState, loginReturnPath, signInHref } from '../api/session-api';
 import { useI18n } from '../i18n/i18n';
 import { LegalLinks } from '../layout/legal-links';
 import { ScreenPage } from '../layout/screen-page';
@@ -10,14 +10,6 @@ import './login-page.css';
 
 /** The `?login=` results the server sends back to /login (apps/server auth-routes.ts). */
 const FAILURES: Record<string, SignInFailure> = { fail: 'fail', unavailable: 'unavailable', busy: 'busy', removed: 'removed' };
-
-/** `?go=1`: open the gate at once (the landing's sign-in button); without it /login waits for a click. */
-const GO_PARAM = 'go';
-
-/** The sign-in page that goes straight on to the IdP, then back to `returnTo` (the landing's sign-in button). */
-export function gateHref(returnTo: string): string {
-  return `${LOGIN_PATH}?${new URLSearchParams({ return: safeReturnPath(returnTo), [GO_PARAM]: '1' }).toString()}`;
-}
 
 export function signInFailure(search: string): SignInFailure | null {
   return FAILURES[new URLSearchParams(search).get('login') ?? ''] ?? null;

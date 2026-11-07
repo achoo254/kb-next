@@ -19,9 +19,13 @@ và hiện nền Universe kèm mã board; nội dung các màn được dựng d
 | [`brand`](brand) | Biểu tượng vector (logo của mock) và các file sinh từ nó (`pnpm brand:gen`) |
 | [`scripts`](scripts) | `brand-gen`, `check-tokens` (màu chỉ ở `tokens.css`, tương phản WCAG AA cả Tối lẫn Sáng), `check-public-info` (không lộ địa chỉ máy chủ, cổng SSH), `meili-dev` + `meili-binary` (Meilisearch cho dev và test) |
 
-Route của web và board tương ứng: [`apps/web/src/routes.ts`](apps/web/src/routes.ts). Mọi trang cần đăng nhập trừ
-trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02), trang lỗi (X02) và hai trang pháp lý
-song ngữ không có board: `/privacy` (quyền riêng tư: câu hỏi AI đi tới nhà cung cấp người dùng chọn bằng key riêng,
+Route của web và board tương ứng: [`apps/web/src/routes.ts`](apps/web/src/routes.ts). Đọc không cần tài khoản (chủ dự
+án chốt 07/11/2026): khách mở được Universe `/u` (C09), Space `/s/<slug>` (C10), bài `/d/<id>` (C11), tìm kiếm (C12) và
+Graph (C13), thấy mọi bài công khai (đã duyệt, không ẩn); bài công khai hay riêng tư do người đăng chọn, quản trị quản
+lý mọi bài. Viết, lưu, yêu thích, bình luận, hỏi AI, cài đặt và trạm quản trị cần đăng nhập; khách thấy nút "Đăng
+nhập" ở thanh trên, đăng nhập xong quay về đúng trang. `/sitemap.xml` do server dựng từ các Space và bài công khai.
+Ngoài app còn trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02), trang lỗi (X02) và hai trang
+pháp lý song ngữ không có board: `/privacy` (quyền riêng tư: câu hỏi AI đi tới nhà cung cấp người dùng chọn bằng key riêng,
 Jev xử lý tìm kiếm phía server, cookie, link chia sẻ, sao lưu, cách xoá dữ liệu) và `/terms` (điều khoản sử dụng).
 Chữ ở [`apps/web/src/pages/legal-docs.ts`](apps/web/src/pages/legal-docs.ts); mọi thời hạn lưu giữ in từ
 [`apps/server/src/retention.ts`](apps/server/src/retention.ts), cùng hằng số server dùng. Đổi cách app giữ hay gửi dữ

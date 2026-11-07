@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentComments, DocumentSummary, DocumentView } from '../api/content-api';
 import { KEYS_OPENAI, KEYS_NONE, answer, eventStream } from '../test/api-fakes';
+import { SessionProvider } from '../layout/session-context';
 import { renderWithI18n } from '../test/render';
 import { timeAgo } from './reader-messages';
 import { SAVE_DELAY_MS, scrolledPercent } from './reader-progress';
@@ -281,6 +282,24 @@ describe('ReaderScreen', () => {
     serve(() => answer(200, view({ translationAvailable: false })));
     renderWithI18n(<ReaderScreen id="dhcp" />);
     expect((await screen.findByRole('link', { name: 'Translate with AI' })).getAttribute('href')).toBe('/d/dhcp/translate?to=en');
+  });
+
+  it('shows a guest the comments and a sign-in button instead of the composer', async () => {
+    serve(
+      () => answer(200, view()),
+      () => answer(200, COMMENTS),
+    );
+    window.history.replaceState(null, '', '/d/dhcp');
+    renderWithI18n(
+      <SessionProvider value={{ status: 'ready', signedIn: false, signInAvailable: true }}>
+        <ReaderScreen id="dhcp" />
+      </SessionProvider>,
+    );
+    const comments = await screen.findByRole('region', { name: 'Comments · 1' });
+    expect(await within(comments).findByText('<b>@Linh</b> relay?')).toBeTruthy();
+    expect(within(comments).queryByRole('textbox')).toBeNull();
+    expect(within(comments).getByRole('link', { name: 'Sign in to comment' }).getAttribute('href')).toBe('/login?return=%2Fd%2Fdhcp%23binh-luan&go=1');
+    window.history.replaceState(null, '', '/');
   });
 
   it('shows comments as plain text and posts a new one', async () => {

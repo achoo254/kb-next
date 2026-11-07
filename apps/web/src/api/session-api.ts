@@ -72,6 +72,14 @@ export function safeReturnPath(value: string | null | undefined): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
+/** `?go=1`: open the gate at once (a sign-in button); without it /login waits for a click. */
+export const GO_PARAM = 'go';
+
+/** The sign-in page that goes straight on to the IdP, then back to `returnTo` (the sign-in buttons). */
+export function gateHref(returnTo: string): string {
+  return `${LOGIN_PATH}?${new URLSearchParams({ return: safeReturnPath(returnTo), [GO_PARAM]: '1' }).toString()}`;
+}
+
 /** Where the sign-in page sends the visitor back to (its `?return=`), home by default. */
 export function loginReturnPath(search: string): string {
   return safeReturnPath(new URLSearchParams(search).get('return'));

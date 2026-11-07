@@ -7,6 +7,7 @@ import { adminApiRoutes, adminTokenRoutes } from './api/admin-api-routes';
 import { DOCUMENT_BODY_LIMIT, authoringRoutes } from './api/authoring-routes';
 import { CANVAS_BODY_LIMIT, canvasRoutes } from './api/canvas-routes';
 import { contentRoutes } from './api/content-routes';
+import { sitemapRoutes } from './api/sitemap-routes';
 import { fileRoutes } from './api/file-routes';
 import { graphRoutes } from './api/graph-routes';
 import { historyRoutes } from './api/history-routes';
@@ -116,6 +117,9 @@ export function createApp({
 
   // A share link's page with its link preview (GET only).
   app.use(ogPageRoutes({ config, db, now, loadTemplate }));
+
+  // What search engines may crawl: the public Spaces and texts (GET only).
+  app.use(sitemapRoutes({ config, db }));
 
   // The IdP calls this server to server, without an Origin: ahead of the same-origin check, proven by its signature.
   app.use(backchannelLogoutRoute({ config, db, idp, now }));
