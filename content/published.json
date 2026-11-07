@@ -1,11 +1,36 @@
 {
-  "planets": [],
+  "planets": [
+    {
+      "slug": "hoc-cach-hoc",
+      "space": "ky-nang",
+      "collectionId": "343dc107-e88f-4c5b-83a2-68f670083c87",
+      "at": "2026-11-07T03:22:56.083Z"
+    }
+  ],
   "posts": [
     {
       "slug": "hoc-chu-dong-lap-lai-ngat-quang",
       "id": "cdb6efbe-ad80-42a0-9fc4-40eb77ea17df",
       "title": "Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn",
       "at": "2026-11-07T02:42:39.749Z"
+    },
+    {
+      "slug": "hoc-cach-hoc/xen-ke-chu-de-khi-hoc",
+      "id": "9860b43c-f1cf-4b5d-8646-4e472bf3ba89",
+      "title": "Xen kẽ chủ đề khi học: vì sao trộn bài lại giúp nhớ và áp dụng tốt hơn",
+      "at": "2026-11-07T03:22:56.337Z"
+    },
+    {
+      "slug": "hoc-cach-hoc/phuong-phap-feynman",
+      "id": "ba53e2e3-fe0c-47c4-8d75-df3d4accc44c",
+      "title": "Phương pháp Feynman: giải thích lại bằng lời đơn giản để biết mình hiểu đến đâu",
+      "at": "2026-11-07T03:22:56.660Z"
+    },
+    {
+      "slug": "hoc-cach-hoc/duong-cong-quen-lang",
+      "id": "5ee311ca-d2ce-4210-9bd4-c3a5c15dacf3",
+      "title": "Đường cong quên lãng: vì sao ta quên nhanh và làm gì để nhớ lâu hơn",
+      "at": "2026-11-07T03:22:56.922Z"
     }
   ]
 }
