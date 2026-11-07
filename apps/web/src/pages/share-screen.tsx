@@ -88,6 +88,8 @@ export function historyText(t: Translate, line: ShareHistoryLine, now: Date, loc
     }
     case 'approved':
       return { title: t('share.history.approved'), sub: byLine };
+    case 'published':
+      return { title: t('share.history.published'), sub: byLine };
     case 'hidden':
       return { title: t('share.history.hidden'), sub: byLine };
     case 'shown':

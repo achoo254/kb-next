@@ -126,7 +126,7 @@ export async function setFavorite(id: string, on: boolean): Promise<void> {
 // ── "Của tôi" (C08) ──
 
 const ReviewSchema = z.object({
-  action: z.enum(['submitted', 'approved', 'changes_requested', 'rejected']),
+  action: z.enum(['submitted', 'approved', 'changes_requested', 'rejected', 'published']),
   reason: z.nullable(z.string()),
   by: z.nullable(z.string()),
   at: Time,

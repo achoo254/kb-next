@@ -9,7 +9,7 @@ bước nằm ở `apps/server/src/access/review.ts`:
 
 | Từ | Việc | Thành | Ai |
 |---|---|---|---|
-| mọi bước trừ `approved` | Đăng công khai (C04 "Đăng công khai", C08 "Đăng" mở C04; tối đa 5 lần mỗi 10 phút): công khai ngay | `approved` (bài `own` thành `community`; mốc "lần sửa cuối" đặt lại lúc đăng) | tác giả |
+| mọi bước trừ `approved` | Đăng công khai (C04 "Đăng công khai", C08 "Đăng" mở C04; tối đa 20 lần mỗi 10 phút): công khai ngay, ghi sự kiện `published` (lịch sử C17, nhật ký link C18) | `approved` (bài `own` thành `community`; mốc "lần sửa cuối" đặt lại lúc đăng) | tác giả |
 | mọi bước | Lưu riêng tư (C04), Gỡ xuống (C08): bài đã đăng thành riêng tư, mọi link chia sẻ bị thu hồi | `private` (bài `community` về lại `own`) | tác giả |
 | mọi bước | Sửa (C02, C07, tệp Office), vào thùng rác | giữ nguyên bước | tác giả, quản trị |
 | `approved` | Ẩn / hiện, đổi tiêu đề, thẻ, nơi đặt (A02, `PATCH` của API): chỉ bài đã đăng, cả bản vá hoặc không gì cả | giữ `approved` | quản trị |

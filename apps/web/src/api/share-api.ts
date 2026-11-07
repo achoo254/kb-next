@@ -32,7 +32,7 @@ export const ShareLinkSchema = z.object({
 });
 export type ShareLink = z.infer<typeof ShareLinkSchema>;
 
-export const HISTORY_KINDS = ['opened', 'created', 'changed', 'revoked', 'approved', 'hidden', 'shown'] as const;
+export const HISTORY_KINDS = ['opened', 'created', 'changed', 'revoked', 'approved', 'published', 'hidden', 'shown'] as const;
 
 export const ShareViewSchema = z.object({
   document: z.object({

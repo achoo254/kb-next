@@ -96,7 +96,7 @@ export async function documentActivity(db: Db, viewer: Viewer, id: string): Prom
   const versionAt = (at: Date): number | null => versions.filter((v) => v.createdAt <= at).at(-1)?.version ?? null;
   const allReviews = reviews.map((r) => ({ ...r, version: versionAt(r.createdAt) }));
   if (scope === 'public') {
-    return { scope, versions: versions.slice(-1), reviews: allReviews.filter((r) => r.action === 'approved'), visibility: [] };
+    return { scope, versions: versions.slice(-1), reviews: allReviews.filter((r) => r.action === 'approved' || r.action === 'published'), visibility: [] };
   }
   return { scope, versions, reviews: allReviews, visibility: audit.map((row) => ({ hidden: row.action === HIDE_ACTION, actorId: row.actorId, createdAt: row.createdAt })) };
 }

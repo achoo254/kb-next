@@ -1,0 +1,1 @@
+ALTER TYPE "public"."review_action" ADD VALUE 'published';

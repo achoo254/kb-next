@@ -44,7 +44,7 @@ export type HistoryEvent =
       /** Written by someone other than its author who is no admin (C17 "Đề xuất sửa"). */
       proposal: boolean;
     }
-  | { kind: 'review'; at: string; actor: HistoryActor | null; action: 'submitted' | 'approved' | 'changes_requested' | 'rejected'; reason: string | null; version: number | null }
+  | { kind: 'review'; at: string; actor: HistoryActor | null; action: 'submitted' | 'approved' | 'changes_requested' | 'rejected' | 'published'; reason: string | null; version: number | null }
   | { kind: 'visibility'; at: string; actor: HistoryActor | null; hidden: boolean };
 
 export interface HistoryResponse {

@@ -135,8 +135,8 @@ describe('opening a link', () => {
     expect(view.openings7d).toBe(2);
     const opened = view.history.filter((h) => h.kind === 'opened');
     expect(opened.map((h) => h.by)).toEqual(['Linh', null]);
-    // Published by its author: no reviewer's approval in its history.
-    expect(view.history.map((h) => h.kind)).toEqual(['opened', 'opened', 'created']);
+    // Published by its author: the log says when, and there is no reviewer's approval.
+    expect(view.history.map((h) => h.kind)).toEqual(['opened', 'opened', 'created', 'published']);
     expect(view.approverName).toBeNull();
 
     // Nothing stored or answered carries the token: the link keeps its sha256 and last four characters only.

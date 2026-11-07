@@ -41,7 +41,7 @@ export interface MyDocument extends DocumentSummary {
   collection: CollectionBrief | null;
   favorite: boolean;
   /** The latest review event (C08 "Lý do · …"); null when it was never reviewed. */
-  review: { action: 'submitted' | 'approved' | 'changes_requested' | 'rejected'; reason: string | null; by: string | null; at: string } | null;
+  review: { action: 'submitted' | 'approved' | 'changes_requested' | 'rejected' | 'published'; reason: string | null; by: string | null; at: string } | null;
 }
 
 type UserViewer = Extract<Viewer, { kind: 'user' }>;

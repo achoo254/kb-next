@@ -12,11 +12,12 @@ import { createDocument, fetchEditable, fetchMyDocuments, fetchTrash, saveDocume
 import { fetchDocument, postComment } from '../../../web/src/api/content-api';
 import { fetchInbox, fetchUnread, markAllNotificationsRead, markNotificationRead } from '../../../web/src/api/notifications-api';
 import { fetchPublished, keepPrivate, publishDocument, updatePublished } from '../../../web/src/api/review-api';
+import { fetchHistory } from '../../../web/src/api/history-api';
 import { createShareLink, fetchShare } from '../../../web/src/api/share-api';
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
-import { documentVersions, documents, notifications, users } from '../db/schema';
+import { documentVersions, documents, notifications, reviewEvents, users } from '../db/schema';
 import { seedDatabase, seedId } from '../db/seed-database';
 import { runStaleCheck } from '../notifications/stale-job';
 
@@ -87,6 +88,14 @@ describe('publishing', () => {
     const [row] = await server.database.db.select({ tags: documents.tags }).from(documents).where(eq(documents.id, DRAFT));
     expect(row?.tags).toEqual(['dhcp', 'dora']);
     expect((await as('admin', () => fetchUnread())).total).toBe(adminUnread);
+
+    // The history shows when it was published, to its author and to other readers.
+    const trail = await server.database.db.select({ action: reviewEvents.action, actorId: reviewEvents.actorId }).from(reviewEvents).where(eq(reviewEvents.documentId, DRAFT));
+    expect(trail.filter((e) => e.action === 'published')).toHaveLength(1);
+    for (const who of ['owner', 'other'] as const) {
+      const events = (await as(who, () => fetchHistory(DRAFT))).events;
+      expect(events.some((e) => e.kind === 'review' && e.action === 'published')).toBe(true);
+    }
   });
 
   it('refuses what cannot be published, saying what to fix', async () => {

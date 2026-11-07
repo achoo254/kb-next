@@ -214,7 +214,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     keySaveLimitPerMinute: 5,
     uploadLimitPerMinute: 30,
     retryLimitPerMinute: 10,
-    submitLimitPer10Min: 5,
+    submitLimitPer10Min: 20,
     shareOpenLimitPerMinute: 60,
     shareManageLimitPerMinute: 30,
     adminApiLimitPerMinute: 60,

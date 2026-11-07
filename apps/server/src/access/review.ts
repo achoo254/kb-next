@@ -14,7 +14,7 @@
 import { and, asc, count, desc, eq, gte, ilike, isNull, lt, notExists, sql } from 'drizzle-orm';
 import { bodyOf } from '../authoring/markdown-text';
 import type { Db } from '../db/client';
-import { auditLog, documentVersions, documents, notifications, readingProgress } from '../db/schema';
+import { auditLog, documentVersions, documents, notifications, readingProgress, reviewEvents } from '../db/schema';
 import { type DocumentRow, documentColumns } from './content';
 import { HIDE_ACTION, SHOW_ACTION } from './history';
 import { isUuid } from './ids';
@@ -99,6 +99,8 @@ export async function publishDocument(db: Db, viewer: UserViewer, id: string, in
     const origin = doc.origin === 'own' ? 'community' : doc.origin;
     const changes = { status: 'approved' as const, origin, updatedAt: now, ...settingsChanges(doc, input) };
     await tx.update(documents).set(changes).where(eq(documents.id, id));
+    // The history (C17) and the share log (C18) show when and by whom it was published.
+    await tx.insert(reviewEvents).values({ documentId: id, actorId: viewer.userId, action: 'published', createdAt: now });
     return { kind: 'published', doc: { ...doc, ...changes }, was: doc.status };
   });
 }

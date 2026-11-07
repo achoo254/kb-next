@@ -322,7 +322,11 @@ export const links = pgTable(
   (table) => [unique('links_source_target_kind_unique').on(table.sourceId, table.targetId, table.kind), index('links_target_id_idx').on(table.targetId)],
 );
 
-export const reviewAction = pgEnum('review_action', ['submitted', 'approved', 'changes_requested', 'rejected']);
+/**
+ * `published`: the author published the text (from 07/11/2026, when publishing stopped needing an admin); the other
+ * values are left from the review gate (old rows only).
+ */
+export const reviewAction = pgEnum('review_action', ['submitted', 'approved', 'changes_requested', 'rejected', 'published']);
 
 /**
  * Jev's pre-review of a submitted text (review gate, removed 07/11/2026; old rows only), each 0–1, never a verdict: `onTopic` (fits its
@@ -338,7 +342,10 @@ export interface JevPreReview {
   inappropriate?: number;
 }
 
-/** The review trail of a document from the review gate (removed 07/11/2026): kept for history (C17), no new rows. */
+/**
+ * The publishing trail of a document (C17 history, C18 share log): `published` rows as authors publish; the review
+ * gate's rows (removed 07/11/2026) are kept for history.
+ */
 export const reviewEvents = pgTable(
   'review_events',
   {

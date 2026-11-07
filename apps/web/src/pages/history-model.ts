@@ -24,6 +24,8 @@ export function eventText(t: T, event: HistoryEvent): string {
     switch (event.action) {
       case 'approved':
         return t('history.review.approved', { version: event.version ?? '?' });
+      case 'published':
+        return t('history.review.published', { version: event.version ?? '?' });
       case 'submitted':
         return t('history.review.submitted', { version: event.version ?? '?' });
       case 'changes_requested':
@@ -63,6 +65,7 @@ export function tagOf(event: HistoryEvent): { key: HistoryMessageKey; tone: TagT
   if (event.kind === 'visibility') return event.hidden ? { key: 'history.tag.hidden', tone: 'warn' } : null;
   if (event.kind !== 'review') return null;
   if (event.action === 'approved') return { key: 'history.tag.approved', tone: 'success' };
+  if (event.action === 'published') return { key: 'history.tag.published', tone: 'success' };
   if (event.action === 'changes_requested') return { key: 'history.tag.changes', tone: 'warn' };
   if (event.action === 'rejected') return { key: 'history.tag.rejected', tone: 'warn' };
   return null;

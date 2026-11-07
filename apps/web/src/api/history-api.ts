@@ -10,7 +10,7 @@ import { CollectionBriefSchema, SpaceBriefSchema } from './content-api';
 const Time = z.iso.datetime({ offset: true });
 export const ACTOR_ROLES = ['admin', 'member'] as const;
 /** Review events are left from the review gate (removed 07/11/2026): old documents still show them. */
-export const REVIEW_ACTIONS = ['submitted', 'approved', 'changes_requested', 'rejected'] as const;
+export const REVIEW_ACTIONS = ['submitted', 'approved', 'changes_requested', 'rejected', 'published'] as const;
 export const VERSION_VIAS = ['editor', 'api', 'import', 'restore', 'translation'] as const;
 
 const ActorSchema = z.nullable(z.object({ name: z.nullable(z.string()), role: z.enum(ACTOR_ROLES) }));

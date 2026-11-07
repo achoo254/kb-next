@@ -127,6 +127,13 @@
       "when": 1793928693058,
       "tag": "0017_reader-text-size",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794027753483,
+      "tag": "0018_review-published",
+      "breakpoints": true
     }
   ]
 }

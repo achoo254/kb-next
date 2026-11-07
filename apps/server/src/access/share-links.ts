@@ -17,7 +17,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { and, count, desc, eq, gte, inArray, isNull, lt, or } from 'drizzle-orm';
 import type { Db } from '../db/client';
-import { auditLog, documents, shareLinkVisits, shareLinks, users } from '../db/schema';
+import { auditLog, documents, reviewEvents, shareLinkVisits, shareLinks, users } from '../db/schema';
 import { type DocumentRow, documentColumns } from './content';
 import { SHARE_OPENINGS_KEEP_DAYS } from '../retention';
 import { HIDE_ACTION, SHOW_ACTION } from './history';
@@ -200,7 +200,7 @@ export async function openShareLink(db: Db, viewer: Viewer, token: string, now: 
 }
 
 export interface HistoryLine {
-  kind: 'opened' | 'created' | 'changed' | 'revoked' | 'approved' | 'hidden' | 'shown';
+  kind: 'opened' | 'created' | 'changed' | 'revoked' | 'approved' | 'published' | 'hidden' | 'shown';
   at: Date;
   /** Who: the account that opened or acted; null for a guest's opening (or an account since deleted). */
   byName: string | null;
@@ -230,12 +230,20 @@ export async function shareHistory(db: Db, viewer: Viewer, doc: DocumentRow, lim
     .where(and(eq(auditLog.targetType, 'document'), eq(auditLog.targetId, doc.id), or(eq(auditLog.action, HIDE_ACTION), eq(auditLog.action, SHOW_ACTION))))
     .orderBy(desc(auditLog.createdAt))
     .limit(limit);
+  const publications = await db
+    .select({ at: reviewEvents.createdAt, byName: users.name })
+    .from(reviewEvents)
+    .leftJoin(users, eq(users.id, reviewEvents.actorId))
+    .where(and(eq(reviewEvents.documentId, doc.id), eq(reviewEvents.action, 'published')))
+    .orderBy(desc(reviewEvents.createdAt))
+    .limit(limit);
   const approval = await findApproval(db, viewer, doc.id);
   const approver = approval ? (await db.select({ name: users.name }).from(users).where(eq(users.id, approval.actorId)))[0] : undefined;
   const lines: HistoryLine[] = [
     ...events.map((e) => ({ kind: e.kind, at: e.at, byName: e.byName, detail: e.detail })),
     ...audits.map((a): HistoryLine => ({ kind: a.action === HIDE_ACTION ? 'hidden' : 'shown', at: a.at, byName: a.byName, detail: null })),
     ...(approval ? [{ kind: 'approved' as const, at: approval.at, byName: approver?.name ?? null, detail: null }] : []),
+    ...publications.map((p): HistoryLine => ({ kind: 'published', at: p.at, byName: p.byName, detail: null })),
   ];
   return lines.sort((a, b) => b.at.getTime() - a.at.getTime()).slice(0, limit);
 }
