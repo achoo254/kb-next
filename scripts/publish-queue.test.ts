@@ -37,6 +37,8 @@ async function setUp(topics: Topic[], planets: Record<string, Record<string, str
   }
 }
 
+const englishBody = `## Introduction\n\n${'An English paragraph long enough to make an article. '.repeat(Math.ceil(MIN_BODY_CHARS / 40))}`;
+const linkedEn = (title: string, ...links: string[]): string => `---\ntitle: ${title}\ntags: test\n---\n${links.map((l) => `See [[${l}]].`).join(' ')}\n\n${englishBody}`;
 const topic = (slug: string, space = 'ky-nang'): Topic => ({ slug, space, lang: 'vi', name: `Hành tinh ${slug}`, nameEn: `Planet ${slug}`, tech: false, brief: '', status: 'queued' });
 
 /** A fake admin API: answers posts with fresh ids unless told otherwise, records each call. */
@@ -138,5 +140,47 @@ describe('publishQueue', () => {
     expect(result.failed.map((f) => f.slug).sort()).toEqual(['p', 'q']);
     expect(result.failed.find((f) => f.slug === 'p')?.reason).toBe('Space ky-nang: 401 invalid-token');
     expect(api.calls.some((c) => c.route === 'posts')).toBe(false);
+  });
+
+  it('tops up a published planet in its own Collection, without a second planet in the ledger', async () => {
+    const ledger: Ledger = {
+      planets: [{ slug: 'p', space: 'ky-nang', collectionId: 'col-1', at: 'earlier' }],
+      posts: [
+        { slug: 'p/a', id: 'doc-1', title: 'P A', at: '' },
+        { slug: 'p/b', id: 'doc-2', title: 'P B', at: '' },
+        { slug: 'p/c', id: 'doc-3', title: 'P C', at: '' },
+      ],
+    };
+    // The topic was put back to todo with a new brief, then queued.
+    await setUp([topic('p')], { p: { d: linked('P D', 'P A'), e: linked('P E', 'P D') } }, ledger);
+    const api = fakeApi();
+    const result = await run(api.fetch);
+    expect(result.failed).toEqual([]);
+    expect(api.calls.map((c) => [c.route, c.body.title, c.body.collection])).toEqual([
+      ['posts', 'P D', 'col-1'],
+      ['posts', 'P E', 'col-1'],
+    ]);
+    expect(await readdir(path.join(dir, 'queue'))).toEqual(['.gitkeep']);
+    expect((await readTopics())[0]?.status).toBe('published');
+    const after = await readLedger();
+    expect(after.planets).toEqual(ledger.planets);
+    expect(after.posts.map((p) => p.slug)).toEqual(['p/a', 'p/b', 'p/c', 'p/d', 'p/e']);
+  });
+
+  it('publishes an English planet in English, its Collection named in English', async () => {
+    const en: Topic = { ...topic('p-en'), lang: 'en', name: 'Hành tinh p', nameEn: 'Planet p' };
+    await setUp([en], { 'p-en': { a: linkedEn('A', 'B'), b: linkedEn('B', 'C'), c: linkedEn('C') } });
+    const api = fakeApi();
+    expect((await run(api.fetch)).failed).toEqual([]);
+    expect(api.calls.find((c) => c.route === 'collections')?.body).toEqual({ space: 'ky-nang', nameVi: 'Planet p', nameEn: 'Planet p' });
+    expect(api.calls.filter((c) => c.route === 'posts').map((c) => c.body.lang)).toEqual(['en', 'en', 'en']);
+  });
+
+  it('holds an English planet whose articles are in Vietnamese', async () => {
+    await setUp([{ ...topic('p-en'), lang: 'en' }], { 'p-en': trio('P') });
+    const api = fakeApi();
+    const result = await run(api.fetch);
+    expect(result.failed.map((f) => f.slug)).toEqual(['p-en']);
+    expect(api.calls).toEqual([]);
   });
 });

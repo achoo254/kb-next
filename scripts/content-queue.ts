@@ -1,7 +1,8 @@
 /**
- * The AI article queue (docs/admin-api.md, "Hàng chờ bài AI"). Each run of the routine adds one planet (a Collection)
- * as `content/queue/<planet>/`, holding 3–5 articles (`<article>.md`) linked to each other with `[[Title]]`, and to
- * articles of other planets. `.github/workflows/publish-queue.yml` makes the Space and the Collection when needed,
+ * The AI article queue (docs/admin-api.md, "Hàng chờ bài AI"). Each run of the writing routine queues one planet (a
+ * Collection) as `content/queue/<planet>/`: a new planet of 3–5 articles (`<article>.md`) linked to each other with
+ * `[[Title]]` and to articles of other planets, or a top-up of 1–5 articles for a planet already published, linked to
+ * its published articles. A topic's `lang` is the language of its articles. `.github/workflows/publish-queue.yml` makes the Space and the Collection when needed,
  * publishes the articles (a linked-to article before the one linking to it, so every link resolves when it is saved)
  * and removes the folder. The database owns the articles after that; the repository keeps only the topic list and the
  * ledger of what was published.
@@ -30,6 +31,11 @@ const MAX_TAG_CHARS = 60;
 export const MIN_BODY_CHARS = 1200;
 export const MIN_ARTICLES = 3;
 export const MAX_ARTICLES = 5;
+/** A top-up of a planet already published adds at least this many articles (and at most MAX_ARTICLES). */
+export const MIN_TOP_UP_ARTICLES = 1;
+/** Share of words with Vietnamese letters from which a text counts as Vietnamese. */
+const VIETNAMESE_SHARE = 0.4;
+const VIETNAMESE_LETTER = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
 const SLUG = /^[a-z0-9][a-z0-9-]{0,119}$/;
 
 /** A planet to write: a Collection of linked articles in one Space. */
@@ -157,6 +163,22 @@ export function parseArticle(slug: string, text: string): QueuedArticle | string
   return { slug, title, tags, type: type as PostType, body: trimmed };
 }
 
+/**
+ * Whether the prose of `body` reads as Vietnamese: enough of its words carry Vietnamese letters. Code, links and
+ * addresses do not count, so a Vietnamese article full of commands is still Vietnamese and an English article that
+ * names a few Vietnamese places is still English.
+ */
+export function looksVietnamese(body: string): boolean {
+  const prose = body
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/\]\([^)]*\)/g, ' ')
+    .replace(/https?:\/\/\S+/g, ' ');
+  const words = prose.match(/\p{L}+/gu) ?? [];
+  if (words.length === 0) return false;
+  return words.filter((w) => VIETNAMESE_LETTER.test(w)).length / words.length >= VIETNAMESE_SHARE;
+}
+
 /** Checks the topic list against the Spaces; `file` names it in the problems. */
 export function checkTopics(topics: readonly Topic[], spaces: Spaces, file = 'content/topics.json'): Problem[] {
   const problems: Problem[] = [];
@@ -232,28 +254,56 @@ export function publishOrder(articles: readonly QueuedArticle[]): QueuedArticle[
   return order;
 }
 
+/** The ledger's articles of `planet` (`<planet>/<article>` slugs). */
+export function publishedOf(planet: string, ledger: Ledger): PublishedPost[] {
+  return ledger.posts.filter((p) => p.slug.startsWith(`${planet}/`));
+}
+
 /**
- * Checks the queued planets against the topic list and the ledger: each planet has 3–5 valid articles linked into one
- * piece, links to at least one article outside itself, and every `[[link]]` points at a queued or published title.
- * Returns the problems and the valid articles of each planet.
+ * Whether a queued planet tops up one already published: the ledger has its Collection and at least one of its
+ * articles. A top-up holds 1–5 new articles, published into the same Collection.
+ */
+export function isTopUp(planet: string, ledger: Ledger): boolean {
+  return ledger.planets.some((p) => p.slug === planet) && publishedOf(planet, ledger).length > 0;
+}
+
+/**
+ * Checks the queued planets against the topic list and the ledger: a new planet has 3–5 valid articles, a top-up of a
+ * published planet 1–5; the articles, with the planet's published ones, are linked into one piece; a new planet links
+ * to at least one article outside itself; every `[[link]]` points at a queued or published title; each article is
+ * written in its topic's language. Returns the problems and the valid articles of each planet.
  */
 export function checkPlanets(planets: readonly QueuedPlanet[], topics: readonly Topic[], ledger: Ledger): { problems: Problem[]; articles: Map<string, QueuedArticle[]> } {
   const problems: Problem[] = [];
   const articles = new Map<string, QueuedArticle[]>();
+  const ledgerBySlug = new Map(ledger.posts.map((p) => [p.slug, p]));
   for (const planet of planets) {
     const dir = `content/queue/${planet.slug}`;
     const topic = topics.find((t) => t.slug === planet.slug);
     if (!topic) problems.push({ file: dir, message: 'no topic with this slug in content/topics.json' });
     else if (topic.status === 'published' || topic.status === 'skipped') problems.push({ file: dir, message: `its topic is already ${topic.status}` });
     const names = Object.keys(planet.files).sort();
-    if (names.length < MIN_ARTICLES || names.length > MAX_ARTICLES) problems.push({ file: dir, message: `a planet holds ${MIN_ARTICLES}–${MAX_ARTICLES} articles, this one ${names.length}` });
+    const topUp = isTopUp(planet.slug, ledger);
+    const min = topUp ? MIN_TOP_UP_ARTICLES : MIN_ARTICLES;
+    if (names.length < min || names.length > MAX_ARTICLES) {
+      problems.push({ file: dir, message: `${topUp ? 'a top-up of a published planet' : 'a planet'} holds ${min}–${MAX_ARTICLES} articles, this one ${names.length}` });
+    }
     const parsed: QueuedArticle[] = [];
     for (const name of names) {
       const file = `${dir}/${name}.md`;
       if (!SLUG.test(name)) problems.push({ file, message: 'file name must be lowercase letters, digits and dashes' });
       const article = parseArticle(`${planet.slug}/${name}`, planet.files[name] ?? '');
-      if (Array.isArray(article)) problems.push(...article.map((message) => ({ file, message })));
-      else parsed.push(article);
+      if (Array.isArray(article)) {
+        problems.push(...article.map((message) => ({ file, message })));
+        continue;
+      }
+      // The publish step skips a slug the ledger has: a new article under a published one's name would be lost.
+      const earlier = ledgerBySlug.get(article.slug);
+      if (earlier && titleKey(earlier.title) !== titleKey(article.title)) problems.push({ file, message: `file name is taken by the published article "${earlier.title}"; pick another` });
+      if (topic && looksVietnamese(article.body) !== (topic.lang === 'vi')) {
+        problems.push({ file, message: topic.lang === 'vi' ? 'its topic is vi but the article is not written in Vietnamese' : 'its topic is en but the article is written in Vietnamese' });
+      }
+      parsed.push(article);
     }
     articles.set(planet.slug, parsed);
   }
@@ -279,8 +329,11 @@ export function checkPlanets(planets: readonly QueuedPlanet[], topics: readonly 
   for (const [slug, list] of articles) {
     if (list.length === 0) continue;
     const dir = `content/queue/${slug}`;
-    const own = new Map(list.map((a) => [titleKey(a.title), a.slug]));
-    const edges: Array<[string, string]> = [];
+    // The planet's published articles count as one piece already: they were checked when they were queued.
+    const queuedSlugs = new Set(list.map((a) => a.slug));
+    const published = publishedOf(slug, ledger).filter((p) => !queuedSlugs.has(p.slug));
+    const own = new Map<string, string>([...published.map((p): [string, string] => [titleKey(p.title), p.slug]), ...list.map((a): [string, string] => [titleKey(a.title), a.slug])]);
+    const edges: Array<[string, string]> = published.slice(1).map((p, i): [string, string] => [published[i]?.slug ?? '', p.slug]);
     let outside = false;
     for (const article of list) {
       for (const title of linkedTitles(article.body)) {
@@ -289,9 +342,11 @@ export function checkPlanets(planets: readonly QueuedPlanet[], topics: readonly 
         else outside = true;
       }
     }
-    if (!connected(list.map((a) => a.slug), edges)) problems.push({ file: dir, message: 'its articles are not all linked together with [[ ]]' });
+    if (!connected([...published.map((p) => p.slug), ...list.map((a) => a.slug)], edges)) {
+      problems.push({ file: dir, message: published.length > 0 ? 'its articles are not all linked with [[ ]] to each other and to its published articles' : 'its articles are not all linked together with [[ ]]' });
+    }
     const elsewhere = [...ledger.posts, ...queued].some((a) => !a.slug.startsWith(`${slug}/`));
-    if (elsewhere && !outside) problems.push({ file: dir, message: 'no [[link]] to an article of another planet' });
+    if (!isTopUp(slug, ledger) && elsewhere && !outside) problems.push({ file: dir, message: 'no [[link]] to an article of another planet' });
   }
   if (queued.length > 0 && publishOrder(queued) === null) problems.push({ file: 'content/queue', message: 'the [[links]] between queued articles go round in a circle; link one way only' });
   return { problems, articles };

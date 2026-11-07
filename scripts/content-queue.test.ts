@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT_DIR, type Ledger, MIN_BODY_CHARS, type QueuedPlanet, type Spaces, type Topic, checkContent, checkPlanets, checkTopics, linkedTitles, parseArticle, publishOrder, titleKey } from './content-queue';
+import { CONTENT_DIR, type Ledger, MIN_BODY_CHARS, type QueuedPlanet, type Spaces, type Topic, checkContent, checkPlanets, checkTopics, isTopUp, linkedTitles, looksVietnamese, parseArticle, publishOrder, titleKey } from './content-queue';
 
 const filler = 'Một đoạn văn đủ dài để thành bài. '.repeat(Math.ceil(MIN_BODY_CHARS / 30));
 const body = `## Mở đầu\n\n${filler}`;
 const article = (head: string, text = body): string => `---\n${head}\n---\n${text}`;
 /** An article titled `title` whose body links to `links`. */
 const linked = (title: string, ...links: string[]): string => article(`title: ${title}\ntags: thử`, `${links.map((l) => `Xem [[${l}]].`).join(' ')}\n\n${body}`);
+const englishBody = `## Introduction\n\n${'An English paragraph long enough to make an article. '.repeat(Math.ceil(MIN_BODY_CHARS / 40))}`;
+/** The same in English. */
+const linkedEn = (title: string, ...links: string[]): string => article(`title: ${title}\ntags: test`, `${links.map((l) => `See [[${l}]].`).join(' ')}\n\n${englishBody}`);
 const spaces: Spaces = { existing: ['networking'], create: [{ slug: 'ky-nang', nameVi: 'Kỹ năng', nameEn: 'Skills', tint: '#FBCFE8', glow: '#EC4899', art: '/art/orb-universe.webp', unitVi: 'bài', unitEn: 'articles' }] };
 const topic = (slug: string, extra: Partial<Topic> = {}): Topic => ({ slug, space: 'ky-nang', lang: 'vi', name: slug, nameEn: slug, tech: false, brief: '', status: 'todo', ...extra });
 const empty: Ledger = { planets: [], posts: [] };
@@ -89,6 +92,73 @@ describe('checkPlanets', () => {
   it('needs a topic that is not published or skipped yet', () => {
     expect(messages([planet], [])).toEqual(['content/queue/p: no topic with this slug in content/topics.json']);
     expect(messages([planet], [topic('p', { status: 'published' })])).toEqual(['content/queue/p: its topic is already published']);
+  });
+});
+
+describe('top-ups of a published planet', () => {
+  /** Planet p is published with X and Y; planet old with Bài cũ. */
+  const ledger: Ledger = {
+    planets: [
+      { slug: 'p', space: 'ky-nang', collectionId: 'col-p', at: '' },
+      { slug: 'old', space: 'ky-nang', collectionId: 'col-old', at: '' },
+    ],
+    posts: [
+      { slug: 'p/x', id: 'doc-x', title: 'X', at: '' },
+      { slug: 'p/y', id: 'doc-y', title: 'Y', at: '' },
+      { slug: 'old/cu', id: 'doc-0', title: 'Bài cũ', at: '' },
+    ],
+  };
+
+  it('knows a top-up by the planet and its articles in the ledger', () => {
+    expect(isTopUp('p', ledger)).toBe(true);
+    expect(isTopUp('q', ledger)).toBe(false);
+    expect(isTopUp('p', { planets: ledger.planets, posts: [] })).toBe(false);
+  });
+
+  it('takes a single article linked to a published article of its planet, with no link to another planet needed', () => {
+    expect(messages([{ slug: 'p', files: { z: linked('Z', 'x') } }], [topic('p', { status: 'queued' })], ledger)).toEqual([]);
+    expect(messages([{ slug: 'p', files: { z: linked('Z', 'X'), w: linked('W', 'Z') } }], [topic('p')], ledger)).toEqual([]);
+  });
+
+  it('needs every new article linked to the planet, counting its published articles', () => {
+    expect(messages([{ slug: 'p', files: { z: linked('Z') } }], [topic('p')], ledger)).toEqual(['content/queue/p: its articles are not all linked with [[ ]] to each other and to its published articles']);
+    // Linked to each other but not to the planet; linking to another planet does not count.
+    expect(messages([{ slug: 'p', files: { z: linked('Z', 'Bài cũ'), w: linked('W', 'Z') } }], [topic('p')], ledger)).toEqual([
+      'content/queue/p: its articles are not all linked with [[ ]] to each other and to its published articles',
+    ]);
+  });
+
+  it('holds 1–5 articles, while a new planet still needs 3', () => {
+    const six = Object.fromEntries(['a', 'b', 'c', 'd', 'e', 'f'].map((n) => [n, linked(n.toUpperCase(), 'X')]));
+    expect(messages([{ slug: 'p', files: six }], [topic('p')], ledger)).toEqual(['content/queue/p: a top-up of a published planet holds 1–5 articles, this one 6']);
+    expect(messages([{ slug: 'q', files: { a: linked('A', 'Bài cũ') } }], [topic('q')], ledger)).toEqual(['content/queue/q: a planet holds 3–5 articles, this one 1']);
+  });
+
+  it('keeps the other rules: a published or twice-used title, an unknown link, a circle, a published file name', () => {
+    expect(messages([{ slug: 'p', files: { z: linked('y', 'X') } }], [topic('p')], ledger)).toEqual(['content/queue/p/z.md: an article titled "y" is already published']);
+    expect(messages([{ slug: 'p', files: { z: linked('Z', 'X', 'Không có') } }], [topic('p')], ledger)).toEqual(['content/queue/p/z.md: [[Không có]] is neither queued nor in content/published.json']);
+    expect(messages([{ slug: 'p', files: { z: linked('Z', 'W'), w: linked('W', 'Z', 'X') } }], [topic('p')], ledger)).toEqual(['content/queue: the [[links]] between queued articles go round in a circle; link one way only']);
+    expect(messages([{ slug: 'p', files: { x: linked('Z', 'X') } }], [topic('p')], ledger)).toContain('content/queue/p/x.md: file name is taken by the published article "X"; pick another');
+  });
+
+  it('refuses a top-up whose topic is still published', () => {
+    expect(messages([{ slug: 'p', files: { z: linked('Z', 'X') } }], [topic('p', { status: 'published' })], ledger)).toEqual(['content/queue/p: its topic is already published']);
+  });
+});
+
+describe('languages', () => {
+  it('tells Vietnamese prose from English, leaving code and a few Vietnamese names aside', () => {
+    expect(looksVietnamese(body)).toBe(true);
+    expect(looksVietnamese(englishBody)).toBe(false);
+    expect(looksVietnamese(`Families in Hà Nội and Huế eat bánh chưng at Tết. ${englishBody}`)).toBe(false);
+    expect(looksVietnamese(`Chạy lệnh sau:\n\n\`\`\`sh\n${'sudo systemctl restart the network service now\n'.repeat(40)}\`\`\`\n\nXong thì kiểm lại.`)).toBe(true);
+  });
+
+  it('needs each article in the language of its topic', () => {
+    const en: QueuedPlanet = { slug: 'p-en', files: { a: linkedEn('A', 'B'), b: linkedEn('B', 'C'), c: linkedEn('C') } };
+    expect(messages([en], [topic('p-en', { lang: 'en' })])).toEqual([]);
+    expect(messages([{ slug: 'p-en', files: { ...en.files, c: linked('C') } }], [topic('p-en', { lang: 'en' })])).toEqual(['content/queue/p-en/c.md: its topic is en but the article is written in Vietnamese']);
+    expect(messages([{ slug: 'p', files: { a: linked('A', 'B'), b: linked('B', 'C'), c: linkedEn('C') } }], [topic('p')])).toEqual(['content/queue/p/c.md: its topic is vi but the article is not written in Vietnamese']);
   });
 });
 

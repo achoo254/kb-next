@@ -4,7 +4,8 @@
  * routine reviews its own articles before queueing them, and `check:queue` refuses the mechanical faults.
  *
  * For each planet: makes its Space when `content/spaces.json` lists it under `create` (409 `slug-taken` means it is
- * there already), makes its Collection once (the ledger keeps its id), then publishes its articles, each after the
+ * there already), makes its Collection once (the ledger keeps its id; a top-up of a published planet goes into that
+ * same Collection), then publishes its articles in the topic's `lang`, each after the
  * queued articles it links to so every `[[link]]` resolves. Each publish is written to `content/published.json` at
  * once, so a run that dies never publishes twice. A planet whose articles are all published loses its folder and its
  * topic becomes `published`; anything that failed stays for the next run. Needs `KB_ADMIN_TOKEN`; `KB_ORIGIN` defaults
@@ -77,6 +78,12 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
   for (const planet of queue.filter((p) => !failedPlanets.has(p.slug))) {
     const topic = topics.find((t) => t.slug === planet.slug);
     if (!topic) continue;
+    // A planet in the ledger already has its Space and its Collection: a top-up, or a run that died, goes on there.
+    const known = ledger.planets.find((p) => p.slug === planet.slug);
+    if (known) {
+      collections.set(planet.slug, known.collectionId);
+      continue;
+    }
     const spec = spaces.create.find((s) => s.slug === topic.space);
     if (spec && !madeSpaces.has(spec.slug)) {
       const res = await post('spaces', spec);
@@ -87,12 +94,8 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
       if (res.status === 201) log(`made Space ${spec.slug}`);
       madeSpaces.add(spec.slug);
     }
-    const known = ledger.planets.find((p) => p.slug === planet.slug);
-    if (known) {
-      collections.set(planet.slug, known.collectionId);
-      continue;
-    }
-    const res = await post('collections', { space: topic.space, nameVi: topic.name, nameEn: topic.nameEn });
+    // An English planet is named in English whichever language the reader picks.
+    const res = await post('collections', { space: topic.space, nameVi: topic.lang === 'en' ? topic.nameEn : topic.name, nameEn: topic.nameEn });
     const id = field(res.body, 'id');
     if (res.status !== 201 || !id) {
       failedPlanets.set(planet.slug, `Collection: ${failure(res)}`);
