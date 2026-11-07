@@ -7,7 +7,7 @@
       "title": "Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn",
       "tech": false,
       "brief": "Hai kỹ thuật học có nhiều nghiên cứu ủng hộ nhất: tự kiểm tra (active recall) và ôn theo khoảng cách tăng dần; cách áp dụng với flashcard hoặc sổ tay.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "cau-hinh-mang-ubuntu-netplan",
