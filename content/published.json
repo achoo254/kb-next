@@ -29,6 +29,12 @@
       "space": "networking",
       "collectionId": "fd20a851-b2c8-4b52-ad53-00f292cf0ad1",
       "at": "2026-11-07T16:42:41.799Z"
+    },
+    {
+      "slug": "ghi-chu-hieu-qua",
+      "space": "ky-nang",
+      "collectionId": "36e263ef-a78f-413b-9912-ebf42dae6e3a",
+      "at": "2026-11-07T19:37:06.109Z"
     }
   ],
   "posts": [
@@ -127,6 +133,24 @@
       "id": "b6154724-dca4-4edc-9251-389e84fe2689",
       "title": "Netplan trên Ubuntu 24.04: đặt IP tĩnh và dùng DHCP bằng một tệp YAML",
       "at": "2026-11-07T16:42:42.727Z"
+    },
+    {
+      "slug": "ghi-chu-hieu-qua/ghi-chu-thanh-cau-hoi-tu-kiem-tra",
+      "id": "67f81d85-5c27-4a28-99a4-f95f75d59234",
+      "title": "Biến ghi chú thành câu hỏi tự kiểm tra: ôn bài bằng cách tự trả lời",
+      "at": "2026-11-07T19:37:06.414Z"
+    },
+    {
+      "slug": "ghi-chu-hieu-qua/so-do-tu-duy-mind-map",
+      "id": "83377a50-77e4-4390-97ae-0c1b66c77f10",
+      "title": "Sơ đồ tư duy (mind map): vẽ ý tưởng thành cây để nhìn thấy toàn cảnh",
+      "at": "2026-11-07T19:37:06.719Z"
+    },
+    {
+      "slug": "ghi-chu-hieu-qua/ghi-chu-kieu-cornell",
+      "id": "e263e198-c038-47c7-a16a-ff6d576bbfd2",
+      "title": "Ghi chú kiểu Cornell: chia trang giấy thành ba phần để ôn bài dễ hơn",
+      "at": "2026-11-07T19:37:07.008Z"
     }
   ]
 }
