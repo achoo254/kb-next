@@ -3,7 +3,7 @@
 Thư mục repo: `kb-next` (tên hiển thị lấy từ [`brand.config.json`](brand.config.json), không có hậu tố `-next`).
 Chạy tại `https://kb.hoandat.com`, thuộc hệ sinh thái hoandat.com.
 
-Knowledge base công khai, song ngữ Anh – Việt, đủ thể loại nhưng phần lớn về công nghệ thông tin, xếp thành một
+Knowledge base công khai, song ngữ Anh – Việt về đủ mọi chủ đề (công việc, đời sống, học tập, công nghệ…), xếp thành một
 "Universe" để đọc, tìm và hỏi AI. kb tự giữ nội dung trong database: bài chính thức sửa bằng trình soạn hoặc API quản trị ([`docs/admin-api.md`](docs/admin-api.md)); về sau AI tìm và bổ sung nội dung từ web. Giao diện bám sát bộ mock Universe đã chốt (51 board trong [`design/`](design)).
 
 **Trạng thái:** nền móng. Đăng nhập bằng tài khoản hoandat.com chạy được (kể cả đăng xuất từ IdP), mọi route đã có
