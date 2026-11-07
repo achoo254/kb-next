@@ -266,7 +266,7 @@ export function MineScreen(): ReactNode {
 
   const state = load.status !== 'ready' ? load.status : tab === 'universe' && items.length === 0 ? 'empty-universe' : 'ready';
   return (
-    <AppShell screen="C08" rail="mine" className="mine-shell" breadcrumb={[{ label: 'Universe', href: SHELL_PATHS.universe }, { label: t('mine.crumb') }]}>
+    <AppShell screen="C08" rail="mine" view="docs" className="mine-shell" breadcrumb={[{ label: 'Universe', href: SHELL_PATHS.universe }, { label: t('mine.crumb') }]}>
       <div className="mine-screen" data-id="mine-screen" data-state={state} data-tab={tab}>
         <div className="mine-content">
           <div className="mine-bar">

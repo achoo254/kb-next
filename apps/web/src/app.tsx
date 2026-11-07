@@ -72,7 +72,7 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   C01: { rail: 'create' },
   C02: { rail: 'create', view: 'docs', veil: 'strong' },
   C17: { rail: 'spaces', view: 'docs', veil: 'strong' },
-  C08: { rail: 'mine', veil: 'strong' },
+  C08: { rail: 'mine', view: 'docs', veil: 'strong' },
   C03: { rail: 'create', veil: 'strong' },
   C16: { rail: 'mine', veil: 'strong' },
   H04: { veil: 'radial' },
