@@ -105,8 +105,10 @@ Bài đăng xong hiện ngay ở C09/C10 với nhãn Chính thức; `"hidden": t
 
 ## Hàng chờ bài AI
 
-Mỗi đêm một cloud routine của Claude viết một bài tiếng Việt, đẩy vào repo; GitHub Actions đăng bài ở chế độ **ẩn**,
-quản trị đọc rồi bấm hiện ở A02 (`/admin/content`). kb là kho kiến thức đủ mọi chủ đề nên chủ đề xoay vòng giữa các
+Mỗi tối một cloud routine của Claude viết một bài tiếng Việt, tự duyệt lại (soát danh sách kiểm, đối chiếu sự thật với
+Wikipedia hoặc tài liệu chính thức) rồi đẩy vào repo; GitHub Actions đăng bài **hiện ngay**, không chờ người duyệt
+(chủ dự án chốt 07/11/2026). Bài có lỗi thì quản trị ẩn hoặc sửa ở A02 (`/admin/content`), hoặc sửa qua
+`PUT /api/admin/posts/:id/text`. kb là kho kiến thức đủ mọi chủ đề nên chủ đề xoay vòng giữa các
 Space, bài công nghệ không quá một phần ba.
 
 - [`content/topics.json`](../content/topics.json): danh sách chủ đề (`slug`, `space`, `lang`, `title`, `tech`, `brief`,
@@ -123,7 +125,7 @@ JSON và mọi bài chờ: front matter, độ dài, chủ đề còn `todo`/`qu
 `check:public`), không chuỗi giống khoá, không nhắc Học Cloud.
 
 [`publish-queue.yml`](../.github/workflows/publish-queue.yml) chạy khi `content/queue/**` đổi trên `main` (hoặc bấm tay):
-`pnpm publish:queue` ([`scripts/publish-queue.ts`](../scripts/publish-queue.ts)) đăng từng bài (`hidden: true`,
+`pnpm publish:queue` ([`scripts/publish-queue.ts`](../scripts/publish-queue.ts)) đăng từng bài (`hidden: false`,
 `source: "ai"`), ghi sổ, xoá tệp chờ, đổi chủ đề thành `published`, rồi commit lại. Bài lỗi giữ tệp để lần sau thử lại;
 bài đã có trong sổ thì không đăng lần hai. Token chỉ nằm ở secret `KB_ADMIN_TOKEN` của repo; tạo token mới ở A03 là
 token cũ bị thu hồi, nhớ cập nhật secret. Commit chỉ đổi `content/queue/**`, `content/topics.json`,

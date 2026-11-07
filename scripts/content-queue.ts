@@ -1,6 +1,6 @@
 /**
  * The AI article queue (docs/admin-api.md, "Hàng chờ bài AI"). A nightly routine writes one article as
- * `content/queue/<slug>.md`; `.github/workflows/publish-queue.yml` publishes it hidden through the admin API and
+ * `content/queue/<slug>.md`; `.github/workflows/publish-queue.yml` publishes it through the admin API and
  * removes the file. The database owns the article after that; the repository keeps only the topic list and the
  * `slug → id` ledger.
  *

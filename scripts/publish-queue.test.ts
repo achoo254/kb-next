@@ -56,14 +56,14 @@ afterEach(async () => {
 });
 
 describe('publishQueue', () => {
-  it('makes the Space, publishes hidden as AI, records the id and removes the file', async () => {
+  it('makes the Space, publishes as AI, visible, records the id and removes the file', async () => {
     await setUp([topic('ghi-chu')], { 'ghi-chu': article('Ghi chú Cornell') });
     const api = fakeApi({ spaces: [{ status: 201, body: { slug: 'ky-nang' } }], posts: [{ status: 201, body: { id: 'doc-1' } }] });
     const result = await run(api.fetch);
     expect(result).toEqual({ published: [{ slug: 'ghi-chu', id: 'doc-1', title: 'Ghi chú Cornell', at: NOW.toISOString() }], failed: [] });
     expect(api.calls.map((c) => c.url)).toEqual(['https://kb.test/api/admin/spaces', 'https://kb.test/api/admin/posts']);
     expect(api.calls.every((c) => c.auth === 'Bearer kf_admin_test')).toBe(true);
-    expect(api.calls[1]?.body).toEqual({ title: 'Ghi chú Cornell', lang: 'vi', space: 'ky-nang', tags: ['học tập'], markdown: body.trim(), type: 'note', source: 'ai', hidden: true });
+    expect(api.calls[1]?.body).toEqual({ title: 'Ghi chú Cornell', lang: 'vi', space: 'ky-nang', tags: ['học tập'], markdown: body.trim(), type: 'note', source: 'ai', hidden: false });
     expect(await readdir(path.join(dir, 'queue'))).toEqual(['.gitkeep']);
     expect((await readTopics())[0]?.status).toBe('published');
     expect(await readPosts()).toEqual(result.published);

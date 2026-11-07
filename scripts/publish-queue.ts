@@ -1,6 +1,7 @@
 /**
  * `pnpm publish:queue` (run by .github/workflows/publish-queue.yml): publishes every article in `content/queue/`
- * through the admin API, hidden, marked as written by AI, so the owner reads it and shows it from A02.
+ * through the admin API, visible at once and marked as written by AI. No one reviews it by hand (owner's decision,
+ * 07/11/2026): the routine reviews its own article before queueing it, and `check:queue` refuses the mechanical faults.
  *
  * For each queued article: makes its Space first when `content/spaces.json` lists it under `create` (409
  * `slug-taken` means it is there already); skips the call when the ledger already has the slug (a run that died after
@@ -98,7 +99,7 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
       markdown: article.body,
       type: article.type,
       source: 'ai',
-      hidden: true,
+      hidden: false,
     });
     const id = typeof res.body === 'object' && res.body !== null && 'id' in res.body && typeof res.body.id === 'string' ? res.body.id : null;
     if (res.status !== 201 || !id) {
@@ -111,7 +112,7 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
     // Write the ledger before removing the file: a run that dies here leaves a file the next run skips.
     await writeJson(ledgerFile, ledger);
     await done(topic, file);
-    log(`published ${slug} (hidden): ${origin}/d/${id}`);
+    log(`published ${slug}: ${origin}/d/${id}`);
   }
 
   await writeJson(topicsFile, { topics });

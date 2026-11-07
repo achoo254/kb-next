@@ -1,5 +1,5 @@
 # Publishes the AI article queue (docs/admin-api.md, "Hàng chờ bài AI"): each content/queue/<slug>.md goes to
-# kb.hoandat.com through the admin API, hidden and marked as written by AI, then its file is removed and the
+# kb.hoandat.com through the admin API, visible and marked as written by AI, then its file is removed and the
 # slug → id ledger is committed back. The admin token lives only in this repository's secret KB_ADMIN_TOKEN.
 # The commit back uses GITHUB_TOKEN, which starts no other workflow; ci.yml ignores content-only commits anyway.
 name: publish-queue
