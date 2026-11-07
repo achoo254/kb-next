@@ -16,6 +16,8 @@
  *   version of the text (never merged into an editor's), 409 `stale` when it changed since `baseRev`; a file (Office) or
  *   a journey is 409 `not-editable` / `journey`.
  * - GET /api/admin/review → `{documents: ReviewQueueItem[]}`: the review queue with Jev's pre-review.
+ * - POST /api/admin/spaces `{slug, nameVi, nameEn, tint, glow, art, unitVi, unitEn, descriptionVi?, descriptionEn?}` → 201
+ *   `{slug}`: a new public Space (as POST /api/spaces on the web session), 409 `slug-taken` when the slug exists.
  * Errors: 401 `token-required` (no header), 401 `invalid-token` (malformed, unknown, revoked, or its admin is no
  * longer one or left the workspace), 400 `invalid-body`, 404 `not-found`, 409 `not-approved`.
  *
@@ -28,6 +30,7 @@ import express, { type ErrorRequestHandler, type Request, type RequestHandler, t
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { createDocument, editAccess, saveDocument } from '../access/authoring';
+import { createPublicSpace } from '../access/spaces-write';
 import { type AdminViewer, isAdminViewer, listReviewQueue } from '../access/review';
 import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
@@ -38,7 +41,7 @@ import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import { titleLine } from '../markdown/sections';
 import { type ModerationDeps, cleanTags, queueItems, resolvePlacement, updatePost } from '../review/moderation';
 import { perAccountLimit, signedIn } from './account-limit';
-import { DOCUMENT_BODY_LIMIT, refuse } from './authoring-routes';
+import { DOCUMENT_BODY_LIMIT, PublicSpaceBody, refuse } from './authoring-routes';
 import { type RequestContextDeps, readerOf } from './request-context';
 import { PostPatchBody, PostTitle, Tags, idParam } from './review-routes';
 import { parseBody } from './validate';
@@ -213,6 +216,13 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     if (saved.kind !== 'saved') refuse(saved);
     if (saved.changed) deps.sync?.enqueue([id]);
     res.json({ id, version: saved.version, rev: saved.rev.toISOString(), changed: saved.changed });
+  });
+
+  api.post('/spaces', async (req, res) => {
+    const body = parseBody(PublicSpaceBody, req.body);
+    const space = await createPublicSpace(db, { ...body, descriptionVi: body.descriptionVi ?? null, descriptionEn: body.descriptionEn ?? null });
+    if (!space) throw new HttpError(409, 'slug-taken');
+    res.status(201).json({ slug: space.slug });
   });
 
   api.get('/review', async (_req, res) => {

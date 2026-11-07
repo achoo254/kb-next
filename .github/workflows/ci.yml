@@ -5,7 +5,16 @@ name: ci
 on:
   push:
     branches: [main]
+    # Commits of the AI article queue only (publish-queue.yml publishes them); they change no code.
+    paths-ignore:
+      - content/queue/**
+      - content/topics.json
+      - content/published.json
   pull_request:
+    paths-ignore:
+      - content/queue/**
+      - content/topics.json
+      - content/published.json
 
 permissions:
   contents: read

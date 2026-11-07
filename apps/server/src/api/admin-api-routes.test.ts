@@ -174,6 +174,18 @@ describe('the admin API (token)', () => {
     expect(missing.status).toBe(404);
   });
 
+  it('makes a public Space once, refusing a slug that exists', async () => {
+    const space = { slug: 'ky-nang', nameVi: 'Kỹ năng & học tập', nameEn: 'Skills & learning', tint: '#FBCFE8', glow: '#EC4899', art: '/art/orb-universe.webp', unitVi: 'bài', unitEn: 'articles', descriptionVi: 'Học cách học.' };
+    const made = await call('/api/admin/spaces', { method: 'POST', token, body: space });
+    expect([made.status, await made.json()]).toEqual([201, { slug: 'ky-nang' }]);
+    const again = await call('/api/admin/spaces', { method: 'POST', token, body: space });
+    expect([again.status, await again.json()]).toEqual([409, { error: 'slug-taken' }]);
+    const personal = await call('/api/admin/spaces', { method: 'POST', token, body: { ...space, slug: 'personal-x' } });
+    expect(personal.status).toBe(400);
+    const placed = await call('/api/admin/posts', { method: 'POST', token, body: { ...post, collection: undefined, space: 'ky-nang' } });
+    expect(placed.status).toBe(201);
+  });
+
   it('lists the review queue', async () => {
     const res = await call('/api/admin/review', { token });
     expect(res.status).toBe(200);

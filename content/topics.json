@@ -1,0 +1,274 @@
+{
+  "topics": [
+    {
+      "slug": "hoc-chu-dong-lap-lai-ngat-quang",
+      "space": "ky-nang",
+      "lang": "vi",
+      "title": "Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn",
+      "tech": false,
+      "brief": "Hai kỹ thuật học có nhiều nghiên cứu ủng hộ nhất: tự kiểm tra (active recall) và ôn theo khoảng cách tăng dần; cách áp dụng với flashcard hoặc sổ tay.",
+      "status": "todo"
+    },
+    {
+      "slug": "cau-hinh-mang-ubuntu-netplan",
+      "space": "networking",
+      "lang": "vi",
+      "title": "Cấu hình mạng Ubuntu hiện đại: netplan, systemd-networkd và resolvectl",
+      "tech": true,
+      "brief": "Các bài DHCP, DNS, boot đều dùng mà chưa có bài nền; đặt IP tĩnh, DHCP, DNS và kiểm bằng resolvectl.",
+      "status": "todo"
+    },
+    {
+      "slug": "nhan-dien-lua-dao-truc-tuyen",
+      "space": "doi-song",
+      "lang": "vi",
+      "title": "Nhận diện lừa đảo trực tuyến: các chiêu thường gặp và cách tự bảo vệ",
+      "tech": false,
+      "brief": "Tin nhắn giả ngân hàng, giả người quen, link lạ, mã OTP; dấu hiệu nhận biết và việc cần làm ngay khi lỡ bấm.",
+      "status": "todo"
+    },
+    {
+      "slug": "viet-cv-mot-trang",
+      "space": "cong-viec",
+      "lang": "vi",
+      "title": "Viết CV một trang mà nhà tuyển dụng muốn đọc",
+      "tech": false,
+      "brief": "Bố cục, cách viết kinh nghiệm bằng kết quả, những lỗi hay gặp, ví dụ trước và sau khi sửa.",
+      "status": "todo"
+    },
+    {
+      "slug": "phong-tuc-tet-nguyen-dan",
+      "space": "van-hoa",
+      "lang": "vi",
+      "title": "Phong tục Tết Nguyên Đán: từ ông Công ông Táo tới mùng ba Tết",
+      "tech": false,
+      "brief": "Ý nghĩa các phong tục chính theo trình tự thời gian; khác biệt ba miền; tham khảo Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "systemd-va-journalctl",
+      "space": "linux",
+      "lang": "vi",
+      "title": "systemd và journalctl: quản lý dịch vụ và đọc log trên Linux",
+      "tech": true,
+      "brief": "Bài boot và syslog dùng mà chưa giải thích; unit, systemctl, enable/start, journalctl lọc theo unit và thời gian.",
+      "status": "todo"
+    },
+    {
+      "slug": "ghi-chu-cornell",
+      "space": "ky-nang",
+      "lang": "vi",
+      "title": "Ghi chú kiểu Cornell: chia trang để học lại nhanh",
+      "tech": false,
+      "brief": "Cách chia trang, ghi trong lúc học, tóm tắt và tự hỏi sau buổi học; ví dụ một trang ghi chú.",
+      "status": "todo"
+    },
+    {
+      "slug": "doc-ky-hieu-giat-ui",
+      "space": "doi-song",
+      "lang": "vi",
+      "title": "Đọc ký hiệu giặt ủi trên nhãn quần áo",
+      "tech": false,
+      "brief": "Nhóm ký hiệu giặt, tẩy, sấy, ủi, giặt khô; bảng tra nhanh và mẹo giữ quần áo bền màu.",
+      "status": "todo"
+    },
+    {
+      "slug": "chuan-bi-phong-van-xin-viec",
+      "space": "cong-viec",
+      "lang": "vi",
+      "title": "Chuẩn bị phỏng vấn xin việc: trước, trong và sau buổi phỏng vấn",
+      "tech": false,
+      "brief": "Tìm hiểu công ty, trả lời theo STAR, câu hỏi nên hỏi lại, email cảm ơn sau phỏng vấn.",
+      "status": "todo"
+    },
+    {
+      "slug": "nguon-goc-tet-trung-thu",
+      "space": "van-hoa",
+      "lang": "vi",
+      "title": "Tết Trung thu ở Việt Nam: nguồn gốc và những phong tục còn giữ",
+      "tech": false,
+      "brief": "Sự tích, rước đèn, múa lân, bánh trung thu; khác với Trung thu ở các nước khác.",
+      "status": "todo"
+    },
+    {
+      "slug": "dinh-tuyen-nat-firewall",
+      "space": "networking",
+      "lang": "vi",
+      "title": "Định tuyến, NAT và firewall trên Linux: ip route, nftables và ufw",
+      "tech": true,
+      "brief": "Gần như mọi bài debug dựa vào; bảng định tuyến, NAT masquerade, DROP và REJECT khác nhau thế nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "quan-ly-thoi-gian-pomodoro",
+      "space": "ky-nang",
+      "lang": "vi",
+      "title": "Quản lý thời gian bằng Pomodoro và chặn lịch",
+      "tech": false,
+      "brief": "Cách chạy một ngày Pomodoro, chặn lịch (time blocking), xử lý việc chen ngang; khi nào không hợp.",
+      "status": "todo"
+    },
+    {
+      "slug": "tiet-kiem-dien-trong-nha",
+      "space": "doi-song",
+      "lang": "vi",
+      "title": "Tiết kiệm điện trong nhà: thiết bị nào tốn điện nhất và cách giảm",
+      "tech": false,
+      "brief": "Cách đọc công suất và tính số điện, điều hoà, bình nóng lạnh, tủ lạnh; thói quen nhỏ giảm hoá đơn.",
+      "status": "todo"
+    },
+    {
+      "slug": "viet-email-cong-viec",
+      "space": "cong-viec",
+      "lang": "vi",
+      "title": "Viết email công việc rõ ràng: tiêu đề, mở đầu, việc cần làm",
+      "tech": false,
+      "brief": "Cấu trúc một email, đặt việc cần người đọc làm lên đầu, mẫu email nhờ việc, báo cáo, xin lỗi.",
+      "status": "todo"
+    },
+    {
+      "slug": "ao-dai-viet-nam",
+      "space": "van-hoa",
+      "lang": "vi",
+      "title": "Áo dài Việt Nam: lịch sử qua từng thời kỳ",
+      "tech": false,
+      "brief": "Từ áo ngũ thân thời chúa Nguyễn tới áo dài hiện đại; tham khảo Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "docker-networking",
+      "space": "docker",
+      "lang": "vi",
+      "title": "Docker networking: bridge, host và mạng tự tạo",
+      "tech": true,
+      "brief": "Nằm giữa bài lưu trữ và Compose; container nói chuyện với nhau, publish cổng, DNS nội bộ của Docker.",
+      "status": "todo"
+    },
+    {
+      "slug": "doc-sach-hieu-qua",
+      "space": "ky-nang",
+      "lang": "vi",
+      "title": "Đọc sách hiệu quả: đọc lướt, đọc kỹ và ghi lại điều đã học",
+      "tech": false,
+      "brief": "Ba mức đọc, đặt câu hỏi trước khi đọc, ghi chú bên lề, tóm tắt một trang sau khi đọc.",
+      "status": "todo"
+    },
+    {
+      "slug": "bao-quan-thuc-pham-tu-lanh",
+      "space": "doi-song",
+      "lang": "vi",
+      "title": "Bảo quản thực phẩm trong tủ lạnh đúng ngăn, đúng thời gian",
+      "tech": false,
+      "brief": "Nhiệt độ từng ngăn, thứ gì không nên để tủ lạnh, rã đông an toàn, bảng thời gian giữ tham khảo.",
+      "status": "todo"
+    },
+    {
+      "slug": "hop-hieu-qua",
+      "space": "cong-viec",
+      "lang": "vi",
+      "title": "Họp hiệu quả: chương trình, người ghi biên bản và việc sau họp",
+      "tech": false,
+      "brief": "Khi nào không cần họp, chuẩn bị chương trình, giữ đúng giờ, biên bản với người phụ trách và hạn.",
+      "status": "todo"
+    },
+    {
+      "slug": "nha-nhac-cung-dinh-hue",
+      "space": "van-hoa",
+      "lang": "vi",
+      "title": "Nhã nhạc cung đình Huế: di sản UNESCO của Việt Nam",
+      "tech": false,
+      "brief": "Nguồn gốc, nhạc cụ, vai trò trong triều Nguyễn, được UNESCO ghi danh năm 2003; tham khảo Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "nginx-reverse-proxy-tls",
+      "space": "networking",
+      "lang": "vi",
+      "title": "nginx làm reverse proxy và bật HTTPS với certbot",
+      "tech": true,
+      "brief": "Cầu nối HTTP sang Docker/K8s; cấu hình proxy_pass, header, certbot và tự gia hạn chứng chỉ.",
+      "status": "todo"
+    },
+    {
+      "slug": "tu-duy-phan-bien-co-ban",
+      "space": "ky-nang",
+      "lang": "vi",
+      "title": "Tư duy phản biện cơ bản: kiểm tra một thông tin trước khi tin",
+      "tech": false,
+      "brief": "Hỏi nguồn, tìm bằng chứng, phân biệt sự thật và ý kiến, các ngụy biện hay gặp kèm ví dụ.",
+      "status": "todo"
+    },
+    {
+      "slug": "sap-xep-nha-cua-gon-gang",
+      "space": "doi-song",
+      "lang": "vi",
+      "title": "Sắp xếp nhà cửa gọn gàng theo từng khu",
+      "tech": false,
+      "brief": "Bỏ bớt trước khi sắp xếp, mỗi đồ một chỗ, khu bếp, tủ quần áo, bàn làm việc; giữ gọn mỗi ngày 10 phút.",
+      "status": "todo"
+    },
+    {
+      "slug": "gop-y-dong-nghiep",
+      "space": "cong-viec",
+      "lang": "vi",
+      "title": "Góp ý cho đồng nghiệp mà không làm mất lòng",
+      "tech": false,
+      "brief": "Mô hình tình huống, hành vi, tác động (SBI); góp ý riêng, cụ thể, kịp thời; nhận góp ý thế nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "cac-trieu-dai-viet-nam",
+      "space": "van-hoa",
+      "lang": "vi",
+      "title": "Các triều đại phong kiến Việt Nam qua một trục thời gian",
+      "tech": false,
+      "brief": "Từ nhà Ngô tới nhà Nguyễn: thời gian, kinh đô, sự kiện chính; tham khảo Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "lvm-va-fstab",
+      "space": "linux",
+      "lang": "vi",
+      "title": "Đĩa trên Linux: LVM, mở rộng ổ và fstab",
+      "tech": true,
+      "brief": "Bài boot thấy LVM, bài swap sửa fstab; PV/VG/LV, mở rộng LV, gắn ổ khi khởi động an toàn.",
+      "status": "todo"
+    },
+    {
+      "slug": "dat-muc-tieu-smart",
+      "space": "ky-nang",
+      "lang": "vi",
+      "title": "Đặt mục tiêu SMART và theo dõi tiến độ",
+      "tech": false,
+      "brief": "Năm tiêu chí SMART, chia mục tiêu thành việc tuần, theo dõi và điều chỉnh; ví dụ học ngoại ngữ.",
+      "status": "todo"
+    },
+    {
+      "slug": "thuyet-trinh-tu-tin",
+      "space": "cong-viec",
+      "lang": "vi",
+      "title": "Thuyết trình tự tin: chuẩn bị nội dung, slide và giọng nói",
+      "tech": false,
+      "brief": "Một thông điệp chính, cấu trúc ba phần, slide ít chữ, tập nói, xử lý câu hỏi khó.",
+      "status": "todo"
+    },
+    {
+      "slug": "cai-docker-engine-ubuntu",
+      "space": "docker",
+      "lang": "vi",
+      "title": "Cài Docker Engine trên Ubuntu từ kho chính thức",
+      "tech": true,
+      "brief": "Chỉ có trong buổi học tuần 08-08; cài từ repo của Docker, chạy không cần sudo, kiểm tra sau cài.",
+      "status": "todo"
+    },
+    {
+      "slug": "rolling-update-rollback",
+      "space": "kubernetes",
+      "lang": "vi",
+      "title": "Rolling update và rollback Deployment trên Kubernetes",
+      "tech": true,
+      "brief": "Pod lifecycle có nhắc; chiến lược cập nhật, maxSurge/maxUnavailable, kubectl rollout status/undo.",
+      "status": "todo"
+    }
+  ]
+}

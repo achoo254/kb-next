@@ -1,0 +1,61 @@
+{
+  "existing": [
+    "cloud",
+    "docker",
+    "kubernetes",
+    "linux",
+    "networking",
+    "observability",
+    "weekly"
+  ],
+  "create": [
+    {
+      "slug": "ky-nang",
+      "nameVi": "Kỹ năng & học tập",
+      "nameEn": "Skills & learning",
+      "tint": "#FBCFE8",
+      "glow": "#EC4899",
+      "art": "/art/orb-universe.webp",
+      "unitVi": "bài",
+      "unitEn": "articles",
+      "descriptionVi": "Học cách học, ghi chú, đọc sách và sắp xếp thời gian.",
+      "descriptionEn": "Learning how to learn, note taking, reading and managing your time."
+    },
+    {
+      "slug": "doi-song",
+      "nameVi": "Đời sống & mẹo vặt",
+      "nameEn": "Everyday life",
+      "tint": "#D9F99D",
+      "glow": "#84CC16",
+      "art": "/art/orb-universe.webp",
+      "unitVi": "bài",
+      "unitEn": "articles",
+      "descriptionVi": "Mẹo việc nhà, tiết kiệm và giữ an toàn trên mạng mỗi ngày.",
+      "descriptionEn": "Household tips, saving at home and staying safe online every day."
+    },
+    {
+      "slug": "cong-viec",
+      "nameVi": "Công việc & sự nghiệp",
+      "nameEn": "Work & career",
+      "tint": "#BAE6FD",
+      "glow": "#0EA5E9",
+      "art": "/art/orb-universe.webp",
+      "unitVi": "bài",
+      "unitEn": "articles",
+      "descriptionVi": "Viết CV, phỏng vấn, email và họp hành ở nơi làm việc.",
+      "descriptionEn": "CVs, interviews, emails and meetings at work."
+    },
+    {
+      "slug": "van-hoa",
+      "nameVi": "Văn hoá & lịch sử Việt Nam",
+      "nameEn": "Vietnamese culture & history",
+      "tint": "#FECACA",
+      "glow": "#EF4444",
+      "art": "/art/orb-universe.webp",
+      "unitVi": "bài",
+      "unitEn": "articles",
+      "descriptionVi": "Lễ tết, di sản và những chặng đường lịch sử của Việt Nam.",
+      "descriptionEn": "Festivals, heritage and the long history of Vietnam."
+    }
+  ]
+}

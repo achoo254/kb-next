@@ -89,7 +89,7 @@ const SaveBody = z.strictObject({
 
 const SuggestQuery = z.object({ q: z.string().max(MAX_QUERY_CHARS).optional().default(''), exclude: Uuid.optional() });
 
-const PublicSpaceBody = z.strictObject({
+export const PublicSpaceBody = z.strictObject({
   // `personal-<account>` is the slug of that account's own Space (spaces-write.ts).
   slug: Slug.refine((slug) => !slug.startsWith('personal-')),
   nameVi: Name,

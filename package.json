@@ -12,7 +12,7 @@
     "build": "pnpm --filter @kb/web build && pnpm --filter @kb/server bundle",
     "test": "vitest run --maxWorkers=2",
     "typecheck": "tsc --noEmit -p tsconfig.json && pnpm -r --workspace-concurrency=1 typecheck",
-    "lint": "eslint . --max-warnings=0 && pnpm check:brand && pnpm check:tokens && pnpm check:public",
+    "lint": "eslint . --max-warnings=0 && pnpm check:brand && pnpm check:tokens && pnpm check:public && pnpm check:queue",
     "check:brand": "check-brand --config brand.config.json --dir apps --dir scripts --skip-dir test-results --skip-dir playwright-report --skip-dir generated --source-file '\\.(ts|tsx|js|mjs|cjs|css|html)$' --code-file '\\.(ts|tsx|js|mjs|cjs)$' --test-file '(^|/)(e2e|test)/|\\.(test|spec)\\.tsx?$' --jsx-text --html-word --skip-comment-lines --ignore-marker 'check-brand-ignore:' --colour-dir apps/web/src --token-file apps/web/src/ui/tokens.css --hint 'read it from apps/web/src/brand.ts'",
     "check:tokens": "tsx scripts/check-tokens.ts",
     "brand:gen": "tsx scripts/brand-gen.ts",
@@ -20,7 +20,9 @@
     "meili": "tsx scripts/meili-dev.ts",
     "reindex": "pnpm --filter @kb/server reindex",
     "seed": "pnpm --filter @kb/server seed",
-    "check:public": "tsx scripts/check-public-info.ts"
+    "check:public": "tsx scripts/check-public-info.ts",
+    "check:queue": "tsx scripts/content-queue.ts",
+    "publish:queue": "tsx scripts/publish-queue.ts"
   },
   "devDependencies": {
     "@achoo254/brand": "github:achoo254/shared-next#v0.12.0&path:/packages/brand",

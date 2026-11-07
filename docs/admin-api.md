@@ -87,6 +87,7 @@ Dành cho pipeline đăng bài chạy ở server khác. Xác thực bằng token
 | `GET /api/admin/posts/:id` | — | 200 `{id, title, lang, type, status, hidden, version, rev, body}`: bản mới nhất, `body` là thân bài không gồm dòng tiêu đề |
 | `PUT /api/admin/posts/:id/text` | `body`, `title?`, `summary?` (tóm tắt thay đổi, hiện ở lịch sử C17), `baseRev?` (`rev` đã đọc), `source?` (`ai`/`human`) | 200 `{id, version, rev, changed}`: mỗi lần gọi là một phiên bản riêng (không gộp với lần lưu của trình soạn); nội dung y hệt thì `changed: false` |
 | `GET /api/admin/review` | — | 200 `{documents: [...]}`: bài chờ duyệt, mới gửi trước, kèm `preReview` của Jev |
+| `POST /api/admin/spaces` | `slug`, `nameVi`, `nameEn`, `tint`, `glow` (`#RRGGBB`), `art` (`/art/<tên>.webp`), `unitVi`, `unitEn`, `descriptionVi?`, `descriptionEn?` | 201 `{slug}`: Space công khai mới (như `POST /api/spaces` của phiên web); slug đã có thì 409 `slug-taken` |
 
 Lỗi: 401 `token-required` (thiếu header), 401 `invalid-token` (sai, đã thu hồi, người tạo không còn là quản trị),
 400 `invalid-body` / `space-required`, 404 `not-found`, 409 `not-approved` (ẩn bài chưa duyệt), 409 `stale` (bài đã
@@ -101,3 +102,31 @@ curl -sS https://kb.hoandat.com/api/admin/posts \
 ```
 
 Bài đăng xong hiện ngay ở C09/C10 với nhãn Chính thức; `"hidden": true` thì đăng mà chưa hiện.
+
+## Hàng chờ bài AI
+
+Mỗi đêm một cloud routine của Claude viết một bài tiếng Việt, đẩy vào repo; GitHub Actions đăng bài ở chế độ **ẩn**,
+quản trị đọc rồi bấm hiện ở A02 (`/admin/content`). kb là kho kiến thức đủ mọi chủ đề nên chủ đề xoay vòng giữa các
+Space, bài công nghệ không quá một phần ba.
+
+- [`content/topics.json`](../content/topics.json): danh sách chủ đề (`slug`, `space`, `lang`, `title`, `tech`, `brief`,
+  `status`: `todo` → `queued` (routine) → `published` (workflow), hoặc `skipped` kèm `note`).
+- [`content/spaces.json`](../content/spaces.json): `existing` là các Space công khai đã có; `create` là Space workflow
+  tự tạo (qua `POST /api/admin/spaces`) trước bài đầu tiên của nó.
+- `content/queue/<slug>.md`: bài chờ đăng. Đầu tệp là front matter `title`, `tags` (cách nhau bằng dấu phẩy, tối đa 8),
+  `type` (`note`/`lab`/`process`), giữa hai dòng `---`; sau đó là thân bài Markdown (ít nhất 1.200 ký tự).
+- [`content/published.json`](../content/published.json): sổ `slug → id` của bài đã đăng. Database là bản chuẩn của
+  bài, repo không giữ thân bài sau khi đăng.
+
+`pnpm check:queue` ([`scripts/content-queue.ts`](../scripts/content-queue.ts), chạy trong `pnpm lint`) kiểm ba tệp
+JSON và mọi bài chờ: front matter, độ dài, chủ đề còn `todo`/`queued`, Space có thật, không địa chỉ server (như
+`check:public`), không chuỗi giống khoá, không nhắc Học Cloud.
+
+[`publish-queue.yml`](../.github/workflows/publish-queue.yml) chạy khi `content/queue/**` đổi trên `main` (hoặc bấm tay):
+`pnpm publish:queue` ([`scripts/publish-queue.ts`](../scripts/publish-queue.ts)) đăng từng bài (`hidden: true`,
+`source: "ai"`), ghi sổ, xoá tệp chờ, đổi chủ đề thành `published`, rồi commit lại. Bài lỗi giữ tệp để lần sau thử lại;
+bài đã có trong sổ thì không đăng lần hai. Token chỉ nằm ở secret `KB_ADMIN_TOKEN` của repo; tạo token mới ở A03 là
+token cũ bị thu hồi, nhớ cập nhật secret. Commit chỉ đổi `content/queue/**`, `content/topics.json`,
+`content/published.json` không chạy `ci` nên không deploy.
+
+Tắt routine: tắt ở trang routine của claude.ai; hàng chờ trống thì workflow không làm gì.

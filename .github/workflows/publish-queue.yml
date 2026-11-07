@@ -1,0 +1,54 @@
+# Publishes the AI article queue (docs/admin-api.md, "Hàng chờ bài AI"): each content/queue/<slug>.md goes to
+# kb.hoandat.com through the admin API, hidden and marked as written by AI, then its file is removed and the
+# slug → id ledger is committed back. The admin token lives only in this repository's secret KB_ADMIN_TOKEN.
+# The commit back uses GITHUB_TOKEN, which starts no other workflow; ci.yml ignores content-only commits anyway.
+name: publish-queue
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - content/queue/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-queue
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: publish
+        continue-on-error: true
+        run: pnpm publish:queue
+        env:
+          KB_ADMIN_TOKEN: ${{ secrets.KB_ADMIN_TOKEN }}
+      - name: Commit the ledger
+        run: |
+          git add content
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'content: record published queue posts'
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - if: steps.publish.outcome == 'failure'
+        run: |
+          echo 'Some queued articles were not published; see the publish step.'
+          exit 1
