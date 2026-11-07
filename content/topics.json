@@ -48,7 +48,7 @@
       "nameEn": "Networking on Ubuntu",
       "tech": true,
       "brief": "Gợi ý 3 bài: netplan và systemd-networkd đặt IP tĩnh, DHCP; resolvectl và DNS trên máy; kiểm kết nối bằng ip, ss, ping, tracepath.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "ghi-chu-hieu-qua",
@@ -302,3 +302,4 @@
     }
   ]
 }
+
