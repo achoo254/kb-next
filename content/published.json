@@ -23,6 +23,12 @@
       "space": "van-hoa",
       "collectionId": "5537901a-a872-4eb6-9e5a-94505e6c5c9d",
       "at": "2026-11-07T15:10:01.615Z"
+    },
+    {
+      "slug": "mang-tren-ubuntu",
+      "space": "networking",
+      "collectionId": "fd20a851-b2c8-4b52-ad53-00f292cf0ad1",
+      "at": "2026-11-07T16:42:41.799Z"
     }
   ],
   "posts": [
@@ -103,6 +109,24 @@
       "id": "eb1bb27e-288e-4f0c-81a7-8641c8189df3",
       "title": "Ông Công, ông Táo và ngày 23 tháng Chạp: tiễn thần bếp lên trời, dọn nhà đón Tết",
       "at": "2026-11-07T15:10:02.541Z"
+    },
+    {
+      "slug": "mang-tren-ubuntu/kiem-tra-ket-noi-ip-ss-ping-tracepath",
+      "id": "fb59e522-a573-4aa5-a9b7-797dea1b2e73",
+      "title": "Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath",
+      "at": "2026-11-07T16:42:42.113Z"
+    },
+    {
+      "slug": "mang-tren-ubuntu/resolvectl-va-dns-tren-ubuntu",
+      "id": "98e55f1d-23ce-49d7-97f6-6cfae88e4dca",
+      "title": "resolvectl và DNS trên Ubuntu: máy bạn tra tên miền như thế nào",
+      "at": "2026-11-07T16:42:42.438Z"
+    },
+    {
+      "slug": "mang-tren-ubuntu/netplan-dat-ip-tinh-va-dhcp",
+      "id": "b6154724-dca4-4edc-9251-389e84fe2689",
+      "title": "Netplan trên Ubuntu 24.04: đặt IP tĩnh và dùng DHCP bằng một tệp YAML",
+      "at": "2026-11-07T16:42:42.727Z"
     }
   ]
 }
