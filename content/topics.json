@@ -68,7 +68,7 @@
       "nameEn": "Tidy housework",
       "tech": false,
       "brief": "Gợi ý 3 bài: đọc ký hiệu giặt ủi trên nhãn quần áo; sắp xếp nhà cửa theo từng khu; lịch dọn dẹp mỗi ngày 15 phút.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "giao-tiep-noi-cong-so",
