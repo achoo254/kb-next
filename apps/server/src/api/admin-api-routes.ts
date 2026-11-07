@@ -18,6 +18,8 @@
  * - GET /api/admin/review → `{documents: ReviewQueueItem[]}`: the review queue with Jev's pre-review.
  * - POST /api/admin/spaces `{slug, nameVi, nameEn, tint, glow, art, unitVi, unitEn, descriptionVi?, descriptionEn?}` → 201
  *   `{slug}`: a new public Space (as POST /api/spaces on the web session), 409 `slug-taken` when the slug exists.
+ * - POST /api/admin/collections `{space, nameVi, nameEn?}` → 201 `{id, space}`: a new Collection (planet) in a public
+ *   Space (as POST /api/collections on the web session); 404 `not-found` for an unknown Space.
  * Errors: 401 `token-required` (no header), 401 `invalid-token` (malformed, unknown, revoked, or its admin is no
  * longer one or left the workspace), 400 `invalid-body`, 404 `not-found`, 409 `not-approved`.
  *
@@ -30,7 +32,7 @@ import express, { type ErrorRequestHandler, type Request, type RequestHandler, t
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { createDocument, editAccess, saveDocument } from '../access/authoring';
-import { createPublicSpace } from '../access/spaces-write';
+import { createCollection, createPublicSpace, spaceForWriting } from '../access/spaces-write';
 import { type AdminViewer, isAdminViewer, listReviewQueue } from '../access/review';
 import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
@@ -41,7 +43,7 @@ import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import { titleLine } from '../markdown/sections';
 import { type ModerationDeps, cleanTags, queueItems, resolvePlacement, updatePost } from '../review/moderation';
 import { perAccountLimit, signedIn } from './account-limit';
-import { DOCUMENT_BODY_LIMIT, PublicSpaceBody, refuse } from './authoring-routes';
+import { CollectionBody, DOCUMENT_BODY_LIMIT, PublicSpaceBody, refuse } from './authoring-routes';
 import { type RequestContextDeps, readerOf } from './request-context';
 import { PostPatchBody, PostTitle, Tags, idParam } from './review-routes';
 import { parseBody } from './validate';
@@ -223,6 +225,14 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     const space = await createPublicSpace(db, { ...body, descriptionVi: body.descriptionVi ?? null, descriptionEn: body.descriptionEn ?? null });
     if (!space) throw new HttpError(409, 'slug-taken');
     res.status(201).json({ slug: space.slug });
+  });
+
+  api.post('/collections', async (req, res) => {
+    const body = parseBody(CollectionBody, req.body);
+    const access = await spaceForWriting(db, adminOf(res), body.space);
+    if (access.kind !== 'ok' || access.space.kind !== 'public') throw new HttpError(404, 'not-found');
+    const collection = await createCollection(db, access.space, { nameVi: body.nameVi, nameEn: body.nameEn ?? body.nameVi });
+    res.status(201).json({ id: collection.id, space: access.space.slug });
   });
 
   api.get('/review', async (_req, res) => {

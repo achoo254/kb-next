@@ -103,7 +103,7 @@ export const PublicSpaceBody = z.strictObject({
   descriptionEn: z.string().trim().max(300).nullable().optional(),
 });
 
-const CollectionBody = z.strictObject({ space: Slug, nameVi: Name, nameEn: Name.optional() });
+export const CollectionBody = z.strictObject({ space: Slug, nameVi: Name, nameEn: Name.optional() });
 
 /** What the editor (C02) opens: the text as last saved and where it lives. */
 export interface EditableDocument {

@@ -1,18 +1,19 @@
 /**
- * `pnpm publish:queue` (run by .github/workflows/publish-queue.yml): publishes every article in `content/queue/`
- * through the admin API, visible at once and marked as written by AI. No one reviews it by hand (owner's decision,
- * 07/11/2026): the routine reviews its own article before queueing it, and `check:queue` refuses the mechanical faults.
+ * `pnpm publish:queue` (run by .github/workflows/publish-queue.yml): publishes every queued planet through the admin
+ * API, visible at once and marked as written by AI. No one reviews it by hand (owner's decision, 07/11/2026): the
+ * routine reviews its own articles before queueing them, and `check:queue` refuses the mechanical faults.
  *
- * For each queued article: makes its Space first when `content/spaces.json` lists it under `create` (409
- * `slug-taken` means it is there already); skips the call when the ledger already has the slug (a run that died after
- * publishing); then records `slug → id` in `content/published.json`, marks the topic `published` and removes the file.
- * A failed article keeps its file and its topic, so the next run tries again. Needs `KB_ADMIN_TOKEN`; `KB_ORIGIN`
- * defaults to https://kb.hoandat.com.
+ * For each planet: makes its Space when `content/spaces.json` lists it under `create` (409 `slug-taken` means it is
+ * there already), makes its Collection once (the ledger keeps its id), then publishes its articles, each after the
+ * queued articles it links to so every `[[link]]` resolves. Each publish is written to `content/published.json` at
+ * once, so a run that dies never publishes twice. A planet whose articles are all published loses its folder and its
+ * topic becomes `published`; anything that failed stays for the next run. Needs `KB_ADMIN_TOKEN`; `KB_ORIGIN` defaults
+ * to https://kb.hoandat.com.
  */
-import { readFile, rm, writeFile } from 'node:fs/promises';
+import { rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CONTENT_DIR, type PublishedPost, type Spaces, type Topic, checkQueued, parseArticle, queuedSlugs, readJson } from './content-queue';
+import { CONTENT_DIR, type Ledger, type PublishedPost, type QueuedArticle, type Spaces, type Topic, checkPlanets, linkedTitles, publishOrder, readJson, readQueue, titleKey } from './content-queue';
 
 type Fetch = (url: string, init: { method: string; headers: Record<string, string>; body: string }) => Promise<{ status: number; json(): Promise<unknown> }>;
 
@@ -34,18 +35,22 @@ async function writeJson(file: string, value: unknown): Promise<void> {
   await writeFile(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function errorCode(body: unknown): string {
-  return typeof body === 'object' && body !== null && 'error' in body && typeof body.error === 'string' ? body.error : 'unknown';
+function field(body: unknown, key: string): string | null {
+  if (typeof body !== 'object' || body === null || !(key in body)) return null;
+  const value = (body as Record<string, unknown>)[key];
+  return typeof value === 'string' ? value : null;
 }
+
+const planetOf = (slug: string): string => slug.split('/')[0] ?? slug;
 
 export async function publishQueue({ dir, token, origin, fetch, now, log = console.log }: PublishOptions): Promise<PublishResult> {
   const spaces = await readJson<Spaces>(path.join(dir, 'spaces.json'));
   const topicsFile = path.join(dir, 'topics.json');
   const ledgerFile = path.join(dir, 'published.json');
   const { topics } = await readJson<{ topics: Topic[] }>(topicsFile);
-  const ledger = await readJson<{ posts: PublishedPost[] }>(ledgerFile);
+  const ledger = await readJson<Ledger>(ledgerFile);
   const result: PublishResult = { published: [], failed: [] };
-  const madeSpaces = new Set<string>();
+  const failedPlanets = new Map<string, string>();
 
   const post = async (route: string, body: unknown): Promise<{ status: number; body: unknown }> => {
     const res = await fetch(`${origin}/api/admin/${route}`, {
@@ -55,64 +60,94 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
     });
     return { status: res.status, body: await res.json().catch(() => null) };
   };
+  const failure = (res: { status: number; body: unknown }): string => `${res.status} ${field(res.body, 'error') ?? 'unknown'}`;
 
-  const ensureSpace = async (slug: string): Promise<string | null> => {
-    const spec = spaces.create.find((s) => s.slug === slug);
-    if (!spec || madeSpaces.has(slug)) return null;
-    const res = await post('spaces', spec);
-    if (res.status === 201) log(`made Space ${slug}`);
-    else if (res.status !== 409) return `Space ${slug}: ${res.status} ${errorCode(res.body)}`;
-    madeSpaces.add(slug);
-    return null;
-  };
+  // Check everything first: a planet with any problem waits for the next run as a whole.
+  const queue = await readQueue(dir);
+  const { problems, articles } = checkPlanets(queue, topics, ledger);
+  const circle = problems.some((p) => p.file === 'content/queue');
+  for (const planet of queue) {
+    const own = problems.filter((p) => circle || p.file === `content/queue/${planet.slug}` || p.file.startsWith(`content/queue/${planet.slug}/`));
+    if (own.length > 0) failedPlanets.set(planet.slug, own.map((p) => p.message).join('; '));
+  }
 
-  const done = async (topic: Topic, file: string): Promise<void> => {
-    topic.status = 'published';
-    await rm(file);
-  };
-
-  for (const slug of await queuedSlugs(dir)) {
-    const file = path.join(dir, 'queue', `${slug}.md`);
-    const text = await readFile(file, 'utf8');
-    const problems = checkQueued(slug, text, topics);
-    const article = parseArticle(slug, text);
-    const topic = topics.find((t) => t.slug === slug);
-    if (problems.length > 0 || Array.isArray(article) || !topic) {
-      result.failed.push({ slug, reason: problems.map((p) => p.message).join('; ') || 'invalid article' });
+  // The Space and the Collection of each planet.
+  const collections = new Map<string, string>();
+  const madeSpaces = new Set<string>();
+  for (const planet of queue.filter((p) => !failedPlanets.has(p.slug))) {
+    const topic = topics.find((t) => t.slug === planet.slug);
+    if (!topic) continue;
+    const spec = spaces.create.find((s) => s.slug === topic.space);
+    if (spec && !madeSpaces.has(spec.slug)) {
+      const res = await post('spaces', spec);
+      if (res.status !== 201 && res.status !== 409) {
+        failedPlanets.set(planet.slug, `Space ${spec.slug}: ${failure(res)}`);
+        continue;
+      }
+      if (res.status === 201) log(`made Space ${spec.slug}`);
+      madeSpaces.add(spec.slug);
+    }
+    const known = ledger.planets.find((p) => p.slug === planet.slug);
+    if (known) {
+      collections.set(planet.slug, known.collectionId);
       continue;
     }
-    if (ledger.posts.some((p) => p.slug === slug)) {
-      log(`${slug} was published before; removing its queue file`);
-      await done(topic, file);
+    const res = await post('collections', { space: topic.space, nameVi: topic.name, nameEn: topic.nameEn });
+    const id = field(res.body, 'id');
+    if (res.status !== 201 || !id) {
+      failedPlanets.set(planet.slug, `Collection: ${failure(res)}`);
       continue;
     }
-    const spaceError = await ensureSpace(topic.space);
-    if (spaceError) {
-      result.failed.push({ slug, reason: spaceError });
+    ledger.planets.push({ slug: planet.slug, space: topic.space, collectionId: id, at: now().toISOString() });
+    await writeJson(ledgerFile, ledger);
+    collections.set(planet.slug, id);
+    log(`made planet ${planet.slug} in ${topic.space}`);
+  }
+
+  // The articles, a linked-to one before the one linking to it.
+  const ready = [...articles.entries()].filter(([slug]) => collections.has(slug)).flatMap(([, list]) => list);
+  const byKey = new Map(ready.map((a) => [titleKey(a.title), a]));
+  const done = new Set(ledger.posts.map((p) => p.slug));
+  for (const article of publishOrder(ready) ?? []) {
+    if (done.has(article.slug)) continue;
+    const waits = linkedTitles(article.body)
+      .map((title) => byKey.get(titleKey(title)))
+      .find((target): target is QueuedArticle => target !== undefined && target !== article && !done.has(target.slug));
+    if (waits) {
+      result.failed.push({ slug: article.slug, reason: `waits for ${waits.slug}` });
       continue;
     }
     const res = await post('posts', {
       title: article.title,
-      lang: topic.lang,
-      space: topic.space,
+      lang: topics.find((t) => t.slug === planetOf(article.slug))?.lang ?? 'vi',
+      collection: collections.get(planetOf(article.slug)),
       tags: article.tags,
       markdown: article.body,
       type: article.type,
       source: 'ai',
       hidden: false,
     });
-    const id = typeof res.body === 'object' && res.body !== null && 'id' in res.body && typeof res.body.id === 'string' ? res.body.id : null;
+    const id = field(res.body, 'id');
     if (res.status !== 201 || !id) {
-      result.failed.push({ slug, reason: `${res.status} ${errorCode(res.body)}` });
+      result.failed.push({ slug: article.slug, reason: failure(res) });
       continue;
     }
-    const entry: PublishedPost = { slug, id, title: article.title, at: now().toISOString() };
+    const entry: PublishedPost = { slug: article.slug, id, title: article.title, at: now().toISOString() };
     ledger.posts.push(entry);
+    done.add(article.slug);
     result.published.push(entry);
-    // Write the ledger before removing the file: a run that dies here leaves a file the next run skips.
+    // The ledger is written before anything else: a run that dies here never publishes this article again.
     await writeJson(ledgerFile, ledger);
-    await done(topic, file);
-    log(`published ${slug}: ${origin}/d/${id}`);
+    log(`published ${article.slug}: ${origin}/d/${id}`);
+  }
+
+  for (const [slug, reason] of failedPlanets) result.failed.push({ slug, reason });
+  for (const planet of queue) {
+    const list = articles.get(planet.slug) ?? [];
+    if (failedPlanets.has(planet.slug) || list.length === 0 || !list.every((a) => done.has(a.slug))) continue;
+    await rm(path.join(dir, 'queue', planet.slug), { recursive: true });
+    const topic = topics.find((t) => t.slug === planet.slug);
+    if (topic) topic.status = 'published';
   }
 
   await writeJson(topicsFile, { topics });
@@ -121,7 +156,7 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
 }
 
 async function main(): Promise<number> {
-  if ((await queuedSlugs(CONTENT_DIR)).length === 0) {
+  if ((await readQueue(CONTENT_DIR)).length === 0) {
     console.log('publish:queue: nothing queued');
     return 0;
   }

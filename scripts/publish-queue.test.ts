@@ -2,42 +2,54 @@ import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { MIN_BODY_CHARS, type PublishedPost, type Topic } from './content-queue';
+import { type Ledger, MIN_BODY_CHARS, type Topic } from './content-queue';
 import { publishQueue } from './publish-queue';
 
 const body = `## Mở đầu\n\n${'Một đoạn văn đủ dài để thành bài. '.repeat(Math.ceil(MIN_BODY_CHARS / 30))}`;
-const NOW = new Date('2026-11-07T14:40:00Z');
+const NOW = new Date('2026-11-07T13:00:00Z');
+/** An article titled `title` whose body links to `links`. */
+const linked = (title: string, ...links: string[]): string => `---\ntitle: ${title}\ntags: thử\n---\n${links.map((l) => `Xem [[${l}]].`).join(' ')}\n\n${body}`;
+/** A planet of three articles: A links to B, B links to C. */
+const trio = (prefix: string, ...outside: string[]): Record<string, string> => ({
+  a: linked(`${prefix} A`, `${prefix} B`),
+  b: linked(`${prefix} B`, `${prefix} C`),
+  c: linked(`${prefix} C`, ...outside),
+});
 
 interface Call {
-  url: string;
+  route: string;
   auth: string;
   body: Record<string, unknown>;
 }
 
 let dir = '';
 
-async function setUp(topics: Topic[], queued: Record<string, string>, posts: PublishedPost[] = []): Promise<void> {
+async function setUp(topics: Topic[], planets: Record<string, Record<string, string>>, ledger: Ledger = { planets: [], posts: [] }): Promise<void> {
   await mkdir(path.join(dir, 'queue'), { recursive: true });
   const spaces = { existing: ['networking'], create: [{ slug: 'ky-nang', nameVi: 'Kỹ năng', nameEn: 'Skills', tint: '#FBCFE8', glow: '#EC4899', art: '/art/orb-universe.webp', unitVi: 'bài', unitEn: 'articles' }] };
   await writeFile(path.join(dir, 'spaces.json'), JSON.stringify(spaces));
   await writeFile(path.join(dir, 'topics.json'), JSON.stringify({ topics }));
-  await writeFile(path.join(dir, 'published.json'), JSON.stringify({ posts }));
+  await writeFile(path.join(dir, 'published.json'), JSON.stringify(ledger));
   await writeFile(path.join(dir, 'queue', '.gitkeep'), '');
-  for (const [slug, text] of Object.entries(queued)) await writeFile(path.join(dir, 'queue', `${slug}.md`), text);
+  for (const [planet, files] of Object.entries(planets)) {
+    await mkdir(path.join(dir, 'queue', planet));
+    for (const [name, text] of Object.entries(files)) await writeFile(path.join(dir, 'queue', planet, `${name}.md`), text);
+  }
 }
 
-const topic = (slug: string, space = 'ky-nang'): Topic => ({ slug, space, lang: 'vi', title: slug, tech: false, brief: '', status: 'queued' });
-const article = (title: string): string => `---\ntitle: ${title}\ntags: học tập\ntype: note\n---\n${body}`;
+const topic = (slug: string, space = 'ky-nang'): Topic => ({ slug, space, lang: 'vi', name: `Hành tinh ${slug}`, nameEn: `Planet ${slug}`, tech: false, brief: '', status: 'queued' });
 
-/** A fake admin API: answers by route, records each call. */
-function fakeApi(answers: Record<string, Array<{ status: number; body: unknown }>>): { calls: Call[]; fetch: Parameters<typeof publishQueue>[0]['fetch'] } {
+/** A fake admin API: answers posts with fresh ids unless told otherwise, records each call. */
+function fakeApi(answers: Record<string, Array<{ status: number; body: unknown }>> = {}): { calls: Call[]; fetch: Parameters<typeof publishQueue>[0]['fetch'] } {
   const calls: Call[] = [];
+  let next = 0;
   return {
     calls,
     fetch: async (url, init) => {
-      calls.push({ url, auth: init.headers.authorization ?? '', body: JSON.parse(init.body) as Record<string, unknown> });
       const route = url.replace('https://kb.test/api/admin/', '');
-      const answer = answers[route]?.shift() ?? { status: 500, body: { error: 'internal' } };
+      calls.push({ route, auth: init.headers.authorization ?? '', body: JSON.parse(init.body) as Record<string, unknown> });
+      next += 1;
+      const answer = answers[route]?.shift() ?? { status: 201, body: route === 'spaces' ? { slug: 'x' } : { id: `${route}-${next}` } };
       return { status: answer.status, json: async () => answer.body };
     },
   };
@@ -45,7 +57,7 @@ function fakeApi(answers: Record<string, Array<{ status: number; body: unknown }
 
 const run = (fetch: Parameters<typeof publishQueue>[0]['fetch']) => publishQueue({ dir, token: 'kf_admin_test', origin: 'https://kb.test', fetch, now: () => NOW, log: () => {} });
 const readTopics = async (): Promise<Topic[]> => (JSON.parse(await readFile(path.join(dir, 'topics.json'), 'utf8')) as { topics: Topic[] }).topics;
-const readPosts = async (): Promise<PublishedPost[]> => (JSON.parse(await readFile(path.join(dir, 'published.json'), 'utf8')) as { posts: PublishedPost[] }).posts;
+const readLedger = async (): Promise<Ledger> => JSON.parse(await readFile(path.join(dir, 'published.json'), 'utf8')) as Ledger;
 
 beforeEach(async () => {
   dir = await mkdtemp(path.join(tmpdir(), 'kb-queue-'));
@@ -56,57 +68,75 @@ afterEach(async () => {
 });
 
 describe('publishQueue', () => {
-  it('makes the Space, publishes as AI, visible, records the id and removes the file', async () => {
-    await setUp([topic('ghi-chu')], { 'ghi-chu': article('Ghi chú Cornell') });
-    const api = fakeApi({ spaces: [{ status: 201, body: { slug: 'ky-nang' } }], posts: [{ status: 201, body: { id: 'doc-1' } }] });
-    const result = await run(api.fetch);
-    expect(result).toEqual({ published: [{ slug: 'ghi-chu', id: 'doc-1', title: 'Ghi chú Cornell', at: NOW.toISOString() }], failed: [] });
-    expect(api.calls.map((c) => c.url)).toEqual(['https://kb.test/api/admin/spaces', 'https://kb.test/api/admin/posts']);
-    expect(api.calls.every((c) => c.auth === 'Bearer kf_admin_test')).toBe(true);
-    expect(api.calls[1]?.body).toEqual({ title: 'Ghi chú Cornell', lang: 'vi', space: 'ky-nang', tags: ['học tập'], markdown: body.trim(), type: 'note', source: 'ai', hidden: false });
-    expect(await readdir(path.join(dir, 'queue'))).toEqual(['.gitkeep']);
-    expect((await readTopics())[0]?.status).toBe('published');
-    expect(await readPosts()).toEqual(result.published);
-  });
-
-  it('takes an existing Space (409) once, and does not make a Space that is already on kb', async () => {
-    await setUp([topic('a'), topic('b'), topic('c', 'networking')], { a: article('A'), b: article('B'), c: article('C') });
-    const api = fakeApi({ spaces: [{ status: 409, body: { error: 'slug-taken' } }], posts: [1, 2, 3].map((n) => ({ status: 201, body: { id: `doc-${n}` } })) });
+  it('makes the Space and the planet, publishes linked-to articles first, visible as AI, then removes the folder', async () => {
+    await setUp([topic('p')], { p: trio('P') });
+    const api = fakeApi();
     const result = await run(api.fetch);
     expect(result.failed).toEqual([]);
-    expect(api.calls.filter((c) => c.url.endsWith('/spaces'))).toHaveLength(1);
-    expect(api.calls.filter((c) => c.url.endsWith('/posts')).map((c) => c.body.space)).toEqual(['ky-nang', 'ky-nang', 'networking']);
-  });
-
-  it('keeps a failed article for the next run and goes on with the others', async () => {
-    await setUp([topic('a', 'networking'), topic('b', 'networking'), topic('c', 'networking')], { a: article('A'), b: article('B'), c: '---\ntitle: C\n---\nngắn' });
-    const api = fakeApi({ posts: [{ status: 400, body: { error: 'invalid-body' } }, { status: 201, body: { id: 'doc-2' } }] });
-    const result = await run(api.fetch);
-    expect(result.failed.map((f) => [f.slug, f.reason])).toEqual([
-      ['a', '400 invalid-body'],
-      ['c', `body is shorter than ${MIN_BODY_CHARS} characters`],
-    ]);
-    expect(result.published.map((p) => p.slug)).toEqual(['b']);
-    expect(await readdir(path.join(dir, 'queue'))).toEqual(['.gitkeep', 'a.md', 'c.md']);
-    expect((await readTopics()).map((t) => t.status)).toEqual(['queued', 'published', 'queued']);
-  });
-
-  it('does not publish twice an article the ledger already has', async () => {
-    const earlier: PublishedPost = { slug: 'a', id: 'doc-1', title: 'A', at: '2026-11-06T14:40:00.000Z' };
-    await setUp([topic('a', 'networking')], { a: article('A') }, [earlier]);
-    const api = fakeApi({});
-    const result = await run(api.fetch);
-    expect(api.calls).toEqual([]);
-    expect(result).toEqual({ published: [], failed: [] });
+    expect(api.calls.map((c) => c.route)).toEqual(['spaces', 'collections', 'posts', 'posts', 'posts']);
+    expect(api.calls.every((c) => c.auth === 'Bearer kf_admin_test')).toBe(true);
+    expect(api.calls[1]?.body).toEqual({ space: 'ky-nang', nameVi: 'Hành tinh p', nameEn: 'Planet p' });
+    const posts = api.calls.filter((c) => c.route === 'posts');
+    expect(posts.map((c) => c.body.title)).toEqual(['P C', 'P B', 'P A']);
+    expect(posts[0]?.body).toMatchObject({ lang: 'vi', collection: 'collections-2', tags: ['thử'], type: 'note', source: 'ai', hidden: false });
     expect(await readdir(path.join(dir, 'queue'))).toEqual(['.gitkeep']);
-    expect(await readPosts()).toEqual([earlier]);
+    expect((await readTopics())[0]?.status).toBe('published');
+    const ledger = await readLedger();
+    expect(ledger.planets).toEqual([{ slug: 'p', space: 'ky-nang', collectionId: 'collections-2', at: NOW.toISOString() }]);
+    expect(ledger.posts.map((p) => p.slug)).toEqual(['p/c', 'p/b', 'p/a']);
   });
 
-  it('stops at a Space it cannot make, keeping the article', async () => {
-    await setUp([topic('a')], { a: article('A') });
+  it('publishes three planets of a day in order across planets, making an existing Space only once', async () => {
+    const ledger: Ledger = { planets: [], posts: [{ slug: 'old', id: 'doc-0', title: 'Bài cũ', at: '' }] };
+    await setUp([topic('p'), topic('q'), topic('r', 'networking')], { p: trio('P', 'Bài cũ'), q: trio('Q', 'P A'), r: trio('R', 'Q A') }, ledger);
+    const api = fakeApi({ spaces: [{ status: 409, body: { error: 'slug-taken' } }] });
+    const result = await run(api.fetch);
+    expect(result.failed).toEqual([]);
+    expect(api.calls.filter((c) => c.route === 'spaces')).toHaveLength(1);
+    expect(api.calls.filter((c) => c.route === 'collections').map((c) => c.body.space)).toEqual(['ky-nang', 'ky-nang', 'networking']);
+    const titles = api.calls.filter((c) => c.route === 'posts').map((c) => String(c.body.title));
+    expect(titles.indexOf('P A')).toBeLessThan(titles.indexOf('Q C'));
+    expect(titles.indexOf('Q A')).toBeLessThan(titles.indexOf('R C'));
+    expect((await readTopics()).map((t) => t.status)).toEqual(['published', 'published', 'published']);
+  });
+
+  it('keeps a planet whose article failed, holds back the articles linking to it, and reuses its planet next time', async () => {
+    await setUp([topic('p', 'networking')], { p: trio('P') });
+    const first = fakeApi({ posts: [{ status: 400, body: { error: 'invalid-body' } }] });
+    const result = await run(first.fetch);
+    expect(result.failed).toEqual([
+      { slug: 'p/c', reason: '400 invalid-body' },
+      { slug: 'p/b', reason: 'waits for p/c' },
+      { slug: 'p/a', reason: 'waits for p/b' },
+    ]);
+    expect((await readdir(path.join(dir, 'queue', 'p'))).sort()).toEqual(['a.md', 'b.md', 'c.md']);
+    expect((await readTopics())[0]?.status).toBe('queued');
+
+    const second = fakeApi();
+    expect((await run(second.fetch)).failed).toEqual([]);
+    expect(second.calls.map((c) => c.route)).toEqual(['posts', 'posts', 'posts']);
+    expect(second.calls[0]?.body.collection).toBe('collections-1');
+  });
+
+  it('goes on after a run that died: does not publish twice what the ledger already has', async () => {
+    const ledger: Ledger = { planets: [{ slug: 'p', space: 'networking', collectionId: 'col-1', at: '' }], posts: [{ slug: 'p/c', id: 'doc-1', title: 'P C', at: '' }] };
+    await setUp([topic('p', 'networking')], { p: trio('P') }, ledger);
+    const api = fakeApi();
+    const result = await run(api.fetch);
+    expect(result.failed).toEqual([]);
+    expect(api.calls.map((c) => [c.route, c.body.title, c.body.collection])).toEqual([
+      ['posts', 'P B', 'col-1'],
+      ['posts', 'P A', 'col-1'],
+    ]);
+    expect(await readdir(path.join(dir, 'queue'))).toEqual(['.gitkeep']);
+  });
+
+  it('holds a planet that fails its checks, and stops at a Space it cannot make', async () => {
+    await setUp([topic('p'), topic('q', 'networking')], { p: trio('P', 'Q A'), q: { a: linked('Q A') } });
     const api = fakeApi({ spaces: [{ status: 401, body: { error: 'invalid-token' } }] });
     const result = await run(api.fetch);
-    expect(result.failed).toEqual([{ slug: 'a', reason: 'Space ky-nang: 401 invalid-token' }]);
-    expect(api.calls.some((c) => c.url.endsWith('/posts'))).toBe(false);
+    expect(result.failed.map((f) => f.slug).sort()).toEqual(['p', 'q']);
+    expect(result.failed.find((f) => f.slug === 'p')?.reason).toBe('Space ky-nang: 401 invalid-token');
+    expect(api.calls.some((c) => c.route === 'posts')).toBe(false);
   });
 });

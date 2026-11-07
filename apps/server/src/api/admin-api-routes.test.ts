@@ -186,6 +186,17 @@ describe('the admin API (token)', () => {
     expect(placed.status).toBe(201);
   });
 
+  it('makes a Collection in a public Space and publishes into it', async () => {
+    const made = await call('/api/admin/collections', { method: 'POST', token, body: { space: 'networking', nameVi: 'Định tuyến', nameEn: 'Routing' } });
+    expect(made.status).toBe(201);
+    const { id, space } = (await made.json()) as { id: string; space: string };
+    expect(space).toBe('networking');
+    const placed = await call('/api/admin/posts', { method: 'POST', token, body: { ...post, title: 'Bảng định tuyến', collection: id } });
+    expect(placed.status).toBe(201);
+    const unknown = await call('/api/admin/collections', { method: 'POST', token, body: { space: 'no-such-space', nameVi: 'X' } });
+    expect([unknown.status, await unknown.json()]).toEqual([404, { error: 'not-found' }]);
+  });
+
   it('lists the review queue', async () => {
     const res = await call('/api/admin/review', { token });
     expect(res.status).toBe(200);
@@ -196,7 +207,7 @@ describe('the admin API (token)', () => {
   it('logs the authenticated calls, failed ones under their own path, never a call without a valid token', async () => {
     await vi.waitFor(async () => expect((await as('admin', () => fetchAdminCalls())).length).toBeGreaterThanOrEqual(7));
     const calls = await as('admin', () => fetchAdminCalls());
-    expect(calls.find((c) => c.status === 201)).toMatchObject({ method: 'POST', path: '/api/admin/posts', error: null, document: { title: 'ICMP Ping' } });
+    expect(calls.find((c) => c.status === 201 && c.document?.title === 'ICMP Ping')).toMatchObject({ method: 'POST', path: '/api/admin/posts', error: null, document: { title: 'ICMP Ping' } });
     expect(calls.filter((c) => c.status === 400).map((c) => [c.path, c.error])).toEqual(
       expect.arrayContaining([
         ['/api/admin/posts', 'invalid-body'],
