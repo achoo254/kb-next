@@ -18,7 +18,7 @@
       "nameEn": "Staying safe online",
       "tech": false,
       "brief": "Gợi ý 3 bài: nhận diện tin nhắn và cuộc gọi lừa đảo; đặt mật khẩu mạnh và dùng trình quản lý mật khẩu; bật xác thực hai bước cho email và mạng xã hội.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "tim-viec",
