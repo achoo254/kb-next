@@ -1,5 +1,5 @@
 /**
- * A text's sharing (C18) in jsdom: locked until approved; making a link (shown in full once, copied); a link made
+ * A text's sharing (C18) in jsdom: locked until published; making a link (shown in full once, copied); a link made
  * earlier (its last four characters, "Tạo link mới" after a confirm); changing expiry and access; revoking; the
  * "permission changed" banner of a hidden text (link paused); who has access; the access history (guests, the count,
  * never a token); and a text that cannot be opened.
@@ -240,7 +240,7 @@ describe('the QR code and the story picture', () => {
   it('keeps the story picture off, with its reason, while the text is locked', async () => {
     view = shareView({ shareable: false, approverName: null, history: [] }, { status: 'pending', origin: 'own' });
     renderWithI18n(<ShareScreen id={ID} />);
-    expect(await screen.findByText('Mã QR và ảnh story có khi bài đã được duyệt.')).toBeTruthy();
+    expect(await screen.findByText('Mã QR và ảnh story có khi bài đã đăng.')).toBeTruthy();
     expect(storyButton().disabled).toBe(true);
   });
 
@@ -282,13 +282,13 @@ describe('the QR code and the story picture', () => {
 });
 
 describe('the states of the text', () => {
-  it('locks sharing until the text is approved', async () => {
+  it('locks sharing until the text is published (a text left waiting for review is the author’s own)', async () => {
     view = shareView({ shareable: false, approverName: null, history: [] }, { status: 'pending', origin: 'own' });
     renderWithI18n(<ShareScreen id={ID} />);
-    expect(await screen.findByText('Bài chưa được duyệt nên chưa chia sẻ được')).toBeTruthy();
+    expect(await screen.findByText('Bài chưa đăng nên chưa chia sẻ được')).toBeTruthy();
     expect(screen.queryByText('Link công khai')).toBeNull();
-    expect(screen.getByText('Của bạn · Chờ duyệt')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Xem trạng thái duyệt' }).getAttribute('href')).toBe('/me');
+    expect(screen.getAllByText('Của bạn · riêng tư').length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: 'Đăng bài' }).getAttribute('href')).toMatch(/\/publish$/);
     expect(document.querySelector('[data-id="share-screen"]')?.getAttribute('data-state')).toBe('locked');
   });
 
@@ -326,7 +326,7 @@ describe('the states of the text', () => {
     ]);
     expect(screen.getByText('Mọi người đã đăng nhập')).toBeTruthy();
     expect(screen.getByText('Linh')).toBeTruthy();
-    expect(screen.getByText('Duyệt · sửa thẻ')).toBeTruthy();
+    expect(screen.getByText('Đã duyệt bài này')).toBeTruthy();
     expect(screen.getByText('Toàn quyền')).toBeTruthy();
     expect(document.body.textContent).not.toContain(TOKEN);
   });

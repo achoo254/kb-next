@@ -2,7 +2,7 @@
  * "Xoá dữ liệu của tôi" (H03): an account deletes what it owns, in one transaction.
  *
  * Deleted for good:
- * - its non-official texts that are not published (drafts, private, waiting for review, sent back, rejected) or are in
+ * - its non-official texts that are not published (drafts, private, and those left from the review gate) or are in
  *   the trash (published or not), every text of its personal Spaces, and those Spaces; with `removePublished`, its
  *   published community texts too;
  * - its stored files no remaining text uses (their disk names come back for the caller to unlink);

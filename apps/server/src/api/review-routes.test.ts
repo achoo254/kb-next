@@ -1,54 +1,37 @@
 /**
- * The review lifecycle through the web app's own clients (review-api.ts, notifications-api.ts): an author sends a
- * text for review (Jev's pre-review stored for admins only; without Jev the submission stands), takes it back, an
- * admin decides with a reason only the author and admins read, hides and shows a published text; every step tells
- * whoever it concerns (C20); the daily stale check tells an author once per change; a comment tells the author and
- * whoever it names.
+ * The publishing lifecycle through the web app's own clients (review-api.ts, notifications-api.ts): an author
+ * publishes a text at once (guests read it), edits it, unpublishes and deletes it; texts left from the review gate
+ * read as private until their author publishes them; an admin hides and shows a published text and the author cannot
+ * undo that hide; every admin step tells the author (C20); the daily stale check tells an author once per change; a
+ * comment tells the author and whoever it names.
  */
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { ApiError } from '../../../web/src/api/api-client';
-import { createDocument, fetchMyDocuments } from '../../../web/src/api/authoring-api';
+import { createDocument, fetchEditable, fetchMyDocuments, fetchTrash, saveDocument, trashDocument } from '../../../web/src/api/authoring-api';
 import { fetchDocument, postComment } from '../../../web/src/api/content-api';
-import { fetchHistory } from '../../../web/src/api/history-api';
 import { fetchInbox, fetchUnread, markAllNotificationsRead, markNotificationRead } from '../../../web/src/api/notifications-api';
-import { decideReview, fetchPublished, fetchReviewQueue, submitForReview, updatePublished, withdrawSubmission } from '../../../web/src/api/review-api';
+import { fetchPublished, keepPrivate, publishDocument, updatePublished } from '../../../web/src/api/review-api';
+import { createShareLink, fetchShare } from '../../../web/src/api/share-api';
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
-import { documentVersions, documents, reviewEvents } from '../db/schema';
+import { documentVersions, documents, notifications, users } from '../db/schema';
 import { seedDatabase, seedId } from '../db/seed-database';
-import type { JevJudge, JevResult } from '../jev/jev-client';
 import { runStaleCheck } from '../notifications/stale-job';
 
 const SECRET = 'test-secret-'.padEnd(40, 'x');
 const DRAFT = seedId('document:new-host-ip');
 const SENT_BACK = seedId('document:tcp-udp-pic');
+const WAITING = seedId('document:swap-ubuntu');
+const REJECTED = seedId('document:dns-cache');
 const DHCP = seedId('document:dhcp');
 
 let idp: FakeIdp;
 let server: TestServer;
 const clock = { now: new Date('2026-11-05T03:00:00Z') };
-const sessions = { owner: '', admin: '', other: '' };
+const sessions = { owner: '', admin: '', other: '', guest: '' };
 let current = '';
-const jevControl = { fail: false, calls: 0 };
-
-/** Jev's four judgments: on topic 3 of 4 levels, sources 0.71, a repeat of the first candidate 0.12, clean 0.03. */
-const jev: JevJudge = {
-  choose: () => Promise.reject(new Error('not used')),
-  ask: (_purpose, _state, questions): Promise<JevResult> => {
-    jevControl.calls += 1;
-    if (jevControl.fail) return Promise.reject(new Error('Jev pre-review failed: TimeoutError'));
-    const answers: JevResult['answers'] = {};
-    for (const key of Object.keys(questions)) {
-      if (key === 'onTopic') answers[key] = { type: 'score', score: 3, confidence: 0.9, probabilities: {} };
-      else if (key === 'hasSources') answers[key] = { type: 'noul', noul: 0.71 };
-      else if (key === 'inappropriate') answers[key] = { type: 'noul', noul: 0.03 };
-      else answers[key] = { type: 'noul', noul: key === 'dupD1' ? 0.12 : 0.05 };
-    }
-    return Promise.resolve({ answers, usage: { inputTokens: 10, outputTokens: 1 } });
-  },
-};
 
 /** Each call a second later: what happens in turn is ordered in time, as in real use. */
 async function as<T>(who: keyof typeof sessions, fn: () => Promise<T>): Promise<T> {
@@ -69,7 +52,7 @@ async function failure(promise: Promise<unknown>): Promise<string> {
 
 beforeAll(async () => {
   idp = await startFakeIdp({ clientId: 'kb-web', clientSecret: SECRET, sub: 'owner-sub', profile: { name: 'Chủ Nhà' } });
-  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET, ADMIN_SUBS: 'admin-sub' }, { submitLimitPer10Min: 100 }, () => clock.now, jev);
+  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET, ADMIN_SUBS: 'admin-sub' }, { submitLimitPer10Min: 100 }, () => clock.now);
   await seedDatabase(server.database.db, 'owner-sub');
   sessions.owner = await signIn(server);
   idp.setSub('admin-sub');
@@ -80,7 +63,7 @@ beforeAll(async () => {
   vi.stubGlobal('fetch', (path: string, init: RequestInit = {}) => {
     const headers = new Headers(init.headers);
     headers.set('origin', server.origin);
-    headers.set('cookie', current);
+    if (current) headers.set('cookie', current);
     return realFetch(`${server.origin}${path}`, { ...init, headers });
   });
 });
@@ -91,96 +74,85 @@ afterAll(async () => {
   await idp?.close();
 });
 
-beforeEach(() => {
-  jevControl.fail = false;
-});
+describe('publishing', () => {
+  it('publishes the author’s draft at once: a guest reads it, no admin is told', async () => {
+    const adminUnread = (await as('admin', () => fetchUnread())).total;
+    expect(await as('guest', () => failure(fetchDocument(DRAFT)))).toBe('no-access');
+    const published = await as('owner', () => publishDocument(DRAFT, { tags: ['dhcp', ' dora '] }));
+    expect(published).toMatchObject({ status: 'approved', hidden: false });
 
-describe('sending for review', () => {
-  it('puts the author’s draft in the queue with Jev’s pre-review, for admins only, and tells the admins', async () => {
-    const sent = await as('owner', () => submitForReview(DRAFT));
-    expect(sent).toMatchObject({ status: 'pending', preReviewed: true });
-    // The seed already has a text waiting; this one is behind it.
-    expect(sent.queuePosition).toBeGreaterThanOrEqual(2);
-
-    const queue = await as('admin', () => fetchReviewQueue());
-    const item = queue.find((q) => q.id === DRAFT);
-    expect(item).toMatchObject({ title: 'Máy mới xin IP thế nào', authorName: 'Chủ Nhà' });
-    expect(item?.preReview).toMatchObject({ onTopic: 0.75, hasSources: 0.71, inappropriate: 0.03 });
-    expect(queue[0]?.id).toBe(DRAFT);
-
-    // The author's own list says only "pending"; scores never reach a member.
-    const mine = await as('owner', () => fetchMyDocuments());
-    expect(mine.find((d) => d.id === DRAFT)).toMatchObject({ status: 'pending' });
-    expect(await as('owner', () => failure(fetchReviewQueue()))).toBe('reviewer-only');
-
-    const inbox = await as('admin', () => fetchInbox());
-    expect(inbox.notifications[0]?.payload).toMatchObject({ kind: 'review', action: 'submitted', title: 'Máy mới xin IP thế nào', by: 'Chủ Nhà' });
+    const read = await as('guest', () => fetchDocument(DRAFT));
+    expect(read.document).toMatchObject({ status: 'approved', origin: 'community', title: 'Máy mới xin IP thế nào' });
+    expect((await as('owner', () => fetchMyDocuments())).find((d) => d.id === DRAFT)).toMatchObject({ status: 'approved', hidden: false });
+    const [row] = await server.database.db.select({ tags: documents.tags }).from(documents).where(eq(documents.id, DRAFT));
+    expect(row?.tags).toEqual(['dhcp', 'dora']);
+    expect((await as('admin', () => fetchUnread())).total).toBe(adminUnread);
   });
 
-  it('stands without Jev: the submission goes through, no scores', async () => {
-    jevControl.fail = true;
-    const sent = await as('owner', () => submitForReview(SENT_BACK));
-    expect(sent.preReviewed).toBe(false);
-    const item = (await as('admin', () => fetchReviewQueue())).find((q) => q.id === SENT_BACK);
-    expect(item?.preReview).toBeNull();
-  });
-
-  it('refuses what cannot be sent, saying what to fix', async () => {
+  it('refuses what cannot be published, saying what to fix', async () => {
     const untitled = await as('owner', () => createDocument({ title: '', body: 'Chỉ có nội dung' }));
-    expect(await as('owner', () => failure(submitForReview(untitled.id)))).toBe('title-required');
+    expect(await as('owner', () => failure(publishDocument(untitled.id)))).toBe('title-required');
     const empty = await as('owner', () => createDocument({ title: 'Trống', body: '' }));
-    expect(await as('owner', () => failure(submitForReview(empty.id)))).toBe('body-required');
-    expect(await as('owner', () => failure(submitForReview(DRAFT)))).toBe('already-pending');
-    expect(await as('other', () => failure(submitForReview(empty.id)))).toBe('not-found');
-    expect(await as('other', () => failure(submitForReview(DHCP)))).toBe('no-access');
+    expect(await as('owner', () => failure(publishDocument(empty.id)))).toBe('body-required');
+    expect(await as('owner', () => failure(publishDocument(DRAFT)))).toBe('already-published');
+    expect(await as('other', () => failure(publishDocument(empty.id)))).toBe('not-found');
+    expect(await as('other', () => failure(publishDocument(DHCP)))).toBe('no-access');
+    expect(await as('guest', () => failure(publishDocument(empty.id)))).toBe('sign-in-required');
   });
 
-  it('lets the author take it back, and only while it waits; the admins’ notice of it goes too', async () => {
-    const note = await as('owner', () => createDocument({ title: 'Rút lại', body: 'Nội dung' }));
-    await as('owner', () => submitForReview(note.id));
-    const noticesOf = async (): Promise<number> => (await as('admin', () => fetchInbox({ kind: 'review' }))).notifications.filter((n) => n.documentId === note.id).length;
-    expect(await noticesOf()).toBe(1);
-    expect(await as('other', () => failure(withdrawSubmission(note.id)))).toBe('not-found');
-    await as('owner', () => withdrawSubmission(note.id));
-    expect(await noticesOf()).toBe(0);
-    expect((await as('owner', () => fetchMyDocuments())).find((d) => d.id === note.id)?.status).toBe('draft');
-    expect(await as('owner', () => failure(withdrawSubmission(note.id)))).toBe('not-pending');
+  it('lets the author edit a published text, which stays public', async () => {
+    const editable = await as('owner', () => fetchEditable(DRAFT));
+    await as('owner', () => saveDocument(DRAFT, { title: editable.title, body: 'DORA: Discover, Offer, Request, Ack.', baseRev: editable.rev }));
+    const read = await as('guest', () => fetchDocument(DRAFT));
+    expect(read.document.status).toBe('approved');
+    expect(JSON.stringify(read.chunks)).toContain('Discover, Offer');
+    // Someone else's published text stays theirs.
+    expect(await as('other', () => failure(fetchEditable(DRAFT)))).toBe('no-access');
+  });
 
-    // Sent again while an admin has not read the first notice (sent back meanwhile): no second notice.
-    await as('owner', () => submitForReview(note.id));
-    await as('admin', () => decideReview(note.id, 'rejected', 'Chưa đủ.'));
-    await as('owner', () => submitForReview(note.id));
-    expect(await noticesOf()).toBe(1);
+  it('unpublishes: private again, its own origin back, its share links revoked', async () => {
+    await as('owner', () => createShareLink(DRAFT, { expiry: 'none', access: 'view' }));
+    await as('owner', () => keepPrivate(DRAFT));
+    expect(await as('guest', () => failure(fetchDocument(DRAFT)))).toBe('no-access');
+    expect(await as('other', () => failure(fetchDocument(DRAFT)))).toBe('no-access');
+    expect((await as('owner', () => fetchMyDocuments())).find((d) => d.id === DRAFT)).toMatchObject({ status: 'private', origin: 'own' });
+    expect((await as('owner', () => fetchShare(DRAFT))).link?.revokedAt).not.toBeNull();
+    // Published again by its author whenever they like.
+    expect(await as('owner', () => publishDocument(DRAFT))).toMatchObject({ status: 'approved' });
+  });
+
+  it('reads texts left from the review gate as private until their author publishes them', async () => {
+    const db = server.database.db;
+    for (const id of [WAITING, SENT_BACK, REJECTED]) expect(await as('other', () => failure(fetchDocument(id)))).toBe('no-access');
+    // An admin's unread "waiting" notice of the old submission goes once its author acts on it.
+    const [admin] = await db.select({ id: users.id }).from(users).where(eq(users.sub, 'admin-sub'));
+    if (!admin) throw new Error('no admin');
+    await db.insert(notifications).values({ userId: admin.id, documentId: WAITING, kind: 'review', payload: { kind: 'review', title: 'Ghi chú: swap trên Ubuntu', action: 'submitted', reason: null, by: 'Chủ Nhà' }, createdAt: clock.now });
+    const waitingNotices = async (): Promise<number> => (await as('admin', () => fetchInbox({ kind: 'review' }))).notifications.filter((n) => n.documentId === WAITING).length;
+    expect(await waitingNotices()).toBe(1);
+    expect(await as('owner', () => publishDocument(WAITING))).toMatchObject({ status: 'approved' });
+    expect(await waitingNotices()).toBe(0);
+    expect((await as('guest', () => fetchDocument(WAITING))).document.status).toBe('approved');
+    // Sent back long ago: published now, its 180 days without a change start again (no stale notice right away).
+    await db.update(documents).set({ updatedAt: new Date('2025-01-01T00:00:00Z') }).where(eq(documents.id, SENT_BACK));
+    expect(await as('owner', () => publishDocument(SENT_BACK))).toMatchObject({ status: 'approved' });
+    expect((await as('other', () => fetchDocument(SENT_BACK))).document).toMatchObject({ status: 'approved', origin: 'community' });
+    expect(await runStaleCheck(db, clock.now)).toBe(0);
+    await as('owner', () => keepPrivate(REJECTED));
+    expect((await as('owner', () => fetchMyDocuments())).find((d) => d.id === REJECTED)?.status).toBe('private');
+  });
+
+  it('lets the author move their published text to the trash', async () => {
+    const note = await as('owner', () => createDocument({ title: 'Bài sẽ xoá', body: 'Nội dung' }));
+    await as('owner', () => publishDocument(note.id));
+    expect(await as('other', () => failure(trashDocument(note.id)))).toBe('no-access');
+    await as('owner', () => trashDocument(note.id));
+    expect(await as('guest', () => failure(fetchDocument(note.id)))).toBe('not-found');
+    expect((await as('owner', () => fetchTrash())).map((d) => d.id)).toContain(note.id);
   });
 });
 
-describe('an admin’s verdict', () => {
-  it('needs a reason to send back, which only the author and admins read', async () => {
-    expect(await as('admin', () => failure(decideReview(SENT_BACK, 'changes_requested')))).toBe('invalid-body');
-    expect(await as('owner', () => failure(decideReview(SENT_BACK, 'approved')))).toBe('reviewer-only');
-    await as('admin', () => decideReview(SENT_BACK, 'changes_requested', 'Thêm link RFC 793 nhé.'));
-
-    const told = (await as('owner', () => fetchInbox({ kind: 'review' }))).notifications[0];
-    expect(told?.payload).toMatchObject({ kind: 'review', action: 'changes_requested', reason: 'Thêm link RFC 793 nhé.', title: 'TCP vs UDP bằng hình' });
-    expect(told?.readAt).toBeNull();
-    const own = (await as('owner', () => fetchMyDocuments())).find((d) => d.id === SENT_BACK);
-    expect(own?.review).toMatchObject({ action: 'changes_requested', reason: 'Thêm link RFC 793 nhé.' });
-    expect(await as('admin', () => failure(decideReview(SENT_BACK, 'approved')))).toBe('not-pending');
-  });
-
-  it('approves: published as a community text, its reasons still hidden from other readers', async () => {
-    // Last changed long ago: approval starts its 180 days again (no stale notice right away).
-    await server.database.db.update(documents).set({ updatedAt: new Date('2025-01-01T00:00:00Z') }).where(eq(documents.id, SENT_BACK));
-    await as('owner', () => submitForReview(SENT_BACK));
-    const decided = await as('admin', () => decideReview(SENT_BACK, 'approved'));
-    expect(decided).toMatchObject({ status: 'approved', origin: 'community' });
-    expect((await as('other', () => fetchDocument(SENT_BACK))).document.status).toBe('approved');
-    const activity = await as('other', () => fetchHistory(SENT_BACK));
-    expect(JSON.stringify(activity)).not.toContain('RFC 793');
-    expect((await as('owner', () => fetchInbox({ kind: 'review' }))).notifications[0]?.payload).toMatchObject({ action: 'approved', reason: null });
-    expect(await runStaleCheck(server.database.db, clock.now)).toBe(0);
-  });
-
+describe('an admin’s hand on published texts', () => {
   it('hides and shows a published text, telling its author', async () => {
     const hidden = await as('admin', () => updatePublished(SENT_BACK, { hidden: true }));
     expect(hidden.hidden).toBe(true);
@@ -191,15 +163,29 @@ describe('an admin’s verdict', () => {
     await as('admin', () => updatePublished(SENT_BACK, { hidden: false, tags: [' tcp ', 'udp', 'tcp'] }));
     const shown = (await as('admin', () => fetchPublished({ q: 'TCP vs' }))).find((d) => d.id === SENT_BACK);
     expect(shown).toMatchObject({ hidden: false, tags: ['tcp', 'udp'] });
-    expect(await as('admin', () => failure(updatePublished(DRAFT, { hidden: true })))).toBe('not-approved');
+    expect(await as('admin', () => failure(updatePublished(REJECTED, { hidden: true })))).toBe('not-approved');
+  });
+
+  it('keeps an admin’s hide: the author unpublishing and publishing again does not show the text', async () => {
+    await as('admin', () => updatePublished(SENT_BACK, { hidden: true }));
+    await as('owner', () => keepPrivate(SENT_BACK));
+    expect(await as('owner', () => publishDocument(SENT_BACK))).toMatchObject({ status: 'approved', hidden: true });
+    expect(await as('guest', () => failure(fetchDocument(SENT_BACK)))).toBe('hidden');
+    expect(await as('other', () => failure(fetchDocument(SENT_BACK)))).toBe('hidden');
+    // Editing is the author's still; the text stays hidden.
+    const editable = await as('owner', () => fetchEditable(SENT_BACK));
+    await as('owner', () => saveDocument(SENT_BACK, { title: editable.title, body: `${editable.body}\n\nThêm một dòng.`, baseRev: editable.rev }));
+    expect((await as('owner', () => fetchMyDocuments())).find((d) => d.id === SENT_BACK)).toMatchObject({ status: 'approved', hidden: true });
+    await as('admin', () => updatePublished(SENT_BACK, { hidden: false }));
+    expect((await as('guest', () => fetchDocument(SENT_BACK))).document.status).toBe('approved');
   });
 
   it('changes nothing of a text that is not published, whatever the patch holds', async () => {
-    const before = await server.database.db.select().from(documents).where(eq(documents.id, DRAFT));
-    const versions = await server.database.db.select().from(documentVersions).where(eq(documentVersions.documentId, DRAFT));
-    expect(await as('admin', () => failure(updatePublished(DRAFT, { space: 'linux', title: 'Đổi tên', tags: ['x'], hidden: true })))).toBe('not-approved');
-    expect(await server.database.db.select().from(documents).where(eq(documents.id, DRAFT))).toEqual(before);
-    expect(await server.database.db.select().from(documentVersions).where(eq(documentVersions.documentId, DRAFT))).toHaveLength(versions.length);
+    const before = await server.database.db.select().from(documents).where(eq(documents.id, REJECTED));
+    const versions = await server.database.db.select().from(documentVersions).where(eq(documentVersions.documentId, REJECTED));
+    expect(await as('admin', () => failure(updatePublished(REJECTED, { space: 'linux', title: 'Đổi tên', tags: ['x'], hidden: true })))).toBe('not-approved');
+    expect(await server.database.db.select().from(documents).where(eq(documents.id, REJECTED))).toEqual(before);
+    expect(await server.database.db.select().from(documentVersions).where(eq(documentVersions.documentId, REJECTED))).toHaveLength(versions.length);
     // A published text with a Collection that does not exist: refused before its new title is written.
     expect(await as('admin', () => failure(updatePublished(SENT_BACK, { title: 'Tên mới', collection: '00000000-0000-4000-8000-000000000000' })))).toBe('unknown-collection');
     expect((await as('admin', () => fetchPublished({ q: 'TCP vs' }))).find((d) => d.id === SENT_BACK)?.title).toBe('TCP vs UDP bằng hình');
@@ -253,12 +239,5 @@ describe('the inbox', () => {
     const again = await runStaleCheck(db, clock.now);
     expect((await as('owner', () => fetchInbox({ kind: 'stale' }))).notifications).toHaveLength(stale.length);
     expect(again).toBe(0);
-  });
-});
-
-describe('Jev’s scores stay with the submission event', () => {
-  it('are recorded on the submitted event, never on the verdict', async () => {
-    const events = await server.database.db.select().from(reviewEvents).where(eq(reviewEvents.documentId, DRAFT));
-    expect(events.find((e) => e.action === 'submitted')?.jevScores).toMatchObject({ onTopic: 0.75 });
   });
 });

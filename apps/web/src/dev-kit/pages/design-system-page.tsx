@@ -482,7 +482,7 @@ export function DesignSystemPage(): ReactNode {
           <h2 className="ds-h2">Ô nhập và vòng focus</h2>
           <div className="ds-grid-2">
             <TextField label="Tên bộ sưu tập" defaultValue="Giao thức nền tảng" hint="Gợi ý: ngắn, dễ đoán" />
-            <TextField label="Tiêu đề" defaultValue="" error="Cần tiêu đề trước khi gửi duyệt" errorTone="warn" />
+            <TextField label="Tiêu đề" defaultValue="" error="Cần tiêu đề trước khi đăng" errorTone="warn" />
           </div>
           <div className="ds-grid-2">
             <div className="ds-focus-sample" data-theme-cell="dark">

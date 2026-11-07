@@ -186,26 +186,33 @@ function orbitAngle(x: number, y: number, geometry: SceneGeometry): number {
   return (angle + 2 * Math.PI) % (2 * Math.PI);
 }
 
+/** How many Spaces the scene has room for: one slot per Space kind, plus the extra slots. */
+export function sceneCapacity(geometry: SceneGeometry = DESKTOP_SCENE): number {
+  return Object.keys(geometry.slots).length + geometry.extraSlots.length;
+}
+
 /**
- * Gives each Space its slot (its kind's board slot, else the next extra slot) and orders them along the orbit,
- * clockwise from the top: the order of the keyboard (Tab) and of the screen reader. Spaces beyond the free slots are
- * left off the scene (the caller lists them elsewhere).
+ * Gives each Space its slot and orders them along the orbit, clockwise from the top: the order of the keyboard (Tab)
+ * and of the screen reader. A Space of a known kind takes its kind's board slot; the others (no kind, or a kind
+ * already placed) take the extra slots, then the slots of the kinds that are not on the scene. Spaces beyond
+ * `sceneCapacity` are left off (the Universe picks which ones show, and links to the list of all Spaces).
  */
 export function placeSpaces(spaces: readonly SceneSpace[], slots?: Record<SpaceKind, { x: number; y: number }>, geometry: SceneGeometry = DESKTOP_SCENE): PlacedSpace[] {
   const slotOf = slots ?? geometry.slots;
   const taken = new Set<SpaceKind>();
-  const extras = [...geometry.extraSlots];
-  const placed: PlacedSpace[] = [];
-  spaces.forEach((space, index) => {
-    let slot: { x: number; y: number } | undefined;
+  const own = new Map<SceneSpace, { x: number; y: number }>();
+  for (const space of spaces) {
     if (space.kind && !taken.has(space.kind)) {
       taken.add(space.kind);
-      slot = slotOf[space.kind];
-    } else {
-      slot = extras.shift();
+      own.set(space, slotOf[space.kind]);
     }
+  }
+  const free = [...geometry.extraSlots, ...FLOAT_ORDER.filter((kind) => !taken.has(kind)).map((kind) => slotOf[kind])];
+  const placed: PlacedSpace[] = [];
+  spaces.forEach((space, index) => {
+    const slot = own.get(space) ?? free.shift();
     if (!slot) return;
-    const order = space.kind ? FLOAT_ORDER.indexOf(space.kind) : FLOAT_ORDER.length + index;
+    const order = own.has(space) && space.kind ? FLOAT_ORDER.indexOf(space.kind) : FLOAT_ORDER.length + index;
     placed.push({ space, x: slot.x, y: slot.y, floatDelay: order * 0.7 });
   });
   return placed.sort((a, b) => orbitAngle(a.x, a.y, geometry) - orbitAngle(b.x, b.y, geometry));

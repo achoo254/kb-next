@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { EXTRA_SLOTS, SCENE_SLOTS, placeSpaces } from '../layout/universe-scene';
-import { sceneSpaces, spaceKindOf } from './universe-spaces';
+import { EXTRA_SLOTS, SCENE_SLOTS, placeSpaces, sceneCapacity } from '../layout/universe-scene';
+import { orbitSpaces, sceneSpaces, spaceKindOf } from './universe-spaces';
 import { BOARD_SPACES, space } from './universe-test-data';
 
 describe('spaceKindOf', () => {
@@ -36,5 +36,44 @@ describe('placeSpaces', () => {
     expect(placed.find((entry) => entry.space.key === 'security')).toMatchObject(EXTRA_SLOTS[0] ?? {});
     expect(placed).toHaveLength(BOARD_SPACES.length + 1 + EXTRA_SLOTS.length);
     expect(placed.some((entry) => entry.space.key === 'more')).toBe(false);
+  });
+});
+
+describe('orbitSpaces', () => {
+  const at = (day: number): string => `2026-11-${String(day).padStart(2, '0')}T10:00:00Z`;
+
+  it('keeps every Space while the orbit has room', () => {
+    expect(orbitSpaces(BOARD_SPACES, sceneCapacity())).toEqual(BOARD_SPACES);
+  });
+
+  it('keeps the reader’s own Space, then the ones with the newest texts, in the API’s order', () => {
+    const spaces = [
+      space('a', { updatedAt: at(1) }),
+      space('b', { updatedAt: null }),
+      space('personal-u1', { kind: 'personal', updatedAt: at(1) }),
+      space('c', { updatedAt: at(7) }),
+      space('d', { updatedAt: at(5) }),
+    ];
+    expect(orbitSpaces(spaces, 3).map((s) => s.slug)).toEqual(['personal-u1', 'c', 'd']);
+    expect(orbitSpaces(spaces, 4).map((s) => s.slug)).toEqual(['a', 'personal-u1', 'c', 'd']);
+  });
+});
+
+describe('placeSpaces with Spaces of no known kind', () => {
+  it('puts them on the extra slots, then on the slots of kinds that are not on the scene', () => {
+    const spaces = sceneSpaces([space('networking'), space('ky-nang', { art: '/art/orb-universe.webp' }), space('doi-song', { art: '/art/orb-universe.webp' })], 'vi');
+    const placed = placeSpaces(spaces);
+    expect(placed).toHaveLength(3);
+    const where = new Map(placed.map((p) => [p.space.key, { x: p.x, y: p.y }]));
+    expect(where.get('networking')).toEqual(SCENE_SLOTS.networking);
+    expect(where.get('ky-nang')).toEqual(EXTRA_SLOTS[0]);
+    expect(where.get('doi-song')).toEqual(SCENE_SLOTS.kubernetes);
+  });
+
+  it('fills the whole scene, one Space per slot, when there are as many Spaces as slots', () => {
+    const many = Array.from({ length: sceneCapacity() + 2 }, (_, i) => space(`topic-${i}`, { art: '/art/orb-universe.webp' }));
+    const placed = placeSpaces(sceneSpaces(many, 'vi'));
+    expect(placed).toHaveLength(sceneCapacity());
+    expect(new Set(placed.map((p) => `${p.x},${p.y}`)).size).toBe(sceneCapacity());
   });
 });

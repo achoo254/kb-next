@@ -327,7 +327,7 @@ describe('ReaderScreen', () => {
       () => answer(200, { open: false, comments: [] }),
     );
     renderWithI18n(<ReaderScreen id="dhcp" />);
-    expect(await screen.findByText('Comments open once the document is approved.')).toBeTruthy();
+    expect(await screen.findByText('Comments open once the document is published.')).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Write a comment' })).toBeNull();
   });
 

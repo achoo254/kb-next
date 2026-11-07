@@ -42,6 +42,7 @@ export function sitemapRoutes({ config, db }: { config: ServerConfig; db: Db }):
       const entries: SitemapEntry[] = [
         { path: '/' },
         { path: '/u' },
+        { path: '/spaces' },
         ...spaces.map((space) => ({ path: `/s/${encodeURIComponent(space.slug)}` })),
         ...texts.map((text) => ({ path: `/d/${text.id}`, lastmod: text.updatedAt })),
         { path: '/privacy' },

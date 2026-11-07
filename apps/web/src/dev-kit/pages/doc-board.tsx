@@ -19,7 +19,7 @@ export const BOARD_ROUTES: Readonly<Record<string, string>> = {
   C20: '/inbox',
   H03: '/settings',
   F03: '/settings/keys',
-  A01: '/admin',
+  A02: '/admin',
 };
 
 /** A board code's screen as a link when it has a route, else as plain text with the same look. */

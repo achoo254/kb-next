@@ -7,10 +7,12 @@ import type { Locale } from '../i18n/i18n';
 import type { ContentOrigin } from '../ui/origin-tag';
 import type { ScreenTranslate, SpaceMessageKey } from './space-messages';
 
-/** The origin label (plan rule 6): "Chờ duyệt" while in review, else where it comes from. */
+/**
+ * The origin label (plan rule 6): where it comes from; a text that is not published reads as private (texts left
+ * waiting from the review gate, removed 07/11/2026, included).
+ */
 export function originOf(doc: Pick<DocumentSummary, 'origin' | 'status'>): ContentOrigin {
-  if (doc.status === 'pending') return 'pending';
-  if (doc.origin === 'own') return 'private';
+  if (doc.status !== 'approved' || doc.origin === 'own') return 'private';
   return doc.origin;
 }
 

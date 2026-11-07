@@ -131,22 +131,23 @@ describe('GET /api/spaces/:slug', () => {
   it('lists the members of C10 from real data, and what the viewer may do', async () => {
     const { body } = await get<SpaceDetailResponse>('/api/spaces/networking', owner);
     const byName = (name: string) => body.members.find((m) => m.name === name);
-    // Authors of published documents, with the reviewers and admins (ADMIN_SUBS) even when they wrote nothing here.
+    // Authors of published documents, with the admins (ADMIN_SUBS) even when they wrote nothing here.
     expect(byName('Đạt')).toEqual({ name: 'Đạt', picture: null, role: 'member', documentCount: 7 });
     expect(byName('Minh')).toMatchObject({ role: 'member', documentCount: 1 });
     expect(byName('An')).toMatchObject({ role: 'member', documentCount: 1 });
-    expect(byName('Linh')).toMatchObject({ role: 'reviewer', documentCount: 0 });
+    // Linh wrote nothing here and is no admin: not listed.
+    expect(byName('Linh')).toBeUndefined();
     // Same role and count: who contributed first comes first (Minh's note predates An's).
     expect(body.members.map((m) => m.name).filter((name) => name === 'Minh' || name === 'An')).toEqual(['Minh', 'An']);
     expect(body.members[0]?.role).toBe('admin');
-    expect(body.members.map((m) => m.role)).toEqual([...body.members.map((m) => m.role)].sort((a, b) => ['owner', 'admin', 'reviewer', 'member'].indexOf(a) - ['owner', 'admin', 'reviewer', 'member'].indexOf(b)));
-    expect(body.permissions).toEqual({ canCreate: true, canReview: false, canAdmin: false });
-    expect((await get<SpaceDetailResponse>('/api/spaces/networking', admin)).body.permissions).toEqual({ canCreate: true, canReview: true, canAdmin: true });
-    expect((await get<SpaceDetailResponse>('/api/spaces/networking')).body.permissions).toEqual({ canCreate: false, canReview: false, canAdmin: false });
+    expect(body.members.map((m) => m.role)).toEqual([...body.members.map((m) => m.role)].sort((a, b) => ['owner', 'admin', 'member'].indexOf(a) - ['owner', 'admin', 'member'].indexOf(b)));
+    expect(body.permissions).toEqual({ canCreate: true, canAdmin: false });
+    expect((await get<SpaceDetailResponse>('/api/spaces/networking', admin)).body.permissions).toEqual({ canCreate: true, canAdmin: true });
+    expect((await get<SpaceDetailResponse>('/api/spaces/networking')).body.permissions).toEqual({ canCreate: false, canAdmin: false });
 
     const personal = await get<SpaceDetailResponse>(`/api/spaces/personal-${ownerId}`, owner);
     expect(personal.body.members).toEqual([{ name: null, picture: null, role: 'owner', documentCount: 0 }]);
-    expect(personal.body.permissions).toEqual({ canCreate: true, canReview: false, canAdmin: true });
+    expect(personal.body.permissions).toEqual({ canCreate: true, canAdmin: true });
   });
 
   it('gives each text in the reader’s language', async () => {

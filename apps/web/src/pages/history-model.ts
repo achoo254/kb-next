@@ -48,7 +48,7 @@ export function whoText(t: T, event: HistoryEvent): string {
   return t('history.who', { name, role });
 }
 
-export type AvatarTone = 'ai' | 'admin' | 'reviewer' | 'member';
+export type AvatarTone = 'ai' | 'admin' | 'member';
 
 /** The round avatar: "AI" for text written by AI, else the first letter, coloured by role. */
 export function avatarOf(event: HistoryEvent): { letters: string; tone: AvatarTone } {

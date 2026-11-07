@@ -120,7 +120,7 @@ export interface ServerConfig {
   uploadLimitPerMinute: number;
   /** Extraction retries per minute per account: each is a new run through the shared Tika. */
   retryLimitPerMinute: number;
-  /** Sendings for review per 10 minutes per account: each costs a Jev call and tells every admin. */
+  /** Publications per 10 minutes per account (C04 "Đăng công khai"). */
   submitLimitPer10Min: number;
   /** Share-link openings (and the share pages) a minute from one address; a guest has no account to count by. */
   shareOpenLimitPerMinute: number;

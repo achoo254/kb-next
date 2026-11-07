@@ -7,7 +7,7 @@
  *   own personal one; default: their personal Space, made on first use) and `collection` (one of that Space).
  *   400 `invalid-body` / `unknown-collection`, 404 `not-found` / 403 `no-access` for the Space.
  * - GET /api/documents/:id/edit → EditableDocument. 404 `not-found`, 403 `hidden` / `no-access` (not theirs),
- *   403 `locked` (waiting for review or published: changes go through review), 409 `not-editable` (a stored file),
+ *   409 `not-editable` (a stored file),
  *   409 `journey` (a journey: its steps are edited at /journey/:id/edit, src/api/journey-routes.ts).
  * - PUT /api/documents/:id `{title, body, planet?, baseRev, aiMade?}` → SaveResponse; 409 `{error: 'stale', rev}` when
  *   another save landed since `baseRev` (the copy the writer started from), same 403/404/409 as above. `aiMade`: the
@@ -155,7 +155,7 @@ function asUser(viewer: Viewer): UserViewer {
 }
 
 /** The HTTP answer of an editor access that is not `ok`. */
-export function refuse(access: Exclude<EditAccess, { kind: 'ok' }> | { kind: 'not-found' | 'no-access' | 'locked' | 'not-editable' }): never {
+export function refuse(access: Exclude<EditAccess, { kind: 'ok' }> | { kind: 'not-found' | 'no-access' | 'not-editable' }): never {
   switch (access.kind) {
     case 'not-found':
       throw new HttpError(404, 'not-found');
@@ -163,8 +163,6 @@ export function refuse(access: Exclude<EditAccess, { kind: 'ok' }> | { kind: 'no
       throw new HttpError(403, 'hidden');
     case 'no-access':
       throw new HttpError(403, 'no-access');
-    case 'locked':
-      throw new HttpError(403, 'locked');
     case 'not-editable':
       throw new HttpError(409, 'not-editable');
     case 'journey':
@@ -274,7 +272,7 @@ export function authoringRoutes({ config, db, now, sync }: AuthoringRoutesOption
     const viewer = await reader(req);
     const access = await editAccess(db, viewer, idOf(req));
     // Only the editor asks; a reader has the links in GET /api/documents/:id.
-    if (access.kind !== 'ok' && access.kind !== 'locked') refuse(access);
+    if (access.kind !== 'ok') refuse(access);
     const { backlinks, outgoing } = await linkedDocumentIds(db, viewer, idOf(req));
     const docs = new Map((await findDocumentsByIds(db, viewer, [...backlinks, ...outgoing])).map((d) => [d.id, d]));
     const summaries = new Map((await summarizeEach(db, viewer, [...docs.values()])).map((s) => [s.id, s]));

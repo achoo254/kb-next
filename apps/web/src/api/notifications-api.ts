@@ -20,7 +20,7 @@ export const NotificationPayloadSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('review'),
     title: z.string(),
-    /** `submitted`: a text waiting for review (to admins); the others are the author's result. */
+    /** Left from the review gate (removed 07/11/2026; no new ones): `submitted` told admins of a text waiting, the others told its author the result. */
     action: z.enum(['submitted', 'approved', 'changes_requested', 'rejected']),
     reason: z.nullable(z.string()),
     by: z.nullable(z.string()),

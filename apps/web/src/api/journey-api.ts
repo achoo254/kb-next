@@ -3,8 +3,7 @@
  * autosave, the account's ticks, Jev's next steps and the documents to pick from.
  *
  * Errors (ApiError.code): `not-found` (404, also a document that is not a journey), `hidden` / `no-access` (403),
- * `locked` (403: waiting for review or published, the builder cannot change it), `stale` (409: a newer save of this
- * journey, from another tab), `unknown-document` / `invalid-body` (400), `jev-off` (503), `jev-failed` (502),
+ * `stale` (409: a newer save of this journey, from another tab), `unknown-document` / `invalid-body` (400), `jev-off` (503), `jev-failed` (502),
  * `rate-limited` (429), `network` offline.
  */
 import * as z from 'zod/mini';

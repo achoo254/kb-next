@@ -1,18 +1,21 @@
 /**
- * The panels of board C06, shared by the screen (one submission as it goes) and its board page (every state side by
- * side): the steps with their progress, the sent card (`ill-comet-sent`), what to fix when it could not go, and a
- * card of the review's result.
+ * The panels of board C06, shared by the screen (one publication as it goes) and its board page (every state side by
+ * side): the steps with their progress, the published card (`ill-comet-sent`), and what to fix when it could not be
+ * published.
  */
 import type { ReactNode } from 'react';
-import type { SubmitResponse } from '../api/review-api';
-import { CRYSTAL_ART, ILLUSTRATIONS } from '../ui/art';
+import type { PublishResponse } from '../api/review-api';
+import { ILLUSTRATIONS } from '../ui/art';
 import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
 import { SHELL_PATHS } from '../layout/shell-paths';
 import { type SubmitError, canRetry, useSubmitText } from './submit-messages';
 
-/** Where a submission is: loading what was sent, sending, sent (with the queue's answer), or not sent. */
-export type SubmitPhase = { kind: 'checking' } | { kind: 'sending' } | { kind: 'sent'; result: SubmitResponse | null } | { kind: 'failed'; error: SubmitError };
+/**
+ * Where a publication is: reading the text's status, publishing, published (with the server's answer; null when the
+ * text was published already), or not published.
+ */
+export type SubmitPhase = { kind: 'checking' } | { kind: 'sending' } | { kind: 'sent'; result: PublishResponse | null } | { kind: 'failed'; error: SubmitError };
 
 export type StepState = 'done' | 'run' | 'wait' | 'failed';
 
@@ -22,7 +25,7 @@ export interface SubmitStep {
   state: StepState;
 }
 
-/** A: the four steps and how far along they are (0–100). */
+/** A: the three steps and how far along they are (0–100). */
 export function SubmitSteps({ steps, percent }: { steps: readonly SubmitStep[]; percent: number }): ReactNode {
   const { t } = useSubmitText();
   return (
@@ -52,36 +55,53 @@ export function SubmitSteps({ steps, percent }: { steps: readonly SubmitStep[]; 
   );
 }
 
-/**
- * B: sent, waiting for an admin; no share link until then. `translate`: C04 asked for an AI translation, offered here
- * in place of "Viết bài khác" (it runs on the author's own key, F04).
- */
-export function SubmitSent({ translate }: { translate?: { href: string; lang: string } } = {}): ReactNode {
+interface SubmitSentProps {
+  documentId: string;
+  /** An admin hid it earlier: published, but off the Universe (and without a share link) until an admin shows it. */
+  hidden?: boolean;
+  /** C04 asked for an AI translation, offered here in place of "Viết bài khác" (it runs on the author's own key, F04). */
+  translate?: { href: string; lang: string };
+}
+
+/** B: published, readable by everyone at once (unless an admin hides it), with the ways on from here. */
+export function SubmitSent({ documentId, hidden = false, translate }: SubmitSentProps): ReactNode {
   const { t } = useSubmitText();
+  const doc = `/d/${encodeURIComponent(documentId)}`;
   return (
-    <section aria-label={t('submit.sent')} className="submit-panel submit-sent" data-id="submit-sent">
+    <section aria-label={t('submit.sent')} className="submit-panel submit-sent" data-id="submit-sent" data-hidden={hidden || undefined}>
       <span className="submit-kicker submit-kicker-start">{t('submit.sent.head')}</span>
       <div className="submit-comet" aria-hidden="true">
         <span className="submit-comet-ring" />
         <img src={ILLUSTRATIONS['comet-sent']} alt="" />
       </div>
       <h2 className="submit-sent-title">{t('submit.sent.title')}</h2>
-      <span className="submit-sent-text">{t('submit.sent.text')}</span>
-      <span className="submit-sent-chip">{t('submit.sent.noLink')}</span>
+      <span className="submit-sent-text">{t(hidden ? 'submit.sent.hiddenText' : 'submit.sent.text')}</span>
+      <span className="submit-sent-chip" data-tone={hidden ? undefined : 'ok'}>
+        {t(hidden ? 'submit.sent.hidden' : 'submit.sent.public')}
+      </span>
       <div className="submit-actions">
-        <Button variant="rim" size="lg" href={SHELL_PATHS.mine} className="submit-action" dataId="submit-to-mine">
-          {t('submit.sent.mine')}
+        <Button variant="rim" size="lg" href={doc} className="submit-action" dataId="submit-to-doc">
+          {t('submit.sent.view')}
         </Button>
-        {translate ? (
-          <Button variant="ghost" size="lg" href={translate.href} className="submit-action" dataId="submit-translate">
-            {t('submit.sent.translate', { lang: translate.lang })}
+        {hidden ? (
+          <Button variant="ghost" size="lg" href={SHELL_PATHS.mine} className="submit-action" dataId="submit-to-mine">
+            {t('submit.sent.mine')}
           </Button>
         ) : (
-          <Button variant="ghost" size="lg" href={SHELL_PATHS.newNote} className="submit-action">
-            {t('submit.sent.write')}
+          <Button variant="ghost" size="lg" href={`${doc}/share`} className="submit-action" dataId="submit-share">
+            {t('submit.sent.share')}
           </Button>
         )}
       </div>
+      {translate ? (
+        <a href={translate.href} className="submit-sent-more" data-id="submit-translate">
+          {t('submit.sent.translate', { lang: translate.lang })}
+        </a>
+      ) : (
+        <a href={SHELL_PATHS.newNote} className="submit-sent-more">
+          {t('submit.sent.write')}
+        </a>
+      )}
     </section>
   );
 }
@@ -141,42 +161,5 @@ export function SubmitFix({ error, documentId, onRetry, retrying = false, choice
         </div>
       </div>
     </section>
-  );
-}
-
-export interface ReviewNotice {
-  /** `approved`: published; `changes` / `rejected`: sent back with a reason. */
-  kind: 'approved' | 'changes' | 'rejected';
-  kicker: string;
-  title: string;
-  line: string;
-  action: { label: string; href: string };
-}
-
-/** A review result as a card under the panels (C06 "Thông báo · sau đó"). */
-export function ReviewNoticeCard({ notice }: { notice: ReviewNotice }): ReactNode {
-  const approved = notice.kind === 'approved';
-  return (
-    <div className="submit-notice" data-kind={notice.kind} data-id={`submit-notice-${notice.kind}`}>
-      {approved ? (
-        <span className="submit-notice-orbit" aria-hidden="true">
-          <svg width="96" height="96" viewBox="0 0 96 96" className="submit-notice-ellipse">
-            <ellipse cx="48" cy="54" rx="46" ry="15" fill="none" strokeWidth="1.2" />
-          </svg>
-          <img src={CRYSTAL_ART.personal} alt="" className="submit-notice-crystal" />
-          <span className="submit-notice-moon" />
-        </span>
-      ) : (
-        <img src={ILLUSTRATIONS['crystal-cracked']} alt="" aria-hidden="true" className="submit-notice-cracked" />
-      )}
-      <div className="submit-notice-text">
-        <span className="submit-notice-kicker">{notice.kicker}</span>
-        <span className="submit-notice-title">{notice.title}</span>
-        <span className="submit-notice-line">{notice.line}</span>
-      </div>
-      <Button variant={approved ? 'rim' : 'ghost'} size="lg" href={notice.action.href} className="submit-action submit-notice-action">
-        {notice.action.label}
-      </Button>
-    </div>
   );
 }

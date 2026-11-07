@@ -19,8 +19,8 @@ export interface ScreenRoute {
 const segment = '([A-Za-z0-9_-]+)';
 
 /**
- * The app's screens. Reading is open to everyone: the Universe (C09), a Space (C10), a text (C11), search (C12) and
- * the graph (C13). The landing page (S01), the sign-in page (S02), a share link (H02), the privacy and terms pages and
+ * The app's screens. Reading is open to everyone: the Universe (C09), the list of all Spaces (no board), a Space
+ * (C10), a text (C11), search (C12) and the graph (C13). The landing page (S01), the sign-in page (S02), a share link (H02), the privacy and terms pages and
  * the error page (X02, any unknown path) are public pages. Everything else needs a signed-in account.
  */
 export const ROUTES: readonly ScreenRoute[] = [
@@ -31,6 +31,7 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'Privacy', titleKey: 'screen.Privacy', access: 'public', pattern: /^\/privacy$/ },
   { code: 'Terms', titleKey: 'screen.Terms', access: 'public', pattern: /^\/terms$/ },
   { code: 'C09', titleKey: 'screen.C09', access: 'open', pattern: /^\/u$/ },
+  { code: 'Spaces', titleKey: 'screen.Spaces', access: 'open', pattern: /^\/spaces$/ },
   { code: 'C10', titleKey: 'screen.C10', access: 'open', pattern: new RegExp(`^/s/${segment}$`) },
   { code: 'C11', titleKey: 'screen.C11', access: 'open', pattern: new RegExp(`^/d/${segment}$`) },
   // The editor of a document, and /new, which creates a note and opens it there.
@@ -38,8 +39,8 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: /^\/new$/ },
   { code: 'C17', titleKey: 'screen.C17', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/history$`) },
   { code: 'F04', titleKey: 'screen.F04', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/translate$`) },
-  // Publishing a text (C04: who sees it, where it goes, then "Gửi duyệt"), previewing it (C05), sending it for review
-  // (C06: the steps, then sent or what to fix; visiting it never sends), and its share link (C18).
+  // Publishing a text (C04: who sees it, where it goes, then "Đăng công khai"), previewing it (C05), publishing it
+  // (C06: the steps, then published or what to fix; visiting it never publishes), and its share link (C18).
   { code: 'C04', titleKey: 'screen.C04', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/publish$`) },
   { code: 'C05', titleKey: 'screen.C05', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/preview$`) },
   { code: 'C06', titleKey: 'screen.C06', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/submit$`) },
@@ -66,12 +67,11 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'F03', titleKey: 'screen.F03', access: 'signed-in', pattern: /^\/settings\/keys$/ },
   // An invite link (C19 "Mời bằng link"): signed in through the IdP first, then accepted here.
   { code: 'Invite', titleKey: 'screen.Invite', access: 'signed-in', pattern: new RegExp(`^/i/${segment}$`) },
-  // The admin station (admins only; others get X02 403): workspace settings, published texts, the API and its tokens;
-  // the review queue (admins and reviewers).
+  // The admin station (admins only; others get X02 403): workspace settings, published texts (also the station's
+  // entry, /admin), the API and its tokens.
   { code: 'C19', titleKey: 'screen.C19', access: 'signed-in', pattern: /^\/admin\/settings$/ },
-  { code: 'A02', titleKey: 'screen.A02', access: 'signed-in', pattern: /^\/admin\/content$/ },
+  { code: 'A02', titleKey: 'screen.A02', access: 'signed-in', pattern: /^\/admin(\/content)?$/ },
   { code: 'A03', titleKey: 'screen.A03', access: 'signed-in', pattern: /^\/admin\/api$/ },
-  { code: 'A01', titleKey: 'screen.A01', access: 'signed-in', pattern: /^\/admin(\/[A-Za-z0-9_/-]*)?$/ },
 ];
 
 /** The error page: any path no screen claims. */

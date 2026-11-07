@@ -60,6 +60,8 @@ const SLUG = /^[a-z0-9][a-z0-9-]{0,119}$/;
 
 export interface SpaceListItem extends SpaceCard {
   collections: CollectionBrief[];
+  /** When the Space's latest readable text changed (ISO); null when it has none. The Universe puts the liveliest first. */
+  updatedAt: string | null;
 }
 
 /** A related Space or document with how related it is, 0–100 (src/api/relevance.ts). */
@@ -211,6 +213,7 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
     const items: SpaceListItem[] = cards.map((card, i) => ({
       ...card,
       collections: collections.filter((c) => c.spaceId === spaces[i]?.id).map(collectionBrief),
+      updatedAt: spaces[i]?.latestAt?.toISOString() ?? null,
     }));
     res.set('Cache-Control', 'no-store').json({ spaces: items });
   });

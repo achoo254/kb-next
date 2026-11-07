@@ -7,7 +7,7 @@
  * - A link may expire (7 or 30 days) and be revoked; while it runs its owner may change its expiry (counted from the
  *   change) and what a signed-in recipient may do besides reading (`view`, or `remix`: copy it into their own drafts).
  *   An expired or revoked link stays off: sharing again means a new link.
- * - A text leaving the published state (sent back, rejected, withdrawn, kept private, trashed) revokes all its links
+ * - A text leaving the published state (kept private by its author, trashed) revokes all its links
  *   (`revokeAllLinks`, called by each of those steps); deleting it for good deletes them. An admin's hide does not:
  *   while hidden, its links answer `private`, and they work again once it is shown.
  * - Opening a link: a wrong token is `not-found`; a revoked or expired one is `off`; a hidden text is `private` to

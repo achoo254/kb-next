@@ -14,7 +14,7 @@ function detailOf(slug: string, documents: SpaceDetail['uncollected']): SpaceDet
   return {
     space: { ...base, descriptionVi: `Mô tả ${slug}`, descriptionEn: `About ${slug}` },
     members: [],
-    permissions: { canCreate: false, canReview: false, canAdmin: false },
+    permissions: { canCreate: false, canAdmin: false },
     collections: [],
     uncollected: documents,
     related: [],
@@ -42,12 +42,12 @@ describe('placePhonePlanets', () => {
 });
 
 describe('tallySpace', () => {
-  it('counts the texts by origin, pending ones apart', () => {
+  it('counts the texts by origin, the unpublished ones (left from review too) as the reader’s own', () => {
     const tally = tallySpace({
       collections: [],
       uncollected: [doc('a'), doc('b'), doc('c', { origin: 'community' }), doc('d', { origin: 'own', status: 'private' }), doc('e', { origin: 'community', status: 'pending' })],
     });
-    expect(tally).toMatchObject({ official: 2, community: 1, own: 1, pending: 1 });
+    expect(tally).toEqual(expect.objectContaining({ official: 2, community: 1, own: 2 }));
     expect(tally.documents).toHaveLength(5);
   });
 });

@@ -216,7 +216,7 @@ function OfflineVis(): ReactNode {
 
 function AccessDeniedVis(): ReactNode {
   return (
-    <CompactEmpty art="vault-lock" text={'Bài này chưa được duyệt\nhoặc là bài riêng tư'}>
+    <CompactEmpty art="vault-lock" text={'Bài này chưa đăng\nhoặc là bài riêng tư'}>
       <Button variant="outline" size="sm">
         Về vũ trụ
       </Button>
@@ -285,7 +285,7 @@ function PublishResultVis(): ReactNode {
     <>
       <span className="x03-row">
         <Badge variant="pill" tone="success">
-          Đã gửi duyệt
+          Đã đăng
         </Badge>
         <Badge variant="pill" tone="warn">
           Chưa gửi được
@@ -309,7 +309,7 @@ function PermissionChangedVis(): ReactNode {
         </span>
         <div>
           <div className="x03-notice-title">Quyền của bạn vừa đổi</div>
-          <div className="x03-notice-text">Đạt cho bạn vai trò Người duyệt. Tải lại để thấy Hàng duyệt.</div>
+          <div className="x03-notice-text">Đạt cho bạn vai trò Quản trị. Tải lại để thấy trạm quản trị.</div>
         </div>
       </div>
       <span className="x03-actions">
@@ -369,7 +369,7 @@ function CitationMissingVis(): ReactNode {
 const RETRY_STEPS = [
   { title: 'Gửi bài thất bại', badge: 'Lần 3/3', body: 'Đã thử lại tự động 3 lần. Bản nháp vẫn an toàn trên máy.', value: 100, button: 'Thử lại ngay', tone: 'warn' },
   { title: 'Đang thử lại…', badge: 'Đang chạy', body: 'Gửi lại phần còn thiếu, không gửi lại từ đầu.', value: 60, button: 'Đang thử…', tone: 'busy' },
-  { title: 'Đã khôi phục', badge: 'Xong', body: 'Bài đã vào hàng duyệt. Không mất gì.', value: 100, button: 'Xem bài', tone: 'success' },
+  { title: 'Đã khôi phục', badge: 'Xong', body: 'Bài đã được đăng. Không mất gì.', value: 100, button: 'Xem bài', tone: 'success' },
 ] as const;
 
 const RETRY_BADGE = {

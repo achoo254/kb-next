@@ -28,7 +28,8 @@ const createdAt = () => timestamp('created_at', { withTimezone: true }).notNull(
 export const uiLang = pgEnum('ui_lang', ['vi', 'en']);
 export const uiTheme = pgEnum('ui_theme', ['dark', 'light', 'system']);
 /**
- * The workspace role an admin grants (C19): `member` reads and writes, `reviewer` also decides the review queue (A01),
+ * The workspace role an admin grants (C19): `member` reads, writes and publishes their own texts; `reviewer` is left
+ * from the review gate (removed 07/11/2026) and acts as a member (src/access/roles.ts);
  * `admin` runs the workspace. The IdP subs in ADMIN_SUBS are admins whatever their row says (bootstrap admins: no
  * one demotes them from the app); src/access/roles.ts is the one place that resolves an account's role.
  */
@@ -164,9 +165,13 @@ export const collections = pgTable(
 );
 
 export const documentType = pgEnum('document_type', ['lab', 'note', 'process', 'office', 'web', 'journey']);
-/** `official`: published by the KnowFlow team, AI-made or not ("Chính thức"); `community`: by a member, reviewed;
+/** `official`: published by the KnowFlow team, AI-made or not ("Chính thức"); `community`: published by a member;
  * `own`: the author's own. Whether a text is an AI translation is `aiTranslated`, not an origin. */
 export const documentOrigin = pgEnum('document_origin', ['official', 'community', 'own']);
+/**
+ * `approved` is published (its author's choice, or the admin API); `pending`, `changes_requested` and `rejected` are
+ * left from the review gate (removed 07/11/2026): no longer reached, they read as private (src/access/review.ts).
+ */
 export const documentStatus = pgEnum('document_status', ['draft', 'private', 'pending', 'changes_requested', 'rejected', 'approved']);
 export const DOCUMENT_STATUSES = documentStatus.enumValues;
 
@@ -320,7 +325,7 @@ export const links = pgTable(
 export const reviewAction = pgEnum('review_action', ['submitted', 'approved', 'changes_requested', 'rejected']);
 
 /**
- * Jev's pre-review of a submitted text (A01), each 0–1, for admins only and never a verdict: `onTopic` (fits its
+ * Jev's pre-review of a submitted text (review gate, removed 07/11/2026; old rows only), each 0–1, never a verdict: `onTopic` (fits its
  * Space), `hasSources` (cites or links where it comes from), `duplicate` (repeats `duplicateOf`, the closest existing
  * text among the search's top candidates), `inappropriate` (language unfit to publish). A judgment Jev could not make
  * is left out; no Jev (off or failing) leaves the whole record null.
@@ -333,7 +338,7 @@ export interface JevPreReview {
   inappropriate?: number;
 }
 
-/** The review trail of a document; `jevScores` are the pre-review scores shown to admins (A01), never a verdict. */
+/** The review trail of a document from the review gate (removed 07/11/2026): kept for history (C17), no new rows. */
 export const reviewEvents = pgTable(
   'review_events',
   {
@@ -427,8 +432,8 @@ export const favorites = pgTable(
 );
 
 /**
- * The kinds of notification (C20): `mention` and `comment` on a text, `review` (a result: approved, changes
- * requested, rejected; its payload says which and why), `stale` (an approved text of the account unchanged for 180
+ * The kinds of notification (C20): `mention` and `comment` on a text, `review` (left from the review gate, removed
+ * 07/11/2026: a result, or a text waiting; no new ones), `stale` (an approved text of the account unchanged for 180
  * days), `permission` (an admin hid or showed a text of the account).
  */
 export const NOTIFICATION_KINDS = ['mention', 'comment', 'review', 'stale', 'permission'] as const;
@@ -703,7 +708,7 @@ export const auditLog = pgTable(
   (table) => [index('audit_log_created_at_idx').on(table.createdAt), index('audit_log_actor_id_idx').on(table.actorId)],
 );
 
-/** The role an invite link grants: never `admin` (an admin is made by another admin, in C19). */
+/** The role an invite link grants: never `admin`; `reviewer` is left from the review gate and reads as `member`. */
 export const inviteRole = pgEnum('invite_role', ['member', 'reviewer']);
 
 /**

@@ -1,6 +1,6 @@
 /**
- * "Vũ trụ của tôi" of C08: the account's texts as planets on three rings (being written, in review, published; refused
- * ones in a box), or as a list; the panel of the picked planet; and the empty own universe (S05's three ways to start).
+ * "Vũ trụ của tôi" of C08: the account's texts as planets on three rings (being written, private, published), or as a
+ * list; the panel of the picked planet; and the empty own universe (S05's three ways to start).
  */
 import type { ReactNode } from 'react';
 import type { Locale } from '../i18n/i18n';
@@ -9,7 +9,6 @@ import { CRYSTAL_ART, ILLUSTRATIONS } from '../ui/art';
 import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
 import { StageCards } from '../ui/stage-cards';
-import { Tooltip } from '../ui/tooltip';
 import { type ItemStatus, type MineItem, ORBIT_CENTRE, RINGS, ago, orbitLayout } from './mine-model';
 import { type MineMessageKey, useMineText } from './mine-messages';
 import type { ScreenTranslate } from './space-messages';
@@ -50,7 +49,7 @@ interface PlanetsProps {
   centre: 'crystal' | 'first';
 }
 
-const RING_LABEL: Record<1 | 2 | 3, MineMessageKey> = { 1: 'mine.ring.writing', 2: 'mine.ring.review', 3: 'mine.ring.public' };
+const RING_LABEL: Record<1 | 2 | 3, MineMessageKey> = { 1: 'mine.ring.writing', 2: 'mine.ring.private', 3: 'mine.ring.public' };
 
 /** The orbits (board default view). */
 export function OrbitView({ items, selected, onPick, centre }: PlanetsProps): ReactNode {
@@ -81,9 +80,6 @@ export function OrbitView({ items, selected, onPick, centre }: PlanetsProps): Re
           <span>{t('mine.first')}</span>
         </a>
       )}
-      <div className="mine-refused" aria-hidden="true">
-        <span>{t('mine.refused')}</span>
-      </div>
       {orbitLayout(items).map(({ item, x, y, size }) => {
         const status = statusLabel(t, item);
         return (
@@ -171,52 +167,35 @@ interface DetailProps {
   now: number;
   onStar(item: MineItem): void;
   onTrash(item: MineItem): void;
-  /** "Rút lại": takes a text out of the review queue. */
-  onWithdraw(item: MineItem): void;
+  /** "Gỡ xuống": takes a published text down, back to private. */
+  onUnpublish(item: MineItem): void;
 }
 
-type Action = { kind: 'link'; label: MineMessageKey; href: string } | { kind: 'withdraw'; label: MineMessageKey } | { kind: 'later'; label: MineMessageKey };
+type Action = { kind: 'link'; label: MineMessageKey; href: string } | { kind: 'unpublish'; label: MineMessageKey };
 
 /**
- * What can be done with a text at each step (the board's buttons): sending it for review opens C04 (where it goes,
- * then C06), taking it back happens here, sharing a published text opens C18; unpublishing is still to come.
+ * What can be done with a text at each step (the board's buttons): the author edits it whatever its status,
+ * publishing opens C04 (where it goes, then C06), sharing a published text opens C18, and taking it down happens here.
  */
 export function actionsOf(item: MineItem): Action[] {
   if (item.kind === 'canvas') return [{ kind: 'link', label: 'mine.action.open', href: item.href }];
-  const edit = item.docType === 'office' ? item.href : `${item.href}/edit`;
-  const editLabel: MineMessageKey = item.docType === 'office' ? 'mine.action.open' : 'mine.action.edit';
+  const edit: Action = item.docType === 'office' ? { kind: 'link', label: 'mine.action.open', href: item.href } : { kind: 'link', label: 'mine.action.edit', href: `${item.href}/edit` };
+  const unpublish: Action = { kind: 'unpublish', label: 'mine.action.unpublish' };
   switch (item.status) {
     case 'draft':
     case 'private':
-      return [
-        { kind: 'link', label: editLabel, href: edit },
-        { kind: 'link', label: 'mine.action.submit', href: publishPath(item.id) },
-      ];
-    case 'pending':
-      return [
-        { kind: 'link', label: 'mine.action.preview', href: item.href },
-        { kind: 'withdraw', label: 'mine.action.withdraw' },
-      ];
-    case 'changes':
-    case 'rejected':
-      return [{ kind: 'link', label: item.docType === 'office' ? 'mine.action.open' : 'mine.action.resubmit', href: edit }];
+      return [edit, { kind: 'link', label: 'mine.action.publish', href: publishPath(item.id) }];
     case 'approved':
-      return [
-        { kind: 'link', label: 'mine.action.share', href: sharePagePath(item.id) },
-        { kind: 'link', label: 'mine.action.open', href: item.href },
-        { kind: 'later', label: 'mine.action.unpublish' },
-      ];
+      return [edit, { kind: 'link', label: 'mine.action.share', href: sharePagePath(item.id) }, unpublish];
     case 'hidden':
-      return [{ kind: 'link', label: 'mine.action.open', href: item.href }];
+      return [edit, unpublish];
   }
 }
 
-/** The picked planet: what it is, where it stands in review and why, where it lives, and what to do with it. */
-export function Detail({ item, now, onStar, onTrash, onWithdraw }: DetailProps): ReactNode {
+/** The picked planet: what it is, where it stands, where it lives, and what to do with it. */
+export function Detail({ item, now, onStar, onTrash, onUnpublish }: DetailProps): ReactNode {
   const { t, locale } = useMineText();
   const space = useSpaceText();
-  const review = item.review && (item.review.action === 'changes_requested' || item.review.action === 'rejected') && item.review.reason ? item.review : null;
-  const published = item.status === 'approved' || item.status === 'hidden';
   return (
     <div className="mine-detail" key={item.key} data-id="mine-detail" data-status={item.status}>
       <div className="mine-detail-head">
@@ -233,12 +212,6 @@ export function Detail({ item, now, onStar, onTrash, onWithdraw }: DetailProps):
       </div>
       <StatusPill status={item.status}>{statusLabel(t, item)}</StatusPill>
       <span className="mine-detail-desc">{item.kind === 'canvas' ? t('mine.desc.canvas') : t(`mine.desc.${item.status}`)}</span>
-      {review?.reason && (
-        <div className="mine-reason" data-id="mine-reason">
-          <span className="mine-reason-head">{t('mine.reason')}</span>
-          <span>{review.by ? t('mine.reasonText', { reason: review.reason, by: review.by }) : t('mine.reasonAnonymous', { reason: review.reason })}</span>
-        </div>
-      )}
       <div className="mine-facts">
         <div className="mine-fact">
           <div className="mine-fact-label">{t('mine.where')}</div>
@@ -256,34 +229,17 @@ export function Detail({ item, now, onStar, onTrash, onWithdraw }: DetailProps):
             <Button key={action.label} variant={index === 0 ? 'primary' : 'ghost'} size="lg" href={action.href} className="mine-action" dataId={`mine-action-${action.label.slice('mine.action.'.length)}`}>
               {t(action.label)}
             </Button>
-          ) : action.kind === 'withdraw' ? (
-            <Button key={action.label} variant={index === 0 ? 'primary' : 'ghost'} size="lg" className="mine-action" onClick={() => onWithdraw(item)} dataId="mine-action-withdraw">
+          ) : (
+            <Button key={action.label} variant="ghost" size="lg" className="mine-action" onClick={() => onUnpublish(item)} dataId="mine-action-unpublish">
               {t(action.label)}
             </Button>
-          ) : (
-            <Tooltip key={action.label} text={t('mine.soon')}>
-              {(describedBy) => (
-                <Button variant={index === 0 ? 'primary' : 'ghost'} size="lg" disabled className="mine-action" aria-describedby={describedBy}>
-                  {t(action.label)}
-                </Button>
-              )}
-            </Tooltip>
           ),
         )}
-        {item.kind === 'document' &&
-          (published ? (
-            <Tooltip text={t('mine.publishedTrash')}>
-              {(describedBy) => (
-                <Button variant="ghost" size="lg" disabled className="mine-action mine-action-warn" aria-describedby={describedBy}>
-                  {t('mine.action.trash')}
-                </Button>
-              )}
-            </Tooltip>
-          ) : (
-            <Button variant="ghost" size="lg" className="mine-action mine-action-warn" onClick={() => onTrash(item)} dataId="mine-action-trash">
-              {t('mine.action.trash')}
-            </Button>
-          ))}
+        {item.kind === 'document' && (
+          <Button variant="ghost" size="lg" className="mine-action mine-action-warn" onClick={() => onTrash(item)} dataId="mine-action-trash">
+            {t('mine.action.trash')}
+          </Button>
+        )}
       </div>
     </div>
   );

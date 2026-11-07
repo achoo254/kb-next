@@ -191,11 +191,6 @@
   color: var(--c-warn-text);
 }
 
-.ws-role[data-role="reviewer"] {
-  background: color-mix(in srgb, var(--cyan-400) 18%, transparent);
-  color: light-dark(var(--cyan-700), var(--cyan-300));
-}
-
 .ws-role[data-role="removed"] {
   background: color-mix(in srgb, var(--red-500) 18%, transparent);
   color: light-dark(var(--c-danger-text), var(--red-300));
@@ -326,24 +321,6 @@
   cursor: default;
 }
 
-.ws-invite-role {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.ws-invite-role select {
-  height: 44px;
-  padding: 0 12px;
-  border-radius: 14px;
-  border: 1px solid var(--c-border);
-  background: var(--c-surface-solid);
-  color: var(--c-text);
-  font: 500 14px var(--font-sans);
-}
-
 /* ── The role dialog ── */
 
 .ws-role-options {
@@ -438,7 +415,7 @@
 .ws-matrix-head,
 .ws-matrix-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   align-items: center;
 }

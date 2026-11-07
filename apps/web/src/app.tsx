@@ -12,7 +12,6 @@ import type { BackdropVeil } from './ui/universe-backdrop';
 import { AdminApiScreen } from './pages/admin-api-screen';
 import { AdminContentScreen } from './pages/admin-content-screen';
 import { AdminGate } from './pages/admin-gate';
-import { AdminReviewScreen } from './pages/admin-review-screen';
 import { CanvasRoute } from './pages/canvas-screen';
 import { CopilotScreen } from './pages/copilot-screen';
 import { CreateMenu } from './pages/create-menu';
@@ -41,6 +40,7 @@ import { SharedOpenScreen } from './pages/shared-open-screen';
 import { SubmitScreen } from './pages/submit-screen';
 import { SyncScreen } from './pages/sync-screen';
 import { SpaceScreen } from './pages/space-screen';
+import { SpacesScreen } from './pages/spaces-screen';
 import { TranslateScreen } from './pages/translate-screen';
 import { UniverseEntry } from './pages/universe-entry';
 import { UniverseScreen } from './pages/universe-screen';
@@ -66,6 +66,7 @@ export function loginRedirect(pathname: string, search: string): string {
 export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?: BackdropVeil }> = {
   C09: { rail: 'universe', view: 'orbit' },
   C10: { rail: 'spaces' },
+  Spaces: { rail: 'spaces', veil: 'strong' },
   C11: { view: 'docs', veil: 'strong' },
   C12: { rail: 'search', veil: 'strong' },
   C13: { rail: 'graph', view: 'graph' },
@@ -122,6 +123,8 @@ function AppScreen({ route, path }: { route: ScreenRoute; path: string }): React
       );
     case 'C10':
       return <SpaceScreen slug={routeParam(route, path)} />;
+    case 'Spaces':
+      return <SpacesScreen />;
     case 'C11':
       return <ReaderScreen id={routeParam(route, path)} />;
     case 'C02':
@@ -172,12 +175,6 @@ function AppScreen({ route, path }: { route: ScreenRoute; path: string }): React
       return (
         <AdminGate code="C19">
           <WorkspaceScreen />
-        </AdminGate>
-      );
-    case 'A01':
-      return (
-        <AdminGate code="A01" need="review">
-          <AdminReviewScreen />
         </AdminGate>
       );
     case 'A02':

@@ -46,7 +46,7 @@ Một `[[` chưa đóng được tô như chip "đang nối". Bấm đúp hoặc
 
 Mỗi lần lưu, máy chủ dựng lại các đoạn và bảng `links`: mỗi `[[ ]]` nối tới bài có tiêu đề khớp (không phân biệt hoa
 thường, dấu) mà người viết đọc được, ưu tiên bài chính thức. Bài nháp chỉ tác giả thấy, nên backlink từ bài nháp chỉ
-hiện với tác giả cho tới khi bài được duyệt.
+hiện với tác giả cho tới khi tác giả đăng bài.
 
 ## Tự lưu, offline, phiên bản
 
@@ -62,9 +62,10 @@ hiện với tác giả cho tới khi bài được duyệt.
   chỉ đánh dấu phiên bản mà chính lần lưu đó ghi (của người lưu), lưu thành công thì các lần sau không gửi nữa. Gộp
   trong 2 phút giữ dấu AI nếu một trong các lần lưu có AI; lưu không có cờ không bao giờ xoá dấu đã có. Bản dịch AI
   (F04) đã được đánh dấu khi tạo, sửa tay sau đó là phiên bản mới không có dấu AI.
-- Ai sửa được: tác giả khi bài là nháp, riêng tư, bị yêu cầu sửa hay bị từ chối; quản trị luôn sửa được. Bài đang chờ
-  duyệt hoặc đã đăng thì khoá với tác giả (sửa qua hàng duyệt ở phase 11).
-- Xoá: tác giả xoá được bài của mình chưa đăng (kể cả đang chờ duyệt, bị yêu cầu sửa); bài đã đăng chỉ quản trị xoá.
+- Ai sửa được: tác giả với mọi bài của mình ở mọi bước, kể cả bài đã đăng (sửa xong vẫn công khai, không duyệt lại);
+  quản trị luôn sửa được (chủ dự án chốt 07/11/2026: tác giả toàn quyền, bỏ duyệt). Bài quản trị đã ẩn vẫn ẩn khi tác
+  giả sửa.
+- Xoá: tác giả xoá được mọi bài của mình, kể cả bài đã đăng (link chia sẻ bị thu hồi); quản trị xoá được mọi bài.
   Bài nằm trong thùng rác của người đã xoá: quản trị xoá thì chỉ quản trị khôi phục. Sau 30 ngày `purgeTrash` xoá hẳn
   bài cùng phiên bản, đoạn, link, yêu thích và hàng tệp, rồi trả tên tệp trên đĩa để job dọn xoá tệp.
 - Link `[[ ]]` tìm theo những gì **tác giả** của bài đọc được (quản trị sửa hộ cũng vậy), một truy vấn cho mọi tiêu đề,

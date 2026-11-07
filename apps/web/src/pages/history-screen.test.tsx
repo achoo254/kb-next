@@ -13,7 +13,7 @@ import { HistoryScreen } from './history-screen';
 
 const ID = '989fedf1-beab-4f13-894d-111654ebdc45';
 const dat = { name: 'Đạt', role: 'admin' } as const;
-const linh = { name: 'Linh', role: 'reviewer' } as const;
+const linh = { name: 'Linh', role: 'member' } as const;
 const minh = { name: 'Minh', role: 'member' } as const;
 const ai = (version: number, at: string): HistoryEvent => ({ kind: 'version', at, actor: dat, version, via: 'api', aiMade: true, summary: null, restoredFrom: null, proposal: false });
 
@@ -112,7 +112,7 @@ describe('HistoryScreen', () => {
       'Tạo bài qua API · AI tạo',
     ]);
     const who = [...document.querySelectorAll('.history-card-who')].map((el) => el.textContent);
-    expect(who.slice(0, 6)).toEqual(['Đạt · Quản trị · 03/11 21:40', 'Đạt · Quản trị · 03/11 21:12', 'Linh · Người duyệt · 03/11 10:02', 'Minh · Thành viên · 02/11 21:30', 'Linh · Người duyệt · 02/11 09:00', 'Đạt · API · 31/10 14:05']);
+    expect(who.slice(0, 6)).toEqual(['Đạt · Quản trị · 03/11 21:40', 'Đạt · Quản trị · 03/11 21:12', 'Linh · Thành viên · 03/11 10:02', 'Minh · Thành viên · 02/11 21:30', 'Linh · Thành viên · 02/11 09:00', 'Đạt · API · 31/10 14:05']);
     expect([...document.querySelectorAll('.history-tag')].map((el) => el.textContent)).toEqual(['Ẩn', 'Đã duyệt', 'Cần sửa']);
     expect([...document.querySelectorAll('.history-version')].map((el) => [el.textContent, el.getAttribute('aria-pressed')])).toEqual([
       ['v4 · nay', 'true'],
@@ -184,7 +184,7 @@ describe('HistoryScreen', () => {
     renderWithI18n(<HistoryScreen id={ID} />);
     const locked = await screen.findByRole('button', { name: 'Khôi phục v3' });
     expect(locked.getAttribute('aria-disabled')).toBe('true');
-    expect(locked.getAttribute('title')).toBe('Chỉ tác giả hoặc quản trị khôi phục được, khi bài chưa gửi duyệt.');
+    expect(locked.getAttribute('title')).toBe('Chỉ tác giả hoặc quản trị khôi phục được.');
     fireEvent.click(locked);
     expect(screen.queryByRole('dialog')).toBeNull();
   });

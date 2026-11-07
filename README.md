@@ -14,14 +14,14 @@ và hiện nền Universe kèm mã board; nội dung các màn được dựng d
 | Thư mục | Vai trò |
 |---|---|
 | [`apps/web`](apps/web) | `@kb/web`: React 19 + Vite, i18n vi/en (cookie `hd_lang` dùng chung của hệ sinh thái), font Space Grotesk + Inter tự host, nền Universe, bộ kiểm giống mock (Playwright project `parity`) |
-| [`apps/server`](apps/server) | `@kb/server`: Express 5 + drizzle + Postgres (PGlite khi dev/test). Đăng nhập BFF qua auth-next (client `kb-web`, máy dev dùng `kb-web-dev`), phiên riêng (bảng `users`, `sessions`), back-channel logout của IdP, kiểm Origin, helmet, giới hạn tần suất, `/healthz`. Dữ liệu nội dung (Space, bộ sưu tập, tài liệu, đoạn, liên kết…) trong `src/db/schema.ts`; mọi lượt đọc tài liệu, đoạn, liên kết và tìm kiếm đi qua `src/access/` (quy tắc quyền đặt ở một chỗ); viết bài: tạo, sửa (tự lưu, gộp phiên bản trong 2 phút), thùng rác 30 ngày (tự xoá hẳn hằng ngày, `src/authoring/trash-purge.ts`; xoá hẳn sớm theo ý người dùng), yêu thích, Space riêng và Collection (`src/api/authoring-routes.ts`, `my-content-routes.ts`), lịch sử và so sánh phiên bản (`src/api/history-routes.ts`); Graph của Space và cạnh "liên quan" (`src/api/graph-routes.ts`), Canvas của từng người (`src/api/canvas-routes.ts`), Jev chỉ gợi ý, người dùng bấm mới nối; lối đi tri thức (C07 dựng, Flow chạy: `src/api/journey-routes.ts`): lối đi là tài liệu loại `journey` nên đi cùng vòng duyệt, các bước ở `journey_steps`, tiến độ từng người ở `journey_progress` (bước xong khi bấm "Xong" hoặc đọc hết tài liệu của bước), Jev gợi ý bước tiếp bằng `choice` trong các tài liệu cùng Space; chỉ mục Meilisearch `kb_public`/`kb_private` có trường Telex `tx` để phân biệt dấu (`src/search/`) |
+| [`apps/server`](apps/server) | `@kb/server`: Express 5 + drizzle + Postgres (PGlite khi dev/test). Đăng nhập BFF qua auth-next (client `kb-web`, máy dev dùng `kb-web-dev`), phiên riêng (bảng `users`, `sessions`), back-channel logout của IdP, kiểm Origin, helmet, giới hạn tần suất, `/healthz`. Dữ liệu nội dung (Space, bộ sưu tập, tài liệu, đoạn, liên kết…) trong `src/db/schema.ts`; mọi lượt đọc tài liệu, đoạn, liên kết và tìm kiếm đi qua `src/access/` (quy tắc quyền đặt ở một chỗ); viết bài: tạo, sửa (tự lưu, gộp phiên bản trong 2 phút), thùng rác 30 ngày (tự xoá hẳn hằng ngày, `src/authoring/trash-purge.ts`; xoá hẳn sớm theo ý người dùng), yêu thích, Space riêng và Collection (`src/api/authoring-routes.ts`, `my-content-routes.ts`), lịch sử và so sánh phiên bản (`src/api/history-routes.ts`); Graph của Space và cạnh "liên quan" (`src/api/graph-routes.ts`), Canvas của từng người (`src/api/canvas-routes.ts`), Jev chỉ gợi ý, người dùng bấm mới nối; lối đi tri thức (C07 dựng, Flow chạy: `src/api/journey-routes.ts`): lối đi là tài liệu loại `journey` nên tác giả đăng như mọi bài, các bước ở `journey_steps`, tiến độ từng người ở `journey_progress` (bước xong khi bấm "Xong" hoặc đọc hết tài liệu của bước), Jev gợi ý bước tiếp bằng `choice` trong các tài liệu cùng Space; chỉ mục Meilisearch `kb_public`/`kb_private` có trường Telex `tx` để phân biệt dấu (`src/search/`) |
 | [`design`](design) | Mock đã chốt: mã nguồn board (`mock/*.dc.html`, `canvas.json`), ảnh chuẩn từng board (`mock-png/`, dùng cho kiểm giống mock), bộ phong cách bắt buộc `KIT-universe-style.txt`, bảng ánh xạ ảnh `blob-map.json` |
 | [`brand`](brand) | Biểu tượng vector (logo của mock) và các file sinh từ nó (`pnpm brand:gen`) |
 | [`scripts`](scripts) | `brand-gen`, `check-tokens` (màu chỉ ở `tokens.css`, tương phản WCAG AA cả Tối lẫn Sáng), `check-public-info` (không lộ địa chỉ máy chủ, cổng SSH), `meili-dev` + `meili-binary` (Meilisearch cho dev và test) |
 
 Route của web và board tương ứng: [`apps/web/src/routes.ts`](apps/web/src/routes.ts). Đọc không cần tài khoản (chủ dự
 án chốt 07/11/2026): khách mở được Universe `/u` (C09), Space `/s/<slug>` (C10), bài `/d/<id>` (C11), tìm kiếm (C12) và
-Graph (C13), thấy mọi bài công khai (đã duyệt, không ẩn); bài công khai hay riêng tư do người đăng chọn, quản trị quản
+Graph (C13), cùng trang `/spaces` (mọi hệ, hệ có bài mới nhất trước; quỹ đạo Universe chỉ hiện vài hệ sôi động nhất), thấy mọi bài công khai (đã đăng, không ẩn); bài công khai hay riêng tư do người đăng chọn, quản trị quản
 lý mọi bài. Viết, lưu, yêu thích, bình luận, hỏi AI, cài đặt và trạm quản trị cần đăng nhập; khách thấy nút "Đăng
 nhập" ở thanh trên, đăng nhập xong quay về đúng trang. `/sitemap.xml` do server dựng từ các Space và bài công khai.
 Ngoài app còn trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02), trang lỗi (X02) và hai trang
@@ -37,14 +37,14 @@ Trình soạn bài (C02, TipTap, Markdown, tự lưu và offline, tài liệu t�
 Trích chữ và OCR tệp tải lên (Tika, chọn trang OCR, cờ chất lượng, hàng đợi): [`docs/text-extraction.md`](docs/text-extraction.md).
 Tải tệp, Trung tâm nhập, trình sửa Office nhúng và đồng bộ offline (C03, C16, H04, ranuts/document ở tên miền riêng):
 [`docs/office-editor.md`](docs/office-editor.md).
-Xuất bản, gửi duyệt, link chia sẻ, hàng duyệt và quản lý bài của quản trị, thông báo, API đăng bài bằng token quản trị
-(C04–C06, C18, H02, C20, A01–A03):
+Xuất bản (tác giả tự đăng công khai hay giữ riêng tư, không qua duyệt), link chia sẻ, quản lý bài của quản trị,
+thông báo, API đăng bài bằng token quản trị (C04–C06, C18, H02, C20, A02–A03):
 [`docs/admin-api.md`](docs/admin-api.md).
-Cài đặt cá nhân và workspace, vai trò (Quản trị, Người duyệt, Thành viên), mời bằng link, nhật ký kiểm toán, giao diện
+Cài đặt cá nhân và workspace, vai trò (Quản trị, Thành viên), mời bằng link, nhật ký kiểm toán, giao diện
 Sáng/Tối, xoá dữ liệu của tôi (H03, C19): [`docs/settings-and-roles.md`](docs/settings-and-roles.md).
 Tablet và điện thoại: tablet (641–1279px) dựng Universe và reader trên board 1180×820 (T01, T02: 3D nhẹ, mục lục
 dạng ngăn kéo); điện thoại (đến 640px) có bố cục riêng, chỉ 2D, thanh pill dưới thay lens rail cho Universe, tạo bài,
-gửi duyệt, Copilot, reader và tìm kiếm (Mobile, M02–M06), kể cả trình soạn, các bước gửi duyệt, trình dựng và chạy lối đi; không có Canvas,
+đăng bài, Copilot, reader và tìm kiếm (Mobile, M02–M06), kể cả trình soạn, các bước đăng bài, trình dựng và chạy lối đi; không có Canvas,
 Graph chỉ xem, tệp Office chỉ tải lên và đọc:
 [`docs/board-frame.md`](docs/board-frame.md#tablet-và-điện-thoại).
 Chuyển màn trong app không tải lại trang (khung app giữ nguyên, thanh tiến trình, prefetch, Back/Forward):
@@ -71,7 +71,7 @@ Lần đầu `pnpm meili` tải binary Meilisearch (khoảng 350 MB) vào `.data
 ghim trong [`scripts/meili-binary.ts`](scripts/meili-binary.ts). Server đọc `MEILI_URL`, `MEILI_MASTER_KEY` từ file env
 (mẫu trong [`.env.example`](.env.example), khoá dev mặc định khớp với `pnpm meili`); không đặt thì server vẫn chạy, chỉ
 tắt đồng bộ chỉ mục. Muốn Space "Vũ trụ của bạn" và các bài riêng tư thuộc tài khoản dev của mình: chạy
-`SEED_OWNER_SUB=<sub của bạn> pnpm seed`. Quản trị gốc: `ADMIN_SUBS` (danh sách `sub`, cách nhau bằng dấu phẩy); quản trị và người duyệt khác cấp ở C19.
+`SEED_OWNER_SUB=<sub của bạn> pnpm seed`. Quản trị gốc: `ADMIN_SUBS` (danh sách `sub`, cách nhau bằng dấu phẩy); quản trị khác cấp ở C19.
 
 Đăng nhập khi dev: chép [`.env.example`](.env.example) thành file env của `apps/server`, đặt `AUTH_CLIENT_ID=kb-web-dev`
 và `AUTH_CLIENT_SECRET` (lấy từ thư mục env ngoài repo). Không đặt thì app vẫn chạy, các trang cần đăng nhập dừng ở

@@ -1,8 +1,9 @@
 /**
- * Previewing a text before review (board C05, /d/:id/preview): as a guest will see it once approved, or as its author
- * sees it now; on a desktop, tablet or phone frame. On the left, where it sits in the Universe (locked in the author's
- * own Universe until approved) and the card a chat app shows when its share link is pasted (`ill-doc-planet`, the
- * share page's og:image). "Sửa tiếp" opens the editor, "Gửi duyệt" opens C04 (where it goes, then sending).
+ * Previewing a text before publishing it (board C05, /d/:id/preview): as a guest will see it once published, or as
+ * its author sees it now; on a desktop, tablet or phone frame. On the left, where it sits in the Universe (in the
+ * author's own Universe until published) and the card a chat app shows when its share link is pasted
+ * (`ill-doc-planet`, the share page's og:image). "Sửa tiếp" opens the editor, "Đăng" opens C04 (where it goes, then
+ * publishing).
  *
  * States: loading, failed (not found, no access, server), and the preview in each role and device.
  */
@@ -59,7 +60,7 @@ export function PreviewScreen({ id }: { id: string }): ReactNode {
 
   const doc = load.status === 'ready' ? load.view.document : null;
   const spaceName = doc ? (locale === 'vi' ? doc.space.nameVi : doc.space.nameEn) : '';
-  const statusKey: PublishMessageKey = doc?.status === 'approved' ? 'preview.status.approved' : doc?.status === 'pending' ? 'preview.status.pending' : 'preview.status';
+  const statusKey: PublishMessageKey = doc?.status === 'approved' ? 'preview.status.approved' : 'preview.status';
 
   return (
     <AppShell
@@ -101,7 +102,7 @@ export function PreviewScreen({ id }: { id: string }): ReactNode {
             <a className="preview-edit" href={`/d/${encodeURIComponent(id)}/edit`}>
               {t('preview.edit')}
             </a>
-            {doc?.status !== 'approved' && doc?.status !== 'pending' && (
+            {doc && doc.status !== 'approved' && (
               <a className="preview-submit" href={publishPath(id)} data-id="preview-submit">
                 {t('preview.submit')}
               </a>

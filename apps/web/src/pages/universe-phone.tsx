@@ -1,5 +1,6 @@
 import { type CSSProperties, type PointerEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { type DocumentSummary, type SpaceDetail, type SpaceListItem, fetchSpace } from '../api/content-api';
+import { gateHref } from '../api/session-api';
 import { type Locale, useI18n } from '../i18n/i18n';
 import { PHONE_BOARD_WIDTH, PhoneShell, usePhoneScale } from '../layout/phone-shell';
 import { signedInUser, useSessionState } from '../layout/session-context';
@@ -14,7 +15,7 @@ import { type PhoneMessageKey, usePhoneText } from './phone-messages';
 import type { ScreenTranslate } from './space-messages';
 import { documentHref } from './universe-dock';
 import type { UniverseData } from './universe-data';
-import { spaceHref, spaceKindOf, spaceName } from './universe-spaces';
+import { orbitSpaces, spaceHref, spaceKindOf, spaceName } from './universe-spaces';
 import './universe-phone.css';
 
 /**
@@ -92,21 +93,19 @@ function planetName(planet: PhonePlanet, locale: Locale, t: ScreenTranslate<Phon
   return short ? t(short) : spaceName(planet.space, locale);
 }
 
-/** The texts of a Space and how many of each origin (the sheet's chips). */
+/** The texts of a Space and how many of each origin (the sheet's chips); one not published is the reader's own. */
 export interface SpaceTally {
   official: number;
   community: number;
   own: number;
-  pending: number;
   documents: DocumentSummary[];
 }
 
 export function tallySpace(detail: Pick<SpaceDetail, 'collections' | 'uncollected'>): SpaceTally {
   const documents = [...detail.collections.flatMap((collection) => collection.documents), ...detail.uncollected];
-  const tally: SpaceTally = { official: 0, community: 0, own: 0, pending: 0, documents };
+  const tally: SpaceTally = { official: 0, community: 0, own: 0, documents };
   for (const doc of documents) {
-    if (doc.status === 'pending') tally.pending += 1;
-    else if (doc.origin === 'own') tally.own += 1;
+    if (doc.status !== 'approved' || doc.origin === 'own') tally.own += 1;
     else tally[doc.origin] += 1;
   }
   return tally;
@@ -160,7 +159,6 @@ function SpaceSheet({ planet, onClose }: { planet: PhonePlanet | undefined; onCl
     { key: 'official', label: 'sheet.official' },
     { key: 'community', label: 'sheet.community' },
     { key: 'own', label: 'sheet.own' },
-    { key: 'pending', label: 'sheet.pending' },
   ];
   const tint = { '--tint': space?.glow } as CSSProperties;
   const dragFrom = useRef<number | null>(null);
@@ -247,7 +245,7 @@ export function UniversePhone({ data, online, onRetry }: UniversePhoneProps): Re
   const app = useI18n();
   const user = signedInUser(useSessionState());
   const spaces = data.status === 'ready' ? data.spaces : null;
-  const planets = useMemo(() => (spaces ? placePhonePlanets(spaces) : []), [spaces]);
+  const planets = useMemo(() => (spaces ? placePhonePlanets(orbitSpaces(spaces, PHONE_SLOTS.length)) : []), [spaces]);
   const [focusSlug, setFocusSlug] = useState<string | null>(null);
   const [open, setOpen] = useState(true);
   const scale = usePhoneScale();
@@ -277,7 +275,12 @@ export function UniversePhone({ data, online, onRetry }: UniversePhoneProps): Re
               <Icon name="tab-copilot" size={16} />
             </span>
           </a>
-          <a className="phone-avatar" href={SHELL_PATHS.settings} aria-label={t('universe.account')} data-id="phone-account">
+          <a
+            className="phone-avatar"
+            href={user ? SHELL_PATHS.settings : gateHref(`${window.location.pathname}${window.location.search}`)}
+            aria-label={user ? t('universe.account') : app.t('landing.signIn')}
+            data-id="phone-account"
+          >
             {user ? accountInitial(user) : '·'}
           </a>
         </div>
@@ -285,6 +288,11 @@ export function UniversePhone({ data, online, onRetry }: UniversePhoneProps): Re
           <Icon name="device-phone" size={12} />
           {t('universe.note')}
         </span>
+        {spaces && (
+          <a className="phone-all-spaces" href={SHELL_PATHS.spaces} data-id="phone-all-spaces">
+            {app.t('universe.allSpaces', { count: spaces.length })}
+          </a>
+        )}
         <div
           className="phone-orbit"
           style={scale < 1 ? { transform: `scale(${scale})`, left: `calc(50% - ${(PHONE_BOARD_WIDTH / 2) * scale}px)` } : undefined}

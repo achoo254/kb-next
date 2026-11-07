@@ -2,7 +2,7 @@
  * Reads of Spaces, collections, documents, versions, chunks and links, each filtered by the viewer
  * (src/access/visibility.ts). Nothing outside src/access/ reads those tables.
  */
-import { and, asc, count, desc, eq, inArray, ne, or } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, max, ne, or } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { chunks, collections, documentVersions, documents, links, spaces } from '../db/schema';
 import { isUuid } from './ids';
@@ -17,6 +17,8 @@ export type ChunkRow = typeof chunks.$inferSelect;
 export interface SpaceWithCount extends SpaceRow {
   /** Documents of this Space the viewer may read. */
   documentCount: number;
+  /** When the latest of those changed; null for a Space with none. */
+  latestAt: Date | null;
 }
 
 export interface CollectionWithCount extends CollectionRow {
@@ -70,18 +72,18 @@ export function spacesOf(viewer: Viewer) {
 
 export async function listSpaces(db: Db, viewer: Viewer): Promise<SpaceWithCount[]> {
   const counts = db
-    .select({ spaceId: documents.spaceId, n: count().as('n') })
+    .select({ spaceId: documents.spaceId, n: count().as('n'), latest: max(documents.updatedAt).as('latest') })
     .from(documents)
     .where(visibleTo(viewer))
     .groupBy(documents.spaceId)
     .as('counts');
   const rows = await db
-    .select({ space: spaces, n: counts.n })
+    .select({ space: spaces, n: counts.n, latest: counts.latest })
     .from(spaces)
     .leftJoin(counts, eq(counts.spaceId, spaces.id))
     .where(spacesOf(viewer))
     .orderBy(asc(spaces.sortOrder), asc(spaces.slug));
-  return rows.map(({ space, n }) => ({ ...space, documentCount: Number(n ?? 0) }));
+  return rows.map(({ space, n, latest }) => ({ ...space, documentCount: Number(n ?? 0), latestAt: latest ? new Date(latest) : null }));
 }
 
 export async function findSpaceBySlug(db: Db, viewer: Viewer, slug: string): Promise<SpaceRow | null> {

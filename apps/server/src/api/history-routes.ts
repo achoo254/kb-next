@@ -11,7 +11,7 @@
  * The three reads are limited to 60 a minute per account (429 `rate-limited`).
  * - GET /api/documents/:id/diff?from=&to= → `{from, to, added, removed, lines}` (src/authoring/block-diff.ts).
  * - POST /api/documents/:id/versions/:n/restore → `{rev, version}`: version n copied as a new version (the history
- *   keeps everything). Who may edit the document may restore (403 `no-access` / `locked` otherwise).
+ *   keeps everything). Who may edit the document may restore (403 `no-access` otherwise).
  */
 import express, { type Router } from 'express';
 import { z } from 'zod';
@@ -166,8 +166,6 @@ export function historyRoutes({ config, db, now, sync }: HistoryRoutesOptions): 
         throw new HttpError(404, 'not-found');
       case 'no-access':
         throw new HttpError(403, 'no-access');
-      case 'locked':
-        throw new HttpError(403, 'locked');
       case 'not-editable':
         throw new HttpError(409, 'not-editable');
     }

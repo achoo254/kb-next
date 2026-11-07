@@ -7,7 +7,7 @@
  * past the limit, leaves no row (the daily housekeeping forgets rows older than 30 days).
  *
  * - POST /api/admin/posts `{title, lang, space?, collection?, tags?, markdown, type?, source?, hidden?}` → 201
- *   `{id, url, status: 'approved', hidden}`: an official text, published at once (no review). `collection` is a
+ *   `{id, url, status: 'approved', hidden}`: an official text, published at once. `collection` is a
  *   Collection's id or a public Space's slug; one of `space` / `collection` is required (400 `space-required`).
  * - PATCH /api/admin/posts/:id `{hidden?, title?, tags?, space?, collection?}` → `{id, title, status, hidden}`: a
  *   published text only (409 `not-approved` before any change), all of the patch or none of it.
@@ -15,7 +15,6 @@
  * - PUT /api/admin/posts/:id/text `{title?, body, summary?, baseRev?, source?}` → `{id, version, rev, changed}`: a new
  *   version of the text (never merged into an editor's), 409 `stale` when it changed since `baseRev`; a file (Office) or
  *   a journey is 409 `not-editable` / `journey`.
- * - GET /api/admin/review → `{documents: ReviewQueueItem[]}`: the review queue with Jev's pre-review.
  * - POST /api/admin/spaces `{slug, nameVi, nameEn, tint, glow, art, unitVi, unitEn, descriptionVi?, descriptionEn?}` → 201
  *   `{slug}`: a new public Space (as POST /api/spaces on the web session), 409 `slug-taken` when the slug exists.
  * - POST /api/admin/collections `{space, nameVi, nameEn?}` → 201 `{id, space}`: a new Collection (planet) in a public
@@ -33,7 +32,7 @@ import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { createDocument, editAccess, saveDocument } from '../access/authoring';
 import { createCollection, createPublicSpace, spaceForWriting } from '../access/spaces-write';
-import { type AdminViewer, isAdminViewer, listReviewQueue } from '../access/review';
+import { type AdminViewer, isAdminViewer } from '../access/review';
 import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
 import { MAX_BODY_CHARS, bodyOf } from '../authoring/markdown-text';
@@ -41,7 +40,7 @@ import { HttpError } from '../http-error';
 import { safeErrorText } from '../log-error';
 import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import { titleLine } from '../markdown/sections';
-import { type ModerationDeps, cleanTags, queueItems, resolvePlacement, updatePost } from '../review/moderation';
+import { type ModerationDeps, cleanTags, resolvePlacement, updatePost } from '../review/moderation';
 import { perAccountLimit, signedIn } from './account-limit';
 import { CollectionBody, DOCUMENT_BODY_LIMIT, PublicSpaceBody, refuse } from './authoring-routes';
 import { type RequestContextDeps, readerOf } from './request-context';
@@ -141,7 +140,7 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
         if (!holder || holder.gone || effectiveRole(config.adminSubs, holder) !== 'admin') return next(new HttpError(401, 'invalid-token'));
         callOf(res).tokenId = holder.tokenId;
         res.removeHeader('WWW-Authenticate');
-        admins.set(res, { kind: 'user', userId: holder.userId, isAdmin: true, canReview: true });
+        admins.set(res, { kind: 'user', userId: holder.userId, isAdmin: true });
         next();
       },
       (error: unknown) => next(error),
@@ -233,11 +232,6 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     if (access.kind !== 'ok' || access.space.kind !== 'public') throw new HttpError(404, 'not-found');
     const collection = await createCollection(db, access.space, { nameVi: body.nameVi, nameEn: body.nameEn ?? body.nameVi });
     res.status(201).json({ id: collection.id, space: access.space.slug });
-  });
-
-  api.get('/review', async (_req, res) => {
-    const admin = adminOf(res);
-    res.set('Cache-Control', 'no-store').json({ documents: await queueItems(db, admin, await listReviewQueue(db, admin)) });
   });
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not-found')));

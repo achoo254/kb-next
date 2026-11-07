@@ -4,7 +4,7 @@
  * favourites, trash), versions and activity (C17), and "AI viết hộ" on the writer's own key.
  *
  * Errors (ApiError.code): `sign-in-required` (401); `not-found` (404), `hidden` / `no-access` (403: not theirs),
- * `locked` (403: waiting for review or published; changes go through review), `not-editable` (409: a stored file);
+ * `not-editable` (409: a stored file);
  * `stale` (409: saved elsewhere since this copy); `invalid-body`,
  * `unknown-collection` (400); `admin-only` (403); `slug-taken` (409); `rate-limited` (429); `network` (offline).
  * AI writing as in copilot-api.ts: `USER_KEYS_DISABLED` (503), `NO_USER_KEY` / `USER_KEY_UNREADABLE` (403) before

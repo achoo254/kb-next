@@ -5,13 +5,13 @@
  * Members (src/access/workspace-members.ts):
  * - GET /api/workspace/members → `{members: MemberView[], total}`: at most MEMBERS_PAGE (staff and the most recently
  *   active first), `total` counting all.
- * - PATCH /api/workspace/members/:id `{role}` → MemberView. 404 `not-found`, 409 `locked` (a bootstrap admin), 409
+ * - PATCH /api/workspace/members/:id `{role: 'member' | 'admin'}` → MemberView. 404 `not-found`, 409 `locked` (a bootstrap admin), 409
  *   `self` (your own account), 409 `removed` (put it back first).
- * - POST /api/workspace/members/:id/remove → MemberView: signs it out, its texts waiting for review back to drafts.
+ * - POST /api/workspace/members/:id/remove → MemberView: signs it out; its texts stay as they are.
  * - POST /api/workspace/members/:id/restore → MemberView.
  * Invite links (src/workspace/invites.ts):
  * - GET /api/workspace/invite → `{invite: InviteView | null}` (the live one, without its token).
- * - POST /api/workspace/invite `{role}` → 201 `{token, url, invite}`: the token is in this answer only; the live link
+ * - POST /api/workspace/invite `{role: 'member'}` → 201 `{token, url, invite}`: the token is in this answer only; the live link
  *   is revoked.
  * - DELETE /api/workspace/invite/:id → 204 (404 when there is no such live link).
  * - GET /api/invites/:token → `{role, expiresAt}`; POST /api/invites/accept `{token}` → `{role, raised}`. 404
@@ -29,18 +29,15 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { listAuditTrail } from '../access/audit-trail';
 import { type AdminViewer, isAdminViewer } from '../access/review';
-import type { WorkspaceRole } from '../access/roles';
+import { WORKSPACE_ROLES, type WorkspaceRole } from '../access/roles';
 import { type Member, listMembers, removeMember, restoreMember, setMemberRole } from '../access/workspace-members';
 import { filesSummary } from '../access/workspace-status';
 import type { IdpMetadata } from '../auth/idp-metadata';
 import { SESSION_ABSOLUTE_MS, SESSION_IDLE_MS } from '../auth/session-store';
-import { USER_ROLES, jevUsageDaily } from '../db/schema';
+import { jevUsageDaily } from '../db/schema';
 import { HttpError } from '../http-error';
 import { saigonDay } from '../jev/jev-usage';
 import type { JevJudge } from '../jev/jev-client';
-import { safeErrorText } from '../log-error';
-import { clearSubmittedNotices } from '../notifications/notification-store';
-import type { IndexSync } from '../search/index-sync';
 import type { MeiliClient } from '../search/meili-client';
 import { PUBLIC_INDEX } from '../search/search-indexes';
 import { AUDIT_CATEGORIES } from '../workspace/audit';
@@ -95,12 +92,11 @@ export interface SignInView {
 
 export interface WorkspaceRoutesOptions extends RequestContextDeps {
   idp: IdpMetadata | null;
-  sync: IndexSync | null;
   meili: MeiliClient | null;
   jev: JevJudge | null;
 }
 
-const RoleBody = z.strictObject({ role: z.enum(USER_ROLES) });
+const RoleBody = z.strictObject({ role: z.enum(WORKSPACE_ROLES) });
 const InviteBody = z.strictObject({ role: z.enum(INVITE_ROLES) });
 const AcceptBody = z.strictObject({ token: z.string().min(1).max(64) });
 const AuditQuery = z.object({ category: z.enum(AUDIT_CATEGORIES).optional() });
@@ -124,7 +120,7 @@ async function within<T>(check: Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-export function workspaceRoutes({ config, db, now, idp, sync, meili, jev }: WorkspaceRoutesOptions): Router {
+export function workspaceRoutes({ config, db, now, idp, meili, jev }: WorkspaceRoutesOptions): Router {
   const router = express.Router();
   const auth = signedIn(config, db, now);
   const limit = perAccountLimit(60);
@@ -172,9 +168,6 @@ export function workspaceRoutes({ config, db, now, idp, sync, meili, jev }: Work
     const viewer = await admin(req);
     const result = await removeMember(db, config.adminSubs, viewer.userId, idParam(req), now());
     if (result.kind !== 'ok') return refuse(result.kind);
-    // Their texts left the queue: the reviewers' unread notices of them go, the search indexes follow.
-    for (const id of result.withdrawn) await clearSubmittedNotices(db, id).catch((error: unknown) => console.error('notice cleanup failed', safeErrorText(error)));
-    if (result.withdrawn.length > 0) sync?.enqueue(result.withdrawn);
     res.json(memberView(result.member, viewer.userId));
   });
 

@@ -20,13 +20,12 @@ const BEFORE: readonly Entry[] = [
   ['Onboarding', 'S03'],
 ];
 const YOURS: readonly Entry[] = [
-  ['Của tôi · nháp, chờ duyệt', 'C08'],
+  ['Của tôi · nháp, đã đăng', 'C08'],
   ['Cài đặt cá nhân', 'H03'],
   ['Key riêng (AI)', 'F03'],
   ['Offline, đồng bộ', 'H04'],
 ];
 const ADMIN: readonly Entry[] = [
-  ['Hàng duyệt', 'A01'],
   ['Nội dung, ẩn/hiện', 'A02'],
   ['API đăng bài', 'A03'],
   ['Workspace, RBAC, nhật ký', 'C19'],
@@ -42,7 +41,7 @@ const FLOWS: ReadonlyArray<{ name: string; steps: readonly Entry[] }> = [
   },
   {
     name: '4 · Đóng góp',
-    steps: [['Bấm +', 'C01'], ['Viết ghi chú', 'C02'], ['Gửi duyệt', 'C04'], ['Đã gửi', 'C06'], ['Người duyệt duyệt', 'A01'], ['Nhận thông báo', 'C20']],
+    steps: [['Bấm +', 'C01'], ['Viết ghi chú', 'C02'], ['Đăng công khai', 'C04'], ['Đã đăng', 'C06'], ['Chia sẻ link', 'C18']],
   },
 ];
 

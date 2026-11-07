@@ -39,9 +39,12 @@ describe('the privacy page', () => {
     expect(ai).toContain('AES-256-GCM');
     expect(ai).toContain('your question, the passage you selected (if any) and excerpts from the knowledge base');
 
-    const jev = sectionText('Jev (TypeSafe): search, sorting and review checks');
+    const jev = sectionText('Jev (TypeSafe): search and sorting');
     expect(jev).toContain('your query, the titles and summaries');
-    expect(jev).toContain('the pre-review of a text sent for review');
+    expect(jev).not.toContain('pre-review');
+
+    // No review gate: the author publishes; a public text is readable at once, guests included.
+    expect(sectionText('Your texts, files and activity')).toContain('You choose to publish a text or keep it private.');
 
     expect(sectionText('Your texts, files and activity')).toContain('Apache Tika');
     expect(sectionText('Your texts, files and activity')).toContain(`${TRASH_DAYS} days`);

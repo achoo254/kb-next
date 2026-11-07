@@ -58,11 +58,11 @@ function detail(overrides: Partial<SpaceDetail> = {}): SpaceDetail {
     },
     members: [
       { name: 'Đạt', picture: null, role: 'admin', documentCount: 7 },
-      { name: 'Linh', picture: null, role: 'reviewer', documentCount: 0 },
+      { name: 'Linh', picture: null, role: 'member', documentCount: 0 },
       { name: 'Minh', picture: null, role: 'member', documentCount: 1 },
       { name: 'An', picture: null, role: 'member', documentCount: 1 },
     ],
-    permissions: { canCreate: true, canReview: false, canAdmin: false },
+    permissions: { canCreate: true, canAdmin: false },
     collections: [
       {
         id: 'c1',
@@ -128,11 +128,12 @@ describe('SpaceScreen', () => {
     expect(within(docs).getByText('Read')).toBeTruthy();
     expect(within(docs).getByText('72%')).toBeTruthy();
     expect(within(docs).getByText('Note · Minh')).toBeTruthy();
-    expect(within(docs).getByText('Awaiting review')).toBeTruthy();
+    // A text left waiting from the review gate reads as the author's private one.
+    expect(within(docs).getByText('Yours · private')).toBeTruthy();
 
     const members = screen.getByRole('complementary', { name: 'Members and permissions' });
-    expect(within(members).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['ĐĐạtAdmin', 'LLinhReviewer', 'MMinhMember', 'AAnMember']);
-    expect(within(members).getByText('Đạt, Linh')).toBeTruthy();
+    expect(within(members).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['ĐĐạtAdmin', 'LLinhMember', 'MMinhMember', 'AAnMember']);
+    expect(within(members).queryByText('Reviewing')).toBeNull();
 
     const related = screen.getByRole('complementary', { name: 'Related Spaces' });
     expect(within(related).getByRole('link', { name: 'Linux, 3 exercises, relevance 0.70' }).getAttribute('href')).toBe('/s/linux');
@@ -154,7 +155,7 @@ describe('SpaceScreen', () => {
 
   it('opens the collection named in the address, without a write button for a guest', async () => {
     window.history.replaceState(null, '', '/s/networking?c=c2');
-    fetchMock.mockImplementation(async () => answer(200, detail({ permissions: { canCreate: false, canReview: false, canAdmin: false } })));
+    fetchMock.mockImplementation(async () => answer(200, detail({ permissions: { canCreate: false, canAdmin: false } })));
     renderWithI18n(<SpaceScreen slug="networking" />);
     expect(await screen.findByText('This collection is empty')).toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Write the first piece' })).toBeNull();
@@ -205,7 +206,7 @@ describe('space labels', () => {
   const t = (key: keyof typeof spaceEn, vars?: Record<string, string | number>): string => spaceEn[key].replace(/\{(\w+)\}/g, (_, name: string) => String(vars?.[name] ?? ''));
 
   it('names the origin, kind and progress as the cards show them', () => {
-    expect(originOf({ origin: 'community', status: 'pending' })).toBe('pending');
+    expect(originOf({ origin: 'own', status: 'pending' })).toBe('private');
     expect(originOf({ origin: 'own', status: 'private' })).toBe('private');
     expect(originOf({ origin: 'official', status: 'approved' })).toBe('official');
     expect(cardKind(t, doc('x', 'subnet.xlsx', { type: 'office', origin: 'own' }))).toBe('Excel file');

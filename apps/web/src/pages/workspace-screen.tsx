@@ -1,8 +1,8 @@
 /**
  * "Cài đặt workspace" (board C19, /admin/settings, admins only): six tabs.
- * - Thành viên: every account with its role (Quản trị, Người duyệt, Thành viên) and last activity; "Đổi vai trò" and
+ * - Thành viên: every account with its role (Quản trị, Thành viên) and last activity; "Đổi vai trò" and
  *   "Gỡ" (taking an account out; "Khôi phục" puts it back), never on the server's bootstrap admins or on yourself;
- *   and "Mời bằng link" (one live link, shown once when made, 7 days, the role it grants).
+ *   and "Mời bằng link" (one live link, shown once when made, 7 days, letting members in).
  * - Vai trò & quyền, Đăng nhập (read only), Tích hợp (checked live), API keys (A03's token, a link to A03), Nhật ký
  *   kiểm toán (filters): workspace-panels.tsx.
  * Every change is written to the audit log by the server; the toast says so.
@@ -11,9 +11,7 @@ import { type ReactNode, useState } from 'react';
 import { ApiError } from '../api/api-client';
 import { WORKSPACE_ROLES, type WorkspaceRole } from '../api/content-api';
 import {
-  INVITE_ROLES,
   type Invite,
-  type InviteRole,
   type MadeInvite,
   type Member,
   changeRole,
@@ -107,7 +105,6 @@ function MemberRow({ member, index, t, onRole, onRemove, onRestore }: { member: 
 
 function InvitePanel({ t }: { t: T }): ReactNode {
   const live = useLoad(fetchInvite);
-  const [role, setRole] = useState<InviteRole>('member');
   const [made, setMade] = useState<MadeInvite | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -118,7 +115,7 @@ function InvitePanel({ t }: { t: T }): ReactNode {
     setBusy(true);
     setFailed(false);
     try {
-      const next = await createInvite(role);
+      const next = await createInvite();
       setMade(next);
       setCopied(false);
       live.set(next.invite);
@@ -171,27 +168,7 @@ function InvitePanel({ t }: { t: T }): ReactNode {
           </button>
         )}
       </div>
-      <label className="ws-invite-role">
-        {t('ws.invite.role')}
-        <select
-          value={role}
-          onChange={(event) => {
-            const next = INVITE_ROLES.find((r) => r === event.target.value) ?? 'member';
-            setRole(next);
-            // The link shown grants the role it was made with: a different role needs a new link.
-            if (made && made.invite.role !== next) setMade(null);
-          }}
-          data-id="ws-invite-role"
-        >
-          {INVITE_ROLES.map((r) => (
-            <option key={r} value={r}>
-              {roleLabel(t, r)}
-            </option>
-          ))}
-        </select>
-      </label>
       <span className="ws-muted ws-small">{current ? t('ws.invite.expires', { date: dayText(current.expiresAt) }) : t('ws.invite.expiresNew')}</span>
-      {role === 'reviewer' && <span className="ws-muted ws-small">{t('ws.invite.singleUse')}</span>}
       {!made && current && <span className="ws-muted ws-small">{t('ws.invite.hidden')}</span>}
       {current && current.acceptedCount > 0 && <span className="ws-muted ws-small">{t('ws.invite.accepted', { count: current.acceptedCount })}</span>}
       {current && (

@@ -1,22 +1,23 @@
 /**
  * Publishing a text (board C04, /d/:id/publish): a sheet over the editor with two tabs.
  *
- * Xuất bản: who sees it (only "Riêng tư" or "Gửi duyệt"), its Space and Collection, its original language, its tags
- * (at most 8), and an AI translation into the other language on the author's own key; the card on the right shows
- * how the text will look. "Gửi duyệt" is the only place a submission starts: it shows C06's steps in place (the
- * address becomes /d/:id/submit, which never sends on its own). "Lưu riêng tư" keeps it to the author (C08).
+ * Xuất bản: who sees it ("Riêng tư" or "Công khai"), its Space and Collection, its original language, its tags (at
+ * most 8), and an AI translation into the other language on the author's own key; the card on the right shows how the
+ * text will look. "Đăng công khai" is the only place a publication starts: the text is public at once and C06's steps
+ * show in place (the address becomes /d/:id/submit, which never publishes on its own). "Lưu riêng tư" keeps it to the
+ * author (C08); on a published text it is "Gỡ xuống", which unpublishes it (chủ dự án chốt 07/11/2026: no review).
  *
- * Chia sẻ: locked until the text is approved (and shown); then the way to its share link (C18).
+ * Chia sẻ: locked until the text is published; then the way to its share link (C18).
  *
  * States: loading, failed (not found, no access, server), the form (a text without a title or body says what to fix
- * and cannot be sent), waiting for review (only "Riêng tư" takes it back), published (read-only, Chia sẻ open),
- * saving, and a save that failed.
+ * and cannot be published), published (its place fixed, Chia sẻ open, "Riêng tư" unpublishes it), saving, and a save
+ * that failed. Texts left from the review gate (`pending`, `changes_requested`, `rejected`) open as private ones.
  */
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
 import { type DocumentView, type SpaceListItem, fetchDocument, fetchSpaces } from '../api/content-api';
 import { type KeysResponse, fetchKeys } from '../api/keys-api';
-import { type SubmitRequest, keepPrivate } from '../api/review-api';
+import { type PublishRequest, keepPrivate } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { useDevice } from '../layout/device';
 import { PhoneShell } from '../layout/phone-shell';
@@ -34,7 +35,7 @@ import './publish-screen.css';
 import { navigate } from '../router/navigation';
 
 type Lang = 'vi' | 'en';
-type Visibility = 'private' | 'review';
+type Visibility = 'private' | 'public';
 type Tab = 'publish' | 'share';
 
 type Load = { status: 'loading' } | { status: 'failed'; error: ReaderFailure } | { status: 'ready'; view: DocumentView; spaces: SpaceListItem[]; keys: KeysResponse | null };
@@ -49,15 +50,18 @@ export interface PublishChoice {
   translate: boolean;
 }
 
-/** Spaces the text may go to: public ones for review, the author's own Universe too when it stays private. */
+/** Spaces the text may go to: public ones to publish, the author's own Universe too when it stays private. */
 export function spacesFor(spaces: readonly SpaceListItem[], visibility: Visibility): SpaceListItem[] {
   return spaces.filter((s) => s.kind === 'public' || visibility === 'private');
 }
 
-/** The form as it opens: where the text is now (a public Space for review, else the first public one). */
+/**
+ * The form as it opens: a draft or a published text on "Công khai", any other (private, or left from the review gate)
+ * on "Riêng tư"; where the text is now (a public Space to publish, else the first public one).
+ */
 export function initialChoice(view: DocumentView, spaces: readonly SpaceListItem[]): PublishChoice {
   const doc = view.document;
-  const visibility: Visibility = doc.status === 'private' ? 'private' : 'review';
+  const visibility: Visibility = doc.status === 'draft' || doc.status === 'approved' ? 'public' : 'private';
   const current = spaces.find((s) => s.slug === doc.space.slug);
   const space = current && (current.kind === 'public' || visibility === 'private') ? current : (spacesFor(spaces, visibility)[0] ?? current);
   return {
@@ -70,7 +74,7 @@ export function initialChoice(view: DocumentView, spaces: readonly SpaceListItem
   };
 }
 
-/** What stops it being sent (C04's warning): no title, no text. */
+/** What stops it being published (C04's warning): no title, no text. */
 export function blockers(view: DocumentView): Array<'noTitle' | 'noBody'> {
   const found: Array<'noTitle' | 'noBody'> = [];
   if (!view.document.title.trim()) found.push('noTitle');
@@ -78,8 +82,8 @@ export function blockers(view: DocumentView): Array<'noTitle' | 'noBody'> {
   return found;
 }
 
-/** The request C04 sends (or keeps private with). */
-export function requestOf(choice: PublishChoice): SubmitRequest {
+/** The request C04 publishes (or keeps private) with. */
+export function requestOf(choice: PublishChoice): PublishRequest {
   return { space: choice.space, ...(choice.collection ? { collection: choice.collection } : {}), tags: choice.tags, lang: choice.lang };
 }
 
@@ -115,13 +119,13 @@ function useLoad(id: string): Load {
 export function PublishScreen({ id }: { id: string }): ReactNode {
   const { t } = usePublishText();
   const load = useLoad(id);
-  const [sending, setSending] = useState<{ request: SubmitRequest; translateTo?: Lang } | null>(null);
+  const [sending, setSending] = useState<{ request: PublishRequest; translateTo?: Lang } | null>(null);
   const device = useDevice();
 
   if (sending) return <SubmitScreen id={id} request={sending.request} translateTo={sending.translateTo} />;
 
-  const onSend = (request: SubmitRequest, translateTo?: Lang): void => {
-    // The address of C06 from now on: a reload there shows the text waiting, it never sends again.
+  const onSend = (request: PublishRequest, translateTo?: Lang): void => {
+    // The address of C06 from now on: a reload there shows the text published, it never publishes again.
     window.history.replaceState(window.history.state, '', submitPath(id));
     setSending({ request, translateTo });
   };
@@ -161,10 +165,10 @@ interface SheetProps {
   view: DocumentView;
   spaces: SpaceListItem[];
   keys: KeysResponse | null;
-  onSend(request: SubmitRequest, translateTo?: Lang): void;
+  onSend(request: PublishRequest, translateTo?: Lang): void;
 }
 
-/** The choice of the publish form and its two ways out: keep the text private, or send it for review. */
+/** The choice of the publish form and its two ways out: keep the text private (unpublish it), or publish it. */
 function usePublishChoice(view: DocumentView, spaces: readonly SpaceListItem[], onSend: SheetProps['onSend']) {
   const { t } = usePublishText();
   const doc = view.document;
@@ -246,13 +250,13 @@ function Scopes({ tab, status, visibility }: { tab: Tab; status: DocumentView['d
   const { t } = usePublishText();
   const published = status === 'approved';
   const on = {
-    private: !published && tab === 'publish' && visibility === 'private',
-    pending: !published && tab === 'publish' && visibility === 'review',
-    public: published || tab === 'share',
+    private: tab === 'publish' && visibility === 'private',
+    public: tab === 'publish' && visibility === 'public',
+    share: published && tab === 'share',
   };
   return (
     <div className="publish-scopes" aria-hidden="true">
-      {(['private', 'pending', 'public'] as const).map((scope) => (
+      {(['private', 'public', 'share'] as const).map((scope) => (
         <div key={scope} className="publish-scope" data-scope={scope} data-on={on[scope] || undefined}>
           <span className="publish-scope-name">
             <span className="publish-scope-dot" />
@@ -282,7 +286,8 @@ function usePublishForm({ view, spaces, keys, choice, onChange, saving, onSend, 
   const { t, locale } = usePublishText();
   const doc = view.document;
   const published = doc.status === 'approved';
-  const pending = doc.status === 'pending';
+  // A published text keeps its place while it stays public; choosing "Riêng tư" unpublishes it (C08 "Gỡ xuống").
+  const fixed = published && choice.visibility === 'public';
   const problems = blockers(view);
   const options = spacesFor(spaces, choice.visibility);
   const space = spaces.find((s) => s.slug === choice.space);
@@ -292,12 +297,12 @@ function usePublishForm({ view, spaces, keys, choice, onChange, saving, onSend, 
   const set = (patch: Partial<PublishChoice>): void => onChange({ ...choice, ...patch });
 
   const pickVisibility = (visibility: Visibility): void => {
-    if (published) return;
-    // Private goes to the author's own Universe (board C04); for review, a public Space (the current one if it is).
+    // Private goes to the author's own Universe (board C04), except a published text, which stays where it is when
+    // taken down; to publish, a public Space (the current one if it is).
     const personal = spaces.find((s) => s.kind === 'personal');
-    const publicOnes = spacesFor(spaces, 'review');
+    const publicOnes = spacesFor(spaces, 'public');
     const next =
-      visibility === 'private'
+      visibility === 'private' && !published
         ? (personal?.slug ?? choice.space)
         : publicOnes.some((s) => s.slug === choice.space)
           ? choice.space
@@ -305,21 +310,19 @@ function usePublishForm({ view, spaces, keys, choice, onChange, saving, onSend, 
     onChange({ ...choice, visibility, space: next, collection: next === choice.space ? choice.collection : null, translate: visibility === 'private' ? false : choice.translate });
   };
 
-  const note = published ? t('publish.note.approved') : pending && choice.visibility === 'review' ? t('publish.note.pending') : t(`publish.note.${choice.visibility}`);
-  const cta: { label: PublishMessageKey; disabled: boolean; run?: () => void; href?: string } = published
+  const note = published ? t(choice.visibility === 'public' ? 'publish.note.approved' : 'publish.note.unpublish') : t(`publish.note.${choice.visibility}`);
+  const cta: { label: PublishMessageKey; disabled: boolean; run?: () => void; href?: string } = fixed
     ? { label: 'publish.cta.share', disabled: false, href: sharePagePath(doc.id) }
     : choice.visibility === 'private'
-      ? { label: 'publish.cta.private', disabled: saving, run: onKeepPrivate }
-      : pending
-        ? { label: 'publish.cta.pending', disabled: true }
-        : { label: 'publish.cta.review', disabled: problems.length > 0, run: onSend };
+      ? { label: published ? 'publish.cta.unpublish' : 'publish.cta.private', disabled: saving, run: onKeepPrivate }
+      : { label: 'publish.cta.public', disabled: problems.length > 0, run: onSend };
 
-  return { t, locale, doc, published, pending, problems, options, space, langFixed, other, key, set, pickVisibility, note, cta };
+  return { t, locale, doc, published, fixed, problems, options, space, langFixed, other, key, set, pickVisibility, note, cta };
 }
 
 function PublishForm(props: FormProps): ReactNode {
   const { choice, saving, failed } = props;
-  const { t, locale, doc, published, problems, options, space, langFixed, other, key, set, pickVisibility, note, cta } = usePublishForm(props);
+  const { t, locale, doc, published, fixed, problems, options, space, langFixed, other, key, set, pickVisibility, note, cta } = usePublishForm(props);
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     if (!cta.disabled) cta.run?.();
@@ -327,7 +330,7 @@ function PublishForm(props: FormProps): ReactNode {
 
   return (
     <form className="publish-form" onSubmit={submit} data-id="publish-form">
-      {problems.length > 0 && !published && choice.visibility === 'review' && (
+      {problems.length > 0 && !published && choice.visibility === 'public' && (
         <div className="publish-alert" role="alert" data-id="publish-blockers">
           <span className="publish-alert-title">{t('publish.err.title', { n: problems.length })}</span>
           {problems.map((p) => (
@@ -340,14 +343,14 @@ function PublishForm(props: FormProps): ReactNode {
           <span className="publish-alert-title">{t('publish.failed', { reason: failed })}</span>
         </div>
       )}
-      <fieldset className="publish-who" disabled={published}>
+      <fieldset className="publish-who">
         <legend className="publish-label">{t('publish.who')}</legend>
         <div role="radiogroup" aria-label={t('publish.who')} className="publish-vis">
-          {(['private', 'review'] as const).map((v) => (
+          {(['private', 'public'] as const).map((v) => (
             <button key={v} type="button" role="radio" aria-checked={choice.visibility === v} className="publish-vis-card" data-vis={v} onClick={() => pickVisibility(v)} data-id={`publish-vis-${v}`}>
               <span className="publish-vis-orb" aria-hidden="true">
                 <span className="publish-vis-ball" />
-                {v === 'review' && <span className="publish-vis-ring" />}
+                {v === 'public' && <span className="publish-vis-ring" />}
               </span>
               <span className="publish-vis-text">
                 <span className="publish-vis-name">{t(`publish.vis.${v}`)}</span>
@@ -362,7 +365,7 @@ function PublishForm(props: FormProps): ReactNode {
         <label className="publish-field">
           <span className="publish-label">{t('publish.space')}</span>
           <span className="publish-hint">&nbsp;</span>
-          <select className="publish-select" value={choice.space} disabled={published} onChange={(e) => set({ space: e.target.value, collection: null })} data-id="publish-space">
+          <select className="publish-select" value={choice.space} disabled={fixed} onChange={(e) => set({ space: e.target.value, collection: null })} data-id="publish-space">
             {options.map((s) => (
               <option key={s.slug} value={s.slug}>
                 {s.kind === 'personal' ? t('publish.space.personal') : t('publish.space.public', { name: spaceName(s, locale) })}
@@ -373,7 +376,7 @@ function PublishForm(props: FormProps): ReactNode {
         <label className="publish-field">
           <span className="publish-label">{t('publish.collection')}</span>
           <span className="publish-hint">{t('publish.collection.hint')}</span>
-          <select className="publish-select" value={choice.collection ?? ''} disabled={published} onChange={(e) => set({ collection: e.target.value || null })} data-id="publish-collection">
+          <select className="publish-select" value={choice.collection ?? ''} disabled={fixed} onChange={(e) => set({ collection: e.target.value || null })} data-id="publish-collection">
             {space?.collections.map((c) => (
               <option key={c.id} value={c.id}>
                 {spaceName(c, locale)}
@@ -388,14 +391,14 @@ function PublishForm(props: FormProps): ReactNode {
           </span>
           <div role="radiogroup" aria-labelledby="publish-lang" className="publish-langs" title={langFixed ? t('publish.lang.fixed') : undefined}>
             {(['vi', 'en'] as const).map((l) => (
-              <button key={l} type="button" role="radio" aria-checked={choice.lang === l} className="publish-lang" disabled={published || langFixed} onClick={() => set({ lang: l })}>
+              <button key={l} type="button" role="radio" aria-checked={choice.lang === l} className="publish-lang" disabled={fixed || langFixed} onClick={() => set({ lang: l })}>
                 {l.toUpperCase()}
               </button>
             ))}
           </div>
         </div>
       </div>
-      <Tags tags={choice.tags} disabled={published} onChange={(tags) => set({ tags })} />
+      <Tags tags={choice.tags} disabled={fixed} onChange={(tags) => set({ tags })} />
       <div className="publish-row2">
         <div className="publish-switch-row">
           <div className="publish-switch-text">
@@ -520,7 +523,7 @@ function ShareTab({ view, onPublish }: { view: DocumentView; onPublish(): void }
             {t('publish.share.toPublish')}
           </button>
           <a className="publish-glass publish-glass-sm" href={SHELL_PATHS.mine}>
-            {t('publish.share.status')}
+            {t('publish.share.mine')}
           </a>
         </div>
       </div>
@@ -541,7 +544,7 @@ function PreviewCard({ view, spaces, choice }: { view: DocumentView; spaces: Spa
   const { t, locale } = usePublishText();
   const doc = view.document;
   const published = doc.status === 'approved';
-  const state: 'private' | 'review' | 'approved' = published ? 'approved' : choice.visibility;
+  const state: 'private' | 'public' | 'approved' = published && choice.visibility === 'public' ? 'approved' : choice.visibility;
   const space = spaces.find((s) => s.slug === choice.space);
   const collection = space?.collections.find((c) => c.id === choice.collection);
   const place = choice.visibility === 'private' && space?.kind === 'personal' ? t('publish.card.space.private') : [space ? spaceName(space, locale) : '', collection ? spaceName(collection, locale) : ''].filter(Boolean).join(' › ');
@@ -549,7 +552,7 @@ function PreviewCard({ view, spaces, choice }: { view: DocumentView; spaces: Spa
   const other: Lang = choice.lang === 'vi' ? 'en' : 'vi';
   const lang = choice.translate ? t('publish.card.lang.withTranslation', { lang: choice.lang.toUpperCase(), other: other.toUpperCase() }) : langName(choice.lang);
   const line = useMemo(() => firstLine(view), [view]);
-  const where: PublishMessageKey = state === 'private' ? 'publish.card.where.private' : 'publish.card.where.review';
+  const where: PublishMessageKey = state === 'private' ? 'publish.card.where.private' : 'publish.card.where.public';
   return (
     <aside className="publish-card" aria-label={t('publish.card')} data-id="publish-card" data-state={state}>
       <span className="publish-card-where">{t(where)}</span>
@@ -559,7 +562,7 @@ function PreviewCard({ view, spaces, choice }: { view: DocumentView; spaces: Spa
       </div>
       <span className="publish-card-badge">
         <span className="publish-card-badge-dot" />
-        {t(state === 'approved' ? 'publish.card.badge.approved' : state === 'private' ? 'publish.card.badge.private' : 'publish.card.badge.review')}
+        {t(state === 'approved' ? 'publish.card.badge.approved' : state === 'private' ? 'publish.card.badge.private' : 'publish.card.badge.public')}
       </span>
       <span className="publish-card-title">{doc.title.trim() || t('publish.card.untitled')}</span>
       {line && <span className="publish-card-line">{line}</span>}
@@ -575,14 +578,14 @@ function PreviewCard({ view, spaces, choice }: { view: DocumentView; spaces: Spa
         <span>·</span>
         <span>{place}</span>
       </div>
-      <span className="publish-card-note">{t(state === 'approved' ? 'publish.card.note.approved' : state === 'private' ? 'publish.card.note.private' : 'publish.card.note.review')}</span>
+      <span className="publish-card-note">{t(state === 'approved' ? 'publish.card.note.approved' : state === 'private' ? 'publish.card.note.private' : 'publish.card.note.public')}</span>
     </aside>
   );
 }
 
 /**
  * Publishing on a phone (board M03): the text dimmed behind, the form in a sheet rising from the bottom with the text's
- * card on top (its planet, where it goes, its languages). Sending opens the same steps as on a desktop (C06).
+ * card on top (its planet, where it goes, its languages). Publishing opens the same steps as on a desktop (C06).
  */
 function PublishPhone({ id, load, onSend }: { id: string; load: Load; onSend: SheetProps['onSend'] }): ReactNode {
   const { t } = usePublishText();
@@ -630,7 +633,7 @@ function PublishPhoneForm({ view, spaces, keys, onSend }: SheetProps): ReactNode
         <img src={ILLUSTRATIONS['doc-planet']} alt="" aria-hidden="true" />
         <span className="publish-phone-card-text">
           <b>{view.document.title}</b>
-          <span>{[phone.t(choice.visibility === 'private' ? 'publish.private' : 'publish.review'), where].filter(Boolean).join(' · ')}</span>
+          <span>{[phone.t(choice.visibility === 'private' ? 'publish.private' : 'publish.public'), where].filter(Boolean).join(' · ')}</span>
         </span>
         <span className="publish-phone-badge">{langs}</span>
       </div>
@@ -646,12 +649,12 @@ function placeValue(space: string, collection: string | null): string {
 
 /**
  * The phone form (M03): who sees it, the language, one picker for where it goes (Space › Collection), the tags, the
- * translation switch and the send button; the same choice and rules as the desktop form.
+ * translation switch and the publish button; the same choice and rules as the desktop form.
  */
 function PhoneForm(props: FormProps): ReactNode {
   const { choice, saving, failed } = props;
   const phone = usePhoneText();
-  const { t, locale, published, problems, options, langFixed, other, key, set, pickVisibility, note, cta } = usePublishForm(props);
+  const { t, locale, published, fixed, problems, options, langFixed, other, key, set, pickVisibility, note, cta } = usePublishForm(props);
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     if (!cta.disabled) cta.run?.();
@@ -662,11 +665,11 @@ function PhoneForm(props: FormProps): ReactNode {
   });
   const visibilities = [
     { id: 'private', icon: 'lock', name: phone.t('publish.private'), sub: phone.t('publish.privateSub') },
-    { id: 'review', icon: 'clock', name: phone.t('publish.review'), sub: phone.t('publish.reviewSub') },
+    { id: 'public', icon: 'publish', name: phone.t('publish.public'), sub: phone.t('publish.publicSub') },
   ] as const;
   return (
     <form className="publish-phone-form" onSubmit={submit} data-id="publish-form">
-      {problems.length > 0 && !published && choice.visibility === 'review' && (
+      {problems.length > 0 && !published && choice.visibility === 'public' && (
         <div className="publish-alert" role="alert" data-id="publish-blockers">
           <span className="publish-alert-title">{t('publish.err.title', { n: problems.length })}</span>
           {problems.map((p) => (
@@ -679,7 +682,7 @@ function PhoneForm(props: FormProps): ReactNode {
           <span className="publish-alert-title">{t('publish.failed', { reason: failed })}</span>
         </div>
       )}
-      <fieldset className="publish-phone-group" disabled={published}>
+      <fieldset className="publish-phone-group">
         <legend className="publish-phone-label">{t('publish.who')}</legend>
         <div role="radiogroup" aria-label={t('publish.who')} className="publish-phone-vis">
           {visibilities.map((v) => (
@@ -698,7 +701,7 @@ function PhoneForm(props: FormProps): ReactNode {
         </span>
         <div role="radiogroup" aria-labelledby="publish-phone-lang" className="publish-phone-langs" title={langFixed ? t('publish.lang.fixed') : undefined}>
           {(['vi', 'en'] as const).map((l) => (
-            <button key={l} type="button" role="radio" aria-checked={choice.lang === l} className="publish-phone-lang" disabled={published || langFixed} onClick={() => set({ lang: l })}>
+            <button key={l} type="button" role="radio" aria-checked={choice.lang === l} className="publish-phone-lang" disabled={fixed || langFixed} onClick={() => set({ lang: l })}>
               {l.toUpperCase()}
             </button>
           ))}
@@ -710,7 +713,7 @@ function PhoneForm(props: FormProps): ReactNode {
           <span className="publish-phone-place-dot" aria-hidden="true" />
           <select
             value={placeValue(choice.space, choice.collection)}
-            disabled={published}
+            disabled={fixed}
             onChange={(e) => {
               const [slug = choice.space, collection = ''] = e.target.value.split('|');
               set({ space: slug, collection: collection || null });
@@ -725,7 +728,7 @@ function PhoneForm(props: FormProps): ReactNode {
           </select>
         </span>
       </label>
-      <Tags tags={choice.tags} disabled={published} onChange={(tags) => set({ tags })} />
+      <Tags tags={choice.tags} disabled={fixed} onChange={(tags) => set({ tags })} />
       <div className="publish-switch-row publish-phone-switch">
         <div className="publish-switch-text">
           <div className="publish-switch-name">{t('publish.translate', { lang: other.toUpperCase() })}</div>

@@ -1,7 +1,8 @@
 /**
- * "Của tôi" (board C08, `/me`): the account's own texts and canvases as a small universe (rings by step of review) or
- * a list, what it opened lately, its favourites and its trash, filtered by type and by review status. The panel on the
- * right shows the picked text: its status and the reviewer's reason, where it lives, and what can be done with it.
+ * "Của tôi" (board C08, `/me`): the account's own texts and canvases as a small universe (rings: draft, private,
+ * published) or a list, what it opened lately, its favourites and its trash, filtered by type and by status. The panel
+ * on the right shows the picked text: its status, where it lives, and what can be done with it (edit, publish, share,
+ * take down, trash: the author has full control of their texts).
  * States: loading, failed (retry), the empty own universe ("vũ trụ riêng còn trống": no personal Space, or one without
  * texts), and an empty state per tab. Moving to the trash, restoring and deleting for good confirm with a toast; the
  * first two can be undone.
@@ -25,7 +26,7 @@ import {
 } from '../api/authoring-api';
 import { type CanvasListItem, fetchCanvases } from '../api/canvas-api';
 import { type SpaceListItem, fetchSpaces } from '../api/content-api';
-import { withdrawSubmission } from '../api/review-api';
+import { keepPrivate } from '../api/review-api';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { Button } from '../ui/button';
 import { readDefaultView } from '../ui/display-prefs';
@@ -209,7 +210,7 @@ export function MineScreen(): ReactNode {
       () => act(() => restoreFromTrash(item.id), t('mine.toast.restored', { title: item.title })),
     );
 
-  const withdraw = (item: MineItem): void => act(() => withdrawSubmission(item.id), t('mine.toast.withdrawn', { title: item.title }));
+  const unpublish = (item: MineItem): void => act(() => keepPrivate(item.id), t('mine.toast.unpublished', { title: item.title }));
 
   const restore = (doc: TrashedDocument): void =>
     act(
@@ -315,7 +316,7 @@ export function MineScreen(): ReactNode {
           </section>
           <aside aria-label={t('mine.details')} className="mine-aside" data-id="mine-aside">
             {data && selected ? (
-              <Detail item={selected} onStar={star} onTrash={moveToTrash} onWithdraw={withdraw} now={now} />
+              <Detail item={selected} onStar={star} onTrash={moveToTrash} onUnpublish={unpublish} now={now} />
             ) : (
               <span className="mine-aside-none">{data && items.length === 0 ? t('mine.empty.aside') : t('mine.pickOne')}</span>
             )}

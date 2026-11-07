@@ -1,6 +1,6 @@
 /**
- * "Của tôi" (C08) in jsdom: the board's state (tabs and counts, rings, the text sent back picked first with its
- * reason), picking, filters, the list view, the trash with undo, recent texts, favourites, the trash tab (restore,
+ * "Của tôi" (C08) in jsdom: the board's state (tabs and counts, rings, the last changed text picked first; texts left
+ * from the review gate shown as private), picking (edit, publish, share, take down), filters, the list view, the trash with undo, recent texts, favourites, the trash tab (restore,
  * delete for good after typing XOÁ, empty it), and the states of the screen: loading, failed, an empty tab, the empty
  * own universe.
  */
@@ -89,27 +89,28 @@ function tab(name: RegExp): HTMLElement {
 }
 
 describe('the board’s state', () => {
-  it('shows the tabs with their counts, the three rings and the text sent back, picked first', async () => {
+  it('shows the tabs with their counts, the three rings and the last changed text, picked first', async () => {
     const container = await ready();
     expect(tab(/Vũ trụ của tôi/).textContent).toBe('Vũ trụ của tôi7');
     expect(tab(/Gần đây/).textContent).toBe('Gần đây2');
     expect(tab(/Yêu thích/).textContent).toBe('Yêu thích2');
     expect(tab(/Thùng rác/).textContent).toBe('Thùng rác2');
     expect(screen.getByText('ĐANG SOẠN')).toBeTruthy();
-    expect(screen.getByText('ĐANG DUYỆT')).toBeTruthy();
+    expect(screen.getByText('RIÊNG TƯ')).toBeTruthy();
     expect(screen.getByText('ĐÃ CÔNG KHAI')).toBeTruthy();
     expect(container.querySelectorAll('.mine-planet')).toHaveLength(7);
-    expect(screen.getByRole('button', { name: 'Mẹo DNS cache · Bị từ chối' })).toBeTruthy();
+    // Texts left from the review gate (waiting, sent back, rejected) are private now.
+    expect(screen.getByRole('button', { name: 'Mẹo DNS cache · Riêng tư' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'TCP vs UDP bằng hình · Riêng tư' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Ghi chú: swap trên Ubuntu · Riêng tư' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'k8s-intro.pptx · Bị quản trị ẩn' })).toBeTruthy();
+    expect(screen.queryByText(/duyệt/i)).toBeNull();
 
     const detail = within(screen.getByRole('complementary', { name: 'Chi tiết' }));
-    expect(detail.getByText('TCP vs UDP bằng hình')).toBeTruthy();
-    expect(detail.getByText('Ghi chú · sửa hôm qua')).toBeTruthy();
-    expect(detail.getByText('Cần sửa')).toBeTruthy();
-    expect(detail.getByText('Người duyệt muốn bạn sửa một chút rồi gửi lại.')).toBeTruthy();
-    expect(detail.getByText('“Thêm link RFC 793 cho phần bắt tay 3 bước nhé.” · Linh')).toBeTruthy();
-    expect(detail.getByText('Networking › Web')).toBeTruthy();
-    expect(detail.getByRole('link', { name: 'Sửa và gửi lại' }).getAttribute('href')).toBe('/d/n3/edit');
+    expect(detail.getByText('Máy mới xin IP thế nào')).toBeTruthy();
+    expect(detail.getByText('Đã đăng · Cộng đồng')).toBeTruthy();
+    expect(detail.getByText('Networking › Giao thức nền tảng')).toBeTruthy();
+    expect(detail.getByRole('link', { name: 'Sửa' }).getAttribute('href')).toBe('/d/n1/edit');
     expect((detail.getByRole('button', { name: 'Bỏ vào thùng rác' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
@@ -127,28 +128,35 @@ describe('the board’s state', () => {
 });
 
 describe('picking a planet', () => {
-  it('shows what each step allows: a published text is not the author’s to delete and is shared from C18, a pending one can be taken back', async () => {
+  it('shows what each step allows: the author edits, shares, takes down and deletes a published text; publishes a private one', async () => {
     await ready();
-    fireEvent.click(screen.getByRole('button', { name: 'Máy mới xin IP thế nào · Đã duyệt · Cộng đồng' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Máy mới xin IP thế nào · Đã đăng · Cộng đồng' }));
     const detail = within(screen.getByRole('complementary', { name: 'Chi tiết' }));
     expect(detail.getByText('Networking › Giao thức nền tảng')).toBeTruthy();
-    expect(detail.getByRole('link', { name: 'Mở' }).getAttribute('href')).toBe('/d/n1');
+    expect(detail.getByRole('link', { name: 'Sửa' }).getAttribute('href')).toBe('/d/n1/edit');
     expect(detail.getByRole('link', { name: 'Chia sẻ' }).getAttribute('href')).toBe('/d/n1/share');
-    expect((detail.getByRole('button', { name: 'Bỏ vào thùng rác' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((detail.getByRole('button', { name: 'Bỏ vào thùng rác' }) as HTMLButtonElement).disabled).toBe(false);
     expect(detail.getByRole('button', { name: 'Bỏ yêu thích' }).getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(detail.getByRole('button', { name: 'Gỡ xuống' }));
+    await waitFor(() => expect(calls).toContain('POST /api/documents/n1/private'));
+    expect(await screen.findByText('Đã gỡ "Máy mới xin IP thế nào" xuống · về riêng tư')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Ghi chú: swap trên Ubuntu · Chờ duyệt' }));
-    expect(detail.getByRole('link', { name: 'Xem trước' }).getAttribute('href')).toBe('/d/n2');
+    // A text left waiting for review: private, the author publishes it from C04.
+    fireEvent.click(screen.getByRole('button', { name: 'Ghi chú: swap trên Ubuntu · Riêng tư' }));
     expect(detail.getByText('Ghi chú · sửa 1 giờ trước')).toBeTruthy();
-    fireEvent.click(detail.getByRole('button', { name: 'Rút lại' }));
-    await waitFor(() => expect(calls).toContain('POST /api/documents/n2/withdraw'));
-    expect(await screen.findByText('Đã rút "Ghi chú: swap trên Ubuntu" khỏi hàng duyệt · về bản nháp')).toBeTruthy();
+    expect(detail.getByRole('link', { name: 'Đăng' }).getAttribute('href')).toBe('/d/n2/publish');
+    expect(detail.queryByRole('button', { name: 'Gỡ xuống' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'lab-notes.docx · Riêng tư' }));
     expect(detail.getByRole('link', { name: 'Mở' }).getAttribute('href')).toBe('/d/o1');
-    // Sending for review opens C04: where it goes, then its "Gửi duyệt" sends it (C06).
-    expect(detail.getByRole('link', { name: 'Gửi duyệt' }).getAttribute('href')).toBe('/d/o1/publish');
+    // Publishing opens C04: where it goes, then its "Đăng công khai" publishes it (C06).
+    expect(detail.getByRole('link', { name: 'Đăng' }).getAttribute('href')).toBe('/d/o1/publish');
     expect(detail.getByText('Vũ trụ của bạn')).toBeTruthy();
+
+    // Hidden by an admin: no share link, but still the author's to take down or delete.
+    fireEvent.click(screen.getByRole('button', { name: 'k8s-intro.pptx · Bị quản trị ẩn' }));
+    expect(detail.queryByRole('link', { name: 'Chia sẻ' })).toBeNull();
+    expect(detail.getByRole('button', { name: 'Gỡ xuống' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'DHCP từ A đến Z · Riêng tư' }));
     expect(detail.getByRole('link', { name: 'Mở' }).getAttribute('href')).toBe('/canvas/cv1');
@@ -157,8 +165,8 @@ describe('picking a planet', () => {
 
   it('stars and unstars a text', async () => {
     await ready();
-    fireEvent.click(screen.getByRole('button', { name: 'Thêm yêu thích' }));
-    await waitFor(() => expect(calls).toContain('PUT /api/documents/n3/favorite'));
+    fireEvent.click(screen.getByRole('button', { name: 'Bỏ yêu thích' }));
+    await waitFor(() => expect(calls).toContain('DELETE /api/documents/n1/favorite'));
   });
 });
 
@@ -167,11 +175,11 @@ describe('filters and views', () => {
     const container = await ready();
     fireEvent.click(screen.getByRole('button', { name: 'Office' }));
     expect([...container.querySelectorAll('.mine-planet')].map((p) => p.getAttribute('aria-label'))).toEqual(['lab-notes.docx · Riêng tư', 'k8s-intro.pptx · Bị quản trị ẩn']);
-    fireEvent.click(screen.getByRole('button', { name: 'Cần sửa' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Đã đăng' }));
     expect(container.querySelectorAll('.mine-planet')).toHaveLength(0);
     expect(screen.getByText('Không có hành tinh nào khớp bộ lọc.')).toBeTruthy();
     fireEvent.click(within(screen.getByRole('group', { name: 'Lọc theo loại' })).getByRole('button', { name: 'Tất cả' }));
-    expect([...container.querySelectorAll('.mine-planet')].map((p) => p.getAttribute('aria-label'))).toEqual(['TCP vs UDP bằng hình · Cần sửa']);
+    expect([...container.querySelectorAll('.mine-planet')].map((p) => p.getAttribute('aria-label'))).toEqual(['Máy mới xin IP thế nào · Đã đăng · Cộng đồng']);
   });
 
   it('lists the same texts as rows', async () => {
@@ -181,7 +189,7 @@ describe('filters and views', () => {
     expect(within(list).getAllByRole('button')).toHaveLength(7);
     expect(within(list).getByText('Tệp Word · sửa hôm qua')).toBeTruthy();
     fireEvent.click(within(list).getByText('Mẹo DNS cache'));
-    expect(within(screen.getByRole('complementary', { name: 'Chi tiết' })).getByText('“Nội dung nói về trình duyệt hơn là DNS.” · Linh')).toBeTruthy();
+    expect(within(screen.getByRole('complementary', { name: 'Chi tiết' })).getByText('Lưu riêng cho bạn. Đăng công khai bất cứ lúc nào.')).toBeTruthy();
   });
 });
 
@@ -189,11 +197,11 @@ describe('moving to the trash', () => {
   it('confirms with a toast, and its undo takes the text out again', async () => {
     await ready();
     fireEvent.click(screen.getByRole('button', { name: 'Bỏ vào thùng rác' }));
-    await waitFor(() => expect(screen.getByText('Đã bỏ "TCP vs UDP bằng hình" vào thùng rác')).toBeTruthy());
-    expect(calls).toContain('DELETE /api/documents/n3');
+    await waitFor(() => expect(screen.getByText('Đã bỏ "Máy mới xin IP thế nào" vào thùng rác')).toBeTruthy());
+    expect(calls).toContain('DELETE /api/documents/n1');
     fireEvent.click(screen.getByRole('button', { name: 'Hoàn tác' }));
-    await waitFor(() => expect(calls).toContain('POST /api/documents/n3/restore'));
-    await waitFor(() => expect(screen.getByText('Đã khôi phục "TCP vs UDP bằng hình"')).toBeTruthy());
+    await waitFor(() => expect(calls).toContain('POST /api/documents/n1/restore'));
+    await waitFor(() => expect(screen.getByText('Đã khôi phục "Máy mới xin IP thế nào"')).toBeTruthy());
   });
 
   it('says so when the change fails', async () => {

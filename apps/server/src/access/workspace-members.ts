@@ -4,16 +4,15 @@
  * an account out of the workspace ("Gỡ"), and may put it back; every change writes its audit line in the same
  * transaction. Nobody changes a bootstrap admin (ADMIN_SUBS) or their own account from here.
  *
- * Removing an account ends its sessions and refuses its sign-ins (it reads as a guest meanwhile); its texts waiting
- * for review go back to drafts (out of the queue), its published texts stay. Restoring it lets it sign in again with
- * the role it had.
+ * Removing an account ends its sessions and refuses its sign-ins (it reads as a guest meanwhile); its texts stay as
+ * they are. Restoring it lets it sign in again with the role it had.
  */
 import { type SQL, and, asc, count, desc, eq, isNull, max, sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
-import { documents, sessions, users } from '../db/schema';
+import { sessions, users } from '../db/schema';
 import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import { isUuid } from './ids';
-import { type WorkspaceRole, effectiveRole, isBootstrapAdmin } from './roles';
+import { type StoredRole, type WorkspaceRole, effectiveRole, isBootstrapAdmin } from './roles';
 
 export interface Member {
   id: string;
@@ -28,8 +27,6 @@ export interface Member {
   joinedAt: Date;
   removedAt: Date | null;
 }
-
-const ROLE_RANK: Record<WorkspaceRole, number> = { admin: 0, reviewer: 1, member: 2 };
 
 /** How many members C19 lists at most; the answer says how many there are in all. */
 export const MEMBERS_PAGE = 1000;
@@ -52,7 +49,7 @@ async function queryMembers(db: Db, adminSubs: ReadonlySet<string>, where: SQL |
     .leftJoin(seen, eq(seen.userId, users.id))
     .where(and(isNull(users.deletedAt), where))
     // Past the page, the ones that matter stay in it: staff first, then the live accounts last active most recently.
-    .orderBy(desc(sql`${users.role} <> 'member'`), sql`${users.removedAt} is not null`, sql`${seen.at} desc nulls last`, asc(users.createdAt))
+    .orderBy(desc(sql`${users.role} = 'admin'`), sql`${users.removedAt} is not null`, sql`${seen.at} desc nulls last`, asc(users.createdAt))
     .limit(limit);
   return rows.map((row) => ({
     id: row.id,
@@ -68,7 +65,7 @@ async function queryMembers(db: Db, adminSubs: ReadonlySet<string>, where: SQL |
 }
 
 /**
- * Members, admins first, then reviewers, then the most recently active; removed accounts last. At most `limit` of
+ * Members, admins first, then the most recently active; removed accounts last. At most `limit` of
  * them, with the count of all.
  */
 export async function listMembers(db: Db, adminSubs: ReadonlySet<string>, limit = MEMBERS_PAGE): Promise<{ members: Member[]; total: number }> {
@@ -76,7 +73,7 @@ export async function listMembers(db: Db, adminSubs: ReadonlySet<string>, limit 
   const members = (await queryMembers(db, adminSubs, undefined, limit)).sort(
     (a, b) =>
       Number(a.removedAt !== null) - Number(b.removedAt !== null) ||
-      ROLE_RANK[a.role] - ROLE_RANK[b.role] ||
+      Number(b.role === 'admin') - Number(a.role === 'admin') ||
       time(b.lastSeenAt) - time(a.lastSeenAt) ||
       a.joinedAt.getTime() - b.joinedAt.getTime(),
   );
@@ -94,7 +91,7 @@ async function changeable(
   adminSubs: ReadonlySet<string>,
   actorId: string,
   targetId: string,
-): Promise<{ kind: 'ok'; row: { sub: string; role: WorkspaceRole; removedAt: Date | null } } | { kind: 'not-found' } | { kind: 'locked' } | { kind: 'self' }> {
+): Promise<{ kind: 'ok'; row: { sub: string; role: StoredRole; removedAt: Date | null } } | { kind: 'not-found' } | { kind: 'locked' } | { kind: 'self' }> {
   if (!isUuid(targetId)) return { kind: 'not-found' };
   const [row] = await tx
     .select({ sub: users.sub, role: users.role, removedAt: users.removedAt })
@@ -136,26 +133,18 @@ export async function setMemberRole(db: Db, adminSubs: ReadonlySet<string>, acto
   return settled(db, adminSubs, targetId, result);
 }
 
-/**
- * Takes an account out of the workspace (C19 "Gỡ"): its sessions end, its texts waiting for review go back to drafts
- * (their ids come back, for the search sync and the reviewers' notices), its published texts stay.
- */
-export async function removeMember(db: Db, adminSubs: ReadonlySet<string>, actorId: string, targetId: string, now: Date): Promise<MemberChange & { withdrawn: string[] }> {
+/** Takes an account out of the workspace (C19 "Gỡ"): its sessions end; its texts stay as they are. */
+export async function removeMember(db: Db, adminSubs: ReadonlySet<string>, actorId: string, targetId: string, now: Date): Promise<MemberChange> {
   const result = await db.transaction(async (tx) => {
     const target = await changeable(tx, adminSubs, actorId, targetId);
-    if (target.kind !== 'ok') return { ...target, withdrawn: [] };
-    if (target.row.removedAt !== null) return { kind: 'ok' as const, withdrawn: [] };
+    if (target.kind !== 'ok') return target;
+    if (target.row.removedAt !== null) return { kind: 'ok' as const };
     await tx.update(users).set({ removedAt: now }).where(eq(users.id, targetId));
     await tx.delete(sessions).where(eq(sessions.userId, targetId));
-    const withdrawn = await tx
-      .update(documents)
-      .set({ status: 'draft' })
-      .where(and(eq(documents.authorId, targetId), eq(documents.status, 'pending')))
-      .returning({ id: documents.id });
-    await recordAudit(tx, { actorId, action: AUDIT_ACTIONS.memberRemoved, targetType: 'user', targetId, detail: { withdrawn: withdrawn.length } }, now);
-    return { kind: 'ok' as const, withdrawn: withdrawn.map((d) => d.id) };
+    await recordAudit(tx, { actorId, action: AUDIT_ACTIONS.memberRemoved, targetType: 'user', targetId }, now);
+    return { kind: 'ok' as const };
   });
-  return { ...(await settled(db, adminSubs, targetId, result)), withdrawn: result.withdrawn };
+  return settled(db, adminSubs, targetId, result);
 }
 
 /** Puts a removed account back (C19 "Khôi phục"), with the role it had. */

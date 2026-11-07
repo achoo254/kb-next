@@ -45,7 +45,6 @@ describe('GET /api/me', () => {
       readerTextSize: 17,
       role: 'member',
       isAdmin: false,
-      canReview: false,
       roleLocked: false,
       onboardedAt: null,
       interests: [],
@@ -56,7 +55,7 @@ describe('GET /api/me', () => {
     idp.setSub('admin-sub');
     try {
       const admin = await signIn(server);
-      expect(await (await api(server, '/api/me', { cookie: admin })).json()).toMatchObject({ role: 'admin', isAdmin: true, canReview: true, roleLocked: true });
+      expect(await (await api(server, '/api/me', { cookie: admin })).json()).toMatchObject({ role: 'admin', isAdmin: true, roleLocked: true });
     } finally {
       idp.setSub('reader-a');
     }

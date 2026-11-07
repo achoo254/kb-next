@@ -6,7 +6,6 @@
  */
 import { and, count, desc, eq, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { withRole } from '../access/roles';
 import type { Db } from '../db/client';
 import { safeErrorText } from '../log-error';
 import { type NotificationKind, NOTIFICATION_KINDS, notifications, users } from '../db/schema';
@@ -21,7 +20,7 @@ export const NotificationPayload = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('review'),
     title: z.string(),
-    /** `submitted`: a text waiting in the queue (to admins); the others are the author's result. */
+    /** Left from the review gate (removed 07/11/2026): `submitted` told admins of a text waiting, the others told its author the result. No new ones are written. */
     action: z.enum(['submitted', 'approved', 'changes_requested', 'rejected']),
     reason: z.string().nullable(),
     by: z.string().nullable(),
@@ -69,26 +68,14 @@ export async function notifyAfter(db: Db, entries: () => Promise<readonly NewNot
   }
 }
 
-/** Admins with an unread "waiting for review" notice of this text (who need no second one). */
-export async function unreadSubmittedNotice(db: Db, documentId: string): Promise<Set<string>> {
-  const rows = await db
-    .select({ userId: notifications.userId })
-    .from(notifications)
-    .where(and(eq(notifications.documentId, documentId), eq(notifications.kind, 'review'), isNull(notifications.readAt), sql`${notifications.payload}->>'action' = 'submitted'`));
-  return new Set(rows.map((r) => r.userId));
-}
-
-/** Drops the unread "waiting for review" notices of a text taken out of the queue. */
+/**
+ * Drops the admins' unread "waiting for review" notices of a text, left from the review gate (removed 07/11/2026),
+ * once its author publishes it or keeps it private.
+ */
 export async function clearSubmittedNotices(db: Db, documentId: string): Promise<void> {
   await db
     .delete(notifications)
     .where(and(eq(notifications.documentId, documentId), eq(notifications.kind, 'review'), isNull(notifications.readAt), sql`${notifications.payload}->>'action' = 'submitted'`));
-}
-
-/** The ids of the accounts who decide the review queue (admins and reviewers, src/access/roles.ts). */
-export async function reviewerUserIds(db: Db, adminSubs: ReadonlySet<string>): Promise<string[]> {
-  const rows = await db.select({ id: users.id }).from(users).where(withRole(adminSubs, ['admin', 'reviewer']));
-  return rows.map((r) => r.id);
 }
 
 /** The name of an account (for "Linh đã duyệt"), null when it has none. */

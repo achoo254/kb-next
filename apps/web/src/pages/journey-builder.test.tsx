@@ -104,7 +104,7 @@ describe('JourneyBuilderScreen (C07)', () => {
     expect(editor.getByRole('button', { name: 'Read' }).getAttribute('aria-pressed')).toBe('true');
     expect(editor.getByRole('combobox', { name: 'Source document' })).toHaveProperty('value', 'osi');
     expect(screen.getByRole('link', { name: /Preview/ }).getAttribute('href')).toBe('/journey/j1');
-    expect(screen.getByRole('link', { name: 'Send for review' }).getAttribute('href')).toBe('/d/j1/publish');
+    expect(screen.getByRole('link', { name: 'Publish' }).getAttribute('href')).toBe('/d/j1/publish');
     expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
   });
 
@@ -212,12 +212,7 @@ describe('JourneyBuilderScreen (C07)', () => {
     expect(screen.getByRole('button', { name: 'Changed in another tab' })).toHaveProperty('disabled', true);
   });
 
-  it('opens a locked journey as locked, and a missing one as not found', async () => {
-    journey = () => answer(403, { error: 'locked' });
-    const { unmount } = renderWithI18n(<JourneyBuilderScreen id={ID} />);
-    expect(await screen.findByText('This journey is waiting for review or published')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'View the journey' }).getAttribute('href')).toBe('/journey/j1');
-    unmount();
+  it('opens a missing journey as not found (a published one is its author’s to edit: no locked state)', async () => {
     journey = () => answer(404, { error: 'not-found' });
     renderWithI18n(<JourneyBuilderScreen id={ID} />);
     await waitFor(() => expect(document.querySelector('[data-id="journey-builder"]')?.getAttribute('data-state')).toBe('not-found'));
@@ -260,7 +255,7 @@ describe('JourneyBuilderScreen on a phone', () => {
       .map((li) => li.querySelector('.jbp-step-name')?.textContent ?? '');
   }
 
-  it('lays the steps out as cards in the phone frame, with the autosave chip and "Send for review" to the phone publish', async () => {
+  it('lays the steps out as cards in the phone frame, with the autosave chip and "Publish" to the phone publish', async () => {
     renderWithI18n(<JourneyBuilderScreen id={ID} />);
     expect(await screen.findByRole('list', { name: 'Steps of the journey' })).toBeTruthy();
     expect(document.querySelector('[data-screen="C07"]')?.closest('.phone-shell')).not.toBeNull();
@@ -269,7 +264,7 @@ describe('JourneyBuilderScreen on a phone', () => {
     expect(screen.getByText('Journey · Networking')).toBeTruthy();
     expect(screen.getByText('2 steps · ~16 min')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Journey name' })).toHaveProperty('value', 'Máy mới vào mạng');
-    expect(screen.getByRole('link', { name: 'Send for review' }).getAttribute('href')).toBe('/d/j1/publish');
+    expect(screen.getByRole('link', { name: 'Publish' }).getAttribute('href')).toBe('/d/j1/publish');
     expect(screen.getByRole('link', { name: /Preview/ }).getAttribute('href')).toBe('/journey/j1');
     expect(screen.getByRole('button', { name: 'Save' }).getAttribute('data-state')).toBe('idle');
   });

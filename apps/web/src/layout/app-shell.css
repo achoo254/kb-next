@@ -100,7 +100,7 @@
   margin-inline: auto;
 }
 
-/* The admin station (A01–A03): the badge after the logo, the rail's icons lower than on the reading screens. */
+/* The admin station (A02, A03, C19): the badge after the logo, the rail's icons lower than on the reading screens. */
 .app-shell-admin-badge {
   position: absolute;
   left: 220px;

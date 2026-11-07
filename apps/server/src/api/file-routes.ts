@@ -13,7 +13,7 @@
  * - GET /api/files/:id → the bytes (a guest too, for the current file of a published document, as the reading API), handed to nginx by `X-Accel-Redirect` in production (an `internal` location),
  *   streamed by Node in dev and tests (FILE_DELIVERY). 404 `not-found`, 403 `hidden` / `no-access`.
  * - PUT /api/files/:id (multipart) → `{file}`: a new version from the editor, `:id` being the file the copy was
- *   opened from. 409 `{error: 'conflict', current}` when the document has a newer version; 403 `locked` /
+ *   opened from. 409 `{error: 'conflict', current}` when the document has a newer version; 403
  *   `no-access`; 409 `not-editable` for a PDF or Markdown file; 415 `wrong-kind` for another kind of file.
  * - POST /api/files/:id/retry → 202: runs the file's extraction again (C16 "Thử lại"); the document's author or an
  *   admin. 409 `busy` while it waits or runs; 409 `not-retryable` for a `too-complex` file unless an admin asks.
@@ -111,7 +111,7 @@ function asUser(viewer: Viewer): UserViewer {
   return viewer;
 }
 
-function refuse(kind: 'not-found' | 'hidden' | 'no-access' | 'locked'): never {
+function refuse(kind: 'not-found' | 'hidden' | 'no-access'): never {
   if (kind === 'not-found') throw new HttpError(404, 'not-found');
   throw new HttpError(403, kind);
 }

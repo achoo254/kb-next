@@ -176,11 +176,19 @@ describe('EditorScreen', () => {
     expect(puts.at(-1)).toMatchObject({ title: 'Lỗi', baseRev: '2026-10-21T00:00:00.000Z' });
   });
 
-  it('asks for a title before submitting', async () => {
+  it('opens a published text for its author: no locked state any more', async () => {
+    editReply = () => answer(200, { ...DOC, status: 'approved', origin: 'community' });
+    await open();
+    expect(screen.getByDisplayValue(DOC.title)).toBeTruthy();
+    expect(document.querySelector('[data-id="editor-locked"]')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Publish' })).toBeTruthy();
+  });
+
+  it('asks for a title before publishing', async () => {
     await open();
     fireEvent.change(screen.getByDisplayValue(DOC.title), { target: { value: '' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for review' }));
-    expect(screen.getByRole('alert').textContent).toBe('Add a title before submitting.');
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    expect(screen.getByRole('alert').textContent).toBe('Add a title before publishing.');
     expect(screen.getByPlaceholderText('A short title…').getAttribute('aria-invalid')).toBe('true');
   });
 
@@ -234,7 +242,6 @@ describe('EditorScreen', () => {
   });
 
   it.each([
-    [() => answer(403, { error: 'locked' }), 'editor-locked', 'This text is in review or published'],
     [() => answer(409, { error: 'not-editable' }), 'editor-not-editable', 'This file is not edited here'],
     [() => Promise.reject(new TypeError('Failed to fetch')), 'editor-offline', 'You are offline'],
   ] as const)('shows the state of a document it cannot edit (%#)', async (reply, id, title) => {

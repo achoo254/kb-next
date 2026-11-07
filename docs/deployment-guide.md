@@ -114,7 +114,7 @@ Thiếu biến bắt buộc hay sai dạng thì server từ chối khởi độn
 
 ## Meilisearch
 
-Chỉ mục tìm kiếm của kb: `kb_public` (đoạn của bài đã duyệt, không ẩn) và `kb_private` (đoạn của các bài còn lại,
+Chỉ mục tìm kiếm của kb: `kb_public` (đoạn của bài đã đăng, không ẩn) và `kb_private` (đoạn của các bài còn lại,
 luôn lọc theo tác giả). Postgres là nguồn chuẩn: server ghi Postgres trước rồi đẩy sang Meilisearch qua hàng đợi
 trong tiến trình (lỗi thì log mã lỗi và thử lại); mỗi ngày server so số đoạn giữa hai bên và log khi lệch. Không
 cần sao lưu dữ liệu Meilisearch: mất hay lệch thì dựng lại bằng `reindex` (sao lưu Postgres là đủ).
@@ -270,7 +270,7 @@ nằm ở [`content/summaries.json`](../content/summaries.json) (khoá là `tran
 
 ## Link chia sẻ
 
-Tác giả hay quản trị tạo link cho bài đã duyệt và đang hiện (C18, chi tiết API ở [admin-api.md](admin-api.md#link-chia-sẻ)).
+Tác giả hay quản trị tạo link cho bài đã đăng và đang hiện (C18, chi tiết API ở [admin-api.md](admin-api.md#link-chia-sẻ)).
 Database chỉ giữ sha256 của token và 4 ký tự cuối; token không bao giờ vào log của server hay nginx.
 
 - `GET /l/<token>`: route của server (`apps/server/src/share/og-page.ts`) đọc `apps/web/dist/index.html` của chính bản

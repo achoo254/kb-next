@@ -18,6 +18,8 @@ import { createApp } from '../app';
 import { adminApiCalls, adminTokens, documentVersions, documents } from '../db/schema';
 import { seedDatabase, seedId } from '../db/seed-database';
 
+/** A read of the admin API any valid token may make: the seed's DHCP text. */
+const PROBE = `/api/admin/posts/${seedId('document:dhcp')}`;
 const SECRET = 'test-secret-'.padEnd(40, 'x');
 /** Above what the other tests call, so only the last one meets it. */
 const LIMIT = 32;
@@ -102,15 +104,15 @@ describe('admin tokens (A03, web session)', () => {
 
 describe('the admin API (token)', () => {
   it('refuses a call without a token, with a wrong or malformed one', async () => {
-    const none = await call('/api/admin/review');
+    const none = await call(PROBE);
     expect(none.status).toBe(401);
     expect(await none.json()).toEqual({ error: 'token-required' });
     expect(none.headers.get('www-authenticate')).toBe('Bearer');
     const wrong = await call('/api/admin/posts', { method: 'POST', token: `kf_admin_${'x'.repeat(43)}`, body: post });
     expect([wrong.status, await wrong.json()]).toEqual([401, { error: 'invalid-token' }]);
-    expect((await call('/api/admin/review', { authorization: `Basic ${token}` })).status).toBe(401);
+    expect((await call(PROBE, { authorization: `Basic ${token}` })).status).toBe(401);
     // The web session is not a way in.
-    const cookie = await fetch(`${server.origin}/api/admin/review`, { headers: { cookie: sessions.admin, origin: server.origin } });
+    const cookie = await fetch(`${server.origin}${PROBE}`, { headers: { cookie: sessions.admin, origin: server.origin } });
     expect(cookie.status).toBe(401);
   });
 
@@ -197,11 +199,9 @@ describe('the admin API (token)', () => {
     expect([unknown.status, await unknown.json()]).toEqual([404, { error: 'not-found' }]);
   });
 
-  it('lists the review queue', async () => {
+  it('has no review queue any more: authors publish their own texts', async () => {
     const res = await call('/api/admin/review', { token });
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as { documents: Array<{ title: string; preReview: unknown }> };
-    expect(body.documents.map((d) => d.title)).toContain('Ghi chú: swap trên Ubuntu');
+    expect([res.status, await res.json()]).toEqual([404, { error: 'not-found' }]);
   });
 
   it('logs the authenticated calls, failed ones under their own path, never a call without a valid token', async () => {
@@ -223,7 +223,7 @@ describe('the admin API (token)', () => {
 
   it('forgets calls older than 30 days in the daily housekeeping', async () => {
     const db = server.database.db;
-    await db.insert(adminApiCalls).values({ method: 'GET', path: '/api/admin/review', status: 200, createdAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000) });
+    await db.insert(adminApiCalls).values({ method: 'GET', path: PROBE, status: 200, createdAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000) });
     expect(await pruneCalls(db, new Date())).toBe(1);
     expect(await pruneCalls(db, new Date())).toBe(0);
   });
@@ -242,17 +242,17 @@ describe('the admin API (token)', () => {
     if (!live) throw new Error('no live token');
     await as('admin', () => revokeAdminToken(live.id));
     expect(await as('admin', () => failure(revokeAdminToken(live.id)))).toBe('not-found');
-    const revoked = await call('/api/admin/review', { token });
+    const revoked = await call(PROBE, { token });
     expect([revoked.status, await revoked.json()]).toEqual([401, { error: 'invalid-token' }]);
 
     // A new token revokes the others; it stops working once its maker leaves ADMIN_SUBS.
     const fresh = (await as('admin', () => createAdminToken('again'))).token;
-    expect((await call('/api/admin/review', { token: fresh })).status).toBe(200);
+    expect((await call(PROBE, { token: fresh })).status).toBe(200);
     const other = createServer(createApp({ config: { ...server.config, adminSubs: new Set<string>() }, db: server.database.db, idp: null, jev: null }));
     await new Promise<void>((resolve) => other.listen(0, '127.0.0.1', resolve));
     const address = other.address();
     const port = typeof address === 'object' && address ? address.port : 0;
-    const res = await fetch(`http://127.0.0.1:${port}/api/admin/review`, { headers: { authorization: `Bearer ${fresh}` } });
+    const res = await fetch(`http://127.0.0.1:${port}${PROBE}`, { headers: { authorization: `Bearer ${fresh}` } });
     await new Promise<void>((resolve) => other.close(() => resolve()));
     expect([res.status, await res.json()]).toEqual([401, { error: 'invalid-token' }]);
   });
@@ -260,7 +260,7 @@ describe('the admin API (token)', () => {
   it('limits calls per IP, wrong tokens included', async () => {
     let limited: Response | null = null;
     for (let i = 0; i < LIMIT + 2 && !limited; i += 1) {
-      const res = await call('/api/admin/review', { token: `kf_admin_${'y'.repeat(43)}` });
+      const res = await call(PROBE, { token: `kf_admin_${'y'.repeat(43)}` });
       if (res.status === 429) limited = res;
     }
     expect(limited).not.toBeNull();

@@ -1,8 +1,9 @@
 /**
- * Publishing (C04) in jsdom: the form as it opens (where the text is, its tags, the scopes), "Gửi duyệt" sending what
- * was chosen and showing C06's steps in place (the address becoming /submit), "Riêng tư" keeping it private, what
- * stops a text without a title, the AI translation off without a key, a text already waiting, a published one (read
- * only, Chia sẻ open), the locked Chia sẻ tab, and a text that cannot be opened.
+ * Publishing (C04) in jsdom: the form as it opens (where the text is, its tags, the scopes), "Đăng công khai"
+ * publishing what was chosen and showing C06's steps in place (the address becoming /submit), "Riêng tư" keeping it
+ * private, what stops a text without a title, the AI translation off without a key, a text left waiting for review
+ * (private now), a published one (its place fixed, Chia sẻ open, "Gỡ xuống" unpublishing it), the locked Chia sẻ tab,
+ * and a text that cannot be opened.
  */
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,7 +31,7 @@ beforeEach(() => {
       const url = String(path);
       const method = init?.method ?? 'GET';
       calls.push({ method, url, body: init?.body ? JSON.parse(String(init.body)) : null });
-      if (url === `/api/documents/${DOC_ID}/submit`) return answer(200, { status: 'pending', queuePosition: 2, submittedAt: '2026-11-03T14:05:00.000Z', preReviewed: true });
+      if (url === `/api/documents/${DOC_ID}/submit`) return answer(200, { status: 'approved', hidden: false, publishedAt: '2026-11-03T14:05:00.000Z' });
       if (url === `/api/documents/${DOC_ID}/private`) return answer(200, { status: 'private' });
       if (url.startsWith(`/api/documents/${DOC_ID}`)) return docStatus === 200 ? answer(200, view) : answer(docStatus, { error: 'not-found' });
       if (url.startsWith('/api/spaces')) return answer(200, { spaces: PUBLISH_SPACES });
@@ -51,22 +52,23 @@ async function form(): Promise<ReturnType<typeof within>> {
 }
 
 describe('the Xuất bản tab', () => {
-  it('opens on "Gửi duyệt" in the first public Space, with the text’s tags and the card of how it will show', async () => {
+  it('opens on "Công khai" in the first public Space, with the text’s tags and the card of how it will show', async () => {
     const sheet = await form();
-    expect(sheet.getByRole('radio', { name: /Gửi duyệt · công khai sau khi duyệt/ }).getAttribute('aria-checked')).toBe('true');
+    expect(sheet.getByRole('radio', { name: /Công khai · đăng ngay/ }).getAttribute('aria-checked')).toBe('true');
     expect((sheet.getByRole('combobox', { name: /^Space/ }) as HTMLSelectElement).value).toBe('networking');
-    // For review only public Spaces are offered.
-    expect(sheet.getAllByRole('option').map((o: HTMLElement) => o.textContent)).toContain('Networking (công khai · cần duyệt)');
+    // To publish, only public Spaces are offered.
+    expect(sheet.getAllByRole('option').map((o: HTMLElement) => o.textContent)).toContain('Networking (công khai)');
     expect(sheet.queryByRole('option', { name: 'Vũ trụ của bạn (cá nhân)' })).toBeNull();
     expect(sheet.getByText('Thẻ').parentElement?.textContent).toContain('· 3/8');
     const card = within(screen.getByRole('complementary', { name: 'Xem trước thẻ bài' }));
-    expect(card.getByText('Chờ duyệt')).toBeTruthy();
+    expect(card.getByText('Công khai khi đăng')).toBeTruthy();
     expect(card.getByText('Máy mới hỏi cả mạng để xin IP, qua 4 bước DORA.')).toBeTruthy();
     expect(card.getByText('Networking')).toBeTruthy();
-    expect(card.getByText('Trước khi duyệt: chỉ bạn và người duyệt thấy. Không có link chia sẻ.')).toBeTruthy();
+    expect(card.getByText('Mọi người đọc được ngay khi đăng, kể cả khách.')).toBeTruthy();
+    expect(screen.queryByText(/duyệt/)).toBeNull();
   });
 
-  it('sends what was chosen, only on "Gửi duyệt", and shows C06’s steps at /submit', async () => {
+  it('publishes what was chosen, only on "Đăng công khai", and shows C06’s published state at /submit', async () => {
     const sheet = await form();
     fireEvent.change(sheet.getByRole('combobox', { name: /Collection/ }), { target: { value: 'c-proto' } });
     fireEvent.click(sheet.getByRole('radio', { name: 'EN' }));
@@ -75,8 +77,8 @@ describe('the Xuất bản tab', () => {
     fireEvent.change(input, { target: { value: 'dora' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(calls.some((c) => c.url.endsWith('/submit'))).toBe(false);
-    fireEvent.click(sheet.getByRole('button', { name: 'Gửi duyệt' }));
-    expect(await screen.findByRole('heading', { name: 'Đã gửi duyệt' })).toBeTruthy();
+    fireEvent.click(sheet.getByRole('button', { name: 'Đăng công khai' }));
+    expect(await screen.findByRole('heading', { name: 'Đã đăng' })).toBeTruthy();
     expect(calls.filter((c) => c.url.endsWith('/submit')).map((c) => c.body)).toEqual([{ space: 'networking', collection: 'c-proto', tags: ['dhcp', 'broadcast', 'dora'], lang: 'en' }]);
     expect(window.location.pathname).toBe(`/d/${DOC_ID}/submit`);
   });
@@ -96,14 +98,14 @@ describe('the Xuất bản tab', () => {
     expect(calls.some((c) => c.url.endsWith('/submit'))).toBe(false);
   });
 
-  it('turns the AI translation on with the reader’s own key, and offers it once sent', async () => {
+  it('turns the AI translation on with the reader’s own key, and offers it once published', async () => {
     const sheet = await form();
     const toggle = sheet.getByRole('switch', { name: 'Tạo bản dịch EN bằng AI' });
     expect(sheet.getByText('Tắt · dùng key OpenAI ••••a1b2 của bạn khi bật')).toBeTruthy();
     fireEvent.click(toggle);
     expect(toggle.getAttribute('aria-checked')).toBe('true');
     expect(within(screen.getByRole('complementary', { name: 'Xem trước thẻ bài' })).getByText('VI · có bản EN')).toBeTruthy();
-    fireEvent.click(sheet.getByRole('button', { name: 'Gửi duyệt' }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Đăng công khai' }));
     expect((await screen.findByRole('link', { name: 'Tạo bản dịch EN bằng AI' })).getAttribute('href')).toBe(`/d/${DOC_ID}/translate?to=en`);
   });
 
@@ -114,21 +116,23 @@ describe('the Xuất bản tab', () => {
     expect(sheet.getByText('Tắt · cần Key riêng để bật')).toBeTruthy();
   });
 
-  it('says what to fix when the text has no title, and cannot send it', async () => {
+  it('says what to fix when the text has no title, and cannot publish it', async () => {
     view = draftView({ title: '' }, [{ anchor: 'a', heading: null, markdown: '' }]);
     const sheet = await form();
     const alert = sheet.getByRole('alert');
-    expect(alert.textContent).toContain('Chưa gửi được, còn 2 chỗ cần sửa');
+    expect(alert.textContent).toContain('Chưa đăng được, còn 2 chỗ cần sửa');
     expect(alert.textContent).toContain('Thiếu tiêu đề · quay lại trình soạn để thêm');
-    expect((sheet.getByRole('button', { name: 'Gửi duyệt' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((sheet.getByRole('button', { name: 'Đăng công khai' }) as HTMLButtonElement).disabled).toBe(true);
     expect(within(screen.getByRole('complementary', { name: 'Xem trước thẻ bài' })).getByText('[Chưa có tiêu đề]')).toBeTruthy();
   });
 
-  it('shows a text already waiting as sent: only "Riêng tư" takes it back', async () => {
+  it('opens a text left waiting for review as a private one, which its author may publish', async () => {
     view = draftView({ status: 'pending' });
     const sheet = await form();
-    expect((sheet.getByRole('button', { name: 'Đã gửi duyệt' }) as HTMLButtonElement).disabled).toBe(true);
-    expect(sheet.getByText('Bài đang chờ duyệt. Chọn Riêng tư để rút về.')).toBeTruthy();
+    expect(sheet.getByRole('radio', { name: /Riêng tư · chỉ mình tôi/ }).getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(sheet.getByRole('radio', { name: /Công khai · đăng ngay/ }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Đăng công khai' }));
+    await waitFor(() => expect(calls.filter((c) => c.url.endsWith('/submit'))).toHaveLength(1));
   });
 
   it('says so when keeping it private fails', async () => {
@@ -141,15 +145,15 @@ describe('the Xuất bản tab', () => {
 });
 
 describe('the Chia sẻ tab', () => {
-  it('is locked until the text is approved', async () => {
+  it('is locked until the text is published', async () => {
     const sheet = await form();
     fireEvent.click(sheet.getByRole('tab', { name: 'Chia sẻ' }));
-    expect(sheet.getByText('Bài chưa được duyệt nên chưa chia sẻ được')).toBeTruthy();
+    expect(sheet.getByText('Bài chưa đăng nên chưa chia sẻ được')).toBeTruthy();
     fireEvent.click(sheet.getByRole('button', { name: 'Sang tab Xuất bản' }));
     expect(sheet.getByRole('tab', { name: 'Xuất bản' }).getAttribute('aria-selected')).toBe('true');
   });
 
-  it('opens on Chia sẻ for a published text, which leads to C18; its form is read-only', async () => {
+  it('opens on Chia sẻ for a published text, which leads to C18; its place stays while it is public', async () => {
     view = draftView({ status: 'approved', origin: 'community' });
     const sheet = await form();
     expect(sheet.getByRole('tab', { name: 'Chia sẻ' }).getAttribute('aria-selected')).toBe('true');
@@ -157,6 +161,22 @@ describe('the Chia sẻ tab', () => {
     fireEvent.click(sheet.getByRole('tab', { name: 'Xuất bản' }));
     expect(sheet.getByRole('link', { name: 'Quản lý chia sẻ' }).getAttribute('href')).toBe(`/d/${DOC_ID}/share`);
     expect((sheet.getByRole('combobox', { name: /^Space/ }) as HTMLSelectElement).disabled).toBe(true);
+    expect(sheet.getByText('Bài đang công khai. Chọn Riêng tư để gỡ xuống.')).toBeTruthy();
+  });
+
+  it('takes a published text down: "Riêng tư" then "Gỡ xuống" keeps it private where it is', async () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign, search: '?lang=vi', pathname: `/d/${DOC_ID}/publish` });
+    view = draftView({ status: 'approved', origin: 'community' });
+    const sheet = await form();
+    fireEvent.click(sheet.getByRole('tab', { name: 'Xuất bản' }));
+    fireEvent.click(sheet.getByRole('radio', { name: /Riêng tư · chỉ mình tôi/ }));
+    expect((sheet.getByRole('combobox', { name: /^Space/ }) as HTMLSelectElement).value).toBe('networking');
+    expect(sheet.getByText('Gỡ xuống: bài về riêng tư, link chia sẻ cũ ngừng chạy.')).toBeTruthy();
+    fireEvent.click(sheet.getByRole('button', { name: 'Gỡ xuống · về riêng tư' }));
+    await waitFor(() => expect(assign).toHaveBeenCalledWith('/me'));
+    expect(calls.find((c) => c.url.endsWith('/private'))?.body).toMatchObject({ space: 'networking' });
+    expect(calls.some((c) => c.url.endsWith('/submit'))).toBe(false);
   });
 });
 
@@ -171,16 +191,16 @@ describe('publishing on a phone (M03)', () => {
     delete document.documentElement.dataset.device;
   });
 
-  it('keeps the same choice in a sheet: who sees it, one place picker, and "Gửi duyệt" sends it', async () => {
+  it('keeps the same choice in a sheet: who sees it, one place picker, and "Đăng công khai" publishes it', async () => {
     document.documentElement.dataset.device = 'phone';
     renderWithI18n(<PublishScreen id={DOC_ID} />);
     const sheet = within(await screen.findByRole('region', { name: 'Xuất bản và chia sẻ' }));
     expect(document.querySelector('[data-screen="M03"]')).not.toBeNull();
-    expect(sheet.getByRole('radio', { name: /Gửi duyệt/ }).getAttribute('aria-checked')).toBe('true');
+    expect(sheet.getByRole('radio', { name: /Công khai/ }).getAttribute('aria-checked')).toBe('true');
     const place = sheet.getByRole('combobox', { name: 'Bộ sưu tập' }) as HTMLSelectElement;
     expect(Array.from(place.options).map((o) => o.textContent)).toContain('Networking › Giao thức nền tảng');
     fireEvent.change(place, { target: { value: 'networking|c-proto' } });
-    fireEvent.click(sheet.getByRole('button', { name: 'Gửi duyệt' }));
+    fireEvent.click(sheet.getByRole('button', { name: 'Đăng công khai' }));
     await waitFor(() => expect(calls.find((c) => c.url.endsWith('/submit'))?.body).toMatchObject({ space: 'networking', collection: 'c-proto' }));
   });
 });

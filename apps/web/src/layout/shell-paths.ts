@@ -1,6 +1,7 @@
 /** Where the routes of the shell lead (app routes, routes.ts); its own module so the ⌘K palette can use it too. */
 export const SHELL_PATHS = {
   universe: '/u',
+  spaces: '/spaces',
   graph: '/graph',
   canvas: '/canvas',
   search: '/search',
@@ -18,14 +19,13 @@ export const SHELL_PATHS = {
   upload: '/upload',
   imports: '/import',
   sync: '/sync',
-  /** The admin station: the review queue (A01), published texts (A02), the API and its tokens (A03), the workspace (C19). */
-  adminReview: '/admin',
+  /** The admin station: published texts (A02, also at /admin), the API and its tokens (A03), the workspace (C19). */
   adminContent: '/admin/content',
   adminApi: '/admin/api',
   workspace: '/admin/settings',
 } as const;
 
-/** Sending a text for review (C06). */
+/** Publishing a text (C06). */
 export function submitPath(documentId: string): string {
   return `/d/${encodeURIComponent(documentId)}/submit`;
 }

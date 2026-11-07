@@ -4,7 +4,10 @@ import type { MessageKey } from '../i18n/messages';
 import { Icon, type IconName } from './icon';
 import './origin-tag.css';
 
-/** Where a piece of content comes from (plan rule 6): every card, planet, search result and citation carries one. */
+/**
+ * Where a piece of content comes from (plan rule 6): every card, planet, search result and citation carries one.
+ * `pending` ("Chờ duyệt") is drawn only on the DesignSystem kit board: the app no longer has a review step.
+ */
 export type ContentOrigin = 'official' | 'community' | 'private' | 'pending';
 
 const ORIGINS: Record<ContentOrigin, { label: MessageKey; icon: IconName }> = {

@@ -70,7 +70,7 @@ describe('comments', () => {
     expect(body.open).toBe(true);
     expect(body.comments.map((c) => [c.author.name, c.author.role, c.body, c.mine])).toEqual([
       ['Minh', 'member', '@Linh mạng khác subnet thì DHCP relay chạy thế nào?', false],
-      ['Linh', 'reviewer', 'Router chuyển tiếp gói Discover tới server. Mình sẽ thêm một đoạn về relay.', false],
+      ['Linh', 'member', 'Router chuyển tiếp gói Discover tới server. Mình sẽ thêm một đoạn về relay.', false],
     ]);
   });
 

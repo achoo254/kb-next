@@ -3,7 +3,7 @@ import type { Locale } from '../i18n/i18n';
 import { type ScreenTranslate, useScreenText } from './space-messages';
 
 export const translateVi = {
-  'translate.badge': 'Bản dịch AI · chưa duyệt',
+  'translate.badge': 'Bản dịch AI · chưa ai soát',
   'translate.progress': 'Tiến độ dịch',
   'translate.stop': 'Dừng',
   'translate.read': 'Đọc bản dịch',
@@ -40,7 +40,7 @@ export const translateVi = {
 export type TranslateMessageKey = keyof typeof translateVi;
 
 export const translateEn: Record<TranslateMessageKey, string> = {
-  'translate.badge': 'AI translation · not reviewed',
+  'translate.badge': 'AI translation · not checked',
   'translate.progress': 'Translation progress',
   'translate.stop': 'Stop',
   'translate.read': 'Read the translation',

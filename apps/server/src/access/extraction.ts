@@ -101,7 +101,7 @@ export async function collectionOptions(db: Db, ownerId: string): Promise<Collec
     })
     .from(collections)
     .innerJoin(spaces, eq(spaces.id, collections.spaceId))
-    .where(spacesOf({ kind: 'user', userId: ownerId, isAdmin: false, canReview: false }))
+    .where(spacesOf({ kind: 'user', userId: ownerId, isAdmin: false }))
     .orderBy(asc(spaces.sortOrder), asc(spaces.slug), asc(collections.sortOrder), asc(collections.createdAt));
 }
 

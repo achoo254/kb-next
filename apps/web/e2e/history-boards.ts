@@ -7,7 +7,7 @@
 import { C13_DHCP_ID } from './graph-canvas-boards';
 
 const dat = { name: 'Đạt', role: 'admin' } as const;
-const linh = { name: 'Linh', role: 'reviewer' } as const;
+const linh = { name: 'Linh', role: 'member' } as const;
 const aiVersion = (version: number, at: string) => ({ kind: 'version', at, actor: dat, version, via: 'api', aiMade: true, summary: null, restoredFrom: null, proposal: false });
 
 export const C17_HISTORY = {

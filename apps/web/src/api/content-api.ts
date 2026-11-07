@@ -18,7 +18,7 @@ import type { ReaderTextSize } from '../ui/reader-text-sizes';
 export const LANGS = ['vi', 'en'] as const;
 export const THEMES = ['dark', 'light', 'system'] as const;
 export const DOCUMENT_TYPES = ['lab', 'note', 'process', 'office', 'web', 'journey'] as const;
-/** Origin label (plan rule 6): Chính thức, Cộng đồng, Của bạn · riêng tư; "Chờ duyệt" comes from `status`. */
+/** Origin label (plan rule 6): Chính thức, Cộng đồng, Của bạn · riêng tư. */
 export const DOCUMENT_ORIGINS = ['official', 'community', 'own'] as const;
 export const DOCUMENT_STATUSES = ['draft', 'private', 'pending', 'changes_requested', 'rejected', 'approved'] as const;
 /** The error codes of a Space or document that cannot be opened, each with its own screen (C10, C11, X02). */
@@ -31,8 +31,8 @@ export type ReadError = (typeof READ_ERRORS)[number];
 /** ISO 8601 time with offset, as the server sends dates. */
 const Time = z.iso.datetime({ offset: true });
 
-/** Workspace roles (C19 "Vai trò & quyền"): Thành viên, Người duyệt, Quản trị. */
-export const WORKSPACE_ROLES = ['member', 'reviewer', 'admin'] as const;
+/** Workspace roles (C19 "Vai trò & quyền"): Thành viên, Quản trị. */
+export const WORKSPACE_ROLES = ['member', 'admin'] as const;
 export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number];
 
 const MeSchema = z.object({
@@ -48,8 +48,6 @@ const MeSchema = z.object({
   /** The workspace role the account acts with (C19). */
   role: z.enum(WORKSPACE_ROLES),
   isAdmin: z.boolean(),
-  /** May decide the review queue (A01): an admin or a reviewer. */
-  canReview: z.boolean(),
   /** A bootstrap admin (the server's ADMIN_SUBS): its role is not changed from the app. */
   roleLocked: z.boolean(),
   /** null until the account finishes or skips onboarding (S03): show it on the first visit to /u. */
@@ -83,7 +81,11 @@ export const CollectionBriefSchema = z.object({ id: z.string(), nameVi: z.string
 export type CollectionBrief = z.infer<typeof CollectionBriefSchema>;
 
 /** C09: a crystal with the names of its collections (the focus card). */
-const SpaceListItemSchema = z.extend(SpaceCardSchema, { collections: z.array(CollectionBriefSchema) });
+const SpaceListItemSchema = z.extend(SpaceCardSchema, {
+  collections: z.array(CollectionBriefSchema),
+  /** When the Space's latest readable text changed; null when it has none. */
+  updatedAt: z.optional(z.nullable(z.string())),
+});
 export type SpaceListItem = z.infer<typeof SpaceListItemSchema>;
 
 /** A document in a list (C10 rows, recent cards, links, related): one per text, in the reader's language. */
@@ -92,7 +94,8 @@ export const DocumentSummarySchema = z.object({
   title: z.string(),
   type: z.enum(DOCUMENT_TYPES),
   origin: z.enum(DOCUMENT_ORIGINS),
-  /** Anything but `approved` is only ever shown to its author (or an admin): `pending` is "Chờ duyệt". */
+  /** Anything but `approved` is only ever shown to its author (or an admin); `pending`, `changes_requested` and
+   * `rejected` are left from the review gate (removed 07/11/2026) and read as private. */
   status: z.enum(DOCUMENT_STATUSES),
   lang: Lang,
   /** An AI translation: marked as such, never a separate origin. */
@@ -113,8 +116,8 @@ const SpacesSchema = z.object({ spaces: z.array(SpaceListItemSchema) });
 /** How related an entry is, 0–100: computed in code from links, place and shared words (not a model). */
 const Relevance = z.number();
 
-/** C10 "Thành viên & quyền": `admin` "Quản trị", `reviewer` "Người duyệt", `member` "Thành viên", `owner` of a personal Space. */
-export const MEMBER_ROLES = ['owner', 'admin', 'reviewer', 'member'] as const;
+/** C10 "Thành viên & quyền": `admin` "Quản trị", `member` "Thành viên", `owner` of a personal Space. */
+export const MEMBER_ROLES = ['owner', 'admin', 'member'] as const;
 const SpaceMemberSchema = z.object({
   name: z.nullable(z.string()),
   picture: z.nullable(z.string()),
@@ -125,7 +128,7 @@ const SpaceMemberSchema = z.object({
 export type SpaceMember = z.infer<typeof SpaceMemberSchema>;
 
 /** What the viewer may do in a Space (all false for a guest). */
-const SpacePermissionsSchema = z.object({ canCreate: z.boolean(), canReview: z.boolean(), canAdmin: z.boolean() });
+const SpacePermissionsSchema = z.object({ canCreate: z.boolean(), canAdmin: z.boolean() });
 export type SpacePermissions = z.infer<typeof SpacePermissionsSchema>;
 
 const SpaceCollectionSchema = z.extend(CollectionBriefSchema, {
@@ -141,7 +144,7 @@ export type SpaceCollection = z.infer<typeof SpaceCollectionSchema>;
 const SpaceDetailSchema = z.object({
   /** The Space with its one-line description (under its name), in both languages; null when not written yet. */
   space: z.extend(SpaceCardSchema, { descriptionVi: z.nullable(z.string()), descriptionEn: z.nullable(z.string()) }),
-  /** Owner and admins first, then reviewers, then members by how much they wrote. */
+  /** Owner and admins first, then members by how much they wrote. */
   members: z.array(SpaceMemberSchema),
   permissions: SpacePermissionsSchema,
   /** In the Space's order; a collection may be empty (C10 "Bộ sưu tập này còn trống"). */
@@ -239,7 +242,7 @@ const CommentSchema = z.object({
   body: z.string(),
   createdAt: Time,
   updatedAt: Time,
-  author: z.object({ name: z.nullable(z.string()), picture: z.nullable(z.string()), role: z.enum(['admin', 'reviewer', 'member']) }),
+  author: z.object({ name: z.nullable(z.string()), picture: z.nullable(z.string()), role: z.enum(['admin', 'member']) }),
   /** Written by the viewer. */
   mine: z.boolean(),
 });

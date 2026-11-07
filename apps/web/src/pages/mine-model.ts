@@ -1,7 +1,7 @@
 /**
- * "Của tôi" (board C08) without React: the account's documents and canvases as one list of items, the type and
- * review-status filters, the orbits of "Vũ trụ của tôi" (one ring per step of review), the planet picked first, and
- * the "x ngày trước" of edits and deletions.
+ * "Của tôi" (board C08) without React: the account's documents and canvases as one list of items, the type and status
+ * filters, the orbits of "Vũ trụ của tôi" (draft, private, published), the planet picked first, and the "x ngày
+ * trước" of edits and deletions.
  */
 import type { MyDocument, TrashedDocument } from '../api/authoring-api';
 import type { CanvasListItem } from '../api/canvas-api';
@@ -16,8 +16,11 @@ export const TYPE_FILTERS = ['all', 'note', 'office', 'journey', 'canvas'] as co
 export type TypeFilter = (typeof TYPE_FILTERS)[number];
 export type ItemType = Exclude<TypeFilter, 'all'>;
 
-/** Where a text is in review, as C08 tells them apart: `hidden` is a published text an admin took off the Universe. */
-export const STATUS_FILTERS = ['all', 'draft', 'private', 'pending', 'changes', 'approved', 'hidden', 'rejected'] as const;
+/**
+ * Where a text stands, as C08 tells them apart: `approved` is published, `hidden` a published text an admin took off
+ * the Universe. Texts left from the review gate (`pending`, `changes_requested`, `rejected`) are private.
+ */
+export const STATUS_FILTERS = ['all', 'draft', 'private', 'approved', 'hidden'] as const;
 export type StatusFilter = (typeof STATUS_FILTERS)[number];
 export type ItemStatus = Exclude<StatusFilter, 'all'>;
 
@@ -36,7 +39,6 @@ export interface MineItem {
   origin: DocumentSummary['origin'] | null;
   space: SpaceBrief | null;
   collection: CollectionBrief | null;
-  review: MyDocument['review'];
   /** Where "Mở" goes. */
   href: string;
 }
@@ -51,10 +53,10 @@ export function itemStatusOf(doc: Pick<MyDocument, 'status' | 'hidden'>): ItemSt
   switch (doc.status) {
     case 'approved':
       return doc.hidden ? 'hidden' : 'approved';
-    case 'changes_requested':
-      return 'changes';
+    case 'draft':
+      return 'draft';
     default:
-      return doc.status;
+      return 'private';
   }
 }
 
@@ -72,7 +74,6 @@ export function documentItem(doc: MyDocument): MineItem {
     origin: doc.origin,
     space: doc.space,
     collection: doc.collection,
-    review: doc.review,
     href: `/d/${encodeURIComponent(doc.id)}`,
   };
 }
@@ -92,7 +93,6 @@ export function canvasItem(canvas: CanvasListItem, spaces: readonly SpaceBrief[]
     origin: null,
     space: spaces.find((space) => space.slug === canvas.spaceSlug) ?? null,
     collection: null,
-    review: null,
     href: `/canvas/${encodeURIComponent(canvas.id)}`,
   };
 }
@@ -118,20 +118,16 @@ export function documentMatches(doc: Pick<MyDocument, 'type' | 'status' | 'hidde
   return matches({ type: itemTypeOf(doc.type), status: itemStatusOf(doc) }, filters);
 }
 
-/** The ring of a status: 1 being written (ĐANG SOẠN), 2 in review (ĐANG DUYỆT), 3 published (ĐÃ CÔNG KHAI), 4 refused. */
-export function ringOf(status: ItemStatus): 1 | 2 | 3 | 4 {
+/** The ring of a status: 1 being written (ĐANG SOẠN), 2 private (RIÊNG TƯ), 3 published (ĐÃ CÔNG KHAI). */
+export function ringOf(status: ItemStatus): 1 | 2 | 3 {
   switch (status) {
     case 'draft':
-    case 'private':
       return 1;
-    case 'pending':
-    case 'changes':
+    case 'private':
       return 2;
     case 'approved':
     case 'hidden':
       return 3;
-    case 'rejected':
-      return 4;
   }
 }
 
@@ -139,7 +135,6 @@ export function ringOf(status: ItemStatus): 1 | 2 | 3 | 4 {
 export const ORBIT_CENTRE = { x: 486, y: 278 } as const;
 export const RINGS: Readonly<Record<1 | 2 | 3, { rx: number; ry: number }>> = { 1: { rx: 150, ry: 92 }, 2: { rx: 270, ry: 160 }, 3: { rx: 400, ry: 240 } };
 const PLANET = 46;
-const REFUSED_PLANET = 40;
 
 export interface PlacedPlanet {
   item: MineItem;
@@ -148,10 +143,7 @@ export interface PlacedPlanet {
   size: number;
 }
 
-/**
- * Where each planet sits: spread evenly around its ring from a turn of 35° per ring; refused texts sit in the "Bị từ
- * chối" box at the top right instead of on a ring.
- */
+/** Where each planet sits: spread evenly around its ring from a turn of 35° per ring. */
 export function orbitLayout(items: readonly MineItem[]): PlacedPlanet[] {
   const placed: PlacedPlanet[] = [];
   for (const ring of [1, 2, 3] as const) {
@@ -162,15 +154,12 @@ export function orbitLayout(items: readonly MineItem[]): PlacedPlanet[] {
       placed.push({ item, x: Math.round(ORBIT_CENTRE.x + rx * Math.cos(angle) - PLANET / 2), y: Math.round(ORBIT_CENTRE.y + ry * Math.sin(angle) - PLANET / 2), size: PLANET });
     });
   }
-  items
-    .filter((item) => ringOf(item.status) === 4)
-    .forEach((item, index) => placed.push({ item, x: 846 + index * 60, y: 48, size: REFUSED_PLANET }));
   return placed;
 }
 
-/** The planet shown first: one sent back for changes (what needs the author), else the last changed. */
+/** The planet shown first: the last changed. */
 export function firstPick(items: readonly MineItem[]): string | null {
-  return (items.find((item) => item.status === 'changes') ?? items[0])?.key ?? null;
+  return items[0]?.key ?? null;
 }
 
 /** Whether the account's own universe is empty: no personal Space, or one without any document. */

@@ -258,10 +258,11 @@ function AiTab({ keys, writing }: { keys: KeyState; writing: ReturnType<typeof u
 
 function OriginBadge({ doc }: { doc: Pick<DocumentSummary, 'origin' | 'status' | 'type'> }): ReactNode {
   const { t } = useEditorText();
-  const key: EditorMessageKey =
-    doc.status === 'pending' ? 'editor.origin.pending' : doc.origin === 'own' ? (doc.type === 'office' ? 'editor.origin.ownFile' : 'editor.origin.own') : doc.origin === 'official' ? 'editor.origin.official' : 'editor.origin.community';
+  // A text not published (drafts, private ones, and those left from the review gate) is its author's own.
+  const origin = doc.status === 'approved' ? doc.origin : 'own';
+  const key: EditorMessageKey = origin === 'own' ? (doc.type === 'office' ? 'editor.origin.ownFile' : 'editor.origin.own') : origin === 'official' ? 'editor.origin.official' : 'editor.origin.community';
   return (
-    <span className="editor-origin" data-origin={doc.status === 'pending' ? 'pending' : doc.origin}>
+    <span className="editor-origin" data-origin={origin}>
       {t(key)}
     </span>
   );

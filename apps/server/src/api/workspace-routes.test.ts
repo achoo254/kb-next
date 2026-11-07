@@ -1,14 +1,14 @@
 /**
  * Workspace settings (C19) through the web app's own clients (workspace-api.ts, review-api.ts): roles an admin grants
- * and what each role may open (a reviewer the review queue, never A02, A03 or C19), bootstrap admins nobody changes,
- * removing an account and putting it back, invite links (hashed, expiring, revocable, raising a role never lowering
- * it), and the audit trail of all of it.
+ * (member or admin; a stored `reviewer`, left from the review gate, acts as a member), bootstrap admins nobody changes,
+ * removing an account and putting it back, invite links (hashed, expiring, revocable, member links only), and the
+ * audit trail of all of it.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { ApiError } from '../../../web/src/api/api-client';
 import { fetchMe } from '../../../web/src/api/content-api';
-import { createAdminToken, decideReview, fetchAdminTokens, fetchPublished, fetchReviewQueue, submitForReview } from '../../../web/src/api/review-api';
+import { createAdminToken, fetchAdminTokens, fetchPublished } from '../../../web/src/api/review-api';
 import {
   acceptInvite,
   changeRole,
@@ -28,7 +28,7 @@ import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { cookieFrom, location, signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
 import { createSession } from '../auth/session-store';
-import { documentVersions, documents, inviteLinks, users } from '../db/schema';
+import { documents, inviteLinks, users } from '../db/schema';
 
 const SECRET = 'test-secret-'.padEnd(40, 'x');
 const DAY = 24 * 60 * 60 * 1000;
@@ -105,45 +105,27 @@ describe('members and roles', () => {
     expect(members.slice(1).every((m) => m.role === 'member' && !m.bootstrap && !m.you)).toBe(true);
   });
 
-  it('refuses the workspace to members and reviewers', async () => {
+  it('refuses the workspace to members', async () => {
     expect(await as('minh', () => failure(fetchMembers()))).toBe('admin-only');
     expect(await as('minh', () => failure(fetchAudit(null)))).toBe('admin-only');
-    expect(await as('minh', () => failure(createInvite('member')))).toBe('admin-only');
+    expect(await as('minh', () => failure(createInvite()))).toBe('admin-only');
   });
 
-  it('lets a reviewer use the review queue (A01) but not A02, A03 or C19', async () => {
-    const linh = await idOf('linh');
-    expect(await as('linh', () => failure(fetchReviewQueue()))).toBe('reviewer-only');
-    expect(await as('admin', () => changeRole(linh, 'reviewer'))).toMatchObject({ role: 'reviewer' });
-    expect(await as('linh', () => fetchMe())).toMatchObject({ role: 'reviewer', isAdmin: false, canReview: true, roleLocked: false });
-
-    // Minh writes a text and sends it: Linh sees it waiting, opens it and approves it.
+  it('treats an account stored as a reviewer as a member, and grants only member or admin', async () => {
     const db = server.database.db;
-    const spaceId = await createSpace(db, 'networking');
-    const minh = await idOf('minh');
-    const text = await createDocument(db, { spaceId, authorId: minh, status: 'draft', title: 'DNS bằng hình' });
-    await db.insert(documentVersions).values({ documentId: text, version: 1, markdown: '# DNS bằng hình\n\nTên miền thành địa chỉ.', editorId: minh, via: 'editor' });
-    await as('minh', () => submitForReview(text));
-    expect((await as('linh', () => fetchReviewQueue())).map((q) => q.id)).toContain(text);
-    expect(await as('linh', () => decideReview(text, 'approved'))).toMatchObject({ status: 'approved' });
-
+    const linh = await idOf('linh');
+    await db.update(users).set({ role: 'reviewer' }).where(eq(users.id, linh));
+    expect(await as('linh', () => fetchMe())).toMatchObject({ role: 'member', isAdmin: false, roleLocked: false });
+    expect((await as('admin', () => fetchMembers())).find((m) => m.id === linh)).toMatchObject({ role: 'member' });
     expect(await as('linh', () => failure(fetchPublished()))).toBe('admin-only');
     expect(await as('linh', () => failure(fetchAdminTokens()))).toBe('admin-only');
     expect(await as('linh', () => failure(fetchMembers()))).toBe('admin-only');
-  });
-
-  it('never lets a reviewer decide on their own text; an admin still may', async () => {
-    const db = server.database.db;
-    const linh = await idOf('linh');
-    const [space] = await db.select({ id: documents.spaceId }).from(documents).where(eq(documents.authorId, await idOf('minh')));
-    if (!space) throw new Error('no space');
-    const own = await createDocument(db, { spaceId: space.id, authorId: linh, status: 'draft', title: 'Bài của Linh' });
-    await db.insert(documentVersions).values({ documentId: own, version: 1, markdown: '# Bài của Linh\n\nNội dung.', editorId: linh, via: 'editor' });
-    await as('linh', () => submitForReview(own));
-    expect((await as('linh', () => fetchReviewQueue())).map((q) => q.id)).not.toContain(own);
-    expect(await as('linh', () => failure(decideReview(own, 'approved')))).toBe('own-text');
-    expect((await as('admin', () => fetchReviewQueue())).map((q) => q.id)).toContain(own);
-    expect(await as('admin', () => decideReview(own, 'approved'))).toMatchObject({ status: 'approved' });
+    // The role picker's member brings the stored row in line.
+    expect(await as('admin', () => changeRole(linh, 'member'))).toMatchObject({ role: 'member' });
+    const [row] = await db.select({ role: users.role }).from(users).where(eq(users.id, linh));
+    expect(row?.role).toBe('member');
+    const refused = await fetch(`${server.origin}/api/workspace/members/${linh}`, { method: 'PATCH', headers: { cookie: sessions.admin, origin: server.origin, 'content-type': 'application/json' }, body: JSON.stringify({ role: 'reviewer' }) });
+    expect(refused.status).toBe(400);
   });
 
   it('makes an admin of another account, who still cannot change the bootstrap admin or itself', async () => {
@@ -160,8 +142,8 @@ describe('members and roles', () => {
   it('lets a token made by an admin by role act only while it is one', async () => {
     const an = await idOf('an');
     const { token } = await as('an', () => createAdminToken('pipeline'));
-    const call = (): Promise<Response> => fetch(`${server.origin}/api/admin/review`, { headers: { authorization: `Bearer ${token}` } });
-    expect((await call()).status).toBe(200);
+    const call = (): Promise<Response> => fetch(`${server.origin}/api/admin/posts/00000000-0000-4000-8000-000000000000`, { headers: { authorization: `Bearer ${token}` } });
+    expect((await call()).status).toBe(404);
     await as('admin', () => changeRole(an, 'member'));
     expect((await call()).status).toBe(401);
     expect(await as('an', () => failure(fetchMembers()))).toBe('admin-only');
@@ -169,20 +151,20 @@ describe('members and roles', () => {
 });
 
 describe('removing an account', () => {
-  it('signs it out, refuses its sign-ins and sends its waiting texts back to drafts, until it is put back', async () => {
+  it('signs it out and refuses its sign-ins, its texts left as they are, until it is put back', async () => {
     const db = server.database.db;
     const minh = await idOf('minh');
-    const [space] = await db.select({ spaceId: documents.spaceId }).from(documents).where(eq(documents.authorId, minh));
-    if (!space) throw new Error('no space');
-    const waiting = await createDocument(db, { spaceId: space.spaceId, authorId: minh, status: 'pending', title: 'Chờ duyệt' });
-    const published = await createDocument(db, { spaceId: space.spaceId, authorId: minh, status: 'approved', title: 'Đã duyệt' });
+    const spaceId = await createSpace(db, 'networking');
+    // One left from the review gate, one published: removing the account changes neither.
+    const waiting = await createDocument(db, { spaceId, authorId: minh, status: 'pending', title: 'Chờ duyệt' });
+    const published = await createDocument(db, { spaceId, authorId: minh, status: 'approved', title: 'Đã đăng' });
 
     const removed = await as('admin', () => removeMember(minh));
     expect(removed.removedAt).not.toBeNull();
     expect(await as('minh', () => failure(fetchMe()))).toBe('sign-in-required');
     const [w] = await db.select({ status: documents.status }).from(documents).where(eq(documents.id, waiting));
     const [p] = await db.select({ status: documents.status }).from(documents).where(eq(documents.id, published));
-    expect([w?.status, p?.status]).toEqual(['draft', 'approved']);
+    expect([w?.status, p?.status]).toEqual(['pending', 'approved']);
 
     // A sign-in that passed its check just before the removal opens its session just after: it is worth nothing.
     const late = `kb_session=${await createSession(server.database.db, minh, new Date(), null)}`;
@@ -192,7 +174,7 @@ describe('removing an account', () => {
     const refused = await trySignIn('minh');
     expect(refused).toEqual({ to: '/login?login=removed', session: null });
     // Changing a removed account's role waits until it is put back.
-    expect(await as('admin', () => failure(changeRole(minh, 'reviewer')))).toBe('removed');
+    expect(await as('admin', () => failure(changeRole(minh, 'admin')))).toBe('removed');
     // Removed accounts are listed last.
     expect((await as('admin', () => fetchMembers())).at(-1)).toMatchObject({ id: minh });
 
@@ -206,7 +188,7 @@ describe('removing an account', () => {
 
 describe('invite links', () => {
   it('shows a hashed, expiring link once, and one live link at a time', async () => {
-    const first = await as('admin', () => createInvite('member'));
+    const first = await as('admin', () => createInvite());
     expect(first.url).toBe(`${server.origin}/i/${first.token}`);
     expect(first.token).toMatch(/^[A-Za-z0-9_-]{32}$/);
     expect(new Date(first.invite.expiresAt).getTime() - clock.now.getTime()).toBe(7 * DAY);
@@ -214,62 +196,56 @@ describe('invite links', () => {
     expect(stored?.tokenHash).not.toContain(first.token);
     expect(stored?.last4).toBe(first.token.slice(-4));
 
-    const second = await as('admin', () => createInvite('reviewer'));
-    expect(await as('admin', () => fetchInvite())).toMatchObject({ id: second.invite.id, role: 'reviewer', last4: second.token.slice(-4) });
+    const second = await as('admin', () => createInvite());
+    expect(await as('admin', () => fetchInvite())).toMatchObject({ id: second.invite.id, role: 'member', last4: second.token.slice(-4) });
     expect(await as('an', () => failure(fetchInviteInfo(first.token)))).toBe('invite-off');
-    expect(await as('an', () => fetchInviteInfo(second.token))).toMatchObject({ role: 'reviewer' });
+    expect(await as('an', () => fetchInviteInfo(second.token))).toMatchObject({ role: 'member' });
     expect(await as('an', () => failure(fetchInviteInfo('x'.repeat(32))))).toBe('not-found');
   });
 
-  it('raises the account that accepts it to the link’s role, never lowers it', async () => {
-    const made = await as('admin', () => createInvite('reviewer'));
-    expect(await as('an', () => acceptInvite(made.token))).toEqual({ role: 'reviewer', raised: true });
-    expect(await as('an', () => fetchMe())).toMatchObject({ role: 'reviewer' });
-    const member = await as('admin', () => createInvite('member'));
-    expect(await as('an', () => acceptInvite(member.token))).toEqual({ role: 'member', raised: false });
-    expect(await as('an', () => fetchMe())).toMatchObject({ role: 'reviewer' });
-    expect(await as('admin', () => fetchInvite())).toMatchObject({ acceptedCount: 1 });
-  });
-
-  it('lets a reviewer link in once only, a member link any number of times', async () => {
-    const reviewer = await as('admin', () => createInvite('reviewer'));
-    expect(await as('minh', () => acceptInvite(reviewer.token))).toEqual({ role: 'reviewer', raised: true });
-    expect(await as('admin', () => fetchInvite())).toBeNull();
+  it('lets any number of accounts in as members, never changing a role', async () => {
+    const member = await as('admin', () => createInvite());
     idp.setSub('newcomer');
     const newcomer = await signIn(server);
-    current = newcomer;
-    expect(await failure(acceptInvite(reviewer.token))).toBe('invite-off');
-    expect(await as('minh', () => fetchMe())).toMatchObject({ role: 'reviewer' });
-    const minh = await idOf('minh');
-    await as('admin', () => changeRole(minh, 'member'));
-
-    const member = await as('admin', () => createInvite('member'));
     current = newcomer;
     expect(await acceptInvite(member.token)).toEqual({ role: 'member', raised: false });
     expect(await as('linh', () => acceptInvite(member.token))).toEqual({ role: 'member', raised: false });
     expect(await as('admin', () => fetchInvite())).toMatchObject({ id: member.invite.id, acceptedCount: 2 });
+    expect(await as('linh', () => fetchMe())).toMatchObject({ role: 'member' });
+  });
+
+  it('reads a reviewer link left from the review gate as a member link, usable more than once', async () => {
+    const made = await as('admin', () => createInvite());
+    await server.database.db.update(inviteLinks).set({ role: 'reviewer' }).where(eq(inviteLinks.id, made.invite.id));
+    expect(await as('admin', () => fetchInvite())).toMatchObject({ id: made.invite.id, role: 'member' });
+    expect(await as('an', () => fetchInviteInfo(made.token))).toMatchObject({ role: 'member' });
+    expect(await as('an', () => acceptInvite(made.token))).toEqual({ role: 'member', raised: false });
+    expect(await as('minh', () => acceptInvite(made.token))).toEqual({ role: 'member', raised: false });
+    expect(await as('an', () => fetchMe())).toMatchObject({ role: 'member' });
+    const refused = await fetch(`${server.origin}/api/workspace/invite`, { method: 'POST', headers: { cookie: sessions.admin, origin: server.origin, 'content-type': 'application/json' }, body: JSON.stringify({ role: 'reviewer' }) });
+    expect(refused.status).toBe(400);
   });
 
   it('keeps one live link when two are made at once', async () => {
-    await Promise.all([as('admin', () => createInvite('member')), as('admin', () => createInvite('member'))]);
+    await Promise.all([as('admin', () => createInvite()), as('admin', () => createInvite())]);
     const live = await server.database.db.select({ id: inviteLinks.id }).from(inviteLinks).where(and(isNull(inviteLinks.revokedAt), gt(inviteLinks.expiresAt, clock.now)));
     expect(live).toHaveLength(1);
   });
 
   it('stops working once revoked, expired, or its admin is no longer one', async () => {
-    const revoked = await as('admin', () => createInvite('member'));
+    const revoked = await as('admin', () => createInvite());
     await as('admin', () => revokeInvite(revoked.invite.id));
     expect(await as('admin', () => fetchInvite())).toBeNull();
     expect(await as('minh', () => failure(acceptInvite(revoked.token)))).toBe('invite-off');
     expect(await as('admin', () => failure(revokeInvite(revoked.invite.id)))).toBe('not-found');
 
-    const expiring = await as('admin', () => createInvite('reviewer'));
+    const expiring = await as('admin', () => createInvite());
     clock.now = new Date(clock.now.getTime() + 7 * DAY + 1000);
     expect(await as('minh', () => failure(acceptInvite(expiring.token)))).toBe('invite-off');
 
     const an = await idOf('an');
     await as('admin', () => changeRole(an, 'admin'));
-    const byAn = await as('an', () => createInvite('reviewer'));
+    const byAn = await as('an', () => createInvite());
     await as('admin', () => changeRole(an, 'member'));
     expect(await as('minh', () => failure(acceptInvite(byAn.token)))).toBe('invite-off');
     expect(await as('minh', () => fetchMe())).toMatchObject({ role: 'member' });
@@ -289,14 +265,12 @@ describe('the audit trail', () => {
       'invite.accepted',
       'token.created',
       'account.signed-in',
-      'review.approved',
     ]) {
       expect(actions, action).toContain(action);
     }
     const change = all.find((l) => l.action === 'member.role-changed');
     expect(change).toMatchObject({ category: 'members', actor: { name: 'Đạt' } });
     expect(change?.detail).toHaveProperty('to');
-    expect(all.find((l) => l.action === 'review.approved' && l.subject === 'DNS bằng hình')).toMatchObject({ category: 'content' });
     // Newest first.
     expect(all.map((l) => l.at)).toEqual([...all.map((l) => l.at)].sort().reverse());
 

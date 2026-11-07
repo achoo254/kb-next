@@ -33,14 +33,13 @@ function Check({ yes }: { yes: boolean }): ReactNode {
   );
 }
 
-/** Admin, reviewer, member: what each may do (the server's rule, src/access/roles.ts). */
-const MATRIX: ReadonlyArray<{ key: WorkspaceMessageKey; rights: readonly [boolean, boolean, boolean] }> = [
-  { key: 'ws.matrix.read', rights: [true, true, true] },
-  { key: 'ws.matrix.write', rights: [true, true, true] },
-  { key: 'ws.matrix.review', rights: [true, true, false] },
-  { key: 'ws.matrix.hide', rights: [true, false, false] },
-  { key: 'ws.matrix.members', rights: [true, false, false] },
-  { key: 'ws.matrix.api', rights: [true, false, false] },
+/** Admin, member: what each may do (the server's rule, src/access/roles.ts). */
+const MATRIX: ReadonlyArray<{ key: WorkspaceMessageKey; rights: readonly [boolean, boolean] }> = [
+  { key: 'ws.matrix.read', rights: [true, true] },
+  { key: 'ws.matrix.write', rights: [true, true] },
+  { key: 'ws.matrix.hide', rights: [true, false] },
+  { key: 'ws.matrix.members', rights: [true, false] },
+  { key: 'ws.matrix.api', rights: [true, false] },
 ];
 
 export function RolesPanel({ t }: { t: T }): ReactNode {
@@ -49,7 +48,6 @@ export function RolesPanel({ t }: { t: T }): ReactNode {
       <div className="ws-matrix-head">
         <span>{t('ws.matrix.right')}</span>
         <span>{roleLabel(t, 'admin')}</span>
-        <span>{roleLabel(t, 'reviewer')}</span>
         <span>{roleLabel(t, 'member')}</span>
       </div>
       {MATRIX.map((row) => (
@@ -222,7 +220,6 @@ export function ApiKeysPanel({ t }: { t: T }): ReactNode {
       <div className="ws-endpoints">
         <span>POST /api/admin/posts</span>
         <span>PATCH /api/admin/posts/:id</span>
-        <span>GET /api/admin/review</span>
       </div>
       <span className="ws-muted ws-13">{t('ws.api.note')}</span>
       <a className="ws-primary ws-open-api" href={SHELL_PATHS.adminApi}>
@@ -243,7 +240,8 @@ export function auditText(t: T, line: AuditLine): string {
   const vars = {
     actor,
     subject,
-    role: role === 'admin' || role === 'reviewer' || role === 'member' ? roleLabel(t, role) : (role ?? ''),
+    // A `reviewer` of older lines (the role left from the review gate) reads as a member.
+    role: role === 'admin' ? roleLabel(t, 'admin') : role === 'member' || role === 'reviewer' ? roleLabel(t, 'member') : (role ?? ''),
     status: typeof detail.status === 'number' ? detail.status : '',
     count: typeof detail.documents === 'number' ? detail.documents : 0,
     action: line.action,

@@ -224,10 +224,21 @@
   font-weight: 600;
 }
 
+.submit-sent-chip[data-tone="ok"] {
+  background: color-mix(in srgb, var(--emerald-500) 14%, transparent);
+  color: var(--c-success-text);
+}
+
 .submit-actions {
   display: flex;
   gap: 8px;
   margin-top: auto;
+}
+
+.submit-sent-more {
+  color: var(--c-link);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .submit-action.kf-btn {
@@ -317,101 +328,4 @@
   color: var(--c-text);
   font: 600 14px var(--font-sans);
   cursor: pointer;
-}
-
-.submit-notices {
-  position: absolute;
-  left: 28px;
-  top: 576px;
-  width: 1384px;
-  height: 176px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.submit-notice {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px;
-  border-radius: 24px;
-  background: var(--submit-surface);
-  border: 1px solid color-mix(in srgb, var(--amber-500) 50%, transparent);
-}
-
-.submit-notice[data-kind="approved"] {
-  border-color: color-mix(in srgb, var(--emerald-500) 50%, transparent);
-}
-
-.submit-notice-orbit {
-  position: relative;
-  display: block;
-  width: 96px;
-  height: 96px;
-  flex: none;
-}
-
-.submit-notice-ellipse {
-  position: absolute;
-  inset: 0;
-  overflow: visible;
-  stroke: color-mix(in srgb, var(--cyan-400) 55%, transparent);
-}
-
-.submit-notice-crystal {
-  position: absolute;
-  left: 14px;
-  top: 4px;
-  width: 68px;
-  height: 80px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--cyan-400) 75%, transparent));
-}
-
-.submit-notice-moon {
-  position: absolute;
-  left: -1px;
-  top: 50px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--cyan-100);
-  box-shadow: 0 0 8px 3px var(--cyan-400);
-}
-
-.submit-notice-cracked {
-  width: 72px;
-  height: 72px;
-  flex: none;
-  object-fit: contain;
-  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--amber-500) 55%, transparent));
-}
-
-.submit-notice-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.submit-notice-kicker {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--c-text-muted);
-}
-
-.submit-notice-title {
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.submit-notice-line {
-  font-size: 13px;
-  color: var(--c-text-muted);
-}
-
-.submit-notice-action.kf-btn {
-  padding: 0 18px;
 }

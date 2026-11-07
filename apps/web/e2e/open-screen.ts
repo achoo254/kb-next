@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import type { ParityMock, ParityScreen } from './parity-screens';
 import { C11_STREAM, C14_HISTORY, C14_STREAM, F03_KEYS, F04_DOCUMENT, F04_DOCUMENT_ID, F04_STREAM } from './ai-boards';
-import { A01_DOCUMENT, A01_FIRST_ID, A01_QUEUE, A02_PUBLISHED, A03_CALLS, A03_TOKENS } from './admin-boards';
+import { A02_PUBLISHED, A03_CALLS, A03_TOKENS } from './admin-boards';
 import { C15_SUGGESTION } from './graph-canvas-boards';
 import { C17_DIFF, C17_HISTORY } from './history-boards';
 import { C07_JOURNEY, C07_NEXT, C07_POOL, FLOW_JOURNEY, JOURNEY_ID } from './journey-boards';
@@ -48,7 +48,7 @@ async function mockApi(page: Page, mocks: readonly ParityMock[], theme: ShotThem
   // /api/me in one handler: a routed answer is final, so the changes of several mocks (and the theme) stack here.
   const meChanges: Array<(me: Account) => Account> = [];
   if (mocks.includes('onboarded')) meChanges.push((me) => ({ ...me, onboardedAt: me.onboardedAt ?? '2026-11-03T14:05:00.000Z' }));
-  if (mocks.includes('admin')) meChanges.push((me) => ({ ...me, role: 'admin', isAdmin: true, canReview: true }));
+  if (mocks.includes('admin')) meChanges.push((me) => ({ ...me, role: 'admin', isAdmin: true }));
   if (mocks.includes('settings-h03')) meChanges.push((me) => ({ ...me, ...H03_ME }));
   if (theme) meChanges.push((me) => ({ ...me, theme }));
   if (meChanges.length > 0) {
@@ -63,10 +63,6 @@ async function mockApi(page: Page, mocks: readonly ParityMock[], theme: ShotThem
   if (mocks.includes('workspace-c19')) {
     await page.route('**/api/workspace/members', (route) => route.fulfill({ json: C19_MEMBERS }));
     await page.route('**/api/workspace/invite', (route) => (route.request().method() === 'POST' ? route.fulfill({ status: 201, json: C19_INVITE }) : route.fulfill({ json: { invite: null } })));
-  }
-  if (mocks.includes('admin-a01')) {
-    await page.route('**/api/moderation/queue', (route) => route.fulfill({ json: A01_QUEUE }));
-    await page.route(`**/api/documents/${A01_FIRST_ID}*`, (route) => (route.request().method() === 'GET' ? route.fulfill({ json: A01_DOCUMENT }) : route.fallback()));
   }
   if (mocks.includes('admin-a02')) await page.route('**/api/moderation/published', (route) => route.fulfill({ json: A02_PUBLISHED }));
   if (mocks.includes('admin-a03')) {

@@ -54,14 +54,13 @@ export const MAX_STEPS = 50;
 
 /**
  * Whether a journey opens for `mode`: `read` (Flow) under the read rule; `edit` (C07) also needs the right to
- * change it (its author while it is a draft or sent back, or an admin). A document of another type is `not-found`.
+ * change it (its author or an admin). A document of another type is `not-found`.
  */
 export type JourneyAccess =
   | { kind: 'ok'; doc: DocumentRow; right: EditRight }
   | { kind: 'not-found' }
   | { kind: 'hidden' }
-  | { kind: 'no-access' }
-  | { kind: 'locked'; doc: DocumentRow };
+  | { kind: 'no-access' };
 
 export async function journeyAccess(db: Db, viewer: Viewer, id: string, mode: 'read' | 'edit'): Promise<JourneyAccess> {
   const access = await documentAccess(db, viewer, id);
@@ -69,7 +68,6 @@ export async function journeyAccess(db: Db, viewer: Viewer, id: string, mode: 'r
   if (access.doc.type !== 'journey') return { kind: 'not-found' };
   const right = editRight(viewer, access.doc);
   if (mode === 'edit' && right === 'no-access') return { kind: 'no-access' };
-  if (mode === 'edit' && right === 'locked') return { kind: 'locked', doc: access.doc };
   return { kind: 'ok', doc: access.doc, right };
 }
 

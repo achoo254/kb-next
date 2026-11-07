@@ -11,7 +11,7 @@
  * The QR code of the link and the story picture ("Tải ảnh story", share-story.ts) need the full link, so they are there
  * only while it is known in the page (after "Tạo link" or "Tạo link mới"); otherwise a hint says to make a new link.
  *
- * States: loading, failed (not found, no access, server), locked (not approved), no link yet, live (just made or
+ * States: loading, failed (not found, no access, server), locked (not published), no link yet, live (just made or
  * not), expired, revoked, paused (an admin hid the text: the banner from the account's "permission" notice), and an
  * action that failed.
  */
@@ -31,6 +31,7 @@ import {
 } from '../api/share-api';
 import { brand } from '../brand';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
+import { publishPath } from '../layout/shell-paths';
 import { ILLUSTRATIONS } from '../ui/art';
 import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
@@ -176,7 +177,7 @@ function ShareBody({ view, onChanged, reload }: BodyProps): ReactNode {
   const doc = view.document;
   const banner = view.permission;
   const badge: ShareMessageKey =
-    doc.status !== 'approved' ? (doc.status === 'pending' ? 'share.badge.pending' : 'share.badge.own') : doc.hidden ? 'share.badge.hidden' : doc.origin === 'official' ? 'share.badge.official' : 'share.badge.community';
+    doc.status !== 'approved' ? 'share.badge.own' : doc.hidden ? 'share.badge.hidden' : doc.origin === 'official' ? 'share.badge.official' : 'share.badge.community';
   return (
     <div className="share-content" data-banner={banner ? 'on' : undefined}>
       <div className="share-head">
@@ -201,7 +202,7 @@ function ShareBody({ view, onChanged, reload }: BodyProps): ReactNode {
           <div className="share-rim share-locked" data-id="share-locked">
             <span className="share-locked-title">{t('share.locked.title')}</span>
             <span className="share-locked-text">{t('share.locked.text')}</span>
-            <Button variant="rim" size="lg" href={SHELL_PATHS.mine} className="share-locked-action">
+            <Button variant="rim" size="lg" href={publishPath(doc.id)} className="share-locked-action">
               {t('share.locked.status')}
             </Button>
           </div>

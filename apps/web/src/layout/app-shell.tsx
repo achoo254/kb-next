@@ -15,12 +15,11 @@ import { useDevice } from './device';
 import { SHELL_PATHS } from './shell-paths';
 import { type ShellHostStore, createShellHostStore } from './shell-host-store';
 import { signedInUser, useSessionState } from './session-context';
-import { type StaffRole, useStaffRole } from './staff-role';
 import { useUnread } from './unread-context';
 import './app-shell.css';
 
 /** The sections of the lens rail, top to bottom (boards C09–C15), and of the admin rail (A01–A03). */
-export type RailId = 'universe' | 'graph' | 'create' | 'search' | 'copilot' | 'spaces' | 'mine' | 'settings' | 'review' | 'content' | 'api' | 'workspace';
+export type RailId = 'universe' | 'graph' | 'create' | 'search' | 'copilot' | 'spaces' | 'mine' | 'settings' | 'content' | 'api' | 'workspace';
 /** The views of the nav pill. */
 export type ViewId = 'orbit' | 'graph' | 'canvas' | 'docs';
 
@@ -90,19 +89,15 @@ function railItems(t: Translate, spaceHref: string, spacesHref: string): LensRai
 }
 
 /**
- * The admin station's rail (A01–A03, C19): the queue, published texts, the API; then the workspace settings and back
- * to the Universe. A reviewer only gets the queue and the way back.
+ * The admin station's rail (A02, A03, C19): published texts, the API; then the workspace settings and back to the
+ * Universe.
  */
-function adminRailItems(t: Translate, role: StaffRole): LensRailItem[] {
-  const review: LensRailItem = { id: 'review', label: t('shell.admin.review'), href: SHELL_PATHS.adminReview, icon: 'admin-review', spaceAfter: role === 'admin' ? 2 : 21 };
-  const universe: LensRailItem = { id: 'universe', label: t('shell.admin.universe'), href: SHELL_PATHS.universe, icon: 'orbit' };
-  if (role === 'reviewer') return [review, universe];
+function adminRailItems(t: Translate): LensRailItem[] {
   return [
-    review,
     { id: 'content', label: t('shell.admin.content'), href: SHELL_PATHS.adminContent, icon: 'admin-content', spaceAfter: 2 },
     { id: 'api', label: t('shell.admin.api'), href: SHELL_PATHS.adminApi, icon: 'admin-api', spaceAfter: 21 },
     { id: 'workspace', label: t('shell.admin.settings'), href: SHELL_PATHS.workspace, icon: 'settings', spaceAfter: 2 },
-    universe,
+    { id: 'universe', label: t('shell.admin.universe'), href: SHELL_PATHS.universe, icon: 'orbit' },
   ];
 }
 
@@ -213,7 +208,6 @@ function ShellFrame({
   const accountUnread = useUnread().total;
   const user = signedInUser(useSessionState());
   const palette = usePalette();
-  const staffRole = useStaffRole();
   const spaceSlug = spaceSlugOf(spaceHref);
   useEffect(() => {
     if (spaceSlug) rememberSpace(spaceSlug);
@@ -273,7 +267,7 @@ function ShellFrame({
         />
         <LensRail
           label={admin ? t('shell.admin.rail') : t('shell.rail')}
-          items={admin ? adminRailItems(t, staffRole) : railItems(t, spaceHref, spacesHref)}
+          items={admin ? adminRailItems(t) : railItems(t, spaceHref, spacesHref)}
           activeId={rail}
           account={account}
           className={admin ? 'app-shell-rail app-shell-rail-admin' : 'app-shell-rail'}

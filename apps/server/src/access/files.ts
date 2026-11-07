@@ -114,7 +114,7 @@ export async function fileForReading(db: Db, viewer: Viewer, fileId: string): Pr
   return { kind: 'ok', file: { ...row, documentId: row.documentId } };
 }
 
-export type FileEditRight = 'ok' | 'not-found' | 'hidden' | 'no-access' | 'locked';
+export type FileEditRight = 'ok' | 'not-found' | 'hidden' | 'no-access';
 
 /**
  * Whether `viewer` may save a new version over `fileId` (checked before the upload is read; saveFileVersion checks
@@ -165,8 +165,7 @@ export type FileSaveResult =
   /** The document has a newer file than the one the editor started from. */
   | { kind: 'conflict'; current: { fileId: string | null; version: number; savedAt: Date } }
   | { kind: 'not-found' }
-  | { kind: 'no-access' }
-  | { kind: 'locked' };
+  | { kind: 'no-access' };
 
 /**
  * A new version of a document from the editor: `baseFileId` is the file the writer's copy was opened from. In one
@@ -287,7 +286,6 @@ export type SuggestionResult =
   | { kind: 'ok'; documentId: string; suggestions: ExtractSuggestions }
   | { kind: 'not-found' }
   | { kind: 'no-access' }
-  | { kind: 'locked' }
   /** No pending suggestions for that file (none made, or already answered). */
   | { kind: 'answered' }
   /** The suggested Collection is gone, or its Space is no longer one the author may write in. */

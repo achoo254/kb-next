@@ -56,7 +56,8 @@ export function restoreMember(id: string): Promise<Member> {
   return getJson(MemberSchema, `/api/workspace/members/${path(id)}/restore`, { method: 'POST' });
 }
 
-export const INVITE_ROLES = ['member', 'reviewer'] as const;
+/** An invite link lets members in: the only role it grants (the server reads older `reviewer` links as member). */
+export const INVITE_ROLES = ['member'] as const;
 export type InviteRole = (typeof INVITE_ROLES)[number];
 
 export const InviteSchema = z.object({
@@ -77,8 +78,8 @@ const MadeInviteSchema = z.object({ token: z.string(), url: z.string(), invite: 
 export type MadeInvite = z.infer<typeof MadeInviteSchema>;
 
 /** Makes a new invite link (the live one is revoked); its token and URL are in this answer only. */
-export function createInvite(role: InviteRole): Promise<MadeInvite> {
-  return getJson(MadeInviteSchema, '/api/workspace/invite', json('POST', { role }));
+export function createInvite(): Promise<MadeInvite> {
+  return getJson(MadeInviteSchema, '/api/workspace/invite', json('POST', { role: 'member' }));
 }
 
 export async function revokeInvite(id: string): Promise<void> {

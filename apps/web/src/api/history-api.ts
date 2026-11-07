@@ -1,15 +1,15 @@
 /**
  * Versions and activity of a document (C17), from apps/server/src/api/history-routes.ts: the timeline, one version's
  * text, the difference between two versions, and restoring one. Errors (ApiError.code): `not-found` (404),
- * `hidden` / `no-access` (403: may not read it; for a restore, may not edit it), `locked` (403: waiting for review or
- * published), `stale` (409), `rate-limited` (429), `network` offline.
+ * `hidden` / `no-access` (403: may not read it; for a restore, may not edit it), `stale` (409), `rate-limited` (429), `network` offline.
  */
 import * as z from 'zod/mini';
 import { getJson } from './api-client';
 import { CollectionBriefSchema, SpaceBriefSchema } from './content-api';
 
 const Time = z.iso.datetime({ offset: true });
-export const ACTOR_ROLES = ['admin', 'reviewer', 'member'] as const;
+export const ACTOR_ROLES = ['admin', 'member'] as const;
+/** Review events are left from the review gate (removed 07/11/2026): old documents still show them. */
 export const REVIEW_ACTIONS = ['submitted', 'approved', 'changes_requested', 'rejected'] as const;
 export const VERSION_VIAS = ['editor', 'api', 'import', 'restore', 'translation'] as const;
 

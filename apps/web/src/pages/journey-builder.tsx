@@ -3,8 +3,7 @@
  * here. Left: Jev's next steps and the documents to pick from; middle: the journey's steps, reordered by dragging, by
  * Alt + ↑/↓ or by the selected step's arrows; right: the selected step (title, kind, time, source document or note)
  * and the story card. Every change autosaves (journey-autosave.ts). States: loading, the journey, no step yet
- * (`ill-journey-path`), saving / saved / not saved / offline / changed in another tab, locked (waiting for review or
- * published), and a journey not found, someone else's, or failing to load. On a phone the same builder is a list of
+ * (`ill-journey-path`), saving / saved / not saved / offline / changed in another tab, and a journey not found, someone else's, or failing to load. On a phone the same builder is a list of
  * step cards with sheets (journey-builder-phone.tsx).
  */
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
@@ -27,7 +26,7 @@ import type { Locale } from '../i18n/i18n';
 import './journey-builder.css';
 import { navigate } from '../router/navigation';
 
-type BuilderError = 'not-found' | 'forbidden' | 'locked' | 'server';
+type BuilderError = 'not-found' | 'forbidden' | 'server';
 
 type BuilderLoad = { status: 'loading' } | { status: 'ready'; journey: Journey } | { status: 'failed'; error: BuilderError };
 
@@ -35,7 +34,6 @@ export function builderError(error: unknown): BuilderError {
   if (!(error instanceof ApiError)) return 'server';
   if (error.code === 'not-found') return 'not-found';
   if (error.code === 'hidden' || error.code === 'no-access') return 'forbidden';
-  if (error.code === 'locked') return 'locked';
   return 'server';
 }
 
@@ -104,12 +102,7 @@ export function JourneyBuilderScreen({ id }: { id: string }): ReactNode {
           {t('journey.loading')}
         </p>
       )}
-      {load.status === 'failed' && load.error === 'locked' && (
-        <div className="jb-state">
-          <EmptyState art="vault-lock" title={t('journey.locked.title')} description={t('journey.locked.text')} action={{ label: t('journey.locked.action'), href: journeyPath(id) }} dataId="journey-locked" />
-        </div>
-      )}
-      {load.status === 'failed' && load.error !== 'locked' && (
+      {load.status === 'failed' && (
         <div className="jb-state">
           <ErrorPanel kind={load.error} onRetry={reload} backHref={SHELL_PATHS.mine} />
         </div>

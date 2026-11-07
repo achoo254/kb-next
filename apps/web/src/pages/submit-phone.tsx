@@ -10,14 +10,14 @@ import './submit-phone.css';
 
 interface SubmitPhoneProps {
   id: string;
-  /** The text's title, once loaded ("Ghi chú: DHCP đang chờ quản trị duyệt…"). */
-  title: string;
   phase: SubmitPhase;
   steps: readonly SubmitStep[];
   /** Sends again (only when this page sent it). */
   retry?: () => void;
   retrying: boolean;
   translate?: { href: string; lang: string };
+  /** Published, but an admin is hiding it. */
+  hidden: boolean;
 }
 
 function Steps({ steps }: { steps: readonly SubmitStep[] }): ReactNode {
@@ -37,11 +37,12 @@ function Steps({ steps }: { steps: readonly SubmitStep[] }): ReactNode {
 }
 
 /**
- * Sending for review on a phone (board M03 after "Gửi duyệt"): the comet with the steps while it goes, then "Đã gửi
- * duyệt" with the way to "Của tôi" and to write another, or "Chưa gửi được" with why, "Thử lại" when that can help, and
- * "Để sau". The same submission and states as C06.
+ * Publishing on a phone (board M03 after "Đăng công khai"): the comet with the steps while it goes, then "Đã đăng" with
+ * the way to the text, its share page (or "Của tôi" when an admin hides it) and to write another, or "Chưa đăng được"
+ * with why, "Thử lại" when that can help, and "Để sau". The same publication and states as C06.
  */
-export function SubmitPhone({ id, title, phase, steps, retry, retrying, translate }: SubmitPhoneProps): ReactNode {
+export function SubmitPhone({ id, phase, steps, retry, retrying, translate, hidden }: SubmitPhoneProps): ReactNode {
+  const doc = `/d/${encodeURIComponent(id)}`;
   const { t } = useSubmitText();
   const phone = usePhoneText();
   return (
@@ -66,11 +67,20 @@ export function SubmitPhone({ id, title, phase, steps, retry, retrying, translat
             <h1 className="submit-phone-title" data-size="big">
               {t('submit.sent.title')}
             </h1>
-            <p className="submit-phone-text">{title ? phone.t('submit.sentSub', { title }) : t('submit.sent.text')}</p>
-            <span className="submit-phone-chip">{t('submit.sent.noLink')}</span>
-            <a className="phone-button submit-phone-main" data-tone="rim" href={SHELL_PATHS.mine} data-id="submit-to-mine">
-              {t('submit.sent.mine')}
+            <p className="submit-phone-text">{t(hidden ? 'submit.sent.hiddenText' : 'submit.sent.text')}</p>
+            <span className="submit-phone-chip">{t(hidden ? 'submit.sent.hidden' : 'submit.sent.public')}</span>
+            <a className="phone-button submit-phone-main" data-tone="rim" href={doc} data-id="submit-to-doc">
+              {t('submit.sent.view')}
             </a>
+            {hidden ? (
+              <a className="phone-button submit-phone-main" data-tone="ghost" href={SHELL_PATHS.mine} data-id="submit-to-mine">
+                {t('submit.sent.mine')}
+              </a>
+            ) : (
+              <a className="phone-button submit-phone-main" data-tone="ghost" href={`${doc}/share`} data-id="submit-share">
+                {t('submit.sent.share')}
+              </a>
+            )}
             {translate && (
               <a className="phone-button submit-phone-main" data-tone="ghost" href={translate.href} data-id="submit-translate">
                 {t('submit.sent.translate', { lang: translate.lang })}
@@ -98,7 +108,7 @@ export function SubmitPhone({ id, title, phase, steps, retry, retrying, translat
                 {t(`submit.err.${phase.error}.action`)}
               </a>
             )}
-            <a className="submit-phone-quiet" href={`/d/${encodeURIComponent(id)}`}>
+            <a className="submit-phone-quiet" href={doc}>
               {phone.t('submit.later')}
             </a>
           </div>

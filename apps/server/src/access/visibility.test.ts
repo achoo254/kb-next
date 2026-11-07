@@ -8,8 +8,9 @@ import { GUEST, type Viewer, viewerFor } from './viewer';
 import { canRead } from './visibility';
 
 /**
- * The read rule as a table: guest, author, another account, a reviewer, an admin by ADMIN_SUBS and one by role, and
- * a removed account, against every status, hidden or not.
+ * The read rule as a table: guest, author, another account, an account stored as a reviewer (left from the review
+ * gate: it reads as any member), an admin by ADMIN_SUBS and one by role, and a removed account, against every
+ * status, hidden or not.
  * Every read path of src/access/ must agree with it, and with the plain `canRead`.
  */
 const ADMIN_SUB = 'admin:matrix';
@@ -62,19 +63,18 @@ afterAll(async () => {
 
 function expected(viewerName: ViewerName, status: string, hidden: boolean): boolean {
   if (viewerName === 'admin' || viewerName === 'roleAdmin' || viewerName === 'author') return true;
-  if (viewerName === 'reviewer' && status === 'pending') return true;
   return status === 'approved' && !hidden;
 }
 
 describe('viewerFor', () => {
   it('makes an admin of a sub listed in ADMIN_SUBS or of an account given the role', () => {
-    expect(viewers.admin).toMatchObject({ kind: 'user', isAdmin: true, canReview: true });
-    expect(viewers.roleAdmin).toMatchObject({ kind: 'user', isAdmin: true, canReview: true });
-    expect(viewers.author).toMatchObject({ kind: 'user', isAdmin: false, canReview: false });
+    expect(viewers.admin).toMatchObject({ kind: 'user', isAdmin: true });
+    expect(viewers.roleAdmin).toMatchObject({ kind: 'user', isAdmin: true });
+    expect(viewers.author).toMatchObject({ kind: 'user', isAdmin: false });
   });
 
-  it('lets a reviewer review without making it an admin', () => {
-    expect(viewers.reviewer).toMatchObject({ kind: 'user', isAdmin: false, canReview: true });
+  it('reads an account stored as a reviewer as a member', () => {
+    expect(viewers.reviewer).toEqual({ kind: 'user', userId: expect.any(String), isAdmin: false });
   });
 
   it('reads a removed account as a guest, whatever its role', () => {

@@ -359,8 +359,9 @@ describe('PUT /api/files/:id', () => {
     expect(await errorOf(await save('other', file.id, 'rights.docx', makeDocx('x')))).toBe('no-access');
     expect(await errorOf(await save('owner', file.id, 'rights.xlsx', makeXlsx('x')))).toBe('wrong-kind');
     expect(await errorOf(await save('owner', file.id, 'rights.docx', await makePdf([{ text: 'x' }])))).toBe('wrong-content');
-    await server.database.db.update(documents).set({ status: 'pending' }).where(eq(documents.id, file.documentId));
-    expect(await errorOf(await save('owner', file.id, 'rights.docx', makeDocx('x')))).toBe('locked');
+    // Published, the file is still its author's to change.
+    await server.database.db.update(documents).set({ status: 'approved' }).where(eq(documents.id, file.documentId));
+    expect((await save('owner', file.id, 'rights.docx', makeDocx('x'))).status).toBe(200);
     const pdf = await uploaded('view-only.pdf', await makePdf([{ text: 'x' }]));
     expect(await errorOf(await save('owner', pdf.id, 'view-only.pdf', await makePdf([{ text: 'y' }])))).toBe('not-editable');
   });

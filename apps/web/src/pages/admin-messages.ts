@@ -1,4 +1,4 @@
-/** Strings of the admin station (boards A01 review queue, A02 published texts, A03 API and tokens), vi and en. */
+/** Strings of the admin station (boards A02 published texts, A03 API and tokens), vi and en. */
 import type { Locale } from '../i18n/i18n';
 import { type ScreenTranslate, useScreenText } from './space-messages';
 
@@ -13,63 +13,6 @@ export const adminVi = {
   'admin.type.process': 'Quy trình',
   'admin.type.web': 'Trang web',
   // A01
-  'review.keys': 'Phím: J/K chuyển · A duyệt · R từ chối',
-  'review.queue': 'Hàng chờ',
-  'review.waiting': '{count} chờ duyệt',
-  'review.filter': 'Lọc loại',
-  'review.filter.all': 'Tất cả',
-  'review.filter.note': 'Ghi chú',
-  'review.filter.office': 'Office',
-  'review.filter.journey': 'Lối đi',
-  'review.pending': 'Chờ duyệt',
-  'review.origin.community': 'Cộng đồng',
-  'review.origin.official': 'Chính thức',
-  'review.origin.own': 'Cộng đồng',
-  'review.asReader': 'Xem như người đọc',
-  'review.sentBy': 'Gửi bởi {author} · {when}',
-  'review.someone': 'ai đó',
-  'review.sources': 'Đính kèm và nguồn',
-  'review.source.inStore': 'nguồn trong kho',
-  'review.source.web': 'nguồn web',
-  'review.source.none': 'Bài chưa trích nguồn nào.',
-  'review.jev': 'Jev sơ duyệt',
-  'review.jev.lead': 'Chỉ gợi ý · bạn quyết',
-  'review.jev.off': 'Jev chưa chấm bài này (tắt hoặc lỗi lúc gửi). Hãy đọc kỹ như thường.',
-  'review.check.onTopic': 'Đúng chủ đề',
-  'review.check.onTopic.hint': 'Khớp vùng tri thức đã có',
-  'review.check.hasSources': 'Có nguồn',
-  'review.check.hasSources.hint': 'Trích tới lab hoặc tài liệu',
-  'review.check.duplicate': 'Trùng bài đã có',
-  'review.check.duplicate.hint': 'Càng thấp càng tốt',
-  'review.check.duplicate.of': 'Gần nhất: {title}',
-  'review.check.inappropriate': 'Ngôn từ không phù hợp',
-  'review.check.inappropriate.hint': 'Càng thấp càng tốt',
-  'review.check.none': 'chưa chấm',
-  'review.place': 'Tác giả xếp vào',
-  'review.approve': 'Duyệt · hiện trong vũ trụ',
-  'review.changes': 'Yêu cầu sửa',
-  'review.reject': 'Từ chối',
-  'review.form.changes': 'Cần sửa gì?',
-  'review.form.reject': 'Lý do từ chối',
-  'review.form.reasons': 'Lý do',
-  'review.reason.duplicate': 'Trùng lặp',
-  'review.reason.offTopic': 'Sai chủ đề',
-  'review.reason.noSources': 'Thiếu nguồn',
-  'review.reason.other': 'Khác',
-  'review.form.note': 'Lời nhắn cho tác giả',
-  'review.form.placeholder': 'Ví dụ: thêm link tới lab TCP/UDP',
-  'review.form.cancel': 'Huỷ',
-  'review.form.sendChanges': 'Gửi yêu cầu sửa',
-  'review.form.sendReject': 'Từ chối bài',
-  'review.done.approved': 'Đã duyệt "{title}" · bài hiện trong vũ trụ',
-  'review.done.ownText': 'Bài của bạn cần một người duyệt khác.',
-  'review.done.changes': 'Đã gửi yêu cầu sửa cho "{title}"',
-  'review.done.rejected': 'Đã từ chối "{title}"',
-  'review.done.failed': 'Chưa lưu được quyết định. Thử lại.',
-  'review.done.gone': 'Bài này vừa được duyệt hoặc rút lại.',
-  'review.empty.title': 'Hết bài chờ duyệt',
-  'review.empty.text': 'Vũ trụ đang gọn gàng. Bài mới sẽ hiện ở đây.',
-  'review.empty.action': 'Xem nội dung đang hiện',
   // A02
   'content.search': 'Tìm bài',
   'content.searchPlaceholder': 'Tìm bài…',
@@ -101,7 +44,7 @@ export const adminVi = {
   'content.fact.opens': 'Lượt mở',
   'content.fact.lang': 'Ngôn ngữ',
   'content.src.official': 'Chính thức',
-  'content.src.community': 'Cộng đồng · đã duyệt',
+  'content.src.community': 'Cộng đồng · thành viên đăng',
   'content.shown': 'Đang hiện',
   'content.shown.hint': 'Mọi người thấy trong vũ trụ',
   'content.hidden': 'Đang ẩn',
@@ -120,7 +63,7 @@ export const adminVi = {
   'content.failed': 'Chưa lưu được. Thử lại.',
   // A03
   'api.title': 'API đăng bài',
-  'api.lead': 'Bài từ API được hiện ngay, không qua hàng duyệt. Ẩn/hiện được bất cứ lúc nào.',
+  'api.lead': 'Bài từ API là bài Chính thức, hiện ngay. Ẩn/hiện được bất cứ lúc nào.',
   'api.token': 'Token quản trị',
   'api.token.meta': 'Tạo {created} · dùng lần cuối {used}',
   'api.token.metaUnused': 'Tạo {created} · chưa dùng',
@@ -143,11 +86,9 @@ export const adminVi = {
   'api.endpoints': 'Endpoint',
   'api.ep.post': 'Đăng bài mới',
   'api.ep.patch': 'Ẩn / hiện, sửa siêu dữ liệu',
-  'api.ep.review': 'Xem hàng chờ duyệt',
   'api.sample': 'Mẫu request',
   'api.note.post': 'Trả 201 kèm id và link. "collection" nhận id bộ sưu tập hoặc slug của Space.',
   'api.note.patch': 'Ẩn thì bài biến khỏi vũ trụ của người đọc, link chia sẻ trả "riêng tư".',
-  'api.note.review': 'Bài đang chờ duyệt, mới gửi trước, kèm điểm Jev sơ duyệt.',
   'api.log': 'Nhật ký gọi gần đây',
   'api.log.empty': 'Chưa có lần gọi nào.',
   'api.log.official': 'Chính thức',
@@ -159,7 +100,7 @@ export const adminVi = {
   'api.err.invalid-body': 'nội dung request sai',
   'api.err.space-required': 'thiếu "space" hoặc "collection"',
   'api.err.not-found': 'không thấy bài hoặc Space',
-  'api.err.not-approved': 'bài chưa duyệt',
+  'api.err.not-approved': 'bài chưa đăng',
   'api.err.other': 'lỗi {code}',
   'api.failed': 'Chưa làm được. Thử lại.',
 };
@@ -176,63 +117,6 @@ export const adminEn: Record<AdminMessageKey, string> = {
   'admin.type.lab': 'Lab',
   'admin.type.process': 'Process',
   'admin.type.web': 'Web page',
-  'review.keys': 'Keys: J/K move · A approve · R reject',
-  'review.queue': 'Queue',
-  'review.waiting': '{count} waiting',
-  'review.filter': 'Filter by kind',
-  'review.filter.all': 'All',
-  'review.filter.note': 'Notes',
-  'review.filter.office': 'Office',
-  'review.filter.journey': 'Journeys',
-  'review.pending': 'Pending',
-  'review.origin.community': 'Community',
-  'review.origin.official': 'Official',
-  'review.origin.own': 'Community',
-  'review.asReader': 'As a reader sees it',
-  'review.sentBy': 'Sent by {author} · {when}',
-  'review.someone': 'someone',
-  'review.sources': 'Attachments and sources',
-  'review.source.inStore': 'source in the library',
-  'review.source.web': 'web source',
-  'review.source.none': 'The text cites no source.',
-  'review.jev': 'Jev pre-review',
-  'review.jev.lead': 'Hints only · you decide',
-  'review.jev.off': 'Jev did not score this text (off or failing when it was sent). Read it as usual.',
-  'review.check.onTopic': 'On topic',
-  'review.check.onTopic.hint': 'Fits the knowledge already there',
-  'review.check.hasSources': 'Has sources',
-  'review.check.hasSources.hint': 'Cites a lab or a document',
-  'review.check.duplicate': 'Repeats a text',
-  'review.check.duplicate.hint': 'Lower is better',
-  'review.check.duplicate.of': 'Closest: {title}',
-  'review.check.inappropriate': 'Unfit language',
-  'review.check.inappropriate.hint': 'Lower is better',
-  'review.check.none': 'not scored',
-  'review.place': 'Placed by the author in',
-  'review.approve': 'Approve · show in the Universe',
-  'review.changes': 'Request changes',
-  'review.reject': 'Reject',
-  'review.form.changes': 'What should change?',
-  'review.form.reject': 'Why reject it',
-  'review.form.reasons': 'Reason',
-  'review.reason.duplicate': 'Duplicate',
-  'review.reason.offTopic': 'Off topic',
-  'review.reason.noSources': 'No sources',
-  'review.reason.other': 'Other',
-  'review.form.note': 'Note to the author',
-  'review.form.placeholder': 'E.g. link the TCP/UDP lab',
-  'review.form.cancel': 'Cancel',
-  'review.form.sendChanges': 'Request changes',
-  'review.form.sendReject': 'Reject',
-  'review.done.approved': 'Approved "{title}" · it is in the Universe',
-  'review.done.ownText': 'Your own text needs another reviewer.',
-  'review.done.changes': 'Asked for changes to "{title}"',
-  'review.done.rejected': 'Rejected "{title}"',
-  'review.done.failed': 'The decision was not saved. Try again.',
-  'review.done.gone': 'This text was just decided or withdrawn.',
-  'review.empty.title': 'Nothing waiting',
-  'review.empty.text': 'The Universe is tidy. New texts show up here.',
-  'review.empty.action': 'See published texts',
   'content.search': 'Search texts',
   'content.searchPlaceholder': 'Search texts…',
   'content.source': 'Source',
@@ -263,7 +147,7 @@ export const adminEn: Record<AdminMessageKey, string> = {
   'content.fact.opens': 'Opened by',
   'content.fact.lang': 'Languages',
   'content.src.official': 'Official',
-  'content.src.community': 'Community · approved',
+  'content.src.community': 'Community · posted by a member',
   'content.shown': 'Shown',
   'content.shown.hint': 'Everyone sees it in the Universe',
   'content.hidden': 'Hidden',
@@ -281,7 +165,7 @@ export const adminEn: Record<AdminMessageKey, string> = {
   'content.remove.confirm': 'Remove',
   'content.failed': 'Not saved. Try again.',
   'api.title': 'Posting API',
-  'api.lead': 'Texts from the API show at once, without review. Hide or show them any time.',
+  'api.lead': 'Texts from the API are Official and show at once. Hide or show them any time.',
   'api.token': 'Admin token',
   'api.token.meta': 'Made {created} · last used {used}',
   'api.token.metaUnused': 'Made {created} · not used yet',
@@ -304,11 +188,9 @@ export const adminEn: Record<AdminMessageKey, string> = {
   'api.endpoints': 'Endpoints',
   'api.ep.post': 'Publish a text',
   'api.ep.patch': 'Hide / show, edit metadata',
-  'api.ep.review': 'Read the review queue',
   'api.sample': 'Sample request',
   'api.note.post': 'Answers 201 with the id and link. "collection" takes a Collection id or a Space slug.',
   'api.note.patch': 'Hidden, the text leaves readers’ Universe and its share links say "private".',
-  'api.note.review': 'Texts waiting for review, the latest first, with Jev’s pre-review.',
   'api.log': 'Recent calls',
   'api.log.empty': 'No calls yet.',
   'api.log.official': 'Official',
@@ -320,7 +202,7 @@ export const adminEn: Record<AdminMessageKey, string> = {
   'api.err.invalid-body': 'malformed request',
   'api.err.space-required': 'no "space" or "collection"',
   'api.err.not-found': 'no such text or Space',
-  'api.err.not-approved': 'text not approved',
+  'api.err.not-approved': 'text not published',
   'api.err.other': 'error {code}',
   'api.failed': 'That did not work. Try again.',
 };
@@ -329,25 +211,6 @@ const ADMIN_TEXT: Record<Locale, Record<AdminMessageKey, string>> = { vi: adminV
 
 export function useAdminText(): { t: ScreenTranslate<AdminMessageKey>; locale: Locale } {
   return useScreenText(ADMIN_TEXT);
-}
-
-/** "5 phút trước", "1 giờ trước", "hôm qua", "2 ngày trước" (A01's queue). */
-export function queueAgo(locale: Locale, iso: string, now: number): string {
-  const minutes = Math.max(0, Math.floor((now - Date.parse(iso)) / 60_000));
-  const vi = locale === 'vi';
-  if (minutes < 1) return vi ? 'vừa xong' : 'just now';
-  if (minutes < 60) return vi ? `${minutes} phút trước` : `${minutes} min ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return vi ? `${hours} giờ trước` : `${hours} h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 2) return vi ? 'hôm qua' : 'yesterday';
-  return vi ? `${days} ngày trước` : `${days} days ago`;
-}
-
-/** A score as the boards write it: "0,92" in Vietnamese, "0.92" in English. */
-export function scoreText(locale: Locale, value: number): string {
-  const text = value.toFixed(2);
-  return locale === 'vi' ? text.replace('.', ',') : text;
 }
 
 /** dd/mm/yyyy in Saigon time (A02 "Ngày đăng", A03 "Tạo 02/11/2026"). */

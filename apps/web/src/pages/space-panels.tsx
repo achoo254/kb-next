@@ -3,7 +3,7 @@
  * "Thành viên & quyền" and "Space liên quan" on the right.
  */
 import type { CSSProperties, ReactNode } from 'react';
-import type { SpaceCard, SpaceDetail, SpaceMember } from '../api/content-api';
+import type { SpaceCard, SpaceDetail } from '../api/content-api';
 import type { Locale } from '../i18n/i18n';
 import { SHELL_PATHS } from '../layout/app-shell';
 import { SPACE_ICON, SPACE_KINDS, type SpaceKind } from '../ui/art';
@@ -110,19 +110,12 @@ function initialOf(name: string | null): string {
   return first ? first.toLocaleUpperCase() : '·';
 }
 
-/** Who reviews in the Space: its admins and reviewers, by name. */
-function reviewers(members: readonly SpaceMember[]): string[] {
-  return members.filter((m) => m.role === 'admin' || m.role === 'reviewer').flatMap((m) => (m.name ? [m.name] : []));
-}
-
 export function MembersPanel({ detail }: { detail: SpaceDetail }): ReactNode {
   const { t } = useSpaceText();
   const personal = detail.space.kind === 'personal';
-  const reviewerNames = reviewers(detail.members);
   const rows: Array<[SpaceMessageKey, string]> = [
     ['space.who.read', t(personal ? 'space.read.personal' : 'space.read.public')],
     ['space.who.contribute', t(personal ? 'space.contribute.personal' : 'space.contribute.public')],
-    ['space.who.review', personal ? t('space.review.personal') : reviewerNames.join(', ') || t('space.review.nobody')],
   ];
   return (
     <RimPanel as="aside" radius="card" className="space-members" label={t('space.membersLabel')} dataId="space-members">

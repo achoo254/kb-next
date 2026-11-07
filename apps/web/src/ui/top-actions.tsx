@@ -10,7 +10,7 @@ interface TopActionsProps {
   unread: number;
   /** The inbox is the screen on show (C20): the bell is lit and shows the count instead of a dot. */
   inboxOpen?: boolean;
-  /** Shown left of the bell (A01's shortcut hint and its button). */
+  /** Shown left of the bell (an admin screen's shortcut hint and its button). */
   extra?: ReactNode;
   /** Quick search and commands (F01, ⌘K): where the button leads without script. */
   searchHref: string;

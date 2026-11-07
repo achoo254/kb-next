@@ -1,7 +1,6 @@
 /**
  * The Markdown of a journey, made from its steps on every save of the builder (C07): what search indexes, what the
- * review queue and the history show, and what makes a journey with no step impossible to send for review (the body is
- * empty). Never edited by hand: the editor (C02) refuses journeys. Once published it is read by everyone, so the caller
+ * history shows, and what makes a journey with no step impossible to publish (the body is empty). Never edited by hand: the editor (C02) refuses journeys. Once published it is read by everyone, so the caller
  * gives a step whose document is not public, and whose title is that document's, PRIVATE_STEP_TITLE instead.
  */
 import type { JourneyStepKind } from '../access/journeys';

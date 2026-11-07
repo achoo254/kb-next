@@ -1,6 +1,6 @@
 /**
- * Boards A01–A03 draw the admin station with sample texts the seed does not hold (seven texts waiting from five
- * members, thirteen published texts in four Spaces, an admin token and its calls), and the E2E account is no admin.
+ * Boards A02 and A03 draw the admin station with sample texts the seed does not hold (thirteen published texts in
+ * four Spaces, an admin token and its calls), and the E2E account is no admin.
  * So the shots answer /api/me as an admin's and the admin API with the boards' data; the screens are the real ones
  * (apps/web/src/pages/admin-*-screen.tsx; their states are checked in admin-screens.test.tsx).
  */
@@ -8,90 +8,6 @@ const NET = { slug: 'networking', nameVi: 'Networking', nameEn: 'Networking', ti
 const LNX = { slug: 'linux', nameVi: 'Linux', nameEn: 'Linux', tint: '#A5F3FC', glow: '#22D3EE' };
 const K8S = { slug: 'kubernetes', nameVi: 'Kubernetes', nameEn: 'Kubernetes', tint: '#93C5FD', glow: '#3B82F6' };
 const OBS = { slug: 'observability', nameVi: 'Observability', nameEn: 'Observability', tint: '#86EFAC', glow: '#10B981' };
-
-/** 03/11/2026 21:05 in Saigon: "5 phút trước", "hôm qua". */
-export const A01_CLOCK = '2026-11-03T14:05:00.000Z';
-const minutesBefore = (clock: string, minutes: number): string => new Date(Date.parse(clock) - minutes * 60_000).toISOString();
-
-const id = (n: number): string => `a0100000-0000-4000-8000-00000000000${n}`;
-export const A01_FIRST_ID = id(1);
-
-const queued = (n: number, title: string, author: string, type: string, minutes: number, space: typeof NET, scores: [number, number, number, number]) => ({
-  id: id(n),
-  title,
-  type,
-  lang: 'vi',
-  origin: 'own',
-  authorName: author,
-  submittedAt: minutesBefore(A01_CLOCK, minutes),
-  updatedAt: minutesBefore(A01_CLOCK, minutes),
-  space,
-  collection: n === 1 ? { id: 'a01c0000-0000-4000-8000-000000000001', nameVi: 'TCP/UDP', nameEn: 'TCP/UDP' } : null,
-  tags: n === 1 ? ['tcp', 'udp', 'so sánh'] : [],
-  preReview: { onTopic: scores[0], hasSources: scores[1], duplicate: scores[2], inappropriate: scores[3], duplicateOf: null },
-});
-
-export const A01_QUEUE = {
-  documents: [
-    queued(1, 'TCP vs UDP bằng hình', 'Minh', 'note', 5, NET, [0.92, 0.71, 0.12, 0.03]),
-    queued(2, 'Ghi chú: swap trên Ubuntu', 'Lan', 'note', 18, LNX, [0.95, 0.88, 0.41, 0.02]),
-    queued(3, 'DNS cache poisoning.pptx', 'Huy', 'office', 60, NET, [0.81, 0.22, 0.08, 0.05]),
-    queued(4, 'Lối đi: Ping tới Google', 'Tú', 'journey', 120, NET, [0.9, 0.93, 0.18, 0.01]),
-    queued(5, 'K8s cho người mới.docx', 'An', 'office', 1500, K8S, [0.89, 0.6, 0.67, 0.02]),
-    queued(6, 'Subnet bằng ngón tay', 'Vy', 'note', 1560, NET, [0.94, 0.77, 0.09, 0.04]),
-    queued(7, 'syslog đọc nhanh', 'Khoa', 'note', 2880, LNX, [0.91, 0.69, 0.15, 0.02]),
-  ],
-};
-
-const T = A01_CLOCK;
-const summary = (docId: string, title: string, type: string) => ({
-  id: docId,
-  title,
-  type,
-  origin: 'official',
-  status: 'approved',
-  lang: 'vi',
-  aiTranslated: false,
-  updatedAt: T,
-  authorName: 'Đạt',
-  translations: ['vi'],
-  collectionId: null,
-  space: NET,
-  readProgress: 0,
-});
-
-/** The first text as the reader API gives it to an admin: its lead, three sections, the lab it builds on. */
-export const A01_DOCUMENT = {
-  lang: 'vi',
-  translationAvailable: true,
-  document: {
-    ...summary(A01_FIRST_ID, 'TCP vs UDP bằng hình', 'note'),
-    origin: 'own',
-    status: 'pending',
-    authorName: 'Minh',
-    sourceUrl: null,
-    createdAt: T,
-    readingMinutes: 2,
-    reviewedBy: null,
-    readAnchor: null,
-    collection: { id: 'a01c0000-0000-4000-8000-000000000001', nameVi: 'TCP/UDP', nameEn: 'TCP/UDP' },
-    space: { ...NET, art: '/art/crystal-networking.webp', kind: 'public' },
-  },
-  translations: [{ id: A01_FIRST_ID, lang: 'vi', aiTranslated: false }],
-  toc: [],
-  chunks: [
-    { anchor: 'tong-quan', heading: null, markdown: 'So sánh bắt tay 3 lần với gửi luôn.' },
-    { anchor: 'syn', heading: 'SYN', markdown: 'Mở kết nối.' },
-    { anchor: 'ack', heading: 'ACK', markdown: 'Xác nhận.' },
-    { anchor: 'udp', heading: 'UDP', markdown: 'Gửi luôn, không chờ.' },
-  ],
-  backlinks: [],
-  outgoing: [{ kind: 'wikilink', label: null, document: summary('a0100000-0000-4000-8000-0000000000a1', 'Lab TCP/UDP', 'lab') }],
-  wikilinks: [],
-  related: [],
-  versions: [],
-  file: null,
-};
 
 const pid = (n: number): string => `a0200000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const post = (n: number, title: string, space: typeof NET, art: string, rest: Record<string, unknown> = {}) => ({

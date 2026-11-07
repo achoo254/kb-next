@@ -119,6 +119,11 @@
   color: var(--c-text-sub);
 }
 
+/* "Xem tất cả N hệ": the orbit shows only the liveliest Spaces; this leads to all of them (/spaces). */
+.universe-all-spaces {
+  align-self: flex-start;
+}
+
 /* ---------- The stage ("Gần đây", the ways to start) ---------- */
 
 .universe-stage.kf-stage {

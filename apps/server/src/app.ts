@@ -83,7 +83,7 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
  * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, knowledge
  * journeys (builder and run), search,
  * the account's own AI keys, the Copilot, AI translation and AI writing
- * (all three on those keys), review (sending for review, the reviewers' queue and published texts), the inbox, the
+ * (all three on those keys), publishing (an author's own texts, the admins' published texts), the inbox, the
  * admin API (token, docs/admin-api.md), workspace settings (members, roles, invites, audit), share links and their
  * preview page (/l/<token>), and the internal API for other services on this host (loopback only, /api/internal/). The
  * web app is static (nginx in production, Vite in dev).
@@ -125,7 +125,7 @@ export function createApp({
   app.use(backchannelLogoutRoute({ config, db, idp, now }));
 
   // The admin API authenticates by token, not by the session cookie: called from other servers, without an Origin.
-  app.use(adminApiRoutes({ config, db, now, sync: search?.sync ?? null, jev, meili: search?.meili ?? null }));
+  app.use(adminApiRoutes({ config, db, now, sync: search?.sync ?? null }));
 
   app.use(requireSameOrigin(config.publicOrigin));
   // A canvas (its cards and connections) is saved whole: a larger body than the rest of the API takes.
@@ -142,12 +142,12 @@ export function createApp({
   app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(historyRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(myContentRoutes({ config, db, now, sync: search?.sync ?? null }));
-  // Review (submit, withdraw, the admins' queue and published texts), the inbox, admin tokens.
-  app.use(reviewRoutes({ config, db, now, sync: search?.sync ?? null, jev, meili: search?.meili ?? null }));
+  // Publishing (an author's publish and unpublish, the admins' published texts), the inbox, admin tokens.
+  app.use(reviewRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(notificationRoutes({ config, db, now }));
   app.use(adminTokenRoutes({ config, db, now }));
   // Workspace settings (C19, admins): members and roles, invite links, the audit trail; accepting an invite.
-  app.use(workspaceRoutes({ config, db, now, idp, sync: search?.sync ?? null, meili: search?.meili ?? null, jev }));
+  app.use(workspaceRoutes({ config, db, now, idp, meili: search?.meili ?? null, jev }));
   // Share links: made and managed by the author (C18), opened by anyone holding one (H02).
   app.use(shareRoutes({ config, db, now, sync: search?.sync ?? null }));
   // Stored files: uploads (multipart, streamed to disk, never parsed as JSON), downloads, editor saves.

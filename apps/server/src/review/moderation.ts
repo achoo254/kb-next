@@ -1,30 +1,24 @@
 /**
- * What the review lifecycle does around src/access/review.ts, shared by the web session routes (C06, C08, A01, A02)
- * and the admin API (token): where a text goes, sending it for review (with Jev's pre-review and a word to the
- * admins), an admin's verdict, hiding and showing, editing a published text's details, and the shapes the API
- * answers with. Every change enqueues the document for search sync and tells whoever it concerns (C20).
+ * What the publishing lifecycle does around src/access/review.ts, shared by the web session routes (C04, C06, C08,
+ * A02) and the admin API (token): where a text goes, the author publishing it or keeping it private, hiding and
+ * showing, editing a published text's details, and the shapes the API answers with. Every change enqueues the
+ * document for search sync; hiding and showing tell the author (C20).
  */
 import { saveDocument } from '../access/authoring';
 import type { CollectionRow, DocumentRow, SpaceRow } from '../access/content';
 import { findLatestVersion } from '../access/content';
-import { findDocumentsByIds, listCollectionsOf, spacesById, userNames } from '../access/reading';
+import { listCollectionsOf, spacesById, userNames } from '../access/reading';
 import {
   type AdminViewer,
-  type ReviewerViewer,
   type Placement,
+  type PublishSettings,
   type PublishedEntry,
-  type QueueEntry,
-  type ReviewDecision,
-  decideReview,
   findForAdmin,
   keepPrivate,
-  type PublishSettings,
+  publishDocument,
   renameDocument,
-  recordPreReview,
   setHidden,
   setPlacementAndTags,
-  submitForReview,
-  withdrawSubmission,
 } from '../access/review';
 import { findCollectionById, spaceForWriting } from '../access/spaces-write';
 import { isUuid } from '../access/ids';
@@ -33,13 +27,10 @@ import { bodyOf } from '../authoring/markdown-text';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
 import { HttpError } from '../http-error';
-import type { JevJudge } from '../jev/jev-client';
-import { reviewerUserIds, clearSubmittedNotices, nameOf, notifyAfter, unreadSubmittedNotice } from '../notifications/notification-store';
+import { clearSubmittedNotices, nameOf, notifyAfter } from '../notifications/notification-store';
 import { safeErrorText } from '../log-error';
 import type { IndexSync } from '../search/index-sync';
-import type { MeiliClient } from '../search/meili-client';
 import { type CollectionBrief, type SpaceBrief, collectionBrief, spaceBrief } from '../api/content-views';
-import { preReview } from './pre-review';
 
 type UserViewer = Extract<Viewer, { kind: 'user' }>;
 type Lang = 'vi' | 'en';
@@ -49,8 +40,6 @@ export interface ModerationDeps {
   db: Db;
   now: () => Date;
   sync: IndexSync | null;
-  jev: JevJudge | null;
-  meili: MeiliClient | null;
 }
 
 /** Where to put a text: a Collection (its id), or a Space (its slug), as the request names them. */
@@ -87,103 +76,49 @@ export function cleanTags(tags: readonly string[] | undefined): string[] | undef
   return [...new Set(tags.map((t) => t.trim()).filter(Boolean))];
 }
 
-export interface SubmitResponse {
-  status: 'pending';
-  /** Its place among the texts waiting (C06 "Vị trí 3 trong hàng"). */
-  queuePosition: number;
-  submittedAt: string;
-  /** Whether Jev's pre-review ran (its scores are for admins only). */
-  preReviewed: boolean;
+export interface PublishResponse {
+  status: 'approved';
+  /** An admin hid it earlier: published, but off the Universe until an admin shows it. */
+  hidden: boolean;
+  publishedAt: string;
 }
 
-/** The answer of a submission that did not go through. */
-function refuseSubmit(kind: string, status?: string): never {
-  switch (kind) {
+/** Cleanup after a text left from the review gate changed step; never turns the author's change into a failure. */
+async function dropWaitingNotices(db: Db, id: string, status: DocumentRow['status']): Promise<void> {
+  if (status !== 'pending') return;
+  await clearSubmittedNotices(db, id).catch((error: unknown) => console.error('notice cleanup failed', safeErrorText(error)));
+}
+
+/** Publishes the author's text at once (C04 "Đăng công khai"): the access rule, then the search sync. */
+export async function publishText(deps: ModerationDeps, viewer: UserViewer, id: string, input: PublishSettings): Promise<PublishResponse> {
+  const { db, now } = deps;
+  const at = now();
+  const result = await publishDocument(db, viewer, id, input, at);
+  switch (result.kind) {
+    case 'published':
+      break;
     case 'not-found':
       throw new HttpError(404, 'not-found');
     case 'no-access':
       throw new HttpError(403, 'no-access');
     case 'title-required':
-      throw new HttpError(400, 'title-required');
     case 'body-required':
-      throw new HttpError(400, 'body-required');
-    default:
-      throw new HttpError(409, status === 'pending' ? 'already-pending' : 'not-submittable');
+      throw new HttpError(400, result.kind);
+    case 'already-published':
+      throw new HttpError(409, 'already-published');
   }
-}
-
-/**
- * Sends the author's text for review: the access rule, then Jev's pre-review (bounded; failing or off leaves the
- * scores out), a word to every reviewer and admin, and the search sync.
- */
-export async function submitText(deps: ModerationDeps, viewer: UserViewer, id: string, input: PublishSettings): Promise<SubmitResponse> {
-  const { db, now } = deps;
-  const at = now();
-  const result = await submitForReview(db, viewer, id, input, at);
-  if (result.kind !== 'submitted') refuseSubmit(result.kind, 'status' in result ? result.status : undefined);
   deps.sync?.enqueue([id]);
-  // The submission has committed: nothing after this turns it into a failed request.
-  const scores = await preReview({ db, jev: deps.jev, meili: deps.meili }, viewer, result.doc);
-  if (scores) await recordPreReview(db, result.eventId, scores).catch((error: unknown) => console.error('pre-review record failed', safeErrorText(error)));
-  await notifyAfter(
-    db,
-    async () => {
-      // A reviewer who has not read the notice of this text's previous submission gets no second one.
-      const told = await unreadSubmittedNotice(db, id);
-      const admins = (await reviewerUserIds(db, deps.config.adminSubs)).filter((adminId) => adminId !== viewer.userId && !told.has(adminId));
-      if (admins.length === 0) return [];
-      const by = await nameOf(db, viewer.userId);
-      return admins.map((userId) => ({ userId, documentId: id, payload: { kind: 'review' as const, title: result.doc.title, action: 'submitted' as const, reason: null, by } }));
-    },
-    now(),
-  );
-  return { status: 'pending', queuePosition: result.queuePosition, submittedAt: at.toISOString(), preReviewed: scores !== null };
+  await dropWaitingNotices(db, id, result.was);
+  return { status: 'approved', hidden: result.doc.hidden, publishedAt: at.toISOString() };
 }
 
-/** Takes the author's text out of the queue; the admins' unread notices of it go too. */
-export async function withdrawText(deps: ModerationDeps, viewer: UserViewer, id: string): Promise<DocumentRow> {
-  const { db } = deps;
-  const result = await withdrawSubmission(db, viewer, id, deps.now());
-  if (result.kind === 'not-found') throw new HttpError(404, 'not-found');
-  if (result.kind === 'no-access') throw new HttpError(403, 'no-access');
-  if (result.kind === 'not-pending') throw new HttpError(409, 'not-pending');
-  deps.sync?.enqueue([result.doc.id]);
-  await clearSubmittedNotices(db, result.doc.id).catch((error: unknown) => console.error('notice cleanup failed', safeErrorText(error)));
-  return result.doc;
-}
-
-/** Keeps the author's text private (C04); one that was waiting leaves the queue, the admins' unread notices of it too. */
+/** Keeps the author's text private (C04), unpublishing it when it was published. */
 export async function keepTextPrivate(deps: ModerationDeps, viewer: UserViewer, id: string, input: PublishSettings): Promise<DocumentRow> {
   const result = await keepPrivate(deps.db, viewer, id, input, deps.now());
   if (result.kind === 'not-found') throw new HttpError(404, 'not-found');
   if (result.kind === 'no-access') throw new HttpError(403, 'no-access');
-  if (result.kind === 'published') throw new HttpError(409, 'published');
   deps.sync?.enqueue([result.doc.id]);
-  if (result.wasPending) await clearSubmittedNotices(deps.db, result.doc.id).catch((error: unknown) => console.error('notice cleanup failed', safeErrorText(error)));
-  return result.doc;
-}
-
-/** A reviewer's or an admin's verdict, told to the author with its reason. */
-export async function decide(deps: ModerationDeps, reviewer: ReviewerViewer, id: string, decision: ReviewDecision, reason: string | null): Promise<DocumentRow> {
-  const { db, now } = deps;
-  const result = await decideReview(db, reviewer, id, decision, reason, now());
-  if (result.kind === 'not-found') throw new HttpError(404, 'not-found');
-  if (result.kind === 'own-text') throw new HttpError(403, 'own-text');
-  if (result.kind === 'not-pending') throw new HttpError(409, 'not-pending');
-  deps.sync?.enqueue([id]);
-  if (result.doc.authorId !== reviewer.userId) {
-    await notifyAfter(
-      db,
-      async () => [
-        {
-          userId: result.doc.authorId,
-          documentId: id,
-          payload: { kind: 'review', title: result.doc.title, action: decision, reason: decision === 'approved' ? null : reason, by: await nameOf(db, reviewer.userId) },
-        },
-      ],
-      now(),
-    );
-  }
+  await dropWaitingNotices(deps.db, result.doc.id, result.was);
   return result.doc;
 }
 
@@ -238,32 +173,6 @@ export async function updatePost(deps: ModerationDeps, admin: AdminViewer, id: s
   return doc;
 }
 
-export interface PreReviewView {
-  onTopic: number | null;
-  hasSources: number | null;
-  duplicate: number | null;
-  inappropriate: number | null;
-  /** The published text it most likely repeats. */
-  duplicateOf: { id: string; title: string } | null;
-}
-
-/** A text in the review queue, as A01 and GET /api/admin/review list it. */
-export interface ReviewQueueItem {
-  id: string;
-  title: string;
-  type: DocumentRow['type'];
-  lang: Lang;
-  origin: DocumentRow['origin'];
-  authorName: string | null;
-  submittedAt: string;
-  updatedAt: string;
-  space: SpaceBrief;
-  collection: CollectionBrief | null;
-  tags: string[];
-  /** Jev's pre-review (admins only); null when Jev was off or failed. */
-  preReview: PreReviewView | null;
-}
-
 /** A published text as A02 lists it. */
 export interface PublishedItem {
   id: string;
@@ -297,45 +206,6 @@ async function placesOf(db: Db, docs: readonly DocumentRow[]): Promise<{ spaces:
     ),
   ]);
   return { spaces: new Map(spaces.map((s) => [s.id, s])), collections: new Map(collections.map((c) => [c.id, c])), authors };
-}
-
-export async function queueItems(db: Db, reviewer: ReviewerViewer, entries: readonly QueueEntry[]): Promise<ReviewQueueItem[]> {
-  const places = await placesOf(
-    db,
-    entries.map((e) => e.doc),
-  );
-  const repeated = entries.flatMap((e) => (e.jev?.duplicateOf ? [e.jev.duplicateOf] : []));
-  const titles = new Map((await findDocumentsByIds(db, reviewer, repeated)).map((d) => [d.id, d.title]));
-  return entries.flatMap(({ doc, submittedAt, jev }) => {
-    const space = places.spaces.get(doc.spaceId);
-    if (!space) return [];
-    const collection = doc.collectionId ? places.collections.get(doc.collectionId) : undefined;
-    const duplicateTitle = jev?.duplicateOf ? titles.get(jev.duplicateOf) : undefined;
-    return [
-      {
-        id: doc.id,
-        title: doc.title,
-        type: doc.type,
-        lang: doc.lang,
-        origin: doc.origin,
-        authorName: places.authors.get(doc.authorId) ?? null,
-        submittedAt: submittedAt.toISOString(),
-        updatedAt: doc.updatedAt.toISOString(),
-        space: spaceBrief(space),
-        collection: collection ? collectionBrief(collection) : null,
-        tags: doc.tags,
-        preReview: jev
-          ? {
-              onTopic: jev.onTopic ?? null,
-              hasSources: jev.hasSources ?? null,
-              duplicate: jev.duplicate ?? null,
-              inappropriate: jev.inappropriate ?? null,
-              duplicateOf: jev.duplicateOf && duplicateTitle ? { id: jev.duplicateOf, title: duplicateTitle } : null,
-            }
-          : null,
-      },
-    ];
-  });
 }
 
 export async function publishedItems(db: Db, entries: readonly PublishedEntry[]): Promise<PublishedItem[]> {

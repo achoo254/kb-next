@@ -178,9 +178,13 @@ describe('saving', () => {
     expect((await as('owner', () => fetchEditable(note.id))).body).toBe('Bí mật');
   });
 
-  it('locks a text waiting for review or published for its author; an admin may still edit', async () => {
-    // The owner's "So sánh ARP và NDP" waits for review.
-    expect(await as('owner', () => failure(fetchEditable(seedId('document:arp-ndp'))))).toBe('locked');
+  it('lets the author edit their text whatever its status, published or left from the review gate; nobody else but an admin', async () => {
+    // The owner's "So sánh ARP và NDP" was left waiting by the review gate.
+    expect((await as('owner', () => fetchEditable(seedId('document:arp-ndp')))).title).toBe('So sánh ARP và NDP');
+    const published = await as('owner', () => createDocument({ title: 'Đã đăng', body: 'Một' }));
+    await server.database.db.execute(sql`update documents set status = 'approved' where id = ${published.id}`);
+    const editable = await as('owner', () => fetchEditable(published.id));
+    expect((await as('owner', () => saveDocument(published.id, { title: 'Đã đăng', body: 'Một hai', baseRev: editable.rev }))).changed).toBe(true);
     expect(await as('other', () => failure(fetchEditable(DHCP)))).toBe('no-access');
     const dhcp = await as('admin', () => fetchEditable(DHCP));
     expect(dhcp.body).toContain('## Broadcast là gì');
@@ -235,7 +239,7 @@ describe('versions with accepted AI text', () => {
 
   it('keeps an AI translation marked when its writer edits it by hand', async () => {
     const db = server.database.db;
-    const anyone = { kind: 'user' as const, userId: '00000000-0000-4000-8000-000000000000', isAdmin: true, canReview: true };
+    const anyone = { kind: 'user' as const, userId: '00000000-0000-4000-8000-000000000000', isAdmin: true };
     const probe = await as('owner', () => createDocument({ title: 'Ai viết', body: '.' }));
     const source = await findDocument(db, anyone, DHCP);
     const mine = await findDocument(db, anyone, probe.id);
@@ -276,21 +280,23 @@ describe('the trash', () => {
     const db = server.database.db;
     expect((await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS - 1) * DAY))).documentIds).not.toContain(note.id);
     expect((await purgeTrash(db, new Date(clock.getTime() + (TRASH_DAYS + 1) * DAY))).documentIds).toContain(note.id);
-    expect(await findDocument(db, { kind: 'user', userId: '00000000-0000-4000-8000-000000000000', isAdmin: true, canReview: true }, note.id)).toBeNull();
+    expect(await findDocument(db, { kind: 'user', userId: '00000000-0000-4000-8000-000000000000', isAdmin: true }, note.id)).toBeNull();
     expect((await as('owner', () => fetchTrash())).map((d) => d.id)).not.toContain(note.id);
   });
 });
 
 describe('who deletes and who brings back', () => {
-  it('lets an author delete what is not published, and only an admin take back what an admin deleted', async () => {
-    // Waiting for review: the author may withdraw it, and bring it back.
+  it('lets an author delete their own text, published or not, and only an admin take back what an admin deleted', async () => {
+    // Left waiting by the review gate: the author may delete it, and bring it back.
     await as('owner', () => trashDocument(seedId('document:arp-ndp')));
     expect((await as('owner', () => fetchTrash())).map((d) => d.title)).toContain('So sánh ARP và NDP');
     await as('owner', () => restoreFromTrash(seedId('document:arp-ndp')));
-    // Published: only an admin removes it from the Universe.
+    // Published: still the author's to delete; someone else's is not.
     const published = await as('owner', () => createDocument({ title: 'Đã đăng' }));
     await server.database.db.execute(sql`update documents set status = 'approved' where id = ${published.id}`);
-    expect(await as('owner', () => failure(trashDocument(published.id)))).toBe('no-access');
+    expect(await as('other', () => failure(trashDocument(published.id)))).toBe('no-access');
+    await as('owner', () => trashDocument(published.id));
+    expect((await as('owner', () => fetchTrash())).map((d) => d.id)).toContain(published.id);
 
     const note = await as('owner', () => createDocument({ title: 'Vi phạm' }));
     await as('admin', () => trashDocument(note.id));

@@ -17,7 +17,7 @@ import { SettingsScreen } from './settings-screen';
 
 const SESSION: SessionState = { status: 'ready', signedIn: true, signInAvailable: true, user: { id: 'u1', name: 'dattqh', email: 'dat@example.com', picture: null } };
 
-type Role = 'admin' | 'reviewer' | 'member';
+type Role = 'admin' | 'member';
 let role: Role;
 let failSave: boolean;
 let failDelete: boolean;
@@ -32,7 +32,6 @@ const me = (): Record<string, unknown> => ({
   reducedMotion: false,
   role,
   isAdmin: role === 'admin',
-  canReview: role !== 'member',
   roleLocked: false,
   onboardedAt: null,
   interests: [],
@@ -125,23 +124,17 @@ describe('the theme and reduced motion', () => {
 });
 
 describe('the account card', () => {
-  it('leads an admin to the workspace settings, a reviewer to the queue, and a member nowhere', async () => {
+  it('leads an admin to the workspace settings', async () => {
     renderScreen();
     expect((await screen.findByRole('link', { name: /Cài đặt workspace/ })).getAttribute('href')).toBe('/admin/settings');
     expect(screen.getByRole('link', { name: 'Mở Scribe' }).getAttribute('href')).toBe('https://scribe.hoandat.com');
-  });
-
-  it('shows a reviewer the review queue', async () => {
-    role = 'reviewer';
-    renderScreen();
-    expect((await screen.findByRole('link', { name: /Hàng duyệt/ })).getAttribute('href')).toBe('/admin');
   });
 
   it('shows a member no staff link', async () => {
     role = 'member';
     renderScreen();
     await screen.findByText('dat@example.com');
-    await waitFor(() => expect(screen.queryByRole('link', { name: /Cài đặt workspace|Hàng duyệt/ })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('link', { name: /Cài đặt workspace/ })).toBeNull());
   });
 
   it('names the key in use and links to F03', async () => {

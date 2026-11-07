@@ -722,7 +722,7 @@
   --submit-idle: light-dark(rgb(236 232 255 / 0.6), rgb(12 6 40 / 0.5));
   --submit-wait-dot: light-dark(#c9bfef, #3b2f6e);
   --submit-solid: light-dark(#ffffff, #1a1146);
-  /* A01–A03: the admin station's cards, wells and scores */
+  /* A02, A03: the admin station's cards, wells and scores */
   --admin-card: light-dark(rgb(255 255 255 / 0.85), rgb(30 20 72 / 0.6));
   --admin-inset: light-dark(rgb(109 40 217 / 0.06), rgb(22 17 54 / 0.7));
   --admin-row: light-dark(rgb(255 255 255 / 0.72), rgb(22 17 54 / 0.7));

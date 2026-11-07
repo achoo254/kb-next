@@ -1,7 +1,8 @@
 /**
- * Board C08 draws "Của tôi" with nine sample texts at every step of review: a published note and journey, a note in
- * review, one sent back with Linh's reason, Office files in draft, private and hidden by an admin, a rejected note,
- * and a canvas. The seed cannot hold them as drawn: the same titles are a draft on C02 ("Máy mới xin IP thế nào"),
+ * Board C08 draws "Của tôi" with nine sample texts at every step of the review gate it was drawn for: a published
+ * note and journey, a note in review, one sent back with Linh's reason, Office files in draft, private and hidden by
+ * an admin, a rejected note, and a canvas. The review gate is gone (chủ dự án chốt 07/11/2026): the texts keep their
+ * old statuses here, as texts left from it do in production, and the app shows them as private. The seed cannot hold them as drawn: the same titles are a draft on C02 ("Máy mới xin IP thế nào"),
  * private files on C09 ("3 tệp · riêng tư") and an official journey on C10/C13 ("Máy mới vào mạng"). So the shot
  * answers /api/me/documents with the board's eight texts (the canvas is the seed's own, from /api/canvases), placed
  * in the E2E account's real personal Space; everything else (recent, favourites, trash, Spaces) is the seed's.

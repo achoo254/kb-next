@@ -1,7 +1,7 @@
 /**
  * Knowledge journeys: the builder (C07, /journey/:id/edit) and the run (Flow, /journey/:id). A journey is a document
- * of type `journey` (src/access/journeys.ts): drafts are their author's, and it is published through the same review
- * as any text (C04 → C06 → A01). Every route needs a session (401 `sign-in-required`).
+ * of type `journey` (src/access/journeys.ts): drafts are their author's, and the author publishes it as any text
+ * (C04 → C06). Every route needs a session (401 `sign-in-required`).
  *
  * - POST /api/journeys `{title?, from?, documents?}` → 201 `{id}`: a new draft journey in the account's personal
  *   Space. `from`: a copy of a journey the account may read (Flow "Remix"); `documents`: one step per document, in
@@ -9,7 +9,7 @@
  * - GET /api/journeys/:id → JourneyView, for the run: 404 `not-found` (also a document that is not a journey),
  *   403 `hidden` / `no-access`. Each step says whether the account has done it: ticked "Xong", or its document read
  *   to the end.
- * - GET /api/journeys/:id/edit → JourneyView, for the builder; also 403 `locked` (waiting for review or published).
+ * - GET /api/journeys/:id/edit → JourneyView, for the builder (its author or an admin; 403 `no-access` otherwise).
  * - PUT /api/journeys/:id `{title, planet?, steps, baseRev}` → SavedJourney: the steps as stored (new ones with
  *   their ids), the journey's text rebuilt from them. 409 `{error: 'stale', rev}` after another save; 400
  *   `unknown-document` for a step document the account may not read (or another journey).
@@ -175,8 +175,6 @@ function opened(access: JourneyAccess): Extract<JourneyAccess, { kind: 'ok' }> {
       throw new HttpError(403, 'hidden');
     case 'no-access':
       throw new HttpError(403, 'no-access');
-    case 'locked':
-      throw new HttpError(403, 'locked');
   }
 }
 
@@ -378,7 +376,6 @@ export function journeyRoutes({ config, db, now, jev, summaries, sync }: Journey
       res.status(409).json({ error: 'stale', rev: saved.rev.toISOString() });
       return;
     }
-    if (saved.kind === 'locked') throw new HttpError(403, 'locked');
     if (saved.kind === 'no-access') throw new HttpError(403, 'no-access');
     if (saved.kind !== 'saved') throw new HttpError(404, 'not-found');
     const stored = await writeSteps(db, doc, steps, at);

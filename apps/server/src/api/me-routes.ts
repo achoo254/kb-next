@@ -10,7 +10,7 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { deleteAccountData } from '../access/account-data';
 import { listSpaces } from '../access/content';
-import { type WorkspaceRole, canReviewAs, effectiveRole, isBootstrapAdmin } from '../access/roles';
+import { type WorkspaceRole, effectiveRole, isBootstrapAdmin } from '../access/roles';
 import { viewerFor } from '../access/viewer';
 import { requireUserId } from '../auth/require-user';
 import { clearSessionCookie } from '../auth/session-cookie';
@@ -37,8 +37,6 @@ export interface MeResponse {
   /** The workspace role it acts with (src/access/roles.ts). */
   role: WorkspaceRole;
   isAdmin: boolean;
-  /** May decide the review queue (A01): an admin or a reviewer. */
-  canReview: boolean;
   /** A bootstrap admin (ADMIN_SUBS): its role is not changed from the app. */
   roleLocked: boolean;
   /** ISO time the account finished or skipped onboarding (S03); null: show it. */
@@ -116,7 +114,6 @@ export function meRoutes({ config, db, now, sync = null }: MeRoutesOptions): Rou
       readerTextSize: readerTextSizeOf(row.readerTextSize),
       role,
       isAdmin: role === 'admin',
-      canReview: canReviewAs(role),
       roleLocked: isBootstrapAdmin(config.adminSubs, row.sub),
       onboardedAt: row.onboardedAt?.toISOString() ?? null,
       interests: row.interests,

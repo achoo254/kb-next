@@ -147,8 +147,7 @@ const ICONS = {
   reconnect: { body: <path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" />, stroke: 2.2, cap: 'round' },
   conflict: { body: <path d="M7 4v10M17 10v10M4 7l3-3 3 3M14 17l3 3 3-3" />, stroke: 2.2, cap: 'round' },
   'cloud-copy': { body: <path d="M7 18a4 4 0 0 1-1-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18z" /> },
-  /* A01–A03: the admin rail (queue, published texts, API), the token key */
-  'admin-review': { body: <path d="M4 6h16M4 12h10M4 18h7M15 16l2.5 2.5L22 14" />, cap: 'round', join: 'round' },
+  /* A02, A03: the admin rail (published texts, API), the token key */
   'admin-content': { body: <><circle cx="12" cy="12" r="5" /><ellipse cx="12" cy="12" rx="10.5" ry="3.5" transform="rotate(-20 12 12)" /></> },
   'admin-api': { body: <path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />, cap: 'round' },
   'admin-key': { body: <><circle cx="8" cy="15" r="4" /><path d="M11 12l9-9M17 6l3 3M15 8l2 2" /></>, cap: 'round' },

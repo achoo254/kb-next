@@ -1,0 +1,37 @@
+/* All Spaces (/spaces): a wrapping grid of crystals under a title; no board, built from the C09 crystal and tokens. */
+
+.spaces-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-7);
+}
+
+.spaces-sub,
+.spaces-note {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.spaces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-6);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.spaces-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.spaces-planets {
+  color: var(--c-text-muted);
+  font-size: 13px;
+}

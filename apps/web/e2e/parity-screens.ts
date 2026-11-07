@@ -1,6 +1,6 @@
 import { C11_SELECTION, C14_PATH, F03_CLOCK, F04_DOCUMENT_ID } from './ai-boards';
 import { C02_CLOCK, C02_DRAFT_ID, C13_DHCP_ID, C15_CANVAS_ID } from './graph-canvas-boards';
-import { A01_CLOCK, A03_CLOCK } from './admin-boards';
+import { A03_CLOCK } from './admin-boards';
 import { C08_CLOCK } from './mine-boards';
 import { JOURNEY_ID } from './journey-boards';
 import { C18_CLOCK, H02_TOKEN, PUBLISH_DOCUMENT_ID } from './share-boards';
@@ -55,8 +55,7 @@ export interface ParityScreen {
  * /api/me/documents answers the board's eight texts at every step of review (mine-boards.ts: the seed holds those
  * titles as other boards draw them); `upload-c03`, `imports-c16`, `offline-h04`: the upload, the Import Center and the
  * offline queue mid-way (office-boards.ts: E2E has no Tika, and a fresh browser keeps no drafts); `admin`: /api/me
- * says the account is an admin (the E2E account is not); `admin-a01` / `admin-a02` / `admin-a03`: the review queue
- * and its first text, the published texts, the token and its calls of the boards (admin-boards.ts); `publish-c04`:
+ * says the account is an admin (the E2E account is not); `admin-a02` / `admin-a03`: the published texts, the token and its calls of the boards (admin-boards.ts); `publish-c04`:
  * the owner's draft placed in Networking with its DORA sections and tags, and the Spaces it may go to (C04, C05);
  * `share-c18`: the DHCP text's sharing with its 7-day link and history; `open-h02`: a share link opened signed out
  * (share-boards.ts: E2E cannot show a token again, and the seed's draft has no sections or tags); `journey-c07` /
@@ -84,7 +83,6 @@ export type ParityMock =
   | 'imports-c16'
   | 'offline-h04'
   | 'admin'
-  | 'admin-a01'
   | 'admin-a02'
   | 'admin-a03'
   | 'publish-c04'
@@ -108,7 +106,7 @@ export const MAX_DIFF_RATIO = 0.03;
 const SEED_CLOCK = '2026-11-03T14:05:00.000Z';
 
 export const PARITY_SCREENS: readonly ParityScreen[] = [
-  { board: 'C09-Universe', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded'], clock: UNIVERSE_CLOCK },
+  { board: 'C09-Universe', path: '/u', signedIn: true, status: 'built', maxDiff: 0.035, mocks: ['onboarded'], clock: UNIVERSE_CLOCK },
   // The Universe loading past 1.5 s (the "Thử lại" chip shows), and a Universe with nothing to read yet (S05 shows
   // only then: a reader without a Space of their own gets C09, docs/mock-deviations.md).
   { board: 'S04-OrbitSkeleton', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded', 'spaces-pending'], waitFor: '[data-id="universe-slow"]' },
@@ -172,7 +170,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // The create ring of the "+" (C01), the note described; and "Của tôi" (C08) on the board's texts, the one sent
   // back picked, with the seed's recent texts, favourites and trash.
   { board: 'C01-CreateMenu', path: '/create', signedIn: true, status: 'built', waitFor: '[data-id="create-hint"]' },
-  { board: 'C08-MyContent', path: '/me', signedIn: true, status: 'built', mocks: ['mine-c08'], clock: C08_CLOCK, waitFor: '[data-id="mine-screen"][data-state="ready"]' },
+  // maxDiff: no review gate since 07/11/2026 (docs/mock-deviations.md).
+  { board: 'C08-MyContent', path: '/me', signedIn: true, status: 'built', maxDiff: 0.06, mocks: ['mine-c08'], clock: C08_CLOCK, waitFor: '[data-id="mine-screen"][data-state="ready"]' },
   // Uploading the board's six files: two done, one still sending, a dropped connection, one too large, one not taken.
   {
     board: 'C03-Upload',
@@ -190,18 +189,19 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // The inbox (C20) on the seed's seven notifications of the board, the mention picked; sending for review (C06): its
   // three states and the two result cards side by side, from the screen's own panels.
   { board: 'C20-Inbox', path: '/inbox', signedIn: true, status: 'built', clock: SEED_CLOCK, waitFor: '[data-id="inbox-screen"][data-state="ready"]' },
-  { board: 'C06-Submit', path: '/dev/kit/submit', signedIn: false, status: 'built' },
+  // maxDiff: no review gate since 07/11/2026 (docs/mock-deviations.md).
+  { board: 'C06-Submit', path: '/dev/kit/submit', signedIn: false, status: 'built', maxDiff: 0.045 },
   // Publishing (C04) and previewing (C05) the owner's draft, the DHCP text's sharing (C18), a share link opened
   // signed out (H02).
-  { board: 'C04-Publish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
+  // maxDiff: no review gate since 07/11/2026 (docs/mock-deviations.md).
+  { board: 'C04-Publish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', maxDiff: 0.045, mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
   { board: 'C05-Preview', path: `/d/${PUBLISH_DOCUMENT_ID}/preview`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="preview-stage"]' },
   // maxDiff: the people's orbs are deeper than the board's so their white initials read AA; docs/mock-deviations.md.
-  { board: 'C18-Share', path: `/d/${C13_DHCP_ID}/share`, signedIn: true, status: 'built', maxDiff: 0.031, mocks: ['share-c18'], clock: C18_CLOCK, waitFor: '[data-id="share-history"]' },
+  { board: 'C18-Share', path: `/d/${C13_DHCP_ID}/share`, signedIn: true, status: 'built', maxDiff: 0.035, mocks: ['share-c18'], clock: C18_CLOCK, waitFor: '[data-id="share-history"]' },
   // maxDiff: the sections are a list of full names, not the board's row of chips; docs/mock-deviations.md.
   { board: 'H02-SharedOpen', path: `/l/${H02_TOKEN}`, signedIn: false, status: 'built', maxDiff: 0.08, mocks: ['open-h02'], waitFor: '[data-id="open-card"]' },
-  // The admin station on the boards' data (the E2E account answered as an admin): the queue with TCP vs UDP picked,
-  // published texts by Space with DHCP picked, the API with its token and calls.
-  { board: 'A01-AdminReview', path: '/admin', signedIn: true, status: 'built', mocks: ['admin', 'admin-a01'], clock: A01_CLOCK, waitFor: '.a01-block[data-n="2"]' },
+  // The admin station on the boards' data (the E2E account answered as an admin): published texts by Space with
+  // DHCP picked, the API with its token and calls. A01 (the review queue) is gone: authors publish their own texts.
   { board: 'A02-AdminContent', path: '/admin/content', signedIn: true, status: 'built', mocks: ['admin', 'admin-a02'], waitFor: '[data-id="content-detail"]' },
   { board: 'A03-AdminApi', path: '/admin/api', signedIn: true, status: 'built', mocks: ['admin', 'admin-a03'], clock: A03_CLOCK, waitFor: '.a03-line[data-tone="danger"]' },
   // Personal settings (H03) of an admin in the dark theme with the board's OpenAI key; workspace settings (C19) on

@@ -9,9 +9,9 @@ import type { NotificationPayload } from '../notifications/notification-store';
 
 export type SeedAuthor = 'dat' | 'linh' | 'minh' | 'an' | 'owner';
 
-export const SEED_USERS: ReadonlyArray<{ key: Exclude<SeedAuthor, 'owner'>; sub: string; name: string; role: 'member' | 'reviewer' }> = [
+export const SEED_USERS: ReadonlyArray<{ key: Exclude<SeedAuthor, 'owner'>; sub: string; name: string; role: 'member' }> = [
   { key: 'dat', sub: 'seed:dat', name: 'Đạt', role: 'member' },
-  { key: 'linh', sub: 'seed:linh', name: 'Linh', role: 'reviewer' },
+  { key: 'linh', sub: 'seed:linh', name: 'Linh', role: 'member' },
   { key: 'minh', sub: 'seed:minh', name: 'Minh', role: 'member' },
   { key: 'an', sub: 'seed:an', name: 'An', role: 'member' },
 ];

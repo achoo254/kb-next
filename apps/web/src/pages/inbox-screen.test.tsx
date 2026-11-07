@@ -9,6 +9,7 @@ import type { AppNotification } from '../api/notifications-api';
 import { answer } from '../test/api-fakes';
 import { renderWithI18n } from '../test/render';
 import { InboxScreen } from './inbox-screen';
+import { inboxVi, noticeView } from './inbox-messages';
 
 const NOW = new Date('2026-11-03T14:05:00.000Z');
 const minutesAgo = (n: number): string => new Date(NOW.getTime() - n * 60_000).toISOString();
@@ -95,7 +96,7 @@ describe('the inbox', () => {
     expect(screen.getByText('4 chưa đọc')).toBeTruthy();
     const preview = within(screen.getByRole('region', { name: 'Xem trước thông báo' }));
     expect(preview.getByText('Lời nhắn: "Thêm link RFC 793."')).toBeTruthy();
-    expect(preview.getByRole('link', { name: 'Sửa và gửi lại' }).getAttribute('href')).toBe('/d/doc-n4/edit');
+    expect(preview.getByRole('link', { name: 'Sửa bài' }).getAttribute('href')).toBe('/d/doc-n4/edit');
     fireEvent.click(preview.getByRole('button', { name: 'Đánh dấu chưa đọc' }));
     await waitFor(() => expect(calls).toContain('POST /api/me/notifications/n4/unread'));
     expect(screen.getByText('5 chưa đọc')).toBeTruthy();
@@ -129,5 +130,14 @@ describe('the inbox', () => {
     fail = false;
     fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }));
     await ready();
+  });
+});
+
+describe('a notice left from the review gate', () => {
+  it('opens the text itself, never the removed review queue', () => {
+    const t = (key: keyof typeof inboxVi, vars: Record<string, string | number> = {}): string => inboxVi[key].replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
+    const view = noticeView(t, 'vi', note('n9', 10, false, { kind: 'review', payload: { kind: 'review', title: 'TCP', action: 'submitted', reason: null, by: 'Minh' } }));
+    expect(view.actions.map((a) => a.href)).toEqual(['/d/doc-n9']);
+    expect(view.body).not.toContain('Jev');
   });
 });

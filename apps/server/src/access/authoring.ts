@@ -4,9 +4,8 @@
  * (src/access/visibility.ts) first: nobody edits, restores or deletes a document they may not read, and only its
  * author (or an admin) ever does. Callers enqueue the returned ids for search sync once the write resolves.
  *
- * A document may be edited by an admin, or by its author while it is theirs to change: a draft, a private text, one
- * sent back (`changes_requested`, `rejected`). A text waiting for review (`pending`) or published (`approved`) is
- * `locked` for its author: changing it goes through review (phase 11).
+ * A document may be edited by an admin, or by its author whatever its status, published texts included (chủ dự án
+ * chốt 07/11/2026: the author has full control of their texts; an admin's hide stays, see review.ts).
  */
 import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, lt, max, ne, or } from 'drizzle-orm';
 import { type BlockDiff, diffBlocks } from '../authoring/block-diff';
@@ -42,16 +41,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_LINK_TITLES = 100;
 const LINK_CANDIDATES = 20;
 
-const LOCKED_STATUSES: ReadonlySet<DocumentRow['status']> = new Set(['pending', 'approved']);
-
-export type EditRight = 'ok' | 'no-access' | 'locked';
+export type EditRight = 'ok' | 'no-access';
 
 /** Whether `viewer` may change `doc` (see the module comment). Trash and readability are checked by the caller. */
-export function editRight(viewer: Viewer, doc: Pick<DocumentRow, 'authorId' | 'status'>): EditRight {
+export function editRight(viewer: Viewer, doc: Pick<DocumentRow, 'authorId'>): EditRight {
   if (viewer.kind !== 'user') return 'no-access';
-  if (viewer.isAdmin) return 'ok';
-  if (doc.authorId !== viewer.userId) return 'no-access';
-  return LOCKED_STATUSES.has(doc.status) ? 'locked' : 'ok';
+  return viewer.isAdmin || doc.authorId === viewer.userId ? 'ok' : 'no-access';
 }
 
 export interface LatestVersion {
@@ -65,7 +60,6 @@ export type EditAccess =
   | { kind: 'not-found' }
   | { kind: 'hidden' }
   | { kind: 'no-access' }
-  | { kind: 'locked'; doc: DocumentRow }
   /** A stored file (Office), not Markdown: the editor cannot open it. */
   | { kind: 'not-editable' }
   /** A journey: its steps are edited in the journey builder (C07), never as Markdown. */
@@ -97,7 +91,6 @@ export async function editAccess(db: Db, viewer: Viewer, id: string): Promise<Ed
   if (access.kind !== 'ok') return access;
   const right = editRight(viewer, access.doc);
   if (right === 'no-access') return { kind: 'no-access' };
-  if (right === 'locked') return { kind: 'locked', doc: access.doc };
   if (access.doc.type === 'journey') return { kind: 'journey' };
   const latest = await latestVersion(db, id);
   if (access.doc.type === 'office' || (latest !== null && latest.markdownOrNull === null)) return { kind: 'not-editable' };
@@ -110,7 +103,7 @@ function escapeLike(text: string): string {
 
 /** Who `[[ ]]` links of a document are resolved for: its author, never more (an admin's edit links what the author sees). */
 function authorViewer(authorId: string): Viewer {
-  return { kind: 'user', userId: authorId, isAdmin: false, canReview: false };
+  return { kind: 'user', userId: authorId, isAdmin: false };
 }
 
 /**
@@ -253,7 +246,6 @@ export type SaveResult =
   | { kind: 'stale'; rev: Date }
   | { kind: 'not-found' }
   | { kind: 'no-access' }
-  | { kind: 'locked' }
   | { kind: 'not-editable' };
 
 /**
@@ -380,15 +372,14 @@ export async function restoreVersion(db: Db, writer: Viewer, id: string, version
 export type TrashResult = 'ok' | 'not-found' | 'no-access';
 
 /**
- * Moves a document to the trash, recording who did. An admin may delete any document; its author any of theirs that
- * is not published (a published text leaves the Universe through an admin). The search sync then drops it.
+ * Moves a document to the trash, recording who did. An admin may delete any document; its author any of theirs,
+ * published or not. The search sync then drops it.
  */
 export async function trashDocument(db: Db, viewer: Viewer, id: string, now: Date): Promise<TrashResult> {
   const access = await documentAccess(db, viewer, id);
   if (access.kind === 'not-found') return 'not-found';
   if (access.kind !== 'ok' || viewer.kind !== 'user') return 'no-access';
-  const own = access.doc.authorId === viewer.userId && access.doc.status !== 'approved';
-  if (!viewer.isAdmin && !own) return 'no-access';
+  if (!viewer.isAdmin && access.doc.authorId !== viewer.userId) return 'no-access';
   await db.transaction(async (tx) => {
     await tx.update(documents).set({ deletedAt: now, deletedBy: viewer.userId }).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
     // In the trash it is no longer published: its share links stop for good (restoring it does not revive them).

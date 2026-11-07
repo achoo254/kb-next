@@ -18,7 +18,7 @@ let isAdmin: boolean;
 let failPlaces: boolean;
 let posts: Array<{ url: string; body: string | null }>;
 
-const ME = { name: 'Chủ', email: null, picture: null, lang: 'vi', theme: 'dark', reducedMotion: false, role: 'member', canReview: false, roleLocked: false, onboardedAt: null, interests: [] };
+const ME = { name: 'Chủ', email: null, picture: null, lang: 'vi', theme: 'dark', reducedMotion: false, role: 'member', roleLocked: false, onboardedAt: null, interests: [] };
 
 beforeEach(() => {
   spaces = MINE_SPACES;

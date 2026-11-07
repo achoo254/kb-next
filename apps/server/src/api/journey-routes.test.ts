@@ -324,7 +324,7 @@ describe('copies and journeys from elsewhere', () => {
 });
 
 describe('a journey among texts', () => {
-  it('is never opened in the text editor, and goes through review like any text', async () => {
+  it('is never opened in the text editor, and is published by its author like any text', async () => {
     const empty = await call<{ id: string }>('POST', '/api/journeys', owner, { title: 'Chưa có bước' });
     expect((await call('GET', `/api/documents/${empty.body.id}/edit`, owner)).body).toEqual({ error: 'journey' });
     expect((await call('POST', `/api/documents/${empty.body.id}/submit`, owner, {})).body).toEqual({ error: 'body-required' });
@@ -333,8 +333,9 @@ describe('a journey among texts', () => {
     const before = await call<JourneyView>('GET', `/api/journeys/${full.body.id}/edit`, owner);
     expect((await call('PUT', `/api/documents/${full.body.id}`, owner, { title: 'Sửa tay', body: 'x', baseRev: before.body.rev })).status).toBe(409);
     expect((await call('POST', `/api/documents/${full.body.id}/submit`, owner, {})).status).toBe(200);
-    expect((await call<{ error: string }>('GET', `/api/journeys/${full.body.id}/edit`, owner)).body).toEqual({ error: 'locked' });
-    expect((await call<JourneyView>('GET', `/api/journeys/${full.body.id}`, owner)).body).toMatchObject({ status: 'pending', editable: false });
+    // Published, it stays its author's to change in the builder.
+    expect((await call<JourneyView>('GET', `/api/journeys/${full.body.id}/edit`, owner)).status).toBe(200);
+    expect((await call<JourneyView>('GET', `/api/journeys/${full.body.id}`, owner)).body).toMatchObject({ status: 'approved', editable: true });
   });
 });
 

@@ -101,7 +101,7 @@ describe('TranslateScreen', () => {
     expect(within(source).getAllByRole('listitem').map((row) => row.textContent)).toEqual(VI.map((text, i) => `${i + 1}${text}`));
     expect(screen.getByRole('heading', { level: 1, name: 'Giao thức DHCP' })).toBeTruthy();
     expect(screen.getByText('VI → EN')).toBeTruthy();
-    expect(screen.getByText('AI translation · not reviewed')).toBeTruthy();
+    expect(screen.getByText('AI translation · not checked')).toBeTruthy();
     await waitFor(() => expect(translateCalls()).toHaveLength(1));
     expect(JSON.parse(String(translateCalls()[0]?.body))).toEqual({ to: 'en' });
 

@@ -1,20 +1,20 @@
 /**
- * The review lifecycle of a document, and what admins do with published texts (C06, C08, A01, A02, the admin API):
+ * The publishing lifecycle of a document, and what admins do with published texts (C04, C06, C08, A02, the admin API).
+ * The author decides on their own text (chủ dự án chốt 07/11/2026: no review gate):
  *
- *   draft | private | changes_requested | rejected  --submit (author)-->  pending
- *   pending  --withdraw (author)-->  draft
- *   pending  --decide (admin or reviewer)-->  approved | changes_requested | rejected (the last two with a reason)
+ *   any status except approved  --publish (author)-->  approved (public at once)
+ *   any status                  --keep private (author)-->  private (published: unpublished, its share links revoked)
  *   approved  --hide / show (admin)-->  approved, hidden or not
  *
- * Texts the admin API publishes skip the queue (authoring.ts `createDocument` with a publication). Every step writes
- * its review event (or, for hiding, its audit line); nothing here ever approves or rejects on its own. Who sees a
- * reason: the author and admins only (C08 lists the author's own texts, history.ts hides reasons from other readers,
- * the notification goes to the author).
+ * `pending`, `changes_requested` and `rejected` are no longer reached: they stay in the enum for texts left from the
+ * review gate, which read like private ones (author and admins only) until their author publishes them. `hidden` is
+ * the admins' alone: publishing, unpublishing or editing never changes it, so a text an admin hid stays hidden until
+ * an admin shows it. Texts the admin API publishes are official (authoring.ts `createDocument` with a publication).
  */
-import { and, asc, count, desc, eq, gte, ilike, inArray, isNull, lt, ne, notExists, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, gte, ilike, isNull, lt, notExists, sql } from 'drizzle-orm';
 import { bodyOf } from '../authoring/markdown-text';
 import type { Db } from '../db/client';
-import { type JevPreReview, auditLog, documentVersions, documents, notifications, readingProgress, reviewEvents } from '../db/schema';
+import { auditLog, documentVersions, documents, notifications, readingProgress } from '../db/schema';
 import { type DocumentRow, documentColumns } from './content';
 import { HIDE_ACTION, SHOW_ACTION } from './history';
 import { isUuid } from './ids';
@@ -23,23 +23,12 @@ import { revokeAllLinks } from './share-links';
 import { canRead } from './visibility';
 
 type UserViewer = Extract<Viewer, { kind: 'user' }>;
-export type AdminViewer = UserViewer & { isAdmin: true; canReview: true };
-/** An admin or a reviewer: who decides the review queue (A01). */
-export type ReviewerViewer = UserViewer & { canReview: true };
+export type AdminViewer = UserViewer & { isAdmin: true };
 export type DocumentStatus = DocumentRow['status'];
 
 export function isAdminViewer(viewer: Viewer): viewer is AdminViewer {
   return viewer.kind === 'user' && viewer.isAdmin;
 }
-
-export function isReviewerViewer(viewer: Viewer): viewer is ReviewerViewer {
-  return viewer.kind === 'user' && viewer.canReview;
-}
-
-/** The steps an author may send a text for review from. */
-export const SUBMITTABLE_STATUSES: ReadonlySet<DocumentStatus> = new Set(['draft', 'private', 'changes_requested', 'rejected']);
-export const REVIEW_DECISIONS = ['approved', 'changes_requested', 'rejected'] as const;
-export type ReviewDecision = (typeof REVIEW_DECISIONS)[number];
 
 /** Where a text goes: a Space the writer may write in, and one of its Collections (the caller checks both). */
 export interface Placement {
@@ -63,24 +52,15 @@ function refusal(viewer: Viewer, doc: DocumentRow): { kind: 'not-found' } | { ki
   return canRead(viewer, doc) ? { kind: 'no-access' } : { kind: 'not-found' };
 }
 
-/** Pending texts, the given one included: its place in the queue when it was just sent. */
-async function pendingCount(tx: Tx | Db): Promise<number> {
-  const [row] = await tx
-    .select({ n: count() })
-    .from(documents)
-    .where(and(eq(documents.status, 'pending'), isNull(documents.deletedAt)));
-  return row?.n ?? 0;
-}
-
-export type SubmitResult =
-  | { kind: 'submitted'; doc: DocumentRow; eventId: string; queuePosition: number }
+export type PublishResult =
+  | { kind: 'published'; doc: DocumentRow; was: DocumentStatus }
   | { kind: 'not-found' }
   | { kind: 'no-access' }
-  | { kind: 'not-submittable'; status: DocumentStatus }
+  | { kind: 'already-published' }
   | { kind: 'title-required' }
   | { kind: 'body-required' };
 
-/** What C04 sets on a text as it is sent for review or kept private: where it goes, its tags, its language. */
+/** What C04 sets on a text as it is published or kept private: where it goes, its tags, its language. */
 export interface PublishSettings {
   placement?: Placement;
   tags?: readonly string[];
@@ -97,16 +77,17 @@ function settingsChanges(doc: DocumentRow, input: PublishSettings): Partial<Pick
 }
 
 /**
- * The author sends a text for review (C06 "Gửi duyệt"): from a draft, a private text or one sent back, with a title
- * and a body (or a stored file). Optionally moved first (`placement`), tagged and given its language (C04).
+ * The author publishes a text (C04 "Đăng công khai"): it is public at once, with a title and a body (or a stored
+ * file). Optionally moved first (`placement`), tagged and given its language (C04). A member's own text becomes
+ * "Cộng đồng"; its 180 days without a change (the stale check) start now.
  */
-export async function submitForReview(db: Db, viewer: UserViewer, id: string, input: PublishSettings, now: Date): Promise<SubmitResult> {
+export async function publishDocument(db: Db, viewer: UserViewer, id: string, input: PublishSettings, now: Date): Promise<PublishResult> {
   if (!isUuid(id)) return { kind: 'not-found' };
-  return db.transaction(async (tx): Promise<SubmitResult> => {
+  return db.transaction(async (tx): Promise<PublishResult> => {
     const doc = await lockLive(tx, id);
     if (!doc) return { kind: 'not-found' };
     if (doc.authorId !== viewer.userId) return refusal(viewer, doc);
-    if (!SUBMITTABLE_STATUSES.has(doc.status)) return { kind: 'not-submittable', status: doc.status };
+    if (doc.status === 'approved') return { kind: 'already-published' };
     if (!doc.title.trim()) return { kind: 'title-required' };
     const [latest] = await tx
       .select({ markdown: documentVersions.markdown, fileId: documentVersions.fileId })
@@ -115,47 +96,19 @@ export async function submitForReview(db: Db, viewer: UserViewer, id: string, in
       .orderBy(desc(documentVersions.version))
       .limit(1);
     if (!latest || (latest.fileId === null && !bodyOf(latest.markdown ?? '').trim())) return { kind: 'body-required' };
-    const changes = { status: 'pending' as const, ...settingsChanges(doc, input) };
+    const origin = doc.origin === 'own' ? 'community' : doc.origin;
+    const changes = { status: 'approved' as const, origin, updatedAt: now, ...settingsChanges(doc, input) };
     await tx.update(documents).set(changes).where(eq(documents.id, id));
-    const [event] = await tx.insert(reviewEvents).values({ documentId: id, actorId: viewer.userId, action: 'submitted', createdAt: now }).returning({ id: reviewEvents.id });
-    if (!event) throw new Error('review event insert returned nothing');
-    return { kind: 'submitted', doc: { ...doc, ...changes }, eventId: event.id, queuePosition: await pendingCount(tx) };
+    return { kind: 'published', doc: { ...doc, ...changes }, was: doc.status };
   });
 }
 
-/** Jev's pre-review of a submission, once it answered (the submission itself never waits on it to count). */
-export async function recordPreReview(db: Db, eventId: string, scores: JevPreReview): Promise<void> {
-  await db.update(reviewEvents).set({ jevScores: scores }).where(and(eq(reviewEvents.id, eventId), eq(reviewEvents.action, 'submitted')));
-}
-
-export type WithdrawResult = { kind: 'withdrawn'; doc: DocumentRow } | { kind: 'not-found' } | { kind: 'no-access' } | { kind: 'not-pending'; status: DocumentStatus };
-
-/** The author takes a text out of the queue (C08 "Rút lại"): back to a draft, theirs to change again. */
-export async function withdrawSubmission(db: Db, viewer: UserViewer, id: string, now: Date): Promise<WithdrawResult> {
-  if (!isUuid(id)) return { kind: 'not-found' };
-  return db.transaction(async (tx): Promise<WithdrawResult> => {
-    const doc = await lockLive(tx, id);
-    if (!doc) return { kind: 'not-found' };
-    if (doc.authorId !== viewer.userId) return refusal(viewer, doc);
-    if (doc.status !== 'pending') return { kind: 'not-pending', status: doc.status };
-    await tx.update(documents).set({ status: 'draft' }).where(eq(documents.id, id));
-    await revokeAllLinks(tx, id, viewer.userId, now);
-    return { kind: 'withdrawn', doc: { ...doc, status: 'draft' } };
-  });
-}
-
-/** The steps an author may keep a text private from (C04 "Riêng tư"); a text waiting leaves the queue. */
-export const PRIVATE_FROM: ReadonlySet<DocumentStatus> = new Set(['draft', 'private', 'pending', 'changes_requested', 'rejected']);
-
-export type KeepPrivateResult =
-  | { kind: 'kept'; doc: DocumentRow; wasPending: boolean }
-  | { kind: 'not-found' }
-  | { kind: 'no-access' }
-  | { kind: 'published'; status: DocumentStatus };
+export type KeepPrivateResult = { kind: 'kept'; doc: DocumentRow; was: DocumentStatus } | { kind: 'not-found' } | { kind: 'no-access' };
 
 /**
- * The author keeps a text to themselves (C04 "Riêng tư · chỉ mình tôi"): status `private`, with C04's placement, tags
- * and language. A published text stays published (only an admin hides it).
+ * The author keeps a text to themselves (C04 "Lưu riêng tư", C08 "Gỡ xuống"): status `private`, with C04's
+ * placement, tags and language. A published text is unpublished: a "Cộng đồng" text is the author's own again, and
+ * no share link of it opens it any more.
  */
 export async function keepPrivate(db: Db, viewer: UserViewer, id: string, input: PublishSettings, now: Date): Promise<KeepPrivateResult> {
   if (!isUuid(id)) return { kind: 'not-found' };
@@ -163,36 +116,11 @@ export async function keepPrivate(db: Db, viewer: UserViewer, id: string, input:
     const doc = await lockLive(tx, id);
     if (!doc) return { kind: 'not-found' };
     if (doc.authorId !== viewer.userId) return refusal(viewer, doc);
-    if (!PRIVATE_FROM.has(doc.status)) return { kind: 'published', status: doc.status };
-    const changes = { status: 'private' as const, ...settingsChanges(doc, input) };
+    const origin = doc.origin === 'community' ? 'own' : doc.origin;
+    const changes = { status: 'private' as const, origin, ...settingsChanges(doc, input) };
     await tx.update(documents).set(changes).where(eq(documents.id, id));
     await revokeAllLinks(tx, id, viewer.userId, now);
-    return { kind: 'kept', doc: { ...doc, ...changes }, wasPending: doc.status === 'pending' };
-  });
-}
-
-export type DecisionResult = { kind: 'decided'; doc: DocumentRow } | { kind: 'not-found' } | { kind: 'not-pending'; status: DocumentStatus } | { kind: 'own-text' };
-
-/**
- * A reviewer's or an admin's verdict on a pending text (A01): approved (a member's own text becomes "Cộng đồng"), changes requested
- * or rejected, with the reason the author reads. A reviewer who is not an admin never decides on their own text
- * (`own-text`): a second person always looks at it.
- */
-export async function decideReview(db: Db, reviewer: ReviewerViewer, id: string, decision: ReviewDecision, reason: string | null, now: Date): Promise<DecisionResult> {
-  if (!isUuid(id)) return { kind: 'not-found' };
-  return db.transaction(async (tx): Promise<DecisionResult> => {
-    const doc = await lockLive(tx, id);
-    if (!doc) return { kind: 'not-found' };
-    if (!reviewer.isAdmin && doc.authorId === reviewer.userId) return { kind: 'own-text' };
-    if (doc.status !== 'pending') return { kind: 'not-pending', status: doc.status };
-    const origin = decision === 'approved' && doc.origin === 'own' ? 'community' : doc.origin;
-    // Approval is when the text goes out as it stands: its 180 days without a change (the stale check) start now.
-    const updatedAt = decision === 'approved' ? now : doc.updatedAt;
-    await tx.update(documents).set({ status: decision, origin, updatedAt }).where(eq(documents.id, id));
-    await tx.insert(reviewEvents).values({ documentId: id, actorId: reviewer.userId, action: decision, reason: decision === 'approved' ? null : reason, createdAt: now });
-    // Sent back or rejected: no link of an earlier publication may open the text again.
-    if (decision !== 'approved') await revokeAllLinks(tx, id, reviewer.userId, now);
-    return { kind: 'decided', doc: { ...doc, status: decision, origin, updatedAt } };
+    return { kind: 'kept', doc: { ...doc, ...changes }, was: doc.status };
   });
 }
 
@@ -252,45 +180,6 @@ export async function findForAdmin(db: Db, _admin: AdminViewer, id: string, lock
     .where(and(eq(documents.id, id), isNull(documents.deletedAt)));
   const [doc] = lock ? await query.for('update') : await query;
   return doc ?? null;
-}
-
-export interface QueueEntry {
-  doc: DocumentRow;
-  /** When it was (last) sent for review. */
-  submittedAt: Date;
-  jev: JevPreReview | null;
-}
-
-/**
- * The review queue (A01, GET /api/admin/review): pending texts, the latest sent first, with Jev's pre-review. A
- * reviewer who is not an admin does not see their own texts (someone else decides on them).
- */
-export async function listReviewQueue(db: Db, reviewer: ReviewerViewer): Promise<QueueEntry[]> {
-  const docs = await db
-    .select(documentColumns)
-    .from(documents)
-    .where(and(eq(documents.status, 'pending'), isNull(documents.deletedAt), reviewer.isAdmin ? undefined : ne(documents.authorId, reviewer.userId)));
-  if (docs.length === 0) return [];
-  const events = await db
-    .selectDistinctOn([reviewEvents.documentId], { documentId: reviewEvents.documentId, at: reviewEvents.createdAt, jev: reviewEvents.jevScores })
-    .from(reviewEvents)
-    .where(
-      and(
-        eq(reviewEvents.action, 'submitted'),
-        inArray(
-          reviewEvents.documentId,
-          docs.map((d) => d.id),
-        ),
-      ),
-    )
-    .orderBy(reviewEvents.documentId, desc(reviewEvents.createdAt), sql`${reviewEvents.id} desc`);
-  const byDoc = new Map(events.map((e) => [e.documentId, e]));
-  return docs
-    .map((doc) => {
-      const event = byDoc.get(doc.id);
-      return { doc, submittedAt: event?.at ?? doc.updatedAt, jev: event?.jev ?? null };
-    })
-    .sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime() || a.doc.id.localeCompare(b.doc.id));
 }
 
 export interface PublishedFilter {

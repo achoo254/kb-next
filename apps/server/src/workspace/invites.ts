@@ -5,19 +5,18 @@
  * - A token is 32 random base64url characters (192 bits); only its sha256 and its last four characters are stored,
  *   and it is shown once, when made. One live link at a time: making one revokes the others.
  * - A link lasts INVITE_DAYS and may be revoked sooner; it also stops working once the admin who made it is no longer
- *   one. A `member` link may be accepted by any number of accounts while it runs; a `reviewer` link is single-use: the
- *   first account to accept it consumes it (revoked in the same transaction as the role change), so a leaked link
- *   cannot mint reviewers in bulk.
- * - Accepting raises the account to the link's role (member or reviewer), never lowers it, and is written to the
- *   audit log; the link and the account are both checked again inside that transaction. A removed account cannot
- *   accept one.
+ *   one. It may be accepted by any number of accounts while it runs.
+ * - A link grants the member role, which every account already has: accepting never changes a role (`raised` stays
+ *   false). A `reviewer` link left from the review gate (removed 07/11/2026) reads as a member link. Accepting is
+ *   written to the audit log; the link and the account are both checked again inside that transaction. A removed
+ *   account cannot accept one.
  * - Making a link takes a transaction-scoped advisory lock, so two at once still leave one live link.
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { and, desc, eq, gt, isNull, sql } from 'drizzle-orm';
 import { effectiveRole } from '../access/roles';
 import type { Db } from '../db/client';
-import { inviteLinks, inviteRole, users } from '../db/schema';
+import { inviteLinks, users } from '../db/schema';
 import { AUDIT_ACTIONS, recordAudit } from './audit';
 
 export const INVITE_DAYS = 7;
@@ -26,8 +25,8 @@ const INVITE_LOCK = 0x6b62_6976;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TOKEN_SHAPE = /^[A-Za-z0-9_-]{32}$/;
 
-export type InviteRole = (typeof inviteLinks.$inferSelect)['role'];
-export const INVITE_ROLES = inviteRole.enumValues;
+export const INVITE_ROLES = ['member'] as const;
+export type InviteRole = (typeof INVITE_ROLES)[number];
 
 export interface InviteInfo {
   id: string;
@@ -45,7 +44,6 @@ function hashOf(token: string): string {
 const infoColumns = {
   id: inviteLinks.id,
   last4: inviteLinks.last4,
-  role: inviteLinks.role,
   expiresAt: inviteLinks.expiresAt,
   acceptedCount: inviteLinks.acceptedCount,
   createdAt: inviteLinks.createdAt,
@@ -67,7 +65,7 @@ export async function createInvite(db: Db, actorId: string, role: InviteRole, no
       .returning(infoColumns);
     if (!row) throw new Error('invite insert returned nothing');
     await recordAudit(tx, { actorId, action: AUDIT_ACTIONS.inviteCreated, targetType: 'invite', targetId: row.id, detail: { role } }, now);
-    return row;
+    return { ...row, role };
   });
   return { token, invite };
 }
@@ -80,7 +78,7 @@ export async function liveInvite(db: Db, now: Date): Promise<InviteInfo | null> 
     .where(and(isNull(inviteLinks.revokedAt), gt(inviteLinks.expiresAt, now)))
     .orderBy(desc(inviteLinks.createdAt))
     .limit(1);
-  return row ?? null;
+  return row ? { ...row, role: 'member' } : null;
 }
 
 /** Revokes a live link; false when there is no such live link. */
@@ -108,7 +106,7 @@ type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
 export async function findInvite(db: Db | Tx, adminSubs: ReadonlySet<string>, token: string, now: Date, lock = false): Promise<InviteLookup> {
   if (!TOKEN_SHAPE.test(token)) return { kind: 'not-found' };
   const query = db
-    .select({ id: inviteLinks.id, role: inviteLinks.role, expiresAt: inviteLinks.expiresAt, revokedAt: inviteLinks.revokedAt, sub: users.sub, makerRole: users.role, makerRemoved: users.removedAt, makerDeleted: users.deletedAt })
+    .select({ id: inviteLinks.id, expiresAt: inviteLinks.expiresAt, revokedAt: inviteLinks.revokedAt, sub: users.sub, makerRole: users.role, makerRemoved: users.removedAt, makerDeleted: users.deletedAt })
     .from(inviteLinks)
     .leftJoin(users, eq(users.id, inviteLinks.createdBy))
     .where(eq(inviteLinks.tokenHash, hashOf(token)));
@@ -116,36 +114,30 @@ export async function findInvite(db: Db | Tx, adminSubs: ReadonlySet<string>, to
   if (!row) return { kind: 'not-found' };
   const makerIsAdmin = row.sub !== null && row.makerRole !== null && row.makerRemoved === null && row.makerDeleted === null && effectiveRole(adminSubs, { sub: row.sub, role: row.makerRole }) === 'admin';
   if (row.revokedAt !== null || row.expiresAt.getTime() <= now.getTime() || !makerIsAdmin) return { kind: 'off' };
-  return { kind: 'ok', id: row.id, role: row.role, expiresAt: row.expiresAt };
+  return { kind: 'ok', id: row.id, role: 'member', expiresAt: row.expiresAt };
 }
-
-const RANK: Record<string, number> = { member: 0, reviewer: 1, admin: 2 };
 
 export type AcceptResult = { kind: 'accepted'; role: InviteRole; raised: boolean } | { kind: 'not-found' } | { kind: 'off' };
 
 /**
- * `userId` accepts the link: its role is raised to the link's when lower; a reviewer link is consumed. The link (row
- * locked) and the account (live, row locked) are checked inside the transaction that changes them.
+ * `userId` accepts the link (counted, never a role change). The link (row locked) and the account (live, row locked)
+ * are checked inside the transaction that counts it.
  */
 export async function acceptInvite(db: Db, adminSubs: ReadonlySet<string>, token: string, userId: string, now: Date): Promise<AcceptResult> {
   return db.transaction(async (tx): Promise<AcceptResult> => {
     const found = await findInvite(tx, adminSubs, token, now, true);
     if (found.kind !== 'ok') return found;
     const [account] = await tx
-      .select({ sub: users.sub, role: users.role })
+      .select({ id: users.id })
       .from(users)
       .where(and(eq(users.id, userId), isNull(users.removedAt), isNull(users.deletedAt)))
       .for('update');
     if (!account) return { kind: 'not-found' };
-    const current = effectiveRole(adminSubs, account);
-    const raised = (RANK[found.role] ?? 0) > (RANK[current] ?? 0);
-    if (raised) await tx.update(users).set({ role: found.role }).where(eq(users.id, userId));
-    const consumed = found.role === 'reviewer';
     await tx
       .update(inviteLinks)
-      .set({ acceptedCount: sql`${inviteLinks.acceptedCount} + 1`, ...(consumed ? { revokedAt: now } : {}) })
+      .set({ acceptedCount: sql`${inviteLinks.acceptedCount} + 1` })
       .where(eq(inviteLinks.id, found.id));
-    await recordAudit(tx, { actorId: userId, action: AUDIT_ACTIONS.inviteAccepted, targetType: 'invite', targetId: found.id, detail: { role: found.role, raised, consumed } }, now);
-    return { kind: 'accepted', role: found.role, raised };
+    await recordAudit(tx, { actorId: userId, action: AUDIT_ACTIONS.inviteAccepted, targetType: 'invite', targetId: found.id, detail: { role: found.role, raised: false } }, now);
+    return { kind: 'accepted', role: found.role, raised: false };
   });
 }

@@ -129,7 +129,7 @@ beforeAll(async () => {
   tika = await startFakeTika();
   ownerId = await createUser(database.db);
   otherId = await createUser(database.db);
-  owner = { kind: 'user', userId: ownerId, isAdmin: false, canReview: false };
+  owner = { kind: 'user', userId: ownerId, isAdmin: false };
   spaceId = await createSpace(database.db, `personal-${ownerId}`, ownerId);
   const networking = await createSpace(database.db, 'networking');
   const [row] = await database.db
@@ -462,9 +462,9 @@ describe('extractionStatus', () => {
     const started = await start();
     const { fileId } = await upload('private.md', 'text/markdown', new TextEncoder().encode('Riêng tư.'));
     await extract(started, fileId);
-    expect(await started.service.extractionStatus({ kind: 'user', userId: otherId, isAdmin: false, canReview: false }, fileId)).toBeNull();
+    expect(await started.service.extractionStatus({ kind: 'user', userId: otherId, isAdmin: false }, fileId)).toBeNull();
     expect(await started.service.extractionStatus({ kind: 'guest' }, fileId)).toBeNull();
-    expect((await started.service.extractionStatus({ kind: 'user', userId: otherId, isAdmin: true, canReview: true }, fileId))?.status).toBe('done');
+    expect((await started.service.extractionStatus({ kind: 'user', userId: otherId, isAdmin: true }, fileId))?.status).toBe('done');
     expect(await started.service.extractionStatus(owner, 'not-a-uuid')).toBeNull();
     await expect(started.service.enqueueExtraction('not-a-uuid')).rejects.toThrow(/not a file id/);
   });

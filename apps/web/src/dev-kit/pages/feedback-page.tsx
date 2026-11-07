@@ -72,7 +72,7 @@ const RECOVERY: Record<
 > = {
   fail: {
     title: 'Chưa gửi được',
-    message: 'Lỗi mạng khi gửi duyệt. Bản nháp vẫn nằm trên máy này.',
+    message: 'Lỗi mạng khi đăng bài. Bản nháp vẫn nằm trên máy này.',
     meta: 'Lần thử 1/3 · 21:25',
     button: 'Thử lại',
     icon: 'warning',

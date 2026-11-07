@@ -4,7 +4,7 @@ import { type Translate, useI18n } from '../i18n/i18n';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { signedInUser, useSessionState } from '../layout/session-context';
 import { useDevice } from '../layout/device';
-import { DESKTOP_SCENE, type SceneGeometry, type SceneOrb, type SceneSpace, TABLET_SCENE, UniverseScene, placeSpaces } from '../layout/universe-scene';
+import { DESKTOP_SCENE, type SceneGeometry, type SceneOrb, type SceneSpace, TABLET_SCENE, UniverseScene, placeSpaces, sceneCapacity } from '../layout/universe-scene';
 import { Button } from '../ui/button';
 import { GradientTitle } from '../ui/gradient-title';
 import { StageCards } from '../ui/stage-cards';
@@ -14,7 +14,7 @@ import { UniverseAiPanel } from './universe-ai-panel';
 import { isEmptyUniverse, useUniverseData } from './universe-data';
 import { continueReading, dockCards, tabletCards } from './universe-dock';
 import { UniversePhone } from './universe-phone';
-import { sceneSpaces } from './universe-spaces';
+import { orbitSpaces, sceneSpaces } from './universe-spaces';
 import { OfflineBanner, UniverseEmpty, UniverseSkeleton } from './universe-states';
 import './universe-screen.css';
 import { navigate } from '../router/navigation';
@@ -185,7 +185,8 @@ interface UniverseMainProps {
 function UniverseMain({ spaces, recent, tablet }: UniverseMainProps & { tablet: boolean }): ReactNode {
   const { t, locale } = useI18n();
   const geometry = tablet ? TABLET_SCENE : DESKTOP_SCENE;
-  const scene = useMemo(() => sceneSpaces(spaces, locale), [spaces, locale]);
+  // The orbit has room for a few Spaces: the liveliest show, the list of all Spaces has every one.
+  const scene = useMemo(() => sceneSpaces(orbitSpaces(spaces, sceneCapacity(geometry)), locale), [spaces, locale, geometry]);
   const sceneRef = useRef<HTMLDivElement>(null);
   const layer = use3dLayer(sceneRef, scene, geometry);
   const focus = continueReading(recent) ?? recent[0];
@@ -257,7 +258,7 @@ function UniverseMain({ spaces, recent, tablet }: UniverseMainProps & { tablet: 
             />
           </div>
         )}
-        <UniverseScene spaces={scene} orb={orbOf(t, placed.length, tablet)} onOpen={open} geometry={geometry} className="universe-scene" />
+        <UniverseScene spaces={scene} orb={orbOf(t, spaces.length, tablet)} onOpen={open} geometry={geometry} className="universe-scene" />
       </div>
       <div className="universe-hero">
         <span className="universe-kicker">Knowledge OS</span>
@@ -265,6 +266,9 @@ function UniverseMain({ spaces, recent, tablet }: UniverseMainProps & { tablet: 
           {t('universe.title')}
         </GradientTitle>
         <p className="universe-sub">{tablet ? t('universe.subShort') : t('universe.sub')}</p>
+        <Button variant="glass" icon="orbit" href={SHELL_PATHS.spaces} className="universe-all-spaces" dataId="universe-all-spaces">
+          {t('universe.allSpaces', { count: spaces.length })}
+        </Button>
       </div>
       {tablet ? (
         <StageCards cards={tabletCards({ recent, now, locale }, t)} size="tablet" className="universe-stage" />

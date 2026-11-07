@@ -1,17 +1,17 @@
 /**
  * C10 "Thành viên & quyền": who takes part in a Space and what the viewer may do there, from real data. A public
- * Space's members are the authors of its published documents plus the admins ("Quản trị") and reviewers
- * ("Người duyệt", src/access/roles.ts); a personal Space has its owner only.
+ * Space's members are the authors of its published documents plus the admins ("Quản trị", src/access/roles.ts); a
+ * personal Space has its owner only.
  */
 import { eq } from 'drizzle-orm';
 import type { SpaceRow } from '../access/content';
 import { spaceContributors, staffAccounts } from '../access/participation';
-import { type WorkspaceRole, effectiveRole } from '../access/roles';
+import { type StoredRole, effectiveRole } from '../access/roles';
 import type { Viewer } from '../access/viewer';
 import type { Db } from '../db/client';
 import { users } from '../db/schema';
 
-export type MemberRole = 'owner' | 'admin' | 'reviewer' | 'member';
+export type MemberRole = 'owner' | 'admin' | 'member';
 
 export interface SpaceMember {
   name: string | null;
@@ -22,15 +22,13 @@ export interface SpaceMember {
 }
 
 export interface SpacePermissions {
-  /** May write in this Space (a member's text goes to review before it is published). */
+  /** May write in this Space (and publish what they write). */
   canCreate: boolean;
-  /** May approve or send back submitted texts. */
-  canReview: boolean;
   /** May manage the Space and hide documents. */
   canAdmin: boolean;
 }
 
-const ROLE_ORDER: Record<MemberRole, number> = { owner: 0, admin: 1, reviewer: 2, member: 3 };
+const ROLE_ORDER: Record<MemberRole, number> = { owner: 0, admin: 1, member: 2 };
 
 export async function spaceMembers(db: Db, adminSubs: ReadonlySet<string>, space: SpaceRow): Promise<SpaceMember[]> {
   if (space.kind === 'personal') {
@@ -39,7 +37,7 @@ export async function spaceMembers(db: Db, adminSubs: ReadonlySet<string>, space
     return owner ? [{ ...owner, role: 'owner', documentCount: 0 }] : [];
   }
   const people = new Map<string, SpaceMember & { first: number }>();
-  const roleOf = (sub: string, role: WorkspaceRole): MemberRole => effectiveRole(adminSubs, { sub, role });
+  const roleOf = (sub: string, role: StoredRole): MemberRole => effectiveRole(adminSubs, { sub, role });
   for (const c of await spaceContributors(db, space.id)) {
     people.set(c.userId, { name: c.name, picture: c.picture, role: roleOf(c.sub, c.role), documentCount: c.documents, first: c.firstContribution.getTime() });
   }
@@ -57,10 +55,10 @@ function compareFirst(a: number, b: number): number {
 }
 
 export async function spacePermissions(_db: Db, viewer: Viewer, space: SpaceRow): Promise<SpacePermissions> {
-  if (viewer.kind === 'guest') return { canCreate: false, canReview: false, canAdmin: false };
+  if (viewer.kind === 'guest') return { canCreate: false, canAdmin: false };
   if (space.kind === 'personal') {
     const own = space.ownerId === viewer.userId;
-    return { canCreate: own, canReview: false, canAdmin: own };
+    return { canCreate: own, canAdmin: own };
   }
-  return { canCreate: true, canReview: viewer.canReview, canAdmin: viewer.isAdmin };
+  return { canCreate: true, canAdmin: viewer.isAdmin };
 }

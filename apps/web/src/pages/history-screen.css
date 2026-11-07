@@ -236,10 +236,6 @@
   --avatar: var(--violet-600);
 }
 
-.history-avatar[data-tone="reviewer"] {
-  --avatar: var(--emerald-700);
-}
-
 .history-avatar[data-tone="ai"] {
   --avatar: var(--violet-700);
 }

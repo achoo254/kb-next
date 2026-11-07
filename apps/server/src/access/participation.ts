@@ -7,7 +7,7 @@ import { and, asc, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { chunks, comments, documents, links, readingProgress, users } from '../db/schema';
 import { isUuid } from './ids';
-import { type WorkspaceRole, withRole } from './roles';
+import { type StoredRole, withRole } from './roles';
 import { GUEST, type Viewer } from './viewer';
 import { visibleTo } from './visibility';
 
@@ -65,7 +65,7 @@ export interface CommentRow {
   authorName: string | null;
   authorPicture: string | null;
   authorSub: string;
-  authorRole: WorkspaceRole;
+  authorRole: StoredRole;
 }
 
 const MAX_COMMENTS = 200;
@@ -133,7 +133,7 @@ export interface Contributor {
   name: string | null;
   picture: string | null;
   sub: string;
-  role: WorkspaceRole;
+  role: StoredRole;
   /** Published texts of the Space they wrote (a text and its translations count once). */
   documents: number;
   /** When their earliest published text of the Space was created: who joined the Space first. */
@@ -156,12 +156,12 @@ export async function spaceContributors(db: Db, spaceId: string): Promise<Contri
     .sort((a, b) => b.documents - a.documents || a.firstContribution.getTime() - b.firstContribution.getTime());
 }
 
-/** Accounts that review or administer (src/access/roles.ts), whatever they wrote. */
+/** Accounts that administer (src/access/roles.ts), whatever they wrote. */
 export async function staffAccounts(db: Db, adminSubs: ReadonlySet<string>): Promise<Array<Omit<Contributor, 'documents' | 'firstContribution'>>> {
   return db
     .select({ userId: users.id, name: users.name, picture: users.picture, sub: users.sub, role: users.role })
     .from(users)
-    .where(withRole(adminSubs, ['admin', 'reviewer']))
+    .where(withRole(adminSubs, ['admin']))
     .orderBy(asc(users.createdAt));
 }
 

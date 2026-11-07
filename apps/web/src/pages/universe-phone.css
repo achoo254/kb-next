@@ -95,6 +95,26 @@
   font-weight: 600;
 }
 
+/* "Xem tất cả N hệ" under the note: the phone orbit shows six Spaces, this leads to all of them. */
+.phone-all-spaces {
+  position: absolute;
+  right: 16px;
+  top: 66px;
+  z-index: 4;
+  box-sizing: border-box;
+  /* a 44px touch target (phone-layout.spec.ts) */
+  height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  border-radius: 22px;
+  background: var(--phone-soft);
+  color: var(--c-text);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .phone-orbit {
   position: absolute;
   left: calc(50% - 195px);
@@ -348,12 +368,6 @@
 .phone-sheet-chip[data-origin="own"] {
   background: var(--phone-own-bg);
   color: var(--phone-own-text);
-}
-
-.phone-sheet-chip[data-origin="pending"] {
-  background: none;
-  border: 1px dashed var(--phone-wait-border);
-  color: var(--phone-wait-text);
 }
 
 .phone-sheet-line {

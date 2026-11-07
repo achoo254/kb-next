@@ -1,6 +1,6 @@
 /**
  * The posting API (board A03, /admin/api): the admin token in use (only its last four characters, ever; a new one is
- * shown once and revokes the old), revoking it, the three endpoints with a sample request each, and the latest calls.
+ * shown once and revokes the old), revoking it, the two endpoints with a sample request each, and the latest calls.
  */
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { type AdminCall, type AdminToken, createAdminToken, fetchAdminCalls, fetchAdminTokens, revokeAdminToken } from '../api/review-api';
@@ -25,13 +25,6 @@ const ENDPOINTS = [
     path: '/api/admin/posts/:id',
     title: 'PATCH /api/admin/posts/{id}',
     code: 'Authorization: Bearer <ADMIN_TOKEN>\nContent-Type: application/json\n\n{\n  "hidden": true\n}',
-  },
-  {
-    id: 'review',
-    method: 'GET',
-    path: '/api/admin/review',
-    title: 'GET /api/admin/review',
-    code: 'Authorization: Bearer <ADMIN_TOKEN>\n\n200 OK\n{\n  "documents": [\n    { "id": "…", "title": "TCP vs UDP bằng hình",\n      "authorName": "…", "preReview": { "onTopic": 0.92, … } }\n  ]\n}',
   },
 ] as const;
 type EndpointId = (typeof ENDPOINTS)[number]['id'];

@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../../../web/src/api/api-client';
 import { createDocument, fetchMyDocuments, restoreFromTrash, trashDocument } from '../../../web/src/api/authoring-api';
 import { fetchInbox } from '../../../web/src/api/notifications-api';
-import { decideReview, keepPrivate, submitForReview, updatePublished } from '../../../web/src/api/review-api';
+import { keepPrivate, publishDocument, updatePublished } from '../../../web/src/api/review-api';
 import { changeShareLink, createShareLink, fetchShare, openSharedLink, remixShared, revokeShareLink } from '../../../web/src/api/share-api';
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { signIn } from '../../test/sign-in';
@@ -48,11 +48,10 @@ async function failure(promise: Promise<unknown>): Promise<string> {
 
 const tokenOf = (path: string): string => path.replace(/^\/l\//, '');
 
-/** A text of the owner's, sent for review and approved: published, as a member's text is. */
+/** A text of the owner's, published by its author, as a member's text is. */
 async function publishedText(title: string, body = '## Bước một\n\nMáy mới hỏi cả mạng.\n\n## Bước hai\n\nServer trả lời.'): Promise<string> {
   const doc = await as('owner', () => createDocument({ title, body }));
-  await as('owner', () => submitForReview(doc.id));
-  await as('admin', () => decideReview(doc.id, 'approved'));
+  await as('owner', () => publishDocument(doc.id));
   return doc.id;
 }
 
@@ -136,9 +135,9 @@ describe('opening a link', () => {
     expect(view.openings7d).toBe(2);
     const opened = view.history.filter((h) => h.kind === 'opened');
     expect(opened.map((h) => h.by)).toEqual(['Linh', null]);
-    expect(view.history.map((h) => h.kind)).toEqual(['opened', 'opened', 'created', 'approved']);
-    expect(view.history.find((h) => h.kind === 'approved')?.by).toBe('Đạt');
-    expect(view.approverName).toBe('Đạt');
+    // Published by its author: no reviewer's approval in its history.
+    expect(view.history.map((h) => h.kind)).toEqual(['opened', 'opened', 'created']);
+    expect(view.approverName).toBeNull();
 
     // Nothing stored or answered carries the token: the link keeps its sha256 and last four characters only.
     expect(JSON.stringify(view)).not.toContain(token);
@@ -220,14 +219,15 @@ describe('remix', () => {
 });
 
 describe('keeping a text private (C04)', () => {
-  it('takes a waiting text out of the queue, and never unpublishes one', async () => {
+  it('keeps a draft private with its settings, and unpublishes a published text', async () => {
     const doc = await as('owner', () => createDocument({ title: 'Giữ riêng', body: 'Nội dung' }));
-    await as('owner', () => submitForReview(doc.id, { lang: 'en' }));
-    await as('owner', () => keepPrivate(doc.id, { tags: ['riêng'] }));
+    await as('owner', () => keepPrivate(doc.id, { tags: ['riêng'], lang: 'en' }));
     const mine = (await as('owner', () => fetchMyDocuments())).find((d) => d.id === doc.id);
     expect(mine).toMatchObject({ status: 'private', lang: 'en' });
     const published = await publishedText('Đã đăng');
-    expect(await as('owner', () => failure(keepPrivate(published)))).toBe('published');
+    expect(await as('other', () => failure(keepPrivate(published)))).toBe('no-access');
+    await as('owner', () => keepPrivate(published));
+    expect((await as('owner', () => fetchMyDocuments())).find((d) => d.id === published)).toMatchObject({ status: 'private', origin: 'own' });
   });
 });
 
@@ -242,19 +242,13 @@ describe('a text leaving the published state', () => {
     expect((await as('owner', () => fetchShare(id))).link?.revokedAt).not.toBeNull();
   });
 
-  it('revokes its links when it is sent back or rejected after a later submission', async () => {
-    for (const decision of ['changes_requested', 'rejected'] as const) {
-      const id = await publishedText(`Gửi lại rồi ${decision}`);
-      const token = tokenOf((await as('owner', () => createShareLink(id, { expiry: 'none', access: 'view' }))).path);
-      // Back in the queue (as a published text sent again would be), then sent back.
-      await server.database.db.update(documents).set({ status: 'pending' }).where(eq(documents.id, id));
-      await as('admin', () => decideReview(id, decision, 'Cần sửa nguồn.'));
-      expect(await as('guest', () => failure(openSharedLink(token)))).toBe('link-revoked');
-      // Approved again later: the old link stays off; sharing again means a new link.
-      await server.database.db.update(documents).set({ status: 'pending' }).where(eq(documents.id, id));
-      await as('admin', () => decideReview(id, 'approved'));
-      expect(await as('guest', () => failure(openSharedLink(token)))).toBe('link-revoked');
-    }
+  it('revokes its links when its author unpublishes it; publishing again does not revive them', async () => {
+    const id = await publishedText('Gỡ xuống rồi đăng lại');
+    const token = tokenOf((await as('owner', () => createShareLink(id, { expiry: 'none', access: 'view' }))).path);
+    await as('owner', () => keepPrivate(id));
+    expect(await as('guest', () => failure(openSharedLink(token)))).toBe('link-revoked');
+    await as('owner', () => publishDocument(id));
+    expect(await as('guest', () => failure(openSharedLink(token)))).toBe('link-revoked');
   });
 
   it('keeps one live link per text in the database too', async () => {

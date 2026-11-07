@@ -4,15 +4,18 @@ import { ME, NET, myDoc } from './mine-test-data';
 import { ago, canvasItem, daysLeft, documentMatches, firstPick, itemStatusOf, matches, mineItems, orbitLayout, personalUniverseEmpty, ringOf } from './mine-model';
 
 describe('statuses', () => {
-  it('tell a hidden published text and one sent back apart from the API’s statuses', () => {
+  it('tell a hidden published text apart, and read texts left from the review gate as private', () => {
     expect(itemStatusOf({ status: 'approved', hidden: true })).toBe('hidden');
     expect(itemStatusOf({ status: 'approved', hidden: false })).toBe('approved');
-    expect(itemStatusOf({ status: 'changes_requested', hidden: false })).toBe('changes');
+    expect(itemStatusOf({ status: 'draft', hidden: false })).toBe('draft');
     expect(itemStatusOf({ status: 'private', hidden: false })).toBe('private');
+    expect(itemStatusOf({ status: 'pending', hidden: false })).toBe('private');
+    expect(itemStatusOf({ status: 'changes_requested', hidden: false })).toBe('private');
+    expect(itemStatusOf({ status: 'rejected', hidden: false })).toBe('private');
   });
 
-  it('put each step of review on its ring, refused texts apart', () => {
-    expect([ringOf('draft'), ringOf('private'), ringOf('pending'), ringOf('changes'), ringOf('approved'), ringOf('hidden'), ringOf('rejected')]).toEqual([1, 1, 2, 2, 3, 3, 4]);
+  it('put drafts, private texts and published ones on their own rings', () => {
+    expect([ringOf('draft'), ringOf('private'), ringOf('approved'), ringOf('hidden')]).toEqual([1, 2, 3, 3]);
   });
 });
 
@@ -28,7 +31,7 @@ describe('items and filters', () => {
   it('lists documents first, then canvases (private, in their Space)', () => {
     const items = mineItems(docs, canvases, [NET, ME]);
     expect(items.map((i) => [i.key, i.type, i.status])).toEqual([
-      ['note', 'note', 'changes'],
+      ['note', 'note', 'private'],
       ['lab', 'note', 'approved'],
       ['docx', 'office', 'private'],
       ['path', 'journey', 'hidden'],
@@ -40,16 +43,16 @@ describe('items and filters', () => {
     expect(items[0]?.href).toBe('/d/note');
   });
 
-  it('filter by type and by review status together', () => {
+  it('filter by type and by status together', () => {
     const items = mineItems(docs, canvases, [NET]);
     expect(items.filter((i) => matches(i, { type: 'note', status: 'all' })).map((i) => i.key)).toEqual(['note', 'lab']);
-    expect(items.filter((i) => matches(i, { type: 'all', status: 'private' })).map((i) => i.key)).toEqual(['docx', 'canvas:cv']);
+    expect(items.filter((i) => matches(i, { type: 'all', status: 'private' })).map((i) => i.key)).toEqual(['note', 'docx', 'canvas:cv']);
     expect(items.filter((i) => matches(i, { type: 'office', status: 'approved' }))).toEqual([]);
     expect(documentMatches(myDoc('x', { status: 'approved', hidden: true }), { type: 'all', status: 'hidden' })).toBe(true);
     expect(documentMatches(myDoc('x', { type: 'web' }), { type: 'note', status: 'draft' })).toBe(true);
   });
 
-  it('pick first what a reviewer sent back, else the last changed; nothing in an empty list', () => {
+  it('pick the last changed first; nothing in an empty list', () => {
     expect(firstPick(mineItems(docs, [], []))).toBe('note');
     expect(firstPick(mineItems(docs.slice(1), [], []))).toBe('lab');
     expect(firstPick([])).toBeNull();
@@ -57,20 +60,16 @@ describe('items and filters', () => {
 });
 
 describe('the orbits', () => {
-  it('spread each ring’s planets from its own turn, and line refused ones up in their box', () => {
-    const items = mineItems(
-      [myDoc('a', { status: 'private' }), myDoc('b', { status: 'pending' }), myDoc('c', { status: 'changes_requested' }), myDoc('d', { status: 'rejected' }), myDoc('e', { status: 'rejected' })],
-      [],
-      [],
-    );
+  it('spread each ring’s planets from its own turn', () => {
+    const items = mineItems([myDoc('a', { status: 'draft' }), myDoc('b', { status: 'private' }), myDoc('c', { status: 'pending' }), myDoc('d', { status: 'approved' })], [], []);
     const placed = Object.fromEntries(orbitLayout(items).map((p) => [p.item.key, [p.x, p.y, p.size]]));
     // Ring 1 alone: 35° on the 150 × 92 ellipse around (486, 278), less half the planet.
     expect(placed.a).toEqual([Math.round(486 + 150 * Math.cos((35 * Math.PI) / 180) - 23), Math.round(278 + 92 * Math.sin((35 * Math.PI) / 180) - 23), 46]);
-    // Ring 2, two planets: 70° and 250°.
+    // Ring 2, two planets (a text left waiting for review is private): 70° and 250°.
     expect(placed.b).toEqual([Math.round(486 + 270 * Math.cos((70 * Math.PI) / 180) - 23), Math.round(278 + 160 * Math.sin((70 * Math.PI) / 180) - 23), 46]);
     expect(placed.c).toEqual([Math.round(486 + 270 * Math.cos((250 * Math.PI) / 180) - 23), Math.round(278 + 160 * Math.sin((250 * Math.PI) / 180) - 23), 46]);
-    expect(placed.d).toEqual([846, 48, 40]);
-    expect(placed.e).toEqual([906, 48, 40]);
+    // Ring 3 alone: 105°.
+    expect(placed.d).toEqual([Math.round(486 + 400 * Math.cos((105 * Math.PI) / 180) - 23), Math.round(278 + 240 * Math.sin((105 * Math.PI) / 180) - 23), 46]);
   });
 });
 

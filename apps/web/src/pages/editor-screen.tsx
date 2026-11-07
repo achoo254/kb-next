@@ -1,9 +1,10 @@
 /**
  * The editor (board C02) at /d/:id/edit: the save chip with undo and redo, words and reading time, preview and
- * "Gửi duyệt" (opens C04); the planet colour of the text; the title and the text on TipTap (editor-schema.ts) with the `/`
+ * "Xuất bản" (opens C04); the planet colour of the text; the title and the text on TipTap (editor-schema.ts) with the `/`
  * block menu and the `[[` document list; the writing assistant (editor-assistant.tsx). Autosave and the browser copy:
- * editor-autosave.ts. States: loading, the editor, not found, no access, locked (in review or published), not
- * editable (an Office file), offline without a copy on this device, and a failed load.
+ * editor-autosave.ts. The author edits their text whatever its status, published included. States: loading, the
+ * editor, not found, no access, not editable (an Office file), offline without a copy on this device, and a failed
+ * load.
  */
 import type { Editor, Range } from '@tiptap/core';
 import { NodeSelection } from '@tiptap/pm/state';
@@ -36,13 +37,13 @@ import { spaceName } from './space-panels';
 import './editor-screen.css';
 import { navigate } from '../router/navigation';
 
-type EditorFailure = 'not-found' | 'no-access' | 'hidden' | 'locked' | 'not-editable' | 'offline' | 'server';
+type EditorFailure = 'not-found' | 'no-access' | 'hidden' | 'not-editable' | 'offline' | 'server';
 type EditorLoad = { status: 'loading' } | { status: 'ready'; opened: OpenedDocument } | { status: 'failed'; error: EditorFailure };
 
 export function editorLoadError(error: unknown): EditorFailure {
   const read = readErrorOf(error);
   if (read) return read;
-  if (error instanceof ApiError && (error.code === 'locked' || error.code === 'not-editable')) return error.code;
+  if (error instanceof ApiError && error.code === 'not-editable') return 'not-editable';
   if (error instanceof ApiError && error.code === NETWORK_ERROR) return 'offline';
   return 'server';
 }
@@ -121,12 +122,12 @@ function EditorLoading(): ReactNode {
 function EditorFailed({ id, error, onRetry }: { id: string; error: EditorFailure; onRetry(): void }): ReactNode {
   const { t } = useEditorText();
   const readHref = `/d/${encodeURIComponent(id)}`;
-  if (error === 'locked' || error === 'not-editable') {
+  if (error === 'not-editable') {
     return (
       <EmptyState
-        art={error === 'locked' ? 'comet-sent' : 'doc-planet'}
-        title={t(error === 'locked' ? 'editor.locked.title' : 'editor.notEditable.title')}
-        description={t(error === 'locked' ? 'editor.locked.text' : 'editor.notEditable.text')}
+        art="doc-planet"
+        title={t('editor.notEditable.title')}
+        description={t('editor.notEditable.text')}
         action={{ label: t('editor.read'), href: readHref }}
         className="editor-state"
         dataId={`editor-${error}`}
@@ -240,7 +241,7 @@ function LinkMenu({ store }: { store: MenuStore<LinkSuggestion> }): ReactNode {
           <span className="editor-link-orb" style={{ '--orb': item.space.glow } as CSSProperties} aria-hidden="true" />
           <span className="editor-link-option-title">{item.title}</span>
           <span className="editor-link-option-kind">
-            {t(item.status === 'pending' ? 'editor.origin.pending' : item.origin === 'own' ? (item.type === 'office' ? 'editor.origin.ownFile' : 'editor.origin.own') : item.origin === 'official' ? 'editor.origin.official' : 'editor.origin.community')}
+            {t(item.status !== 'approved' || item.origin === 'own' ? (item.type === 'office' ? 'editor.origin.ownFile' : 'editor.origin.own') : item.origin === 'official' ? 'editor.origin.official' : 'editor.origin.community')}
           </span>
         </button>
       ))}
@@ -397,10 +398,8 @@ function SaveChip({ state, autosave, onLoadServer }: { state: AutosaveState; aut
   );
 }
 
+/** Its origin tag; a text left from the review gate (`pending`, `changes_requested`, `rejected`) is the author's own. */
 function tagOf(doc: EditableDocument): EditorMessageKey {
-  if (doc.status === 'pending') return 'editor.tag.pending';
-  if (doc.status === 'changes_requested') return 'editor.tag.changes';
-  if (doc.status === 'rejected') return 'editor.tag.rejected';
   if (doc.origin === 'official') return 'editor.tag.official';
   if (doc.origin === 'community' && doc.status === 'approved') return 'editor.tag.community';
   return 'editor.tag.own';
@@ -573,7 +572,7 @@ function EditorWorkspace({ opened, onReload }: { opened: OpenedDocument; onReloa
     void autosave.discard().then(onReload);
   };
 
-  // "Gửi duyệt" (desktop) and "Tiếp" (phone): where it goes and who sees it are chosen on C04 / M03, which sends it
+  // "Xuất bản" (desktop) and "Tiếp" (phone): where it goes and who sees it are chosen on C04 / M03, which publishes it
   // (the text saves on leaving).
   const next = (): void => {
     if (title.trim()) {

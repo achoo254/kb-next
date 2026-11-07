@@ -104,12 +104,12 @@ test('a new note opens in the phone editor', async ({ page }) => {
 });
 
 for (const outcome of ['sent', 'failed'] as const) {
-  test(`sending for review on a phone ends ${outcome} (M03 stages)`, async ({ page }) => {
+  test(`publishing on a phone ends ${outcome} (M03 stages)`, async ({ page }) => {
     await page.setViewportSize(PHONE);
-    // the submission is answered here: the shared draft must stay a draft for the other screens
+    // the publication is answered here: the shared draft must stay a draft for the other screens
     await page.route('**/api/documents/*/submit', (route) =>
       outcome === 'sent'
-        ? route.fulfill({ json: { status: 'pending', queuePosition: 2, submittedAt: '2026-11-03T14:05:00.000Z', preReviewed: true } })
+        ? route.fulfill({ json: { status: 'approved', hidden: false, publishedAt: '2026-11-03T14:05:00.000Z' } })
         : route.abort('internetdisconnected'),
     );
     await signInAt(page, `/d/${PUBLISH_DOCUMENT_ID}/publish`);

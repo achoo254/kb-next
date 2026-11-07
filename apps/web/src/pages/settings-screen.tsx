@@ -1,7 +1,7 @@
 /**
  * "Trạm điều khiển" (board H03, /settings): the account's own settings around its orb.
  * - The hoandat account (name, email), the other hoandat apps on the same account, and the way to the workspace
- *   settings (admins, C19) or the review queue (reviewers, A01).
+ *   settings (admins, C19).
  * - Language (the UI and the account's reading language), theme Tối / Sáng / Theo hệ thống and "Giảm chuyển động":
  *   applied at once to every screen, kept per account on the server and in this browser for the first paint
  *   (ui/display-prefs.ts). The theme switch lives only here.
@@ -147,13 +147,12 @@ function Svg({ d, size = 18, strokeWidth = 2 }: { d: string; size?: number; stro
 }
 
 function StaffLink({ me, t }: { me: Me | null; t: T }): ReactNode {
-  if (!me?.canReview) return null;
-  const admin = me.isAdmin;
+  if (!me?.isAdmin) return null;
   return (
-    <a className="h03-staff" href={admin ? SHELL_PATHS.workspace : SHELL_PATHS.adminReview} data-id="settings-staff">
+    <a className="h03-staff" href={SHELL_PATHS.workspace} data-id="settings-staff">
       <Svg d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z" />
-      <span className="h03-fill">{admin ? t('settings.workspace') : t('settings.review')}</span>
-      <span className="h03-staff-badge">{admin ? t('settings.workspace.badge') : t('settings.review.badge')}</span>
+      <span className="h03-fill">{t('settings.workspace')}</span>
+      <span className="h03-staff-badge">{t('settings.workspace.badge')}</span>
     </a>
   );
 }

@@ -75,9 +75,9 @@ describe('the history of DHCP', () => {
     expect(rows).toEqual([
       ['2026-11-03T14:40:00.000Z', 'Đạt/admin', 'shown'],
       ['2026-11-03T14:12:00.000Z', 'Đạt/admin', 'hidden'],
-      ['2026-11-03T03:02:00.000Z', 'Linh/reviewer', 'approved', 4, null],
+      ['2026-11-03T03:02:00.000Z', 'Linh/member', 'approved', 4, null],
       ['2026-11-02T14:30:00.000Z', 'Minh/member', 'v4', 'editor', false, true, 'thêm đoạn lease và DHCP snooping'],
-      ['2026-11-02T02:00:00.000Z', 'Linh/reviewer', 'changes_requested', 3, 'thiếu nguồn cho đoạn broadcast'],
+      ['2026-11-02T02:00:00.000Z', 'Linh/member', 'changes_requested', 3, 'thiếu nguồn cho đoạn broadcast'],
       ['2026-10-31T07:05:00.000Z', 'Đạt/admin', 'v3', 'api', true, false, null],
       ['2026-10-29T13:40:00.000Z', 'Đạt/admin', 'v2', 'api', true, false, null],
       ['2026-10-28T02:12:00.000Z', 'Đạt/admin', 'v1', 'api', true, false, null],

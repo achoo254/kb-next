@@ -10,45 +10,47 @@ Cài đặt cá nhân (H03, `/settings`) và cài đặt workspace (C19, `/admin
 
 ## Vai trò
 
-| Quyền | Quản trị | Người duyệt | Thành viên |
-|---|---|---|---|
-| Đọc, viết, gửi duyệt | có | có | có |
-| Hàng duyệt A01 (duyệt, trả lại, từ chối; đọc bài đang chờ) | có | có, trừ bài của chính mình | không |
-| Bài đã xuất bản A02, API và token A03, cài đặt workspace C19 | có | không | không |
+Hai vai trò (chủ dự án chốt 07/11/2026: tác giả toàn quyền với bài của mình, bỏ vòng duyệt và vai trò Người duyệt):
+
+| Quyền | Quản trị | Thành viên |
+|---|---|---|
+| Đọc, viết, đăng công khai hay giữ riêng tư, sửa và xoá bài của mình | có | có |
+| Quản lý mọi bài: ẩn/hiện, sửa, chuyển chỗ, xoá (A02 ở `/admin` và `/admin/content`), API và token A03, cài đặt workspace C19 | có | không |
 
 - `ADMIN_SUBS` là **quản trị gốc**: luôn là quản trị, không ai đổi vai trò hay gỡ được từ app. Dùng để khởi tạo.
-- Các vai trò khác lưu ở `users.role` (`member`, `reviewer`, `admin`); một quản trị đổi ở C19 "Đổi vai trò". Không ai
-  tự đổi vai trò của mình. Quyền mới có hiệu lực ở lần gọi API kế tiếp.
-- Quy tắc đọc ([`visibility.ts`](../apps/server/src/access/visibility.ts)): người duyệt đọc thêm được bài `pending`
-  (để duyệt); quản trị đọc mọi bài.
-- Người duyệt không phải quản trị không thấy bài của chính mình trong hàng duyệt và không duyệt được nó (403
-  `own-text`): luôn có người thứ hai xem. Quản trị giữ quyền như cũ.
+- Vai trò khác lưu ở `users.role`; một quản trị đổi ở C19 "Đổi vai trò" (chỉ `member` hay `admin`, gửi `reviewer`
+  bị 400). Không ai tự đổi vai trò của mình. Quyền mới có hiệu lực ở lần gọi API kế tiếp.
+- Dữ liệu cũ: enum `user_role` và `invite_role` vẫn giữ `reviewer` (không viết migration). Tài khoản còn lưu
+  `reviewer` hoạt động như Thành viên ở mọi nơi (`effectiveRole` trong
+  [`roles.ts`](../apps/server/src/access/roles.ts) trả `member`); quản trị đổi vai trò ở C19 thì dòng được ghi lại.
+- Quy tắc đọc ([`visibility.ts`](../apps/server/src/access/visibility.ts)): mọi người, kể cả khách, đọc bài đã đăng và
+  không ẩn; tác giả đọc mọi bài của mình; quản trị đọc mọi bài.
 - Phiên của tài khoản đã bị gỡ hay đã xoá dữ liệu không dùng được: mỗi lần tra phiên đều kiểm lại tài khoản, nên một
   phiên mở ra đúng lúc bị gỡ hay xoá cũng bị bỏ ngay.
-- C19 liệt kê tối đa 1000 tài khoản (quản trị, người duyệt, rồi người vào gần nhất trước) và ghi tổng số.
+- C19 liệt kê tối đa 1000 tài khoản (quản trị, rồi người vào gần nhất trước) và ghi tổng số.
 - Token API quản trị chỉ chạy khi người tạo còn là quản trị (gốc hoặc theo vai trò) và còn trong workspace.
 - **Gỡ thành viên** (C19 "Gỡ"): đăng xuất mọi phiên, không đăng nhập lại được (đăng nhập trả `?login=removed`), bài
-  chờ duyệt về bản nháp, bài đã duyệt giữ nguyên. "Khôi phục" cho vào lại với vai trò cũ.
+  của người đó giữ nguyên. "Khôi phục" cho vào lại với vai trò cũ.
 
 ## Mời bằng link
 
-App không gửi email. Quản trị tạo link ở C19 (vai trò khi vào: Thành viên hoặc Người duyệt), chép gửi qua chat.
+App không gửi email. Quản trị tạo link ở C19, chép gửi qua chat. Link luôn cho vào với vai trò Thành viên (vai trò mọi
+tài khoản đã có), nên nhận link không đổi vai trò của ai (`raised` luôn `false`); quản trị cấp quyền quản trị ở "Đổi
+vai trò".
 
 - Token 32 ký tự ngẫu nhiên, server chỉ lưu sha256 và 4 ký tự cuối, hiện **một lần** lúc tạo. Một link chạy tại một
   thời điểm (tạo mới thu hồi link cũ, có khoá để hai lần tạo cùng lúc vẫn chỉ còn một link), hết hạn sau 7 ngày, thu
-  hồi được, và ngừng chạy khi người tạo không còn là quản trị.
-- Link **Người duyệt chỉ dùng được một lần**: người đầu tiên vào thì link bị thu hồi ngay trong cùng giao dịch nâng
-  vai trò, nên link lộ ra không tạo được hàng loạt người duyệt. Link Thành viên dùng nhiều lần trong 7 ngày.
-- Lúc nhận, link (khoá dòng) và tài khoản (còn trong workspace) được kiểm lại trong chính giao dịch đổi vai trò.
+  hồi được, và ngừng chạy khi người tạo không còn là quản trị. Link dùng được nhiều lần trong 7 ngày.
+- Link `reviewer` cũ còn hạn đọc như link Thành viên (dùng được nhiều lần, không nâng vai trò).
+- Lúc nhận, link (khoá dòng) và tài khoản (còn trong workspace) được kiểm lại trong chính giao dịch ghi lượt nhận.
 - Token nằm trong đường dẫn `/i/<token>` và `/api/invites/<token>`: nginx không ghi chúng vào log
   ([`infra/nginx/kb.hoandat.com.conf`](../infra/nginx/kb.hoandat.com.conf)), trang gửi `Referrer-Policy: no-referrer`.
-- Người nhận mở `/i/<token>`, đăng nhập bằng tài khoản hoandat (IdP) rồi bấm "Vào workspace": vai trò được nâng lên
-  vai trò của link, không bao giờ hạ.
+- Người nhận mở `/i/<token>`, đăng nhập bằng tài khoản hoandat (IdP) rồi bấm "Vào workspace".
 
 ## Nhật ký kiểm toán (C19)
 
 Ghi: đổi vai trò, gỡ và khôi phục, tạo/thu hồi/dùng link mời, tạo và thu hồi token API, đăng nhập, xoá dữ liệu, ẩn và
-hiện bài. Danh sách C19 ghép thêm quyết định duyệt (review events) và các lần API quản trị tạo hay sửa bài (nhật ký gọi
+hiện bài. Danh sách C19 ghép thêm quyết định duyệt cũ (review events của vòng duyệt đã bỏ) và các lần API quản trị tạo hay sửa bài (nhật ký gọi
 API), mới nhất trước, lọc theo Thành viên / Nội dung / API / Đăng nhập. Không ghi token, email hay nội dung bài.
 
 ## Giao diện và giảm chuyển động (H03)
@@ -87,9 +89,9 @@ không phân biệt hoa thường; tối đa 5 lần mỗi phút), làm trong m�
 
 | Xoá hẳn | Giữ lại |
 |---|---|
-| Bài không chính thức chưa xuất bản (nháp, riêng tư, chờ duyệt, bị trả lại, bị từ chối) hoặc nằm trong thùng rác (kể cả bài đã xuất bản), mọi bài trong Space cá nhân và chính Space đó | Bài **chính thức** ngoài Space cá nhân, ở bất kỳ bước nào (thuộc workspace) |
+| Bài không chính thức chưa xuất bản (nháp, riêng tư, kể cả bài còn lại từ vòng duyệt cũ) hoặc nằm trong thùng rác (kể cả bài đã xuất bản), mọi bài trong Space cá nhân và chính Space đó | Bài **chính thức** ngoài Space cá nhân, ở bất kỳ bước nào (thuộc workspace) |
 | Bài cộng đồng đã xuất bản, nếu chọn "Gỡ cả bài cộng đồng tôi đã xuất bản" | Bài cộng đồng đã xuất bản nếu không chọn: tác giả hiện là "Tài khoản đã xoá" |
-| Tệp đã tải lên không còn bài nào dùng (cả tệp trên đĩa) | Phiên bản và quyết định duyệt người đó viết trên bài còn lại |
+| Tệp đã tải lên không còn bài nào dùng (cả tệp trên đĩa) | Phiên bản và quyết định duyệt cũ người đó viết trên bài còn lại |
 | Key riêng và lựa chọn key, lịch sử Copilot, tiến độ đọc và hành trình, yêu thích, thông báo, Canvas, bình luận, dấu vết đã mở link chia sẻ | Nhật ký kiểm toán (thêm dòng "đã xoá dữ liệu") |
 | Mọi phiên đăng nhập; trên máy đang dùng: bản sao offline, bản nháp và tài khoản đã nhớ | |
 

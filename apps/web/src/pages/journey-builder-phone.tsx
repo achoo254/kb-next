@@ -1,6 +1,6 @@
 /**
  * The journey builder on a phone (/journey/new and /journey/:id/edit up to 640px; no phone board, drawn from C07 with
- * the phone kit of M02/M03): a top bar (back, the journey's Space, the autosave chip, "Gửi duyệt" to the phone publish,
+ * the phone kit of M02/M03): a top bar (back, the journey's Space, the autosave chip, "Xuất bản" to the phone publish,
  * M03), the journey's name and total, its steps as cards moved with up/down buttons, and "Thêm bước" at the bottom.
  * Adding a step (search over the documents, Jev's next steps) and editing one (title, kind, minutes, source or note,
  * remove) happen in sheets. The working state and autosave are the desktop builder's (journey-builder-state.ts).

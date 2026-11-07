@@ -182,11 +182,11 @@
   gap: 2px;
 }
 
-.publish-scope[data-scope="pending"] {
+.publish-scope[data-scope="public"] {
   --scope: var(--pub-pending);
 }
 
-.publish-scope[data-scope="public"] {
+.publish-scope[data-scope="share"] {
   --scope: var(--pub-public);
 }
 
@@ -310,7 +310,7 @@
   flex: none;
 }
 
-.publish-vis-card[data-vis="review"] .publish-vis-orb {
+.publish-vis-card[data-vis="public"] .publish-vis-orb {
   --orb: var(--pub-orb-pending);
   --orb-hi: var(--pub-orb-pending-hi);
 }
