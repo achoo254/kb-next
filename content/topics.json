@@ -68,7 +68,8 @@
       "nameEn": "Tet, the Vietnamese Lunar New Year",
       "tech": false,
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Tết Nguyên Đán\". Bài bản Việt để đối chiếu: \"Xông đất, lì xì và mùng một Tết: những phong tục mở đầu năm mới\"; \"Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết\"; \"Ông Công, ông Táo và ngày 23 tháng Chạp: tiễn thần bếp lên trời, dọn nhà đón Tết\". Giải thích ngắn bối cảnh (âm lịch, tháng Chạp) cho người chưa từng đón Tết ở Việt Nam. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
       "slug": "giao-tiep-noi-cong-so",
@@ -88,7 +89,8 @@
       "nameEn": "Learning how to learn",
       "tech": false,
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Học cách học\". Bài bản Việt để đối chiếu: \"Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn\"; \"Xen kẽ chủ đề khi học: vì sao trộn bài lại giúp nhớ và áp dụng tốt hơn\"; \"Phương pháp Feynman: giải thích lại bằng lời đơn giản để biết mình hiểu đến đâu\"; \"Đường cong quên lãng: vì sao ta quên nhanh và làm gì để nhớ lâu hơn\". Gợi ý 4 bài tương ứng: active recall and spaced repetition; the forgetting curve; the Feynman technique; interleaving. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
       "slug": "an-toan-tren-mang",
@@ -108,7 +110,8 @@
       "nameEn": "Networking on Ubuntu",
       "tech": true,
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Mạng trên Ubuntu\". Bài bản Việt để đối chiếu: \"Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath\"; \"resolvectl và DNS trên Ubuntu: máy bạn tra tên miền như thế nào\"; \"Netplan trên Ubuntu 24.04: đặt IP tĩnh và dùng DHCP bằng một tệp YAML\". Lệnh và tệp cấu hình giữ nguyên, ghi rõ phiên bản Ubuntu 24.04. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
       "slug": "tet-trung-thu",
@@ -128,7 +131,8 @@
       "nameEn": "Job hunting",
       "tech": false,
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Tìm việc\". Bài bản Việt để đối chiếu: \"Thư cảm ơn và theo dõi sau phỏng vấn: kết thúc buổi phỏng vấn một cách chu đáo\"; \"Chuẩn bị phỏng vấn theo cách STAR: kể một câu chuyện có đầu có cuối\"; \"Viết CV một trang: chọn gì, bỏ gì để nhà tuyển dụng đọc hết\". Viết cho người tìm việc nói chung, không gắn với thị trường một nước. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
       "slug": "he-mat-troi",
@@ -148,7 +152,8 @@
       "nameEn": "Staying safe online",
       "tech": false,
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"An toàn trên mạng\". Bài bản Việt để đối chiếu: \"Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn\"; \"Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi\"; \"Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm\". Hành tinh tiếng Việt đang có đợt bổ sung (sao lưu dữ liệu theo quy tắc 3-2-1; dùng Wi-Fi công cộng an toàn); bản Anh viết 5 bài: ba bài cốt lõi trên cộng hai chủ đề đó. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
       "slug": "dich-vu-va-log-linux",
@@ -168,7 +173,8 @@
       "nameEn": "Effective note taking",
       "tech": false,
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Ghi chú hiệu quả\". Bài bản Việt để đối chiếu: \"Biến ghi chú thành câu hỏi tự kiểm tra: ôn bài bằng cách tự trả lời\"; \"Sơ đồ tư duy (mind map): vẽ ý tưởng thành cây để nhìn thấy toàn cảnh\"; \"Ghi chú kiểu Cornell: chia trang giấy thành ba phần để ôn bài dễ hơn\". Nối sang bài tiếng Anh của hành tinh \"Learning how to learn\" khi đã có. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
       "slug": "di-san-viet-nam",
@@ -188,7 +194,8 @@
       "nameEn": "A tidy home",
       "tech": false,
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Việc nhà gọn gàng\". Bài bản Việt để đối chiếu: \"Lịch dọn dẹp mỗi ngày 15 phút: nhà sạch mà không mất cả buổi cuối tuần\"; \"Sắp xếp nhà cửa theo từng khu: mỗi món đồ có một chỗ của riêng nó\"; \"Đọc ký hiệu giặt ủi trên nhãn quần áo: hiểu năm hình vẽ nhỏ để áo không bị co, phai hay hỏng\". Ký hiệu giặt ủi theo chuẩn ISO 3758 dùng chung quốc tế, đối chiếu tài liệu chính thức. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
       "slug": "quan-ly-thoi-gian",
