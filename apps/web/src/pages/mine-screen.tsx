@@ -247,7 +247,7 @@ export function MineScreen(): ReactNode {
       );
   } else if (tab === 'universe') {
     if (items.length === 0) body = <EmptyUniverse hasSpace={personal !== null} />;
-    else if (view === 'orbit') body = <OrbitView items={shown} selected={selectedKey} onPick={setPicked} centre={ownEmpty ? 'first' : 'crystal'} />;
+    else if (view === 'orbit') body = <OrbitView items={shown} selected={selectedKey} onPick={setPicked} centre={ownEmpty ? 'first' : 'crystal'} onMore={() => setView('list')} />;
     else body = <ListView items={shown} selected={selectedKey} onPick={setPicked} now={now} />;
   } else if (tab === 'recent') {
     body = <RecentView docs={data.recent.filter((doc) => documentMatches(doc, filters))} onStar={star} now={now} />;

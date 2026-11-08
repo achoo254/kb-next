@@ -49,11 +49,17 @@ interface PlanetsProps {
   centre: 'crystal' | 'first';
 }
 
+interface OrbitProps extends PlanetsProps {
+  /** A ring's "+N": the texts it does not draw are in the list. */
+  onMore(): void;
+}
+
 const RING_LABEL: Record<1 | 2 | 3, MineMessageKey> = { 1: 'mine.ring.writing', 2: 'mine.ring.private', 3: 'mine.ring.public' };
 
 /** The orbits (board default view). */
-export function OrbitView({ items, selected, onPick, centre }: PlanetsProps): ReactNode {
+export function OrbitView({ items, selected, onPick, centre, onMore }: OrbitProps): ReactNode {
   const { t } = useMineText();
+  const layout = orbitLayout(items, selected);
   return (
     <div className="mine-orbit" data-id="mine-orbit">
       {([1, 2, 3] as const).map((ring) => {
@@ -80,7 +86,7 @@ export function OrbitView({ items, selected, onPick, centre }: PlanetsProps): Re
           <span>{t('mine.first')}</span>
         </a>
       )}
-      {orbitLayout(items).map(({ item, x, y, size }) => {
+      {layout.planets.map(({ item, x, y, size, named }) => {
         const status = statusLabel(t, item);
         return (
           <button
@@ -90,6 +96,7 @@ export function OrbitView({ items, selected, onPick, centre }: PlanetsProps): Re
             data-status={item.status}
             data-type={item.type}
             data-selected={item.key === selected || undefined}
+            data-named={named || undefined}
             aria-pressed={item.key === selected}
             aria-label={t('mine.planet', { title: item.title, status })}
             style={{ left: x, top: y, width: size, height: size }}
@@ -105,6 +112,21 @@ export function OrbitView({ items, selected, onPick, centre }: PlanetsProps): Re
           </button>
         );
       })}
+      {layout.more.map(({ ring, count, x, y, size }) => (
+        <button
+          key={`more-${ring}`}
+          type="button"
+          className="mine-more"
+          data-ring={ring}
+          aria-label={t('mine.moreLabel', { count })}
+          title={t('mine.moreLabel', { count })}
+          style={{ left: x, top: y, width: size, height: size }}
+          onClick={onMore}
+          data-id={`mine-more-${ring}`}
+        >
+          {t('mine.more', { count })}
+        </button>
+      ))}
       {items.length === 0 && <p className="mine-no-match">{t('mine.noMatch')}</p>}
     </div>
   );

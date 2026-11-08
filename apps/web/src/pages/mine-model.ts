@@ -136,25 +136,57 @@ export const ORBIT_CENTRE = { x: 486, y: 278 } as const;
 export const RINGS: Readonly<Record<1 | 2 | 3, { rx: number; ry: number }>> = { 1: { rx: 150, ry: 92 }, 2: { rx: 270, ry: 160 }, 3: { rx: 400, ry: 240 } };
 const PLANET = 46;
 
+/**
+ * At most this many planets a ring draws, the latest changed first (the picked one always among them); the rest are
+ * counted on the ring's "+N", which opens the list. An account owning dozens of texts otherwise buried the rings
+ * under crystals and names.
+ */
+export const RING_CAPACITY: Readonly<Record<1 | 2 | 3, number>> = { 1: 6, 2: 10, 3: 16 };
+/** A ring drawing more planets than this names them on hover, focus or pick only (the names would overlap). */
+export const NAMED_PLANETS = 8;
+
 export interface PlacedPlanet {
   item: MineItem;
   x: number;
   y: number;
   size: number;
+  /** Its name shows all the time (else on hover, focus or pick). */
+  named: boolean;
 }
 
-/** Where each planet sits: spread evenly around its ring from a turn of 35° per ring. */
-export function orbitLayout(items: readonly MineItem[]): PlacedPlanet[] {
-  const placed: PlacedPlanet[] = [];
+/** A ring's "+N": how many of its texts are not drawn, and where the bubble sits. */
+export interface RingMore {
+  ring: 1 | 2 | 3;
+  count: number;
+  x: number;
+  y: number;
+  size: number;
+}
+
+/**
+ * Where each planet sits: spread evenly around its ring from a turn of 35° per ring, up to RING_CAPACITY; the "+N"
+ * takes the next place on the ring when some are left out. `items` come latest changed first.
+ */
+export function orbitLayout(items: readonly MineItem[], selected: string | null = null): { planets: PlacedPlanet[]; more: RingMore[] } {
+  const planets: PlacedPlanet[] = [];
+  const more: RingMore[] = [];
   for (const ring of [1, 2, 3] as const) {
     const on = items.filter((item) => ringOf(item.status) === ring);
+    const shown = on.slice(0, RING_CAPACITY[ring]);
+    const picked = on.find((item) => item.key === selected);
+    if (picked && !shown.includes(picked)) shown[shown.length - 1] = picked;
+    const left = on.length - shown.length;
+    const slots = shown.length + (left > 0 ? 1 : 0);
     const { rx, ry } = RINGS[ring];
-    on.forEach((item, index) => {
-      const angle = ((ring * 35 + (index * 360) / on.length) * Math.PI) / 180;
-      placed.push({ item, x: Math.round(ORBIT_CENTRE.x + rx * Math.cos(angle) - PLANET / 2), y: Math.round(ORBIT_CENTRE.y + ry * Math.sin(angle) - PLANET / 2), size: PLANET });
-    });
+    const at = (index: number): { x: number; y: number } => {
+      const angle = ((ring * 35 + (index * 360) / slots) * Math.PI) / 180;
+      return { x: Math.round(ORBIT_CENTRE.x + rx * Math.cos(angle) - PLANET / 2), y: Math.round(ORBIT_CENTRE.y + ry * Math.sin(angle) - PLANET / 2) };
+    };
+    const named = shown.length <= NAMED_PLANETS;
+    shown.forEach((item, index) => planets.push({ item, ...at(index), size: PLANET, named }));
+    if (left > 0) more.push({ ring, count: left, ...at(shown.length), size: PLANET });
   }
-  return placed;
+  return { planets, more };
 }
 
 /** The planet shown first: the last changed. */

@@ -1,7 +1,7 @@
 /** "Của tôi" (C08) without React: statuses, filters, rings and where each planet sits, the first pick, times. */
 import { describe, expect, it } from 'vitest';
 import { ME, NET, myDoc } from './mine-test-data';
-import { ago, canvasItem, daysLeft, documentMatches, firstPick, itemStatusOf, matches, mineItems, orbitLayout, personalUniverseEmpty, ringOf } from './mine-model';
+import { ago, canvasItem, daysLeft, documentMatches, firstPick, itemStatusOf, matches, mineItems, NAMED_PLANETS, orbitLayout, personalUniverseEmpty, RING_CAPACITY, ringOf } from './mine-model';
 
 describe('statuses', () => {
   it('tell a hidden published text apart, and read texts left from the review gate as private', () => {
@@ -62,7 +62,7 @@ describe('items and filters', () => {
 describe('the orbits', () => {
   it('spread each ring’s planets from its own turn', () => {
     const items = mineItems([myDoc('a', { status: 'draft' }), myDoc('b', { status: 'private' }), myDoc('c', { status: 'pending' }), myDoc('d', { status: 'approved' })], [], []);
-    const placed = Object.fromEntries(orbitLayout(items).map((p) => [p.item.key, [p.x, p.y, p.size]]));
+    const placed = Object.fromEntries(orbitLayout(items).planets.map((p) => [p.item.key, [p.x, p.y, p.size]]));
     // Ring 1 alone: 35° on the 150 × 92 ellipse around (486, 278), less half the planet.
     expect(placed.a).toEqual([Math.round(486 + 150 * Math.cos((35 * Math.PI) / 180) - 23), Math.round(278 + 92 * Math.sin((35 * Math.PI) / 180) - 23), 46]);
     // Ring 2, two planets (a text left waiting for review is private): 70° and 250°.
@@ -70,6 +70,36 @@ describe('the orbits', () => {
     expect(placed.c).toEqual([Math.round(486 + 270 * Math.cos((250 * Math.PI) / 180) - 23), Math.round(278 + 160 * Math.sin((250 * Math.PI) / 180) - 23), 46]);
     // Ring 3 alone: 105°.
     expect(placed.d).toEqual([Math.round(486 + 400 * Math.cos((105 * Math.PI) / 180) - 23), Math.round(278 + 240 * Math.sin((105 * Math.PI) / 180) - 23), 46]);
+  });
+});
+
+describe('a crowded ring', () => {
+  const many = (count: number, status: 'approved' | 'draft') => mineItems(Array.from({ length: count }, (_, i) => myDoc(`p${String(i).padStart(2, '0')}`, { status })), [], []);
+
+  it('draws at most its capacity, latest first, and counts the rest on its "+N" in the next place', () => {
+    const items = many(40, 'approved');
+    const { planets, more } = orbitLayout(items);
+    expect(planets).toHaveLength(RING_CAPACITY[3]);
+    expect(planets.map((p) => p.item.key)).toEqual(items.slice(0, RING_CAPACITY[3]).map((item) => item.key));
+    expect(more).toEqual([{ ring: 3, count: 40 - RING_CAPACITY[3], x: expect.any(Number), y: expect.any(Number), size: 46 }]);
+    // names on hover only: more planets than NAMED_PLANETS
+    expect(planets.every((p) => !p.named)).toBe(true);
+  });
+
+  it('keeps the picked planet on its ring', () => {
+    const items = many(40, 'approved');
+    const last = items.at(-1)?.key ?? '';
+    const { planets } = orbitLayout(items, last);
+    expect(planets.map((p) => p.item.key)).toContain(last);
+    expect(planets).toHaveLength(RING_CAPACITY[3]);
+  });
+
+  it('names every planet of a quiet ring, and has no "+N" when all fit', () => {
+    const { planets, more } = orbitLayout(many(NAMED_PLANETS, 'draft'));
+    expect(planets).toHaveLength(Math.min(NAMED_PLANETS, RING_CAPACITY[1]));
+    expect(more).toEqual([{ ring: 1, count: NAMED_PLANETS - RING_CAPACITY[1], x: expect.any(Number), y: expect.any(Number), size: 46 }]);
+    expect(planets.every((p) => p.named)).toBe(true);
+    expect(orbitLayout(many(3, 'draft')).more).toEqual([]);
   });
 });
 

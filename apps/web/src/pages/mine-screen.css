@@ -450,7 +450,39 @@
   stroke: none;
 }
 
+.mine-planet:not([data-named], [data-selected], :hover, :focus-visible) .mine-planet-name {
+  /* a crowded ring names a planet on hover, focus or pick only (mine-model.ts NAMED_PLANETS) */
+  opacity: 0;
+}
+
+.mine-planet:is(:hover, :focus-visible) {
+  z-index: 2;
+}
+
+/* A ring's "+N": the texts it does not draw, opening the list. */
+.mine-more {
+  position: absolute;
+  padding: 0;
+  border: 1px dashed var(--mine-label-border);
+  border-radius: 50%;
+  background: var(--mine-label-bg);
+  color: var(--violet-50);
+  font: 700 13px var(--font-display);
+  cursor: pointer;
+  transition: transform 0.25s;
+}
+
+.mine-more:hover {
+  transform: scale(1.1);
+}
+
+.mine-more:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
 .mine-planet-name {
+  transition: opacity 0.15s;
   position: absolute;
   top: 100%;
   left: 50%;
