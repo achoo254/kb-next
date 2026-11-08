@@ -280,6 +280,24 @@ h3.reader-heading {
   margin: 0;
 }
 
+.reader-passage .reader-tldr {
+  background: color-mix(in srgb, var(--c-accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--c-accent) 45%, transparent);
+  color: var(--c-text);
+}
+
+.reader-passage .reader-tldr ul {
+  margin: var(--space-2) 0 0;
+  padding-left: 1.2em;
+}
+
+.reader-passage .reader-tldr-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--c-accent);
+}
+
 .reader-passage table {
   border-collapse: collapse;
   font-size: 14px;

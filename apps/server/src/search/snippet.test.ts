@@ -38,6 +38,7 @@ describe('text helpers', () => {
     expect(foldVietnamese('Đường MẠNG')).toBe('duong mang');
     expect(queryTerms('cấp phát IP, cấp')).toEqual(['cấp', 'phát', 'ip']);
     expect(plainText('## Tiêu đề\n\nXem [ARP](/d/1) và [[DHCP|giao thức]] `code`')).toBe('Tiêu đề Xem ARP và DHCP code');
+    expect(plainText('> [!TLDR]\n> - Ý một\n\n> [!WARNING]\n> Cẩn thận')).toBe('- Ý một Cẩn thận');
   });
 
   it('lists the variant words a query with diacritics left out', () => {

@@ -12,6 +12,15 @@ describe('ReaderMarkdown', () => {
     expect(container.textContent).not.toContain('[!WARNING]');
   });
 
+  it('draws a [!TLDR] quote as the summary box, labelled, without its mark', () => {
+    const { container } = render(<ReaderMarkdown markdown={'> [!TLDR]\n> - Ý một\n> - Ý hai'} />);
+    const box = screen.getByRole('note', { name: 'TL;DR' });
+    expect(box.className).toBe('reader-callout reader-tldr');
+    expect([...box.querySelectorAll('li')].map((li) => li.textContent)).toEqual(['Ý một', 'Ý hai']);
+    expect(container.textContent).not.toContain('[!TLDR]');
+    expect(container.querySelectorAll('blockquote')).toHaveLength(0);
+  });
+
   it('still draws an ordered list of bold terms as step cards', () => {
     const { container } = render(<ReaderMarkdown markdown={'1. **Discover**\n2. **Offer**'} />);
     expect(container.querySelector('ol')?.getAttribute('data-steps')).toBe('true');

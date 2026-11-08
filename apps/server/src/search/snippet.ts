@@ -33,6 +33,7 @@ export function plainText(markdown: string): string {
   return markdown
     .normalize('NFC')
     .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/\[!(?:TLDR|WARNING)\]/gi, ' ')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/\[\[([^\]|]*)(\|[^\]]*)?\]\]/g, '$1')

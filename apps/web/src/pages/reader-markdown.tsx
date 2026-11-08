@@ -6,7 +6,8 @@
  * One reading rule of the boards: an ordered list whose every item starts with a bold term ("1. **Discover** Hét lên
  * cả mạng xin IP") is a list of steps, drawn as step cards marked with the step's number or the term's first letter
  * (step-mark.ts; C11's DORA diagram). A quote
- * opening with `[!WARNING]` (as the editor, C02, writes its warning box) is drawn as that warning. A `[[Tiêu đề]]`
+ * opening with `[!WARNING]` (as the editor, C02, writes its warning box) is drawn as that warning, one opening with
+ * `[!TLDR]` as the summary box. A `[[Tiêu đề]]`
  * (or `[[Tiêu đề|chữ]]`) the server resolved to a document the reader may open is a link to it; any other stays as
  * written.
  */
@@ -90,8 +91,15 @@ const COMPONENTS: Components = {
 };
 
 const WARNING_MARK = /^\[!WARNING\][ \t]*\n?/;
+const TLDR_MARK = /^\[!TLDR\][ \t]*\n?/i;
+/** What the TL;DR box is called above its points, the same in both languages. */
+export const TLDR_LABEL = 'TL;DR';
 
-/** A quote opening with `[!WARNING]` becomes the warning box (`div.reader-callout`, a note), without the mark. */
+/**
+ * A quote opening with `[!WARNING]` becomes the warning box (`div.reader-callout`, a note), without the mark. One
+ * opening with `[!TLDR]` (the summary every queued article starts with) becomes the summary box
+ * (`div.reader-callout.reader-tldr`), labelled TL;DR.
+ */
 export function rehypeWarnings() {
   const visit = (node: Element | ElementContent): void => {
     if (!isElement(node)) return;
@@ -102,6 +110,13 @@ export function rehypeWarnings() {
         first.value = first.value.replace(WARNING_MARK, '');
         node.tagName = 'div';
         node.properties = { ...node.properties, className: ['reader-callout'], role: 'note' };
+      } else if (paragraph?.tagName === 'p' && first?.type === 'text' && TLDR_MARK.test(first.value)) {
+        first.value = first.value.replace(TLDR_MARK, '');
+        const empty = paragraph.children.every((child) => child.type === 'text' && child.value.trim() === '');
+        if (empty) node.children = node.children.filter((child) => child !== paragraph);
+        node.tagName = 'div';
+        node.properties = { ...node.properties, className: ['reader-callout', 'reader-tldr'], role: 'note', ariaLabel: TLDR_LABEL };
+        node.children.unshift({ type: 'element', tagName: 'p', properties: { className: ['reader-tldr-label'], ariaHidden: 'true' }, children: [{ type: 'text', value: TLDR_LABEL }] });
       }
     }
     for (const child of node.children) visit(child);
