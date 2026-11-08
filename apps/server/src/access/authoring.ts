@@ -161,6 +161,8 @@ export interface NewDocument {
   type: WritableType | 'lab' | 'journey';
   lang: 'vi' | 'en';
   planet: Planet | null;
+  /** The new document is another language of an existing text: it joins that text's group (`translationGroupId`). */
+  translation?: { groupId: string; aiTranslated: boolean };
 }
 
 /**
@@ -189,6 +191,8 @@ export async function createDocument(db: Db, author: UserViewer, input: NewDocum
         title: input.title.trim(),
         type: input.type,
         lang: input.lang,
+        translationGroupId: input.translation?.groupId ?? null,
+        aiTranslated: input.translation?.aiTranslated ?? false,
         origin: publication ? 'official' : 'own',
         status: publication ? 'approved' : 'draft',
         hidden: publication?.hidden ?? false,

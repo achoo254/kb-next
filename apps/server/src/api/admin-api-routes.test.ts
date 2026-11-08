@@ -6,7 +6,7 @@
  */
 import { createServer } from 'node:http';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { ApiError } from '../../../web/src/api/api-client';
 import { fetchDocument } from '../../../web/src/api/content-api';
 import { createAdminToken, fetchAdminCalls, fetchAdminTokens, revokeAdminToken } from '../../../web/src/api/review-api';
@@ -22,7 +22,7 @@ import { seedDatabase, seedId } from '../db/seed-database';
 const PROBE = `/api/admin/posts/${seedId('document:dhcp')}`;
 const SECRET = 'test-secret-'.padEnd(40, 'x');
 /** Above what the other tests call, so only the last one meets it. */
-const LIMIT = 32;
+const LIMIT = 40;
 
 let idp: FakeIdp;
 let server: TestServer;
@@ -197,6 +197,29 @@ describe('the admin API (token)', () => {
     expect(placed.status).toBe(201);
     const unknown = await call('/api/admin/collections', { method: 'POST', token, body: { space: 'no-such-space', nameVi: 'X' } });
     expect([unknown.status, await unknown.json()]).toEqual([404, { error: 'not-found' }]);
+  });
+
+  it('publishes another language of a text into its group, Space and Collection', async () => {
+    const original = (await (await call('/api/admin/posts', { method: 'POST', token, body: { ...post, title: 'Giao thức NTP', markdown: '## Đồng hồ\n\nNTP đồng bộ giờ.' } })).json()) as { id: string };
+    const twin = await call('/api/admin/posts', {
+      method: 'POST',
+      token,
+      body: { title: 'The NTP protocol', lang: 'en', translationOf: original.id, markdown: '## Clocks\n\nNTP keeps clocks in sync.', source: 'ai' },
+    });
+    expect(twin.status).toBe(201);
+    const { id } = (await twin.json()) as { id: string };
+    const rows = await server.database.db.select().from(documents).where(inArray(documents.id, [original.id, id]));
+    const [first, second] = [rows.find((r) => r.id === original.id), rows.find((r) => r.id === id)];
+    expect(second).toMatchObject({ lang: 'en', aiTranslated: true, translationGroupId: original.id, spaceId: first?.spaceId, collectionId: first?.collectionId, status: 'approved' });
+    const read = await as('other', () => fetchDocument(id));
+    expect(read.document.translations).toEqual(['vi', 'en']);
+
+    const again = await call('/api/admin/posts', { method: 'POST', token, body: { title: 'NTP again', lang: 'en', translationOf: original.id, markdown: 'x' } });
+    expect([again.status, await again.json()]).toEqual([409, { error: 'translation-exists' }]);
+    const sameLang = await call('/api/admin/posts', { method: 'POST', token, body: { title: 'NTP vi', lang: 'vi', translationOf: id, markdown: 'x' } });
+    expect([sameLang.status, await sameLang.json()]).toEqual([409, { error: 'translation-exists' }]);
+    const missing = await call('/api/admin/posts', { method: 'POST', token, body: { title: 'X', lang: 'en', translationOf: '6f1f6a52-1c6b-4d0c-9a43-0d3d6f3d2b11', markdown: 'x' } });
+    expect([missing.status, await missing.json()]).toEqual([404, { error: 'not-found' }]);
   });
 
   it('has no review queue any more: authors publish their own texts', async () => {

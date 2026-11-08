@@ -88,7 +88,7 @@ Dành cho pipeline đăng bài chạy ở server khác. Xác thực bằng token
 
 | Endpoint | Thân | Trả |
 |---|---|---|
-| `POST /api/admin/posts` | `title`, `lang` (`vi`/`en`), `space` (slug Space công khai) hoặc `collection` (id Collection, hoặc slug Space), `tags?`, `markdown`, `type?` (`note`/`lab`/`process`), `source?` (`ai`/`human`), `hidden?` | 201 `{id, url, status: "approved", hidden}` |
+| `POST /api/admin/posts` | `title`, `lang` (`vi`/`en`), `space` (slug Space công khai) hoặc `collection` (id Collection, hoặc slug Space), `tags?`, `markdown`, `type?` (`note`/`lab`/`process`), `source?` (`ai`/`human`), `hidden?`, `translationOf?` (id của bài đã đăng mà bài này là bản ngôn ngữ khác: vào cùng nhóm dịch, Space và Collection, không cần `space`/`collection`) | 201 `{id, url, status: "approved", hidden}` |
 | `PATCH /api/admin/posts/:id` | `hidden?`, `title?`, `tags?`, `space?`, `collection?` | 200 `{id, title, status, hidden}` |
 | `GET /api/admin/posts/:id` | — | 200 `{id, title, lang, type, status, hidden, version, rev, body}`: bản mới nhất, `body` là thân bài không gồm dòng tiêu đề |
 | `PUT /api/admin/posts/:id/text` | `body`, `title?`, `summary?` (tóm tắt thay đổi, hiện ở lịch sử C17), `baseRev?` (`rev` đã đọc), `source?` (`ai`/`human`) | 200 `{id, version, rev, changed}`: mỗi lần gọi là một phiên bản riêng (không gộp với lần lưu của trình soạn); nội dung y hệt thì `changed: false` |
@@ -96,7 +96,7 @@ Dành cho pipeline đăng bài chạy ở server khác. Xác thực bằng token
 | `POST /api/admin/collections` | `space` (slug Space công khai), `nameVi`, `nameEn?` | 201 `{id, space}`: Collection (hành tinh) mới; Space không có hoặc không công khai thì 404 `not-found` |
 
 Lỗi: 401 `token-required` (thiếu header), 401 `invalid-token` (sai, đã thu hồi, người tạo không còn là quản trị),
-400 `invalid-body` / `space-required`, 404 `not-found`, 409 `not-approved` (ẩn hay sửa bài chưa đăng), 409 `stale` (bài đã
+400 `invalid-body` / `space-required`, 404 `not-found`, 409 `not-approved` (ẩn hay sửa bài chưa đăng, hoặc `translationOf` trỏ tới bài chưa đăng), 409 `translation-exists` (nhóm dịch đã có bài ở ngôn ngữ đó), 409 `stale` (bài đã
 đổi sau `baseRev`, kèm `rev` mới), 409 `not-editable` / `journey` (tệp Office, lối đi), 429 `rate-limited`.
 
 ```sh

@@ -19,6 +19,8 @@
  *   `{slug}`: a new public Space (as POST /api/spaces on the web session), 409 `slug-taken` when the slug exists.
  * - POST /api/admin/collections `{space, nameVi, nameEn?}` → 201 `{id, space}`: a new Collection (planet) in a public
  *   Space (as POST /api/collections on the web session); 404 `not-found` for an unknown Space.
+ * `translationOf` (a published text's id) on a post makes it another language of that text: same group, Space and
+ *   Collection (409 `translation-exists` when the group has that language).
  * Errors: 401 `token-required` (no header), 401 `invalid-token` (malformed, unknown, revoked, or its admin is no
  * longer one or left the workspace), 400 `invalid-body`, 404 `not-found`, 409 `not-approved`.
  *
@@ -29,6 +31,7 @@
  */
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response, type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import { and, eq, isNull, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { createDocument, editAccess, saveDocument } from '../access/authoring';
 import { createCollection, createPublicSpace, spaceForWriting } from '../access/spaces-write';
@@ -36,6 +39,9 @@ import { type AdminViewer, isAdminViewer } from '../access/review';
 import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
 import { MAX_BODY_CHARS, bodyOf } from '../authoring/markdown-text';
+import type { Db } from '../db/client';
+import { type DocumentRow } from '../access/content';
+import { documents } from '../db/schema';
 import { HttpError } from '../http-error';
 import { safeErrorText } from '../log-error';
 import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
@@ -60,6 +66,11 @@ const PostBody = z.strictObject({
   /** `ai`: written by AI (its version is marked so); `human` otherwise. */
   source: z.enum(['ai', 'human']).optional().default('human'),
   hidden: z.boolean().optional().default(false),
+  /**
+   * The id of a published text this one is another language of: it joins that text's group and goes to the same Space
+   * and Collection (so `space` / `collection` are not needed, and are ignored when sent).
+   */
+  translationOf: z.uuid().optional(),
 });
 
 /** A new text for a published post: a version of its own, with what changed in `summary` (shown in its history). */
@@ -85,6 +96,24 @@ interface CallRecord {
 /** The call record and the admin of each request in flight (a request's own state, gone with it). */
 const calls = new WeakMap<Response, CallRecord>();
 const admins = new WeakMap<Response, AdminViewer>();
+
+/**
+ * The published text a new translation (`translationOf`) belongs to: 404 `not-found` for an unknown or deleted one, 409
+ * `not-approved` while it is unpublished, 409 `translation-exists` when its group already has a text in `lang` (the
+ * original's own language included).
+ */
+async function translationSource(db: Db, id: string, lang: 'vi' | 'en'): Promise<DocumentRow> {
+  const [original] = await db.select().from(documents).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
+  if (!original) throw new HttpError(404, 'not-found');
+  if (original.status !== 'approved') throw new HttpError(409, 'not-approved');
+  const groupId = original.translationGroupId ?? original.id;
+  const group = await db
+    .select({ lang: documents.lang })
+    .from(documents)
+    .where(and(or(eq(documents.id, groupId), eq(documents.translationGroupId, groupId)), isNull(documents.deletedAt)));
+  if (group.some((member) => member.lang === lang)) throw new HttpError(409, 'translation-exists');
+  return original;
+}
 
 function callOf(res: Response): CallRecord {
   const known = calls.get(res);
@@ -152,7 +181,8 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
   api.post('/posts', async (req, res) => {
     const admin = adminOf(res);
     const body = parseBody(PostBody, req.body);
-    const placement = await resolvePlacement(db, admin, body, true);
+    const original = body.translationOf ? await translationSource(db, body.translationOf, body.lang) : null;
+    const placement = original ? { spaceId: original.spaceId, collectionId: original.collectionId } : await resolvePlacement(db, admin, body, true);
     if (!placement) throw new HttpError(400, 'space-required');
     // A text that opens with its own title line: the title is stored once.
     const heading = titleLine(body.markdown);
@@ -160,7 +190,7 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     const created = await createDocument(
       db,
       admin,
-      { spaceId: placement.spaceId, collectionId: placement.collectionId, title: body.title, body: text, type: body.type, lang: body.lang, planet: null },
+      { spaceId: placement.spaceId, collectionId: placement.collectionId, title: body.title, body: text, type: body.type, lang: body.lang, planet: null, translation: original ? { groupId: original.translationGroupId ?? original.id, aiTranslated: body.source === 'ai' } : undefined },
       now(),
       { hidden: body.hidden, tags: cleanTags(body.tags) ?? [], aiMade: body.source === 'ai' },
     );
