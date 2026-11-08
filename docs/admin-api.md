@@ -94,6 +94,7 @@ Dành cho pipeline đăng bài chạy ở server khác. Xác thực bằng token
 | `PUT /api/admin/posts/:id/text` | `body`, `title?`, `summary?` (tóm tắt thay đổi, hiện ở lịch sử C17), `baseRev?` (`rev` đã đọc), `source?` (`ai`/`human`) | 200 `{id, version, rev, changed}`: mỗi lần gọi là một phiên bản riêng (không gộp với lần lưu của trình soạn); nội dung y hệt thì `changed: false` |
 | `POST /api/admin/spaces` | `slug`, `nameVi`, `nameEn`, `tint`, `glow` (`#RRGGBB`), `art` (`/art/<tên>.webp`), `unitVi`, `unitEn`, `descriptionVi?`, `descriptionEn?` | 201 `{slug}`: Space công khai mới (như `POST /api/spaces` của phiên web); slug đã có thì 409 `slug-taken` |
 | `POST /api/admin/collections` | `space` (slug Space công khai), `nameVi`, `nameEn?` | 201 `{id, space}`: Collection (hành tinh) mới; Space không có hoặc không công khai thì 404 `not-found` |
+| `GET /api/admin/stats/present?days=30` | — (`days` 1–180) | 200 `{days, opened, finished, byDocument: [{id, title, lang, opened, finished}]}`: lượt xem slide (C21) trong kỳ, `finished` là lượt xem tới slide cuối; `byDocument` là 50 bài được mở nhiều nhất |
 
 Lỗi: 401 `token-required` (thiếu header), 401 `invalid-token` (sai, đã thu hồi, người tạo không còn là quản trị),
 400 `invalid-body` / `space-required`, 404 `not-found`, 409 `not-approved` (ẩn hay sửa bài chưa đăng, hoặc `translationOf` trỏ tới bài chưa đăng), 409 `translation-exists` (nhóm dịch đã có bài ở ngôn ngữ đó), 409 `stale` (bài đã

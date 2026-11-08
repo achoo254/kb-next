@@ -7,6 +7,7 @@ import { adminApiRoutes, adminTokenRoutes } from './api/admin-api-routes';
 import { DOCUMENT_BODY_LIMIT, authoringRoutes } from './api/authoring-routes';
 import { CANVAS_BODY_LIMIT, canvasRoutes } from './api/canvas-routes';
 import { contentRoutes } from './api/content-routes';
+import { presentRoutes } from './api/present-routes';
 import { sitemapRoutes } from './api/sitemap-routes';
 import { fileRoutes } from './api/file-routes';
 import { graphRoutes } from './api/graph-routes';
@@ -138,6 +139,7 @@ export function createApp({
   app.use(authRoutes({ config, db, idp, now }));
   app.use(meRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
+  app.use(presentRoutes({ config, db, now }));
   app.use(activityRoutes({ config, db, now }));
   app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(historyRoutes({ config, db, now, sync: search?.sync ?? null }));

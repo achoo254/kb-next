@@ -3,7 +3,7 @@ import type { DocumentView } from '../api/content-api';
 import { SHELL_PATHS } from '../layout/shell-paths';
 import { Icon } from '../ui/icon';
 import { usePhoneText } from './phone-messages';
-import { type FavoriteToggle, FavoriteStatus, favoriteNote, orderBacklinks } from './reader-side';
+import { type FavoriteToggle, FavoriteStatus, PresentAction, favoriteNote, orderBacklinks } from './reader-side';
 import { useReaderText } from './reader-messages';
 import { relevanceText } from './space-labels';
 
@@ -85,6 +85,7 @@ export function TabletActions({ id, canShare, favorite }: { id: string; canShare
           <Icon name="share-up" size={20} />
         </a>
       )}
+      <PresentAction id={id} round />
       <a className="reader-round" href={SHELL_PATHS.mine} aria-label={t('tablet.edit')} data-id="reader-edit">
         <Icon name="pencil" size={20} />
       </a>

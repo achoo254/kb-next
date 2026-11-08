@@ -1,6 +1,7 @@
 import { createApp, jevWithUsage } from './app';
 import { loadConfig } from './config';
 import { purgeExpiredSessions } from './auth/session-store';
+import { prunePresentViews } from './access/present-views';
 import { pruneShareOpenings } from './access/share-links';
 import { openConfiguredDatabase } from './db/client';
 import { seedMockCaptions } from './captions/seed-captions';
@@ -33,7 +34,7 @@ else console.log(`own AI keys: ${userKeys.status}`);
 
 /**
  * Expired sessions are deleted at start and every hour (a session is otherwise only deleted when used again), and
- * share-link openings past their keeping time (access-history of C18).
+ * share-link openings past their keeping time (access-history of C18), and slide viewings past theirs (C21).
  */
 const HOUSEKEEPING_INTERVAL_MS = 60 * 60 * 1000;
 async function housekeeping(): Promise<void> {
@@ -48,6 +49,12 @@ async function housekeeping(): Promise<void> {
     if (forgotten > 0) console.log(`forgot ${forgotten} share link opening(s)`);
   } catch (error) {
     console.error('share link history prune failed', safeErrorText(error));
+  }
+  try {
+    const forgotten = await prunePresentViews(database.db, new Date());
+    if (forgotten > 0) console.log(`forgot ${forgotten} slide viewing(s)`);
+  } catch (error) {
+    console.error('slide viewings prune failed', safeErrorText(error));
   }
 }
 await housekeeping();

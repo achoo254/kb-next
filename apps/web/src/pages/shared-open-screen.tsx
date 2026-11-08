@@ -5,7 +5,8 @@
  * - Signed out: the text's card (title, author, its sections, reading time), "Đăng nhập để mở" (back here after
  *   signing in) and a peek at its first section.
  * - Signed in: the text opened in the reader's Universe: its sections as stops, "Lưu vào vũ trụ của bạn" (a
- *   favourite), "Remix" when the link allows it (a draft copy, then the editor), "Đọc" (the reader, C11).
+ *   favourite), "Remix" when the link allows it (a draft copy, then the editor), "Trình bày" (the slides, C21),
+ *   "Đọc" (the reader, C11).
  * - Expired or revoked: "Link này đã tắt".
  * - Private: the text is no longer published (an admin hid it, say) and the viewer may not read it: "Hành tinh riêng
  *   tư", nothing about the text.
@@ -20,6 +21,7 @@ import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { LegalLinks } from '../layout/legal-links';
 import { ILLUSTRATIONS, type IllustrationName } from '../ui/art';
 import { Icon } from '../ui/icon';
+import { usePresentText } from './present-messages';
 import { type ShareMessageKey, useShareText } from './share-messages';
 import './shared-open-screen.css';
 import { navigate } from '../router/navigation';
@@ -149,6 +151,7 @@ function GuestCard({ token, preview }: { token: string; preview: SharedPreview }
 
 function MemberView({ token, preview }: { token: string; preview: SharedPreview }): ReactNode {
   const { t } = useShareText();
+  const present = usePresentText();
   const doc = preview.document;
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -230,6 +233,9 @@ function MemberView({ token, preview }: { token: string; preview: SharedPreview 
             {busy ? t('open.remixing') : t('open.remix')}
           </button>
         )}
+        <a className="open-outline" href={`/d/${encodeURIComponent(doc.id)}/present`} data-id="open-present">
+          {present.t('present.open')}
+        </a>
         <a className="open-run" href={`/d/${encodeURIComponent(doc.id)}`} data-id="open-read">
           <Icon name="play" size={14} />
           {t('open.read')}

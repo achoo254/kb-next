@@ -42,7 +42,7 @@ Vì sao không dùng Suspense: các màn tải dữ liệu bằng `useEffect` (k
 rộng. Thay vào đó loader của màn gọi đúng các hàm API mà màn gọi khi mount; câu trả lời nằm trong bộ đệm của
 `getJson` (`api-client.ts`, `prefetchGets`) và lần gọi kế tiếp cùng đường dẫn lấy nó, một lần, trong 10 giây. Mọi
 request thay đổi dữ liệu (POST/PUT/PATCH/DELETE) xoá bộ đệm, nên không bao giờ hiện bản cũ sau khi sửa. Màn có loader:
-C09, C10, C11, C13, C08, C20. Thêm màn: thêm một dòng vào `LOADERS`, gọi đúng hàm và tham số màn dùng.
+C09, C10, C11, C21 (cùng bài với C11, theo `?lang=` nếu có), C13, C08, C20. Thêm màn: thêm một dòng vào `LOADERS`, gọi đúng hàm và tham số màn dùng.
 
 Prefetch khi rê chuột, focus hoặc chạm vào link trong app: cùng loader đó, mỗi đường dẫn tối đa một lần mỗi 10 giây,
 lỗi bỏ qua (màn tự hỏi lại và hiện lỗi của nó). Các màn không tách chunk nên không có JS để tải trước.

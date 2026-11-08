@@ -23,7 +23,7 @@ import { ReaderMarkdown } from './reader-markdown';
 import { shortDate, useReaderText } from './reader-messages';
 import { useReading } from './reader-progress';
 import { type PassageSelection, type ReaderAi, ReaderAiCard, SelectionToolbar, usePassageSelection, useReaderAi } from './reader-ai';
-import { AiPanel, Backlinks, KeyHints, ReaderActions, RelatedDocuments, Versions, useFavoriteToggle } from './reader-side';
+import { AiPanel, Backlinks, KeyHints, PresentAction, ReaderActions, RelatedDocuments, Versions, useFavoriteToggle } from './reader-side';
 import { originOf } from './space-labels';
 import { TabletActions, TabletLinks, TocButton, TocDrawer } from './reader-tablet';
 import { ReaderPhone } from './reader-phone';
@@ -118,7 +118,8 @@ function TableOfContents({ view, current, onGo }: { view: DocumentView; current:
   );
 }
 
-function DocumentMeta({ view }: { view: DocumentView }): ReactNode {
+/** `present`: the slides button beside A−/A+ (the tablet has its own, among its actions). */
+function DocumentMeta({ view, present }: { view: DocumentView; present: boolean }): ReactNode {
   const { t, locale } = useReaderText();
   const doc = view.document;
   const others = view.translations.filter((tr) => tr.lang !== doc.lang).map((tr) => tr.lang.toUpperCase());
@@ -138,6 +139,7 @@ function DocumentMeta({ view }: { view: DocumentView }): ReactNode {
       )}
       <span className="reader-meta-text">{meta.join(' · ')}</span>
       <ReaderTextSizeControl />
+      {present && <PresentAction id={doc.id} />}
     </div>
   );
 }
@@ -159,7 +161,7 @@ function ReaderArticle({ view, offline, articleRef, selection, ai, tablet }: Art
   const pressed = selection && asked?.about === 'selection' && asked.anchor === selection.anchor && asked.text === selection.text ? asked.task : null;
   return (
     <article ref={articleRef} className="reader-article" data-id="reader-article">
-      <DocumentMeta view={view} />
+      <DocumentMeta view={view} present={!tablet} />
       <h1 className="reader-title">{view.document.title}</h1>
       {!view.translationAvailable && (
         <div className="reader-translate" data-id="reader-translate">

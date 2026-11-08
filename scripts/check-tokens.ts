@@ -32,6 +32,10 @@ const FILLS: ReadonlyArray<readonly [string, readonly string[]]> = [
   ['danger-fill', ['on-danger-fill']],
   ['tooltip-bg', ['tooltip-text']],
 ];
+/** The slide palettes (C21, dark whatever the theme): text, muted text and accent on both ends of each gradient. */
+const SLIDE_PALETTES = ['universe', 'sunset', 'aurora', 'acid'];
+const SLIDE_TEXT = ['--slide-text', '--slide-muted'];
+
 /** Non-text marks at 3:1 (focus ring, state borders and icons) on what they sit on. */
 const MARK_COLOURS = ['focus', 'primary', 'accent', 'success', 'warn', 'danger'];
 const MARKS: ReadonlyArray<readonly [string, readonly string[]]> = MARK_COLOURS.map((mark) => [mark, SCREEN_BACKGROUNDS] as const);
@@ -71,6 +75,12 @@ function pairs(tokens: TokenMap): Array<readonly [string, string, string, number
     for (const fg of SCREEN_TEXT) for (const bg of SCREEN_BACKGROUNDS) list.push([label(fg, bg), v(fg), v(bg), AA_TEXT]);
     for (const [fill, texts] of FILLS) for (const fg of texts) list.push([label(fg, fill), v(fg), v(fill), AA_TEXT]);
     for (const [mark, backgrounds] of MARKS) for (const bg of backgrounds) list.push([`${label(mark, bg)} (mark)`, v(mark), v(bg), AA_NON_TEXT]);
+  }
+  for (const palette of SLIDE_PALETTES) {
+    for (const end of ['bg', 'bg2']) {
+      const bg = `--slide-${palette}-${end}`;
+      for (const fg of [...SLIDE_TEXT, `--slide-${palette}-accent`]) list.push([`${fg} on ${bg}`, value(tokens, fg), value(tokens, bg), AA_TEXT]);
+    }
   }
   return list;
 }

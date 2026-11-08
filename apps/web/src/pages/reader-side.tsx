@@ -13,6 +13,7 @@ import { SHELL_PATHS } from '../layout/app-shell';
 import { sharePagePath } from '../layout/shell-paths';
 import { AiAvatar } from '../ui/ai-avatar';
 import { Icon } from '../ui/icon';
+import { usePresentText } from './present-messages';
 import type { KeysLoad } from './copilot-run';
 import { PROVIDERS } from './keys-messages';
 import type { ReaderTask } from './reader-ai';
@@ -118,6 +119,24 @@ function FavoriteAction({ favorite }: { favorite: FavoriteToggle }): ReactNode {
 }
 
 /** `favorite`: null for a guest (no "Yêu thích" to keep). */
+/**
+ * Opens the text as slides (C21): a round button among the tablet's actions, a small pill beside A−/A+ on the
+ * desktop (another way to view the text, and the action row stays on one line there).
+ */
+export function PresentAction({ id, round = false }: { id: string; round?: boolean }): ReactNode {
+  const { t } = usePresentText();
+  const href = `/d/${encodeURIComponent(id)}/present`;
+  return round ? (
+    <a className="reader-round" href={href} aria-label={t('present.open')} title={t('present.openHint')} data-id="reader-present">
+      <Icon name="play" size={18} />
+    </a>
+  ) : (
+    <a className="reader-present" href={href} aria-label={t('present.open')} title={t('present.openHint')} data-id="reader-present">
+      <Icon name="play" size={12} />
+    </a>
+  );
+}
+
 export function ReaderActions({ id, canShare, favorite }: { id: string; canShare: boolean; favorite: FavoriteToggle | null }): ReactNode {
   const { t } = useReaderText();
   return (

@@ -30,6 +30,7 @@ import { LegalPage } from './pages/legal-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
 import { MineScreen } from './pages/mine-screen';
 import { NewNote } from './pages/new-note';
+import { PresentScreen } from './pages/present-screen';
 import { PreviewScreen } from './pages/preview-screen';
 import { PublishScreen } from './pages/publish-screen';
 import { ReaderScreen } from './pages/reader-screen';
@@ -127,6 +128,8 @@ function AppScreen({ route, path }: { route: ScreenRoute; path: string }): React
       return <SpacesScreen />;
     case 'C11':
       return <ReaderScreen id={routeParam(route, path)} />;
+    case 'C21':
+      return <PresentScreen id={routeParam(route, path)} />;
     case 'C02':
       return path === '/new' ? <NewNote /> : <EditorScreen id={routeParam(route, path)} />;
     case 'C17':

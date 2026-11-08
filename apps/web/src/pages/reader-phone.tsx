@@ -6,6 +6,7 @@ import { Icon } from '../ui/icon';
 import { RimPanel, SheetHandle } from '../ui/rim-panel';
 import { OfficeView } from './office-view';
 import { usePhoneText } from './phone-messages';
+import { usePresentText } from './present-messages';
 import { PhoneOrigin } from './phone-origin';
 import { ReaderAiCard, type ReaderTask, useReaderAi } from './reader-ai';
 import { COMMENTS_ANCHOR } from './reader-comments';
@@ -223,6 +224,7 @@ function OpenFileTabs({ files, current }: { files: readonly OpenFile[]; current:
 /** /d/:id on a phone (board M05) in every state of the document's load. */
 export function ReaderPhone({ id, load, onRetry }: { id: string; load: ReaderLoad; onRetry(): Promise<void> }): ReactNode {
   const { t } = usePhoneText();
+  const present = usePresentText();
   const view = load.status === 'ready' ? load.view : null;
   const files = useOpenFiles(view);
   const [sheet, setSheet] = useState<Sheet>('none');
@@ -237,6 +239,11 @@ export function ReaderPhone({ id, load, onRetry }: { id: string; load: ReaderLoa
             <Icon name="chevron-left" size={20} />
           </a>
           <OpenFileTabs files={files.length > 0 ? files : view ? [{ id, title: view.document.title, office }] : []} current={id} />
+          {view && !office && (
+            <a className="phone-round" href={`/d/${encodeURIComponent(view.document.id)}/present`} aria-label={present.t('present.open')} data-id="reader-present">
+              <Icon name="play" size={18} />
+            </a>
+          )}
           {view &&
             (office ? (
               <button type="button" className="phone-edit" disabled title={t('limit.office')} data-id="reader-edit">

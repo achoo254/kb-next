@@ -9,6 +9,7 @@ import { BRAND_WORDS } from '../layout/brand-words';
 import {
   ADMIN_CALL_LOG_DAYS,
   BACKUP_KEEP_DAYS,
+  PRESENT_VIEWS_KEEP_DAYS,
   SESSION_ABSOLUTE_DAYS,
   SESSION_IDLE_DAYS,
   SHARE_OPENINGS_KEEP_DAYS,
@@ -77,6 +78,7 @@ const PRIVACY_VI: LegalDoc = {
         `Bài bạn xoá nằm trong thùng rác ${TRASH_DAYS} ngày rồi tự xoá hẳn, cùng các phiên bản và tệp của nó. Bạn xoá hẳn sớm hơn được.`,
         'Tệp tải lên (docx, xlsx, pptx, pdf, md, tối đa 25 MB) được lưu trên ổ đĩa của máy chủ {app}, dưới một tên ngẫu nhiên. Chữ trong tệp được trích bằng Apache Tika (kèm OCR Tesseract cho trang quét) chạy ngay trên cùng máy chủ: bước trích chữ không gửi tệp ra ngoài. Một phần chữ trích được thì Jev đọc để chấm (xem mục Jev).',
         'Trình sửa Office chạy trong trình duyệt của bạn, tải từ một tên miền riêng của {app}; tệp không đi qua dịch vụ của bên thứ ba.',
+        `Khi bạn xem một bài dạng slide, máy chủ ghi bài đó, bạn xem tới slide thứ mấy và bộ slide có bao nhiêu slide, để biết slide có được xem hết không. Bản ghi không có tài khoản hay địa chỉ IP của bạn, và tự xoá sau ${PRESENT_VIEWS_KEEP_DAYS} ngày. Bảng màu slide bạn chọn chỉ được nhớ trên trình duyệt của bạn.`,
       ],
     },
     {
@@ -206,6 +208,7 @@ const PRIVACY_EN: LegalDoc = {
         `A text you delete stays in the trash for ${TRASH_DAYS} days, then is deleted for good with its versions and files. You can delete it for good sooner.`,
         'Uploaded files (docx, xlsx, pptx, pdf, md, up to 25 MB) are stored on the disk of the {app} server under a random name. Their text is extracted with Apache Tika (with Tesseract OCR for scanned pages) running on that same server: extraction sends no file anywhere. Jev reads part of the extracted text to rate it (see the Jev section).',
         'The Office editor runs in your browser, loaded from a domain of {app} itself; files do not go through any third-party service.',
+        `When you view a text as slides, the server records the text, how far you got and how many slides the deck has, to learn whether slides are watched to the end. The record holds neither your account nor your IP address, and is deleted after ${PRESENT_VIEWS_KEEP_DAYS} days. The slide palette you pick is remembered in your browser only.`,
       ],
     },
     {

@@ -40,6 +40,13 @@ Tải tệp, Trung tâm nhập, trình sửa Office nhúng và đồng bộ offl
 Xuất bản (tác giả tự đăng công khai hay giữ riêng tư, không qua duyệt), link chia sẻ, quản lý bài của quản trị,
 thông báo, API đăng bài bằng token quản trị (C04–C06, C18, H02, C20, A02–A03):
 [`docs/admin-api.md`](docs/admin-api.md).
+Trình bày (C21, `/d/<id>/present`): mọi bài mở được thành bộ slide dọc kiểu Stories, chiếu 16:9 trên màn ngang, ai đọc
+được bài thì xem được slide. Slide cắt lúc mở từ các phần `##` của bản mới nhất, giữ toàn văn
+([`present-slides.ts`](apps/web/src/pages/present-slides.ts)); khối `> [!TLDR]` đầu bài thành slide 2, sau đó là mục lục.
+Phím ←/→, T (mục lục), F (toàn màn hình), N (màn người nói: đoạn gốc, slide kế, đồng hồ; đồng bộ hai cửa sổ cùng trình
+duyệt bằng `BroadcastChannel`), `#n` là slide đang xem. Mỗi lượt xem gửi một beacon (slide xa nhất, tổng số slide, không
+ghi người xem) vào bảng `present_views`, giữ 180 ngày; số liệu ở `GET /api/admin/stats/present`
+([`docs/admin-api.md`](docs/admin-api.md)).
 Cài đặt cá nhân và workspace, vai trò (Quản trị, Thành viên), mời bằng link, nhật ký kiểm toán, giao diện
 Sáng/Tối, xoá dữ liệu của tôi (H03, C19): [`docs/settings-and-roles.md`](docs/settings-and-roles.md).
 Tablet và điện thoại: tablet (641–1279px) dựng Universe và reader trên board 1180×820 (T01, T02: 3D nhẹ, mục lục

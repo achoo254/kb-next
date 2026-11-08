@@ -12,6 +12,8 @@ export const SESSION_IDLE_DAYS = 14;
 export const TRASH_DAYS = 30;
 /** A share link's access history keeps an opening this long. */
 export const SHARE_OPENINGS_KEEP_DAYS = 90;
+/** A viewing of a text's slides (how far it went, no viewer) is kept this long. */
+export const PRESENT_VIEWS_KEEP_DAYS = 180;
 /** The admin API's call log keeps a call this long. */
 export const ADMIN_CALL_LOG_DAYS = 30;
 /** Daily backups (database and uploaded files) are kept this long; enforced by infra/backup-kb.sh. */

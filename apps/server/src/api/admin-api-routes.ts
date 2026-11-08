@@ -19,6 +19,9 @@
  *   `{slug}`: a new public Space (as POST /api/spaces on the web session), 409 `slug-taken` when the slug exists.
  * - POST /api/admin/collections `{space, nameVi, nameEn?}` → 201 `{id, space}`: a new Collection (planet) in a public
  *   Space (as POST /api/collections on the web session); 404 `not-found` for an unknown Space.
+ * - GET /api/admin/stats/present?days=30 (1–180) → `{days, opened, finished, byDocument: [{id, title, lang, opened,
+ *   finished}]}`: viewings of the slides (C21) in the period, and of the 50 most opened texts; `finished` reached the
+ *   last slide.
  * `translationOf` (a published text's id) on a post makes it another language of that text: same group, Space and
  *   Collection (409 `translation-exists` when the group has that language).
  * Errors: 401 `token-required` (no header), 401 `invalid-token` (malformed, unknown, revoked, or its admin is no
@@ -35,11 +38,13 @@ import { z } from 'zod';
 import { createDocument, editAccess, saveDocument, translationSource } from '../access/authoring';
 import { createCollection, createPublicSpace, spaceForWriting } from '../access/spaces-write';
 import { type AdminViewer, isAdminViewer } from '../access/review';
+import { presentStats } from '../access/present-views';
 import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
 import { MAX_BODY_CHARS, bodyOf } from '../authoring/markdown-text';
 import { HttpError } from '../http-error';
 import { safeErrorText } from '../log-error';
+import { PRESENT_VIEWS_KEEP_DAYS } from '../retention';
 import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import { titleLine } from '../markdown/sections';
 import { type ModerationDeps, cleanTags, resolvePlacement, updatePost } from '../review/moderation';
@@ -47,7 +52,10 @@ import { perAccountLimit, signedIn } from './account-limit';
 import { CollectionBody, DOCUMENT_BODY_LIMIT, PublicSpaceBody, refuse } from './authoring-routes';
 import { type RequestContextDeps, readerOf } from './request-context';
 import { PostPatchBody, PostTitle, Tags, idParam } from './review-routes';
-import { parseBody } from './validate';
+import { parseBody, parseQuery } from './validate';
+
+/** GET /api/admin/stats/present: the period, in days. */
+const StatsQuery = z.strictObject({ days: z.coerce.number().int().min(1).max(PRESENT_VIEWS_KEEP_DAYS).optional().default(30) });
 
 const Slug = z.string().regex(/^[a-z0-9][a-z0-9-]{0,119}$/);
 
@@ -240,6 +248,11 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     if (access.kind !== 'ok' || access.space.kind !== 'public') throw new HttpError(404, 'not-found');
     const collection = await createCollection(db, access.space, { nameVi: body.nameVi, nameEn: body.nameEn ?? body.nameVi });
     res.status(201).json({ id: collection.id, space: access.space.slug });
+  });
+
+  api.get('/stats/present', async (req, res) => {
+    const { days } = parseQuery(StatsQuery, req.query);
+    res.set('Cache-Control', 'no-store').json(await presentStats(db, days, now()));
   });
 
   api.use((_req, _res, next) => next(new HttpError(404, 'not-found')));

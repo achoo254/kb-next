@@ -1,0 +1,641 @@
+/* C21, the slides of a text: dark whatever the theme, on the palette the viewer picks (tokens.css --slide-*).
+   Portrait (a phone): the slide fills the screen between the progress bar and the bottom bar. Landscape: a centred
+   16:9 frame. Text sizes follow the frame (container query units), so a slide never scrolls for its text. */
+
+.present {
+  --p-bg: var(--slide-universe-bg);
+  --p-bg2: var(--slide-universe-bg2);
+  --p-accent: var(--slide-universe-accent);
+  --p-text: var(--slide-text);
+  --p-muted: var(--slide-muted);
+  --p-glass: color-mix(in srgb, var(--p-text) 10%, transparent);
+  --p-line: color-mix(in srgb, var(--p-text) 22%, transparent);
+  --bar: 52px;
+
+  color-scheme: dark;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--p-text);
+  background: linear-gradient(160deg, var(--p-bg) 0%, var(--p-bg2) 100%);
+  font-family: var(--font-sans);
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.present[data-palette="sunset"] {
+  --p-bg: var(--slide-sunset-bg);
+  --p-bg2: var(--slide-sunset-bg2);
+  --p-accent: var(--slide-sunset-accent);
+}
+
+.present[data-palette="aurora"] {
+  --p-bg: var(--slide-aurora-bg);
+  --p-bg2: var(--slide-aurora-bg2);
+  --p-accent: var(--slide-aurora-accent);
+}
+
+.present[data-palette="acid"] {
+  --p-bg: var(--slide-acid-bg);
+  --p-bg2: var(--slide-acid-bg2);
+  --p-accent: var(--slide-acid-accent);
+}
+
+.present-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.present-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+}
+
+.present-top,
+.present-stage,
+.present-bottom,
+.present-speaker {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- top: progress and tools ---------- */
+
+.present-top {
+  padding: var(--space-2) var(--space-3) 0;
+}
+
+.present-progress {
+  display: flex;
+  gap: 3px;
+  height: 4px;
+}
+
+.present-segment {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: var(--radius-full);
+  background: var(--p-line);
+  overflow: hidden;
+}
+
+.present-segment > span {
+  display: block;
+  width: calc(var(--fill, 0) * 100%);
+  height: 100%;
+  background: var(--p-text);
+  transition: width var(--motion-feedback) ease-out;
+}
+
+.present-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--bar);
+}
+
+.present-spacer {
+  flex: 1;
+}
+
+.present-counter {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--p-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.present-icon,
+.present-nav {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--p-glass);
+  color: var(--p-text);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.present-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.present-chip,
+.present-palette {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--p-line);
+  border-radius: var(--radius-full);
+  background: var(--p-glass);
+  color: var(--p-text);
+  font: 600 14px var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.present-palette option {
+  color: var(--slide-text);
+  background: var(--slide-universe-bg);
+}
+
+.present-icon:focus-visible,
+.present-nav:focus-visible,
+.present-chip:focus-visible,
+.present-palette:focus-visible,
+.present-button:focus-visible,
+.present-toc button:focus-visible {
+  outline: 2px solid var(--p-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- stage and frame ---------- */
+
+.present-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-2) var(--space-3);
+}
+
+.present-frame {
+  container-type: size;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-section);
+  overflow: hidden;
+}
+
+@media (min-aspect-ratio: 1/1) {
+  .present-stage {
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .present[data-view="slides"] .present-frame {
+    width: min(100%, calc((100dvh - 2 * var(--bar) - 64px) * 16 / 9));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    background: color-mix(in srgb, var(--p-bg) 45%, transparent);
+    border: 1px solid var(--p-line);
+  }
+}
+
+.present-slide {
+  --fs-l: min(9cqi, 7.2cqh);
+  --fs-m: min(7cqi, 5.6cqh);
+  --fs-s: min(5.6cqi, 4.4cqh);
+
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: min(3cqi, 2.4cqh);
+  padding: min(7cqi, 7cqh) min(7cqi, 8cqh);
+  /* a long address or command breaks rather than run off the slide */
+  overflow-wrap: anywhere;
+  animation: present-in var(--motion-feedback) ease-out both;
+}
+
+.present-slide[data-dir="back"] {
+  animation-name: present-back;
+}
+
+@keyframes present-in {
+  from {
+    opacity: 0;
+    transform: translateX(6%);
+  }
+}
+
+@keyframes present-back {
+  from {
+    opacity: 0;
+    transform: translateX(-6%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .present-slide,
+  .present-slide[data-dir="back"] {
+    animation-name: present-fade;
+  }
+}
+
+@keyframes present-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---------- type ---------- */
+
+.present-kicker {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font: 700 var(--fs-s) / 1.25 var(--font-display);
+  font-size: min(4.4cqi, 3.4cqh);
+  letter-spacing: 0.02em;
+  color: var(--p-accent);
+}
+
+.present-emoji {
+  font-size: 1.3em;
+}
+
+.present-title,
+.present-heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.22;
+  text-wrap: balance;
+}
+
+.present-title {
+  font-size: var(--fs-l);
+}
+
+.present-heading {
+  font-size: var(--fs-m);
+}
+
+.present-meta,
+.present-hint {
+  margin: 0;
+  font-size: min(4cqi, 3.2cqh);
+  line-height: 1.4;
+  color: var(--p-muted);
+}
+
+.present-hint {
+  margin-top: auto;
+  opacity: 0.85;
+}
+
+.present-text,
+.present-points,
+.present-quote blockquote {
+  font-size: var(--fs-m);
+  line-height: 1.3;
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+[data-size="l"] {
+  font-size: var(--fs-l);
+}
+
+[data-size="m"] {
+  font-size: var(--fs-m);
+}
+
+[data-size="s"] {
+  font-size: var(--fs-s);
+  font-weight: 500;
+}
+
+.present-slide p {
+  margin: 0;
+}
+
+.present-slide a {
+  color: var(--p-accent);
+  text-underline-offset: 0.15em;
+}
+
+.present-slide code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.88em;
+  padding: 0.05em 0.3em;
+  border-radius: 0.3em;
+  background: var(--p-glass);
+}
+
+.present-slide strong {
+  color: var(--p-accent);
+}
+
+.present-points {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 0.55em;
+}
+
+.present-points li::marker {
+  color: var(--p-accent);
+  font-weight: 700;
+}
+
+.present-section .present-heading,
+.present-step .present-heading {
+  font-size: var(--fs-l);
+}
+
+.present-quote {
+  margin: 0;
+  display: grid;
+  gap: min(3cqi, 2.4cqh);
+}
+
+.present-quote blockquote {
+  margin: 0;
+  padding-left: 0.6em;
+  border-left: 0.18em solid var(--p-accent);
+  font-style: italic;
+}
+
+.present-quote[data-warning] blockquote {
+  font-style: normal;
+  border-left-color: var(--c-warn);
+}
+
+.present-quote[data-warning] .present-kicker {
+  color: var(--dark-warn-text);
+}
+
+.present-figure {
+  margin: 0;
+  font: 800 min(22cqi, 18cqh) / 1 var(--font-display);
+  color: var(--p-accent);
+  letter-spacing: -0.02em;
+}
+
+/* code: up to 12 lines, a long line scrolls inside its box */
+.present-code {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.present-code pre {
+  align-self: stretch;
+  margin: 0;
+  max-height: 72cqh;
+  overflow: auto;
+  padding: 0.9em 1em;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--slide-acid-bg) 78%, transparent);
+  border: 1px solid var(--p-line);
+  font: 500 min(3.6cqi, 3.2cqh) / 1.45 ui-monospace, "SF Mono", Menlo, monospace;
+  user-select: text;
+  touch-action: pan-x pan-y;
+}
+
+.present-code pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.present-code .present-chip {
+  order: -1;
+  min-height: 30px;
+  font-size: 12px;
+}
+
+.present-cards {
+  display: grid;
+  gap: min(2.4cqi, 2cqh);
+}
+
+.present-card {
+  margin: 0;
+  padding: 0.6em 0.8em;
+  border-radius: var(--radius-md);
+  background: var(--p-glass);
+  border: 1px solid var(--p-line);
+  display: grid;
+  gap: 0.25em;
+  font-size: var(--fs-s);
+}
+
+.present-card > div {
+  display: grid;
+  grid-template-columns: minmax(0, 35%) 1fr;
+  gap: 0.6em;
+}
+
+.present-card dt {
+  color: var(--p-muted);
+  font-weight: 600;
+}
+
+.present-card dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.present-image {
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+  height: 100%;
+}
+
+.present-image img {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.present-image figcaption {
+  font-size: var(--fs-s);
+  color: var(--p-muted);
+  text-align: center;
+}
+
+.present-toc,
+.present-recap {
+  margin: 0;
+  padding-left: 2.4em;
+  max-height: 64cqh;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.2em;
+  font-size: min(4.6cqi, 3.6cqh);
+  touch-action: pan-y;
+}
+
+.present-toc li::marker,
+.present-recap li::marker {
+  color: var(--p-accent);
+  font-weight: 700;
+}
+
+.present-toc button {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  padding: 0.2em 0;
+  border: 0;
+  background: none;
+  color: var(--p-text);
+  font: 600 1em / 1.3 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.present-toc button:hover {
+  color: var(--p-accent);
+}
+
+.present-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.present-button {
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--p-line);
+  border-radius: var(--radius-full);
+  background: var(--p-glass);
+  color: var(--p-text);
+  font: 700 15px var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.present-button[data-tone="accent"] {
+  background: var(--p-accent);
+  border-color: var(--p-accent);
+  color: var(--p-bg);
+}
+
+.present-slide .present-button {
+  color: var(--p-text);
+}
+
+.present-slide .present-button[data-tone="accent"] {
+  color: var(--p-bg);
+}
+
+/* ---------- bottom bar ---------- */
+
+.present-bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--bar);
+  padding: 0 var(--space-3) max(var(--space-2), env(safe-area-inset-bottom));
+}
+
+.present-keys {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--p-muted);
+}
+
+@media (max-aspect-ratio: 1/1) {
+  /* a phone: tapping the slide moves, the arrows stay for reach and screen readers */
+  .present-keys:empty {
+    visibility: hidden;
+  }
+}
+
+/* ---------- speaker view ---------- */
+
+.present-speaker {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5) var(--space-5);
+}
+
+.present-speaker-now {
+  grid-row: 1 / 4;
+}
+
+.present-speaker-notes {
+  overflow: auto;
+}
+
+.present-speaker section {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.present-speaker-label {
+  margin: 0;
+  font: 700 13px var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--p-accent);
+}
+
+.present-mini {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  align-self: start;
+  background: color-mix(in srgb, var(--p-bg) 55%, transparent);
+  border: 1px solid var(--p-line);
+}
+
+.present-mini .present-slide {
+  animation: none;
+}
+
+.present-notes {
+  margin: 0;
+  white-space: pre-wrap;
+  font: 500 17px / 1.55 var(--font-sans);
+  color: var(--p-text);
+  user-select: text;
+}
+
+.present-speaker-timer {
+  grid-template-rows: auto auto auto;
+  align-content: start;
+}
+
+.present-clock {
+  margin: 0;
+  font: 700 56px / 1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- loading and failed ---------- */
+
+.present-loading {
+  margin: auto;
+  font: 600 16px var(--font-sans);
+  color: var(--p-muted);
+}
+
+.present-failed {
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+}

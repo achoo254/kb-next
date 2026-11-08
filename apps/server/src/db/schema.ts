@@ -491,6 +491,28 @@ export const readingProgress = pgTable(
   ],
 );
 
+/**
+ * One viewing of a text's slides (C21): how far it went (`furthest`, 1-based) of how many slides (`total`). Nothing
+ * about who viewed it (no account, no address). Kept PRESENT_VIEWS_KEEP_DAYS (src/retention.ts).
+ */
+export const presentViews = pgTable(
+  'present_views',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    documentId: uuid('document_id')
+      .notNull()
+      .references(() => documents.id, { onDelete: 'cascade' }),
+    furthest: integer('furthest').notNull(),
+    total: integer('total').notNull(),
+    viewedAt: timestamp('viewed_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    check('present_views_range', sql`${table.furthest} between 1 and ${table.total}`),
+    index('present_views_document_viewed_idx').on(table.documentId, table.viewedAt),
+    index('present_views_viewed_at_idx').on(table.viewedAt),
+  ],
+);
+
 /** Comments on a document (C11), optionally on one passage (`anchor`). */
 export const comments = pgTable(
   'comments',

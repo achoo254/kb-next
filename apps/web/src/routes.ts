@@ -34,6 +34,7 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'Spaces', titleKey: 'screen.Spaces', access: 'open', pattern: /^\/spaces$/ },
   { code: 'C10', titleKey: 'screen.C10', access: 'open', pattern: new RegExp(`^/s/${segment}$`) },
   { code: 'C11', titleKey: 'screen.C11', access: 'open', pattern: new RegExp(`^/d/${segment}$`) },
+  { code: 'C21', titleKey: 'screen.C21', access: 'open', pattern: new RegExp(`^/d/${segment}/present$`) },
   // The editor of a document, and /new, which creates a note and opens it there.
   { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: new RegExp(`^/d/${segment}/edit$`) },
   { code: 'C02', titleKey: 'screen.C02', access: 'signed-in', pattern: /^\/new$/ },

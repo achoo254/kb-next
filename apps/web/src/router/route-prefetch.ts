@@ -13,6 +13,7 @@ import { type Lang, fetchDocument, fetchMe, fetchRecent, fetchSpace, fetchSpaces
 import { fetchGraph } from '../api/graph-api';
 import { fetchInbox } from '../api/notifications-api';
 import { SPACE_PARAM } from '../pages/graph-screen';
+import { langOf } from '../pages/present-screen';
 import { matchRoute, routeParam } from '../routes';
 
 type Loader = (param: string, url: URL, lang: Lang | undefined) => Promise<unknown>;
@@ -25,6 +26,8 @@ const LOADERS: Readonly<Partial<Record<string, Loader>>> = {
   C10: (slug, _url, lang) => fetchSpace(slug, lang),
   // reader-screen.tsx
   C11: (id, _url, lang) => fetchDocument(id, lang),
+  // present-screen.tsx: the language of the address when it names one
+  C21: (id, url, lang) => fetchDocument(id, langOf(url.search) ?? lang),
   // graph-screen.tsx: the Space of the address, else the Space list to pick the first one from
   C13: (_param, url, lang) => {
     const space = url.searchParams.get(SPACE_PARAM);

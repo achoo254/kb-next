@@ -248,6 +248,23 @@
   --light-hero-from: #0e7490;
   --light-hero-to: #6d28d9;
 
+  /* the palettes of the slides (C21): always dark, whatever the theme; the viewer picks one. Each draws a gradient
+     from -bg to -bg2, with -text, -muted and -accent on it (scripts/check-tokens.ts checks them at 4.5:1). */
+  --slide-text: #ffffff;
+  --slide-muted: #e4defa;
+  --slide-universe-bg: #06041a;
+  --slide-universe-bg2: #2a1170;
+  --slide-universe-accent: #67e8f9;
+  --slide-sunset-bg: #1f0718;
+  --slide-sunset-bg2: #7a1d3f;
+  --slide-sunset-accent: #fdba74;
+  --slide-aurora-bg: #021716;
+  --slide-aurora-bg2: #0b4a45;
+  --slide-aurora-accent: #5eead4;
+  --slide-acid-bg: #0a0a0a;
+  --slide-acid-bg2: #283108;
+  --slide-acid-accent: #d9f99d;
+
   /* ---------- 3. Semantic tokens: the active theme ---------- */
   color-scheme: dark;
   --c-bg: light-dark(var(--light-bg), var(--dark-bg));
