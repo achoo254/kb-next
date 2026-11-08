@@ -100,7 +100,7 @@
       "nameEn": "Staying safe online",
       "tech": false,
       "brief": "Đợt bổ sung 2 bài, không lặp ý của 3 bài đã có: (1) sao lưu ảnh và dữ liệu theo quy tắc 3-2-1 (ổ ngoài, đám mây, kiểm tra khôi phục), nối tới \"Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi\"; (2) dùng Wi-Fi công cộng an toàn (mạng giả mạo, HTTPS, chia sẻ mạng từ điện thoại), nối tới \"Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn\" và \"Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm\".",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "mang-tren-ubuntu-en",

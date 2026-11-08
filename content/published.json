@@ -299,6 +299,26 @@
         "id": "6c461951-0174-45ef-be52-f213a18de8e8",
         "title": "Giving feedback to colleagues with the SBI model: talk about what happened, not about the person"
       }
+    },
+    {
+      "slug": "an-toan-tren-mang/dung-wifi-cong-cong-an-toan",
+      "id": "16828990-f9fa-49d8-a8ca-b3b6b04c2fc7",
+      "title": "Dùng Wi-Fi công cộng an toàn: mạng giả mạo, HTTPS và chia sẻ mạng từ điện thoại",
+      "at": "2026-11-08T04:37:15.071Z",
+      "en": {
+        "id": "2063c943-e725-4445-93bb-b9fa9cd37e77",
+        "title": "Using public Wi-Fi safely: fake networks, HTTPS and sharing your phone's connection"
+      }
+    },
+    {
+      "slug": "an-toan-tren-mang/sao-luu-quy-tac-3-2-1",
+      "id": "aefbcce0-c20d-4d2a-b603-799fe06cc2a5",
+      "title": "Sao lưu ảnh và dữ liệu theo quy tắc 3-2-1: đừng để một chiếc ổ cứng hỏng xoá sạch kỷ niệm",
+      "at": "2026-11-08T04:37:15.613Z",
+      "en": {
+        "id": "d9141933-090d-459e-8599-975b466d8ff5",
+        "title": "Backing up photos and data with the 3-2-1 rule: don't let one failed drive wipe out your memories"
+      }
     }
   ]
 }
