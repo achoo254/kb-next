@@ -41,6 +41,12 @@
       "space": "doi-song",
       "collectionId": "68a07a77-c488-4ca0-baa3-d7717600c4fc",
       "at": "2026-11-07T22:37:42.626Z"
+    },
+    {
+      "slug": "giao-tiep-noi-cong-so",
+      "space": "cong-viec",
+      "collectionId": "d09eef4d-f427-4120-8cd8-c5447fdf1c46",
+      "at": "2026-11-08T01:43:22.359Z"
     }
   ],
   "posts": [
@@ -262,6 +268,36 @@
       "en": {
         "id": "de18e706-7228-46ba-828e-7af6d7810655",
         "title": "Reading laundry symbols on clothing labels: five small pictures that keep clothes from shrinking, fading or getting ruined"
+      }
+    },
+    {
+      "slug": "giao-tiep-noi-cong-so/viet-email-cong-viec-ro-rang",
+      "id": "19776e97-ac45-4f28-9730-542d0816e72d",
+      "title": "Viết email công việc rõ ràng: để người nhận hiểu và làm đúng ngay lần đầu đọc",
+      "at": "2026-11-08T01:43:22.670Z",
+      "en": {
+        "id": "d1b823a8-434b-4786-9477-10dfb2a65462",
+        "title": "Writing clear work emails: help the reader understand and act on the first read"
+      }
+    },
+    {
+      "slug": "giao-tiep-noi-cong-so/hop-hieu-qua-chuong-trinh-va-bien-ban",
+      "id": "3d304e5e-5519-4b7c-812a-4d6e21e214b2",
+      "title": "Họp hiệu quả với chương trình và biên bản: biết trước để bàn, ghi lại để làm",
+      "at": "2026-11-08T01:43:23.291Z",
+      "en": {
+        "id": "ba45486a-6b12-4540-87ab-c450c3915e51",
+        "title": "Running effective meetings with an agenda and minutes: know in advance what to discuss, record what to do"
+      }
+    },
+    {
+      "slug": "giao-tiep-noi-cong-so/gop-y-dong-nghiep-theo-mo-hinh-sbi",
+      "id": "03ae17f1-d86a-46d8-9978-0fa8d6dadfe5",
+      "title": "Góp ý cho đồng nghiệp theo mô hình SBI: nói về việc đã xảy ra, không phán xét con người",
+      "at": "2026-11-08T01:43:24.355Z",
+      "en": {
+        "id": "6c461951-0174-45ef-be52-f213a18de8e8",
+        "title": "Giving feedback to colleagues with the SBI model: talk about what happened, not about the person"
       }
     }
   ]
