@@ -2,7 +2,9 @@
  * The AI article queue (docs/admin-api.md, "Hàng chờ bài AI"). Each run of the writing routine queues one planet (a
  * Collection) as `content/queue/<planet>/`: a new planet of 3–5 articles (`<article>.md`) linked to each other with
  * `[[Title]]` and to articles of other planets, or a top-up of 1–5 articles for a planet already published, linked to
- * its published articles. A topic's `lang` is the language of its articles. `.github/workflows/publish-queue.yml` makes the Space and the Collection when needed,
+ * its published articles. A topic's `lang` is the language of its articles; each article of a `vi` planet also has an
+ * English twin, `<article>.en.md` beside it, which is published as another language of the same text.
+ * `.github/workflows/publish-queue.yml` makes the Space and the Collection when needed,
  * publishes the articles (a linked-to article before the one linking to it, so every link resolves when it is saved)
  * and removes the folder. The database owns the articles after that; the repository keeps only the topic list and the
  * ledger of what was published.
@@ -29,10 +31,16 @@ const MAX_TAGS = 8;
 const MAX_TAG_CHARS = 60;
 /** Shorter than this is a stub, not an article. */
 export const MIN_BODY_CHARS = 1200;
+/** An English twin is shorter than its Vietnamese text for the same content. */
+export const MIN_TWIN_BODY_CHARS = 1000;
 export const MIN_ARTICLES = 3;
 export const MAX_ARTICLES = 5;
 /** A top-up of a planet already published adds at least this many articles (and at most MAX_ARTICLES). */
 export const MIN_TOP_UP_ARTICLES = 1;
+/** The TL;DR box every queued article opens with: a `> [!TLDR]` quote of this many points before its first `##`
+ * (the reader draws it as a summary box, the slides of C21 as their second slide). */
+export const MIN_TLDR_POINTS = 2;
+export const MAX_TLDR_POINTS = 4;
 /** Share of words with Vietnamese letters from which a text counts as Vietnamese. */
 const VIETNAMESE_SHARE = 0.4;
 const VIETNAMESE_LETTER = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
@@ -88,6 +96,8 @@ export interface PublishedPost {
   id: string;
   title: string;
   at: string;
+  /** Its English twin, once published (another language of the same text). */
+  en?: { id: string; title: string };
 }
 
 export interface Ledger {
@@ -117,6 +127,19 @@ const FORBIDDEN: ReadonlyArray<[RegExp, string]> = [
   [/hoc-?cloud|Học Cloud/, 'mentions the retired Học Cloud site'],
 ];
 
+/** The problem with the TL;DR box of a body (see MIN_TLDR_POINTS), or null when it is right. */
+export function tldrProblem(body: string): string | null {
+  const intro = (body.split(/^## /m)[0] ?? '').split(/\r?\n/);
+  const start = intro.findIndex((line) => /^>\s*\[!TLDR\]\s*$/i.test(line));
+  if (start < 0) return 'missing the "> [!TLDR]" box before the first ## heading';
+  let points = 0;
+  for (const line of intro.slice(start + 1)) {
+    if (!line.trimStart().startsWith('>')) break;
+    if (/^>\s*[-*]\s+\S/.test(line.trimStart())) points += 1;
+  }
+  return points >= MIN_TLDR_POINTS && points <= MAX_TLDR_POINTS ? null : `the "> [!TLDR]" box must list ${MIN_TLDR_POINTS}–${MAX_TLDR_POINTS} points ("> - …")`;
+}
+
 /** How the server matches a `[[Title]]` to a title: case and accents do not count. */
 export function titleKey(title: string): string {
   return title.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/gi, 'd').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -131,7 +154,7 @@ export function linkedTitles(body: string): string[] {
  * Splits `---` front matter (`key: value` lines; `tags` comma-separated) from the Markdown body.
  * Returns the article, or the problems with it.
  */
-export function parseArticle(slug: string, text: string): QueuedArticle | string[] {
+export function parseArticle(slug: string, text: string, minBody: number = MIN_BODY_CHARS): QueuedArticle | string[] {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/.exec(text);
   if (!match) return ['missing the --- front matter (title, tags, type)'];
   const [, head = '', body = ''] = match;
@@ -156,7 +179,9 @@ export function parseArticle(slug: string, text: string): QueuedArticle | string
   const type = fields.get('type') ?? 'note';
   if (!(POST_TYPES as readonly string[]).includes(type)) problems.push(`type must be one of ${POST_TYPES.join(', ')}`);
   const trimmed = body.trim();
-  if (trimmed.length < MIN_BODY_CHARS) problems.push(`body is shorter than ${MIN_BODY_CHARS} characters`);
+  if (trimmed.length < minBody) problems.push(`body is shorter than ${minBody} characters`);
+  const tldr = tldrProblem(trimmed);
+  if (tldr) problems.push(tldr);
   for (const [pattern, message] of FORBIDDEN) if (pattern.test(text)) problems.push(`the article ${message}`);
   for (const finding of findPublicInfo(text, slug)) problems.push(`server detail on line ${finding.line}: ${finding.match}`);
   if (problems.length > 0) return problems;
@@ -206,6 +231,8 @@ export function checkTopics(topics: readonly Topic[], spaces: Spaces, file = 'co
 export interface QueuedPlanet {
   slug: string;
   files: Record<string, string>;
+  /** The text of each English twin (`<article>.en.md`), by article slug. */
+  twins?: Record<string, string>;
 }
 
 /** Whether the undirected graph of `edges` over `nodes` is one piece. */
@@ -273,9 +300,13 @@ export function isTopUp(planet: string, ledger: Ledger): boolean {
  * to at least one article outside itself; every `[[link]]` points at a queued or published title; each article is
  * written in its topic's language. Returns the problems and the valid articles of each planet.
  */
-export function checkPlanets(planets: readonly QueuedPlanet[], topics: readonly Topic[], ledger: Ledger): { problems: Problem[]; articles: Map<string, QueuedArticle[]> } {
+export function checkPlanets(planets: readonly QueuedPlanet[], topics: readonly Topic[], ledger: Ledger): { problems: Problem[]; articles: Map<string, QueuedArticle[]>; twins: Map<string, QueuedArticle> } {
   const problems: Problem[] = [];
   const articles = new Map<string, QueuedArticle[]>();
+  /** The English twin of each queued article of a `vi` planet, by the article's slug. */
+  const twins = new Map<string, QueuedArticle>();
+  /** How many queued articles should have a twin: when one is missing or faulty its links are not checked yet. */
+  let expectedTwins = 0;
   const ledgerBySlug = new Map(ledger.posts.map((p) => [p.slug, p]));
   for (const planet of planets) {
     const dir = `content/queue/${planet.slug}`;
@@ -306,6 +337,32 @@ export function checkPlanets(planets: readonly QueuedPlanet[], topics: readonly 
       parsed.push(article);
     }
     articles.set(planet.slug, parsed);
+
+    const twinTexts = planet.twins ?? {};
+    for (const name of Object.keys(twinTexts).sort()) {
+      if (!names.includes(name)) problems.push({ file: `${dir}/${name}.en.md`, message: 'an English twin without its Vietnamese article' });
+      else if (topic?.lang === 'en') problems.push({ file: `${dir}/${name}.en.md`, message: 'an English planet has no twins' });
+    }
+    if (topic?.lang === 'vi') {
+      expectedTwins += parsed.length;
+      for (const article of parsed) {
+        const name = article.slug.slice(planet.slug.length + 1);
+        const file = `${dir}/${name}.en.md`;
+        const text = twinTexts[name];
+        if (text === undefined) {
+          problems.push({ file, message: 'every Vietnamese article needs its English twin, written beside it as <article>.en.md' });
+          continue;
+        }
+        const twin = parseArticle(`${article.slug}.en`, text, MIN_TWIN_BODY_CHARS);
+        if (Array.isArray(twin)) {
+          problems.push(...twin.map((message) => ({ file, message })));
+          continue;
+        }
+        if (looksVietnamese(twin.body)) problems.push({ file, message: 'the English twin is not written in English' });
+        if (twin.type !== article.type) problems.push({ file, message: `type must be "${article.type}", as in the Vietnamese article` });
+        twins.set(article.slug, twin);
+      }
+    }
   }
 
   const queued = [...articles.values()].flat();
@@ -349,23 +406,56 @@ export function checkPlanets(planets: readonly QueuedPlanet[], topics: readonly 
     if (!isTopUp(slug, ledger) && elsewhere && !outside) problems.push({ file: dir, message: 'no [[link]] to an article of another planet' });
   }
   if (queued.length > 0 && publishOrder(queued) === null) problems.push({ file: 'content/queue', message: 'the [[links]] between queued articles go round in a circle; link one way only' });
-  return { problems, articles };
+
+  // Each twin links the English titles of the same articles its Vietnamese text links, so it publishes right after it.
+  const slugOfTitle = new Map<string, string>([...ledger.posts.map((p): [string, string] => [titleKey(p.title), p.slug]), ...queued.map((a): [string, string] => [titleKey(a.title), a.slug])]);
+  const publishedEnglish = new Map<string, string>(ledger.posts.flatMap((p): Array<[string, string]> => (p.en ? [[titleKey(p.en.title), p.slug]] : [])));
+  const slugOfEnglish = new Map<string, string>([...publishedEnglish, ...[...twins].map(([slug, twin]): [string, string] => [titleKey(twin.title), slug])]);
+  const seenTwin = new Map<string, string>();
+  for (const [slug, twin] of twins) {
+    const file = `content/queue/${slug}.en.md`;
+    const key = titleKey(twin.title);
+    // A twin whose ledger entry has its English article already: a run that died after publishing it; not a twin.
+    const taken = publishedEnglish.get(key);
+    if (taken !== undefined && taken !== slug) problems.push({ file, message: `an English article titled "${twin.title}" is already published` });
+    const same = seenTwin.get(key);
+    if (same) problems.push({ file, message: `same title as content/queue/${same}.en.md` });
+    seenTwin.set(key, slug);
+    const original = queued.find((a) => a.slug === slug);
+    if (!original || twins.size !== expectedTwins) continue;
+    const wanted = linkedTitles(original.body).map((t) => slugOfTitle.get(titleKey(t)));
+    // A link the Vietnamese article gets wrong is reported for it; the twin is checked once that is fixed.
+    if (wanted.some((t) => t === undefined)) continue;
+    const found: Array<string | undefined> = [];
+    for (const title of linkedTitles(twin.body)) {
+      const target = slugOfEnglish.get(titleKey(title));
+      if (!target) problems.push({ file, message: `[[${title}]] is not the English title of a queued or published article` });
+      found.push(target);
+    }
+    if (found.every((t) => t !== undefined) && [...new Set(found)].sort().join('|') !== [...new Set(wanted)].sort().join('|')) {
+      problems.push({ file, message: 'the English twin must link the same articles as its Vietnamese text (with their English titles)' });
+    }
+  }
+  return { problems, articles, twins };
 }
 
 export async function readJson<T>(file: string): Promise<T> {
   return JSON.parse(await readFile(file, 'utf8')) as T;
 }
 
-/** The queued planets, in name order (`.gitkeep` and other files are not planets). */
+/** The queued planets, in name order (`.gitkeep` and other files are not planets); `<article>.en.md` files are twins. */
 export async function readQueue(dir: string): Promise<QueuedPlanet[]> {
   const entries = await readdir(path.join(dir, 'queue'), { withFileTypes: true });
   const planets: QueuedPlanet[] = [];
   for (const entry of entries.filter((e) => e.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
     const files: Record<string, string> = {};
+    const twins: Record<string, string> = {};
     for (const name of (await readdir(path.join(dir, 'queue', entry.name))).filter((n) => n.endsWith('.md'))) {
-      files[name.slice(0, -3)] = await readFile(path.join(dir, 'queue', entry.name, name), 'utf8');
+      const text = await readFile(path.join(dir, 'queue', entry.name, name), 'utf8');
+      if (name.endsWith('.en.md')) twins[name.slice(0, -6)] = text;
+      else files[name.slice(0, -3)] = text;
     }
-    planets.push({ slug: entry.name, files });
+    planets.push({ slug: entry.name, files, twins });
   }
   return planets;
 }

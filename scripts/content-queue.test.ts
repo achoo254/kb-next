@@ -1,18 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { CONTENT_DIR, type Ledger, MIN_BODY_CHARS, type QueuedPlanet, type Spaces, type Topic, checkContent, checkPlanets, checkTopics, isTopUp, linkedTitles, looksVietnamese, parseArticle, publishOrder, titleKey } from './content-queue';
+import { CONTENT_DIR, type Ledger, MIN_BODY_CHARS, type QueuedPlanet, type Spaces, type Topic, checkContent, checkPlanets, checkTopics, isTopUp, linkedTitles, looksVietnamese, parseArticle, publishOrder, titleKey, tldrProblem } from './content-queue';
 
 const filler = 'Một đoạn văn đủ dài để thành bài. '.repeat(Math.ceil(MIN_BODY_CHARS / 30));
-const body = `## Mở đầu\n\n${filler}`;
+const tldr = '> [!TLDR]\n> - Ý thứ nhất.\n> - Ý thứ hai.\n> - Ý thứ ba.';
+const body = `${tldr}\n\n## Mở đầu\n\n${filler}`;
 const article = (head: string, text = body): string => `---\n${head}\n---\n${text}`;
 /** An article titled `title` whose body links to `links`. */
 const linked = (title: string, ...links: string[]): string => article(`title: ${title}\ntags: thử`, `${links.map((l) => `Xem [[${l}]].`).join(' ')}\n\n${body}`);
-const englishBody = `## Introduction\n\n${'An English paragraph long enough to make an article. '.repeat(Math.ceil(MIN_BODY_CHARS / 40))}`;
+const englishBody = `> [!TLDR]\n> - First point.\n> - Second point.\n\n## Introduction\n\n${'An English paragraph long enough to make an article. '.repeat(Math.ceil(MIN_BODY_CHARS / 40))}`;
 /** The same in English. */
 const linkedEn = (title: string, ...links: string[]): string => article(`title: ${title}\ntags: test`, `${links.map((l) => `See [[${l}]].`).join(' ')}\n\n${englishBody}`);
 const spaces: Spaces = { existing: ['networking'], create: [{ slug: 'ky-nang', nameVi: 'Kỹ năng', nameEn: 'Skills', tint: '#FBCFE8', glow: '#EC4899', art: '/art/orb-universe.webp', unitVi: 'bài', unitEn: 'articles' }] };
 const topic = (slug: string, extra: Partial<Topic> = {}): Topic => ({ slug, space: 'ky-nang', lang: 'vi', name: slug, nameEn: slug, tech: false, brief: '', status: 'todo', ...extra });
 const empty: Ledger = { planets: [], posts: [] };
-const messages = (planets: QueuedPlanet[], topics: Topic[], ledger: Ledger = empty): string[] => checkPlanets(planets, topics, ledger).problems.map((p) => `${p.file}: ${p.message}`);
+/** The English twin of a Vietnamese test article: its title and each link get " EN" added. */
+const twinOf = (text: string): string => {
+  const parsed = parseArticle('x', text);
+  if (Array.isArray(parsed)) return text.replace(/^title: (.*)$/m, 'title: $1 EN');
+  return `---\ntitle: ${parsed.title} EN\ntags: test\n---\n${linkedTitles(parsed.body).map((l) => `See [[${l} EN]].`).join(' ')}\n\n${englishBody}`;
+};
+/** A ledger whose articles all have English twins (titles with " EN" added), unless they say otherwise. */
+const withEnglish = (ledger: Ledger): Ledger => ({ ...ledger, posts: ledger.posts.map((p) => ({ ...p, en: p.en ?? { id: `en-${p.id}`, title: `${p.title} EN` } })) });
+/** The problems of `planets`; a planet of a `vi` topic gets the English twins of its articles unless it has its own. */
+const messages = (planets: QueuedPlanet[], topics: Topic[], ledger: Ledger = empty): string[] => {
+  const given = planets.map((p) => (p.twins || topics.find((t) => t.slug === p.slug)?.lang === 'en' ? p : { ...p, twins: Object.fromEntries(Object.entries(p.files).map(([name, text]) => [name, twinOf(text)])) }));
+  return checkPlanets(given, topics, withEnglish(ledger)).problems.map((p) => `${p.file}: ${p.message}`);
+};
 
 describe('parseArticle', () => {
   it('reads the title, tags and type above the body', () => {
@@ -27,9 +40,16 @@ describe('parseArticle', () => {
 
   it('refuses an article without front matter, a title, a long enough body or a known type', () => {
     expect(parseArticle('a', body)).toEqual(['missing the --- front matter (title, tags, type)']);
-    expect(parseArticle('a', article('title: \ntype: essay', 'ngắn'))).toEqual(['title is empty', 'type must be one of note, lab, process', `body is shorter than ${MIN_BODY_CHARS} characters`]);
+    expect(parseArticle('a', article('title: \ntype: essay', 'ngắn'))).toEqual(['title is empty', 'type must be one of note, lab, process', `body is shorter than ${MIN_BODY_CHARS} characters`, 'missing the "> [!TLDR]" box before the first ## heading']);
     expect(parseArticle('a', article(`title: A\ntags: ${Array.from({ length: 9 }, (_, i) => `t${i}`).join(', ')}`))).toEqual(['more than 8 tags']);
     expect(parseArticle('a', article('title: A\nauthor: me'))).toEqual(['unknown front matter key "author"']);
+  });
+
+  it('needs the TL;DR box of 2–4 points before the first heading', () => {
+    expect(tldrProblem(body)).toBeNull();
+    expect(tldrProblem(`## Mở đầu\n\n${tldr}`)).toBe('missing the "> [!TLDR]" box before the first ## heading');
+    expect(tldrProblem('> [!TLDR]\n> - Chỉ một ý.\n\n## A')).toBe('the "> [!TLDR]" box must list 2–4 points ("> - …")');
+    expect(tldrProblem(`> [!TLDR]\n${'> - Ý.\n'.repeat(5)}\n## A`)).toBe('the "> [!TLDR]" box must list 2–4 points ("> - …")');
   });
 
   it('refuses secrets, the retired source site and server addresses, but not "học cloud" in plain words', () => {
@@ -37,7 +57,7 @@ describe('parseArticle', () => {
     expect(parseArticle('a', article('title: A', `${body}\nNguồn: Học Cloud`))).toEqual(['the article mentions the retired Học Cloud site']);
     // Built from parts so check:public does not flag this file.
     const address = [10, 20, 30, 40].join('.');
-    expect(parseArticle('a', article('title: A', `${body}\nMáy ${address}`))).toEqual([`server detail on line 7: ${address}`]);
+    expect(parseArticle('a', article('title: A', `${body}\nMáy ${address}`))).toEqual([`server detail on line 12: ${address}`]);
     expect(parseArticle('a', article('title: A', `${body}\nBắt đầu học cloud từ đâu? Ví dụ 192.0.2.10.`))).not.toBeInstanceOf(Array);
   });
 });
@@ -135,7 +155,10 @@ describe('top-ups of a published planet', () => {
   });
 
   it('keeps the other rules: a published or twice-used title, an unknown link, a circle, a published file name', () => {
-    expect(messages([{ slug: 'p', files: { z: linked('y', 'X') } }], [topic('p')], ledger)).toEqual(['content/queue/p/z.md: an article titled "y" is already published']);
+    expect(messages([{ slug: 'p', files: { z: linked('y', 'X') } }], [topic('p')], ledger)).toEqual([
+      'content/queue/p/z.md: an article titled "y" is already published',
+      'content/queue/p/z.en.md: an English article titled "y EN" is already published',
+    ]);
     expect(messages([{ slug: 'p', files: { z: linked('Z', 'X', 'Không có') } }], [topic('p')], ledger)).toEqual(['content/queue/p/z.md: [[Không có]] is neither queued nor in content/published.json']);
     expect(messages([{ slug: 'p', files: { z: linked('Z', 'W'), w: linked('W', 'Z', 'X') } }], [topic('p')], ledger)).toEqual(['content/queue: the [[links]] between queued articles go round in a circle; link one way only']);
     expect(messages([{ slug: 'p', files: { x: linked('Z', 'X') } }], [topic('p')], ledger)).toContain('content/queue/p/x.md: file name is taken by the published article "X"; pick another');
@@ -159,6 +182,55 @@ describe('languages', () => {
     expect(messages([en], [topic('p-en', { lang: 'en' })])).toEqual([]);
     expect(messages([{ slug: 'p-en', files: { ...en.files, c: linked('C') } }], [topic('p-en', { lang: 'en' })])).toEqual(['content/queue/p-en/c.md: its topic is en but the article is written in Vietnamese']);
     expect(messages([{ slug: 'p', files: { a: linked('A', 'B'), b: linked('B', 'C'), c: linkedEn('C') } }], [topic('p')])).toEqual(['content/queue/p/c.md: its topic is vi but the article is not written in Vietnamese']);
+  });
+});
+
+describe('English twins', () => {
+  const files = { a: linked('A', 'B'), b: linked('B', 'C'), c: linked('C') };
+  const twins = Object.fromEntries(Object.entries(files).map(([name, text]) => [name, twinOf(text)]));
+  const check = (extra: Partial<QueuedPlanet>, topics: Topic[] = [topic('p', { status: 'queued' })], ledger: Ledger = empty): string[] =>
+    checkPlanets([{ slug: 'p', files, twins, ...extra }], topics, withEnglish(ledger)).problems.map((p) => `${p.file}: ${p.message}`);
+
+  it('accepts a planet whose every article has its twin, linking the same articles with their English titles', () => {
+    expect(check({})).toEqual([]);
+  });
+
+  it('needs a twin for every article of a Vietnamese planet, and none without its article', () => {
+    expect(check({ twins: { a: twins.a ?? '' } })).toEqual([
+      'content/queue/p/b.en.md: every Vietnamese article needs its English twin, written beside it as <article>.en.md',
+      'content/queue/p/c.en.md: every Vietnamese article needs its English twin, written beside it as <article>.en.md',
+    ]);
+    expect(check({ twins: { ...twins, z: twins.a ?? '' } })).toEqual(['content/queue/p/z.en.md: an English twin without its Vietnamese article']);
+  });
+
+  it('gives an English planet no twins', () => {
+    const en = { a: linkedEn('A', 'B'), b: linkedEn('B', 'C'), c: linkedEn('C') };
+    expect(check({ files: en, twins: { a: twins.a ?? '' } }, [topic('p', { lang: 'en', status: 'queued' })])).toEqual(['content/queue/p/a.en.md: an English planet has no twins']);
+  });
+
+  it('needs the twin written in English, of the same type, long enough', () => {
+    expect(check({ twins: { ...twins, c: linked('C EN') } })).toEqual(['content/queue/p/c.en.md: the English twin is not written in English']);
+    expect(check({ twins: { ...twins, c: (twins.c ?? '').replace('tags: test', 'tags: test\ntype: lab') } })).toEqual(['content/queue/p/c.en.md: type must be "note", as in the Vietnamese article']);
+    expect(check({ twins: { ...twins, c: article('title: C EN', '> [!TLDR]\n> - One.\n> - Two.\n\nShort.') } })).toEqual(['content/queue/p/c.en.md: body is shorter than 1000 characters']);
+  });
+
+  it('needs the twin to link the same articles, by their English titles', () => {
+    expect(check({ twins: { ...twins, a: linkedEn('A EN', 'C EN') } })).toEqual(['content/queue/p/a.en.md: the English twin must link the same articles as its Vietnamese text (with their English titles)']);
+    expect(check({ twins: { ...twins, a: linkedEn('A EN', 'Nothing') } })).toEqual(['content/queue/p/a.en.md: [[Nothing]] is not the English title of a queued or published article']);
+  });
+
+  it('refuses an English title that is already published or used twice', () => {
+    const ledger: Ledger = { planets: [], posts: [{ slug: 'old/x', id: 'doc-1', title: 'Cũ', at: '', en: { id: 'en-1', title: 'A EN' } }] };
+    expect(check({}, [topic('p', { status: 'queued' })], ledger)).toContain('content/queue/p/a.en.md: an English article titled "A EN" is already published');
+    expect(check({ twins: { ...twins, c: linkedEn('a en') } })).toContain('content/queue/p/c.en.md: same title as content/queue/p/a.en.md');
+  });
+
+  it('links an old article by its published English title', () => {
+    const ledger: Ledger = { planets: [], posts: [{ slug: 'old/x', id: 'doc-1', title: 'Bài cũ', at: '', en: { id: 'en-1', title: 'The old article' } }] };
+    const own = { ...files, c: linked('C', 'Bài cũ') };
+    const mine = { ...twins, c: linkedEn('C EN', 'The old article') };
+    expect(check({ files: own, twins: mine }, [topic('p', { status: 'queued' })], ledger)).toEqual([]);
+    expect(check({ files: own, twins: { ...twins, c: linkedEn('C EN', 'Bài cũ') } }, [topic('p', { status: 'queued' })], ledger)).toEqual(['content/queue/p/c.en.md: [[Bài cũ]] is not the English title of a queued or published article']);
   });
 });
 

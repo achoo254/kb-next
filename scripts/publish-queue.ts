@@ -6,9 +6,11 @@
  * For each planet: makes its Space when `content/spaces.json` lists it under `create` (409 `slug-taken` means it is
  * there already), makes its Collection once (the ledger keeps its id; a top-up of a published planet goes into that
  * same Collection), then publishes its articles in the topic's `lang`, each after the
- * queued articles it links to so every `[[link]]` resolves. Each publish is written to `content/published.json` at
- * once, so a run that dies never publishes twice. A planet whose articles are all published loses its folder and its
- * topic becomes `published`; anything that failed stays for the next run. Needs `KB_ADMIN_TOKEN`; `KB_ORIGIN` defaults
+ * queued articles it links to so every `[[link]]` resolves. A Vietnamese article is followed at once by its English
+ * twin (`<article>.en.md`), published as another language of the same text (`translationOf`), so the twin's links to
+ * other English articles resolve too. Each publish is written to `content/published.json` at
+ * once, so a run that dies never publishes twice. A planet whose articles and twins are all published loses its
+ * folder and its topic becomes `published`; anything that failed stays for the next run. Needs `KB_ADMIN_TOKEN`; `KB_ORIGIN` defaults
  * to https://kb.hoandat.com.
  */
 import { rm, writeFile } from 'node:fs/promises';
@@ -29,6 +31,8 @@ export interface PublishOptions {
 
 export interface PublishResult {
   published: PublishedPost[];
+  /** The slugs of the articles whose English twin was published. */
+  translated: string[];
   failed: Array<{ slug: string; reason: string }>;
 }
 
@@ -50,7 +54,7 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
   const ledgerFile = path.join(dir, 'published.json');
   const { topics } = await readJson<{ topics: Topic[] }>(topicsFile);
   const ledger = await readJson<Ledger>(ledgerFile);
-  const result: PublishResult = { published: [], failed: [] };
+  const result: PublishResult = { published: [], translated: [], failed: [] };
   const failedPlanets = new Map<string, string>();
 
   const post = async (route: string, body: unknown): Promise<{ status: number; body: unknown }> => {
@@ -65,7 +69,7 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
 
   // Check everything first: a planet with any problem waits for the next run as a whole.
   const queue = await readQueue(dir);
-  const { problems, articles } = checkPlanets(queue, topics, ledger);
+  const { problems, articles, twins } = checkPlanets(queue, topics, ledger);
   const circle = problems.some((p) => p.file === 'content/queue');
   for (const planet of queue) {
     const own = problems.filter((p) => circle || p.file === `content/queue/${planet.slug}` || p.file.startsWith(`content/queue/${planet.slug}/`));
@@ -112,42 +116,66 @@ export async function publishQueue({ dir, token, origin, fetch, now, log = conso
   const byKey = new Map(ready.map((a) => [titleKey(a.title), a]));
   const done = new Set(ledger.posts.map((p) => p.slug));
   for (const article of publishOrder(ready) ?? []) {
-    if (done.has(article.slug)) continue;
-    const waits = linkedTitles(article.body)
+    let entry = ledger.posts.find((p) => p.slug === article.slug);
+    if (!entry) {
+      const waits = linkedTitles(article.body)
+        .map((title) => byKey.get(titleKey(title)))
+        .find((target): target is QueuedArticle => target !== undefined && target !== article && !done.has(target.slug));
+      if (waits) {
+        result.failed.push({ slug: article.slug, reason: `waits for ${waits.slug}` });
+        continue;
+      }
+      const res = await post('posts', {
+        title: article.title,
+        lang: topics.find((t) => t.slug === planetOf(article.slug))?.lang ?? 'vi',
+        collection: collections.get(planetOf(article.slug)),
+        tags: article.tags,
+        markdown: article.body,
+        type: article.type,
+        source: 'ai',
+        hidden: false,
+      });
+      const id = field(res.body, 'id');
+      if (res.status !== 201 || !id) {
+        result.failed.push({ slug: article.slug, reason: failure(res) });
+        continue;
+      }
+      entry = { slug: article.slug, id, title: article.title, at: now().toISOString() };
+      ledger.posts.push(entry);
+      done.add(article.slug);
+      result.published.push(entry);
+      // The ledger is written before anything else: a run that dies here never publishes this article again.
+      await writeJson(ledgerFile, ledger);
+      log(`published ${article.slug}: ${origin}/d/${id}`);
+    }
+
+    // The English twin goes right after its article (also on a later run, when the article is published already).
+    const twin = twins.get(article.slug);
+    if (!twin || entry.en) continue;
+    const waitsTwin = linkedTitles(article.body)
       .map((title) => byKey.get(titleKey(title)))
-      .find((target): target is QueuedArticle => target !== undefined && target !== article && !done.has(target.slug));
-    if (waits) {
-      result.failed.push({ slug: article.slug, reason: `waits for ${waits.slug}` });
+      .find((target): target is QueuedArticle => target !== undefined && target !== article && twins.has(target.slug) && !ledger.posts.find((p) => p.slug === target.slug)?.en);
+    if (waitsTwin) {
+      result.failed.push({ slug: `${article.slug}.en`, reason: `waits for ${waitsTwin.slug}.en` });
       continue;
     }
-    const res = await post('posts', {
-      title: article.title,
-      lang: topics.find((t) => t.slug === planetOf(article.slug))?.lang ?? 'vi',
-      collection: collections.get(planetOf(article.slug)),
-      tags: article.tags,
-      markdown: article.body,
-      type: article.type,
-      source: 'ai',
-      hidden: false,
-    });
-    const id = field(res.body, 'id');
-    if (res.status !== 201 || !id) {
-      result.failed.push({ slug: article.slug, reason: failure(res) });
+    const res = await post('posts', { title: twin.title, lang: 'en', translationOf: entry.id, tags: twin.tags, markdown: twin.body, type: twin.type, source: 'ai', hidden: false });
+    const twinId = field(res.body, 'id');
+    if (res.status !== 201 || !twinId) {
+      result.failed.push({ slug: `${article.slug}.en`, reason: failure(res) });
       continue;
     }
-    const entry: PublishedPost = { slug: article.slug, id, title: article.title, at: now().toISOString() };
-    ledger.posts.push(entry);
-    done.add(article.slug);
-    result.published.push(entry);
-    // The ledger is written before anything else: a run that dies here never publishes this article again.
+    entry.en = { id: twinId, title: twin.title };
+    result.translated.push(article.slug);
     await writeJson(ledgerFile, ledger);
-    log(`published ${article.slug}: ${origin}/d/${id}`);
+    log(`published ${article.slug}.en: ${origin}/d/${twinId}`);
   }
 
   for (const [slug, reason] of failedPlanets) result.failed.push({ slug, reason });
   for (const planet of queue) {
     const list = articles.get(planet.slug) ?? [];
-    if (failedPlanets.has(planet.slug) || list.length === 0 || !list.every((a) => done.has(a.slug))) continue;
+    const translated = (a: QueuedArticle): boolean => !twins.has(a.slug) || ledger.posts.find((p) => p.slug === a.slug)?.en !== undefined;
+    if (failedPlanets.has(planet.slug) || list.length === 0 || !list.every((a) => done.has(a.slug) && translated(a))) continue;
     await rm(path.join(dir, 'queue', planet.slug), { recursive: true });
     const topic = topics.find((t) => t.slug === planet.slug);
     if (topic) topic.status = 'published';
@@ -176,7 +204,7 @@ async function main(): Promise<number> {
     now: () => new Date(),
   });
   for (const f of result.failed) console.error(`✗ ${f.slug}: ${f.reason}`);
-  console.log(`published ${result.published.length}, failed ${result.failed.length}`);
+  console.log(`published ${result.published.length} (${result.translated.length} English twins), failed ${result.failed.length}`);
   return result.failed.length > 0 ? 1 : 0;
 }
 

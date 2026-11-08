@@ -115,10 +115,10 @@ Hai cloud routine của Claude lo hàng chờ:
 
 - **Routine chiến lược** (Opus, mỗi ngày một lần): chỉ sửa `content/topics.json` và `content/spaces.json`. Nó giữ danh
   sách chủ đề cân bằng giữa các Space, thêm hành tinh mới khi còn ít hơn 6 mục
-  `todo`, thêm bản tiếng Anh cho hành tinh chỉ có bản tiếng Việt, và mở **đợt bổ sung** cho hành tinh đã đăng (đặt chủ
-  đề `published` về `todo` kèm `brief` mới nêu các bài cần thêm). Nó không viết bài.
+  `todo` và mở **đợt bổ sung** cho hành tinh đã đăng (đặt chủ đề `published` về `todo` kèm `brief` mới nêu các bài cần
+  thêm). Nó không viết bài và không lập chủ đề `-en` cho hành tinh tiếng Việt: bản tiếng Anh đi kèm từng bài.
 - **Routine viết bài** (Sonnet, nhiều lượt mỗi ngày): mỗi lượt làm **một** mục `todo` đầu tiên trong danh sách, viết bài
-  bằng ngôn ngữ `lang` của chủ đề, tự duyệt (soát danh sách kiểm, đối chiếu sự thật với Wikipedia hoặc tài liệu chính
+  bằng ngôn ngữ `lang` của chủ đề (với chủ đề `vi`, thêm bản dịch tiếng Anh của từng bài, xem **Song ngữ**), tự duyệt (soát danh sách kiểm, đối chiếu sự thật với Wikipedia hoặc tài liệu chính
   thức), đặt chủ đề thành `queued` rồi đẩy thư mục chờ vào repo. Chủ đề có slug chưa có trong sổ `planets` là hành
   tinh **mới** (3–5 bài nối nhau bằng `[[Tiêu đề]]` và nối sang bài của hành tinh khác); slug đã có trong sổ là **đợt
   bổ sung** (1–5 bài, mỗi bài nối vào bài đã đăng hoặc đang chờ của chính hành tinh đó).
@@ -127,10 +127,14 @@ GitHub Actions đăng bài **hiện ngay**, không chờ người duyệt (chủ
 hoặc sửa ở A02 (`/admin/content`), hoặc qua `PUT /api/admin/posts/:id/text`. kb là kho kiến thức đủ mọi chủ đề nên bài
 công nghệ không quá một phần ba.
 
-**Song ngữ:** mỗi hành tinh nên có bản tiếng Việt và bản tiếng Anh, là hai chủ đề riêng cùng Space: bản Việt
-`lang: "vi"`, bản Anh `lang: "en"` với slug kết thúc bằng `-en` (ví dụ `tet-nguyen-dan` và `tet-nguyen-dan-en`). `lang`
-quyết định ngôn ngữ của mọi bài trong hành tinh: `check:queue` từ chối bài viết sai ngôn ngữ, bài đăng mang đúng `lang`
-đó, và Collection của chủ đề `en` mang tên tiếng Anh (`nameEn`) ở cả hai giao diện.
+**Song ngữ (từ 08/11/2026):** mỗi bài tiếng Việt của hành tinh `lang: "vi"` có **bản dịch tiếng Anh** đi kèm, đăng
+như một ngôn ngữ khác của chính bài đó (cùng nhóm dịch, Space và Collection; giao diện chọn bản theo ngôn ngữ người
+đọc, danh sách không hiện hai bài). Routine viết bài dịch ngay trong lượt viết, vào `<bài>.en.md` cạnh `<bài>.md`:
+dịch trung thành (cùng cấu trúc, sự thật, lệnh, số link), `title` và `tags` tiếng Anh, `type` giống bản Việt, `[[ ]]`
+đổi thành tiêu đề **tiếng Anh** của đúng bài được trỏ tới (bài đang chờ: `title` trong `.en.md` của nó; bài đã đăng:
+`en.title` trong sổ `posts`). Hành tinh `lang: "en"` là hành tinh viết riêng bằng tiếng Anh, không có bản dịch và không
+cần bản Việt. `lang` quyết định ngôn ngữ của bài gốc: `check:queue` từ chối bài viết sai ngôn ngữ, và Collection của
+chủ đề `en` mang tên tiếng Anh (`nameEn`) ở cả hai giao diện.
 
 - [`content/topics.json`](../content/topics.json): danh sách hành tinh cần viết (`slug`, `space`, `lang`, `name`,
   `nameEn`, `tech`, `brief` gợi ý các bài, `status`: `todo` → `queued` (routine viết bài) → `published` (workflow),
@@ -140,24 +144,30 @@ quyết định ngôn ngữ của mọi bài trong hành tinh: `check:queue` t�
 - `content/queue/<hành-tinh>/<bài>.md`: bài chờ đăng của một hành tinh, 3–5 bài với hành tinh mới, 1–5 bài với đợt
   bổ sung (tên tệp không trùng tên bài đã đăng của hành tinh). Đầu tệp là front matter `title`, `tags`
   (cách nhau bằng dấu phẩy, tối đa 8), `type` (`note`/`lab`/`process`), giữa hai dòng `---`; sau đó là thân bài
-  Markdown (ít nhất 1.200 ký tự).
+  Markdown (ít nhất 1.200 ký tự). Hành tinh `vi` còn có `<bài>.en.md` cho từng bài: cùng front matter và hộp mở đầu,
+  thân ít nhất 1.000 ký tự, viết bằng tiếng Anh.
 - [`content/published.json`](../content/published.json): sổ `planets` (`slug → collectionId`) và `posts`
-  (`<hành-tinh>/<bài> → id`, tiêu đề). Database là bản chuẩn của bài, repo không giữ thân bài sau khi đăng.
+  (`<hành-tinh>/<bài> → id`, tiêu đề, và `en: {id, title}` khi bản dịch tiếng Anh đã đăng). Database là bản chuẩn của
+  bài, repo không giữ thân bài sau khi đăng.
 
 `pnpm check:queue` ([`scripts/content-queue.ts`](../scripts/content-queue.ts), chạy trong `pnpm lint`) kiểm ba tệp
 JSON và mọi hành tinh chờ: số bài (3–5, đợt bổ sung 1–5), front matter, độ dài, ngôn ngữ đúng `lang` của chủ đề; các
 bài trong hành tinh, tính cả bài đã đăng của nó, nối thành một khối; hành tinh mới có ít nhất một link sang bài của
 hành tinh khác (khi đã có); mọi `[[ ]]` trỏ tới bài đang chờ hoặc đã có trong sổ; link giữa các bài
-chờ không đi vòng; tiêu đề không trùng; không địa chỉ server (như `check:public`), không chuỗi giống khoá, không nhắc
+chờ không đi vòng; tiêu đề không trùng; mỗi bài của hành tinh `vi` có bản `.en.md` viết bằng tiếng Anh, cùng `type`,
+tiêu đề tiếng Anh không trùng bài nào, và nối đúng những bài mà bản Việt nối (qua tiêu đề tiếng Anh của chúng);
+không địa chỉ server (như `check:public`), không chuỗi giống khoá, không nhắc
 Học Cloud.
 
 [`publish-queue.yml`](../.github/workflows/publish-queue.yml) chạy khi `content/queue/**` đổi trên `main` (hoặc bấm tay):
 `pnpm publish:queue` ([`scripts/publish-queue.ts`](../scripts/publish-queue.ts)) tạo Space khi cần, tạo Collection một
 lần (`POST /api/admin/collections`; hành tinh đã có trong sổ `planets` thì dùng lại `collectionId` đó, nên đợt bổ sung
 vào đúng Collection cũ, không tạo Collection thứ hai, không ghi thêm dòng `planets`), rồi đăng từng bài
-(`hidden: false`, `source: "ai"`, `lang` của chủ đề) theo thứ tự bài được trỏ tới đăng trước, vì máy chủ chỉ nối `[[ ]]` lúc lưu bài. Mỗi bài đăng xong ghi sổ ngay; hành tinh đăng đủ bài thì xoá thư mục
-chờ, chủ đề thành `published`, rồi commit lại. Bài lỗi giữ lại để lần sau thử lại, bài trỏ tới nó chờ theo; bài đã có
-trong sổ không đăng lần hai. Token chỉ nằm ở secret `KB_ADMIN_TOKEN` của repo; tạo token mới ở A03 là token cũ bị thu
+(`hidden: false`, `source: "ai"`, `lang` của chủ đề) theo thứ tự bài được trỏ tới đăng trước, vì máy chủ chỉ nối `[[ ]]` lúc lưu bài. Ngay sau mỗi bài tiếng Việt là bản dịch của nó (`lang: "en"`, `translationOf`
+là id vừa nhận; Space và Collection theo bài gốc), nên link tới bản dịch khác cũng đã có đích. Mỗi bài đăng xong ghi sổ
+ngay; hành tinh đăng đủ bài và bản dịch thì xoá thư mục chờ, chủ đề thành `published`, rồi commit lại. Bài lỗi giữ lại
+để lần sau thử lại, bài trỏ tới nó chờ theo; bài đã có trong sổ không đăng lần hai, còn bản dịch thiếu thì lần sau chỉ
+đăng bản dịch. Token chỉ nằm ở secret `KB_ADMIN_TOKEN` của repo; tạo token mới ở A03 là token cũ bị thu
 hồi, nhớ cập nhật secret. Commit chỉ đổi `content/queue/**`, `content/topics.json`, `content/published.json` không chạy
 `ci` nên không deploy.
 

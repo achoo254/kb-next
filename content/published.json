@@ -48,133 +48,221 @@
       "slug": "hoc-chu-dong-lap-lai-ngat-quang",
       "id": "cdb6efbe-ad80-42a0-9fc4-40eb77ea17df",
       "title": "Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn",
-      "at": "2026-11-07T02:42:39.749Z"
+      "at": "2026-11-07T02:42:39.749Z",
+      "en": {
+        "id": "c7423379-ed1d-4447-a051-90755ad277d6",
+        "title": "Active learning and spaced repetition: remember longer with less time"
+      }
     },
     {
       "slug": "hoc-cach-hoc/xen-ke-chu-de-khi-hoc",
       "id": "9860b43c-f1cf-4b5d-8646-4e472bf3ba89",
       "title": "Xen kẽ chủ đề khi học: vì sao trộn bài lại giúp nhớ và áp dụng tốt hơn",
-      "at": "2026-11-07T03:22:56.337Z"
+      "at": "2026-11-07T03:22:56.337Z",
+      "en": {
+        "id": "64041f33-d56b-40d1-8e96-d949fb591a04",
+        "title": "Interleaving when you study: why mixing topics helps you remember and apply more"
+      }
     },
     {
       "slug": "hoc-cach-hoc/phuong-phap-feynman",
       "id": "ba53e2e3-fe0c-47c4-8d75-df3d4accc44c",
       "title": "Phương pháp Feynman: giải thích lại bằng lời đơn giản để biết mình hiểu đến đâu",
-      "at": "2026-11-07T03:22:56.660Z"
+      "at": "2026-11-07T03:22:56.660Z",
+      "en": {
+        "id": "5b2dcb72-7196-4897-8a15-e7e0c1ba2934",
+        "title": "The Feynman technique: explain it in simple words to see how much you really understand"
+      }
     },
     {
       "slug": "hoc-cach-hoc/duong-cong-quen-lang",
       "id": "5ee311ca-d2ce-4210-9bd4-c3a5c15dacf3",
       "title": "Đường cong quên lãng: vì sao ta quên nhanh và làm gì để nhớ lâu hơn",
-      "at": "2026-11-07T03:22:56.922Z"
+      "at": "2026-11-07T03:22:56.922Z",
+      "en": {
+        "id": "9af77ccc-c3f4-4d72-83a1-4a1fb85fbf13",
+        "title": "The forgetting curve: why we forget so fast and what to do to remember longer"
+      }
     },
     {
       "slug": "an-toan-tren-mang/bat-xac-thuc-hai-buoc",
       "id": "607d7739-a2be-4d1b-9fa4-dbc4e33d7225",
       "title": "Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn",
-      "at": "2026-11-07T13:12:56.582Z"
+      "at": "2026-11-07T13:12:56.582Z",
+      "en": {
+        "id": "88886a3d-4393-41d9-aca2-1c62205b84ae",
+        "title": "Turning on two-step verification for email and social media: one more lock on your account"
+      }
     },
     {
       "slug": "an-toan-tren-mang/mat-khau-manh-va-trinh-quan-ly-mat-khau",
       "id": "1bca4afb-25a4-4393-85d9-fd0034529a90",
       "title": "Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi",
-      "at": "2026-11-07T13:12:57.027Z"
+      "at": "2026-11-07T13:12:57.027Z",
+      "en": {
+        "id": "8244e424-b07a-44e7-9420-a1e1c9b51852",
+        "title": "Strong passwords and password managers: break the habit of one password for everything"
+      }
     },
     {
       "slug": "an-toan-tren-mang/nhan-dien-tin-nhan-lua-dao",
       "id": "91ab2b30-a0f8-4ab7-8b29-237c4ac840a1",
       "title": "Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm",
-      "at": "2026-11-07T13:12:57.447Z"
+      "at": "2026-11-07T13:12:57.447Z",
+      "en": {
+        "id": "19317e77-0010-4025-aca4-c56884e9d7c4",
+        "title": "Spotting scam messages and calls: five signs to stop before you click"
+      }
     },
     {
       "slug": "tim-viec/thu-cam-on-va-theo-doi-sau-phong-van",
       "id": "83d08942-611b-4b47-be25-5130e4f5b0e1",
       "title": "Thư cảm ơn và theo dõi sau phỏng vấn: kết thúc buổi phỏng vấn một cách chu đáo",
-      "at": "2026-11-07T14:07:08.354Z"
+      "at": "2026-11-07T14:07:08.354Z",
+      "en": {
+        "id": "b7e583ef-4157-4f8e-86eb-5eb13d297b8e",
+        "title": "A thank-you note and follow-up after an interview: closing the interview thoughtfully"
+      }
     },
     {
       "slug": "tim-viec/chuan-bi-phong-van-theo-cach-star",
       "id": "b1dbe490-26c1-4f9b-be45-2b6296de2b9f",
       "title": "Chuẩn bị phỏng vấn theo cách STAR: kể một câu chuyện có đầu có cuối",
-      "at": "2026-11-07T14:07:10.430Z"
+      "at": "2026-11-07T14:07:10.430Z",
+      "en": {
+        "id": "7a798c6e-648b-4b71-a68f-e3b406494ca5",
+        "title": "Preparing for an interview with the STAR method: tell a story with a beginning and an end"
+      }
     },
     {
       "slug": "tim-viec/viet-cv-mot-trang",
       "id": "4795eea1-3df8-48b9-8a5a-0cd95d652c20",
       "title": "Viết CV một trang: chọn gì, bỏ gì để nhà tuyển dụng đọc hết",
-      "at": "2026-11-07T14:07:10.840Z"
+      "at": "2026-11-07T14:07:10.840Z",
+      "en": {
+        "id": "36bdd529-281e-4ea7-b005-19cb4bf62cf0",
+        "title": "Writing a one-page CV: what to include and what to leave out so recruiters read it all"
+      }
     },
     {
       "slug": "tet-nguyen-dan/xong-dat-li-xi-mung-mot",
       "id": "f9ccca40-a6dd-451f-acd3-b53ce3ba27d6",
       "title": "Xông đất, lì xì và mùng một Tết: những phong tục mở đầu năm mới",
-      "at": "2026-11-07T15:10:01.922Z"
+      "at": "2026-11-07T15:10:01.922Z",
+      "en": {
+        "id": "e1fc5c3a-16c9-4e5d-81e4-2b1587a8d27b",
+        "title": "First-footing, lucky money and the first day of Tết: the customs that open the new year"
+      }
     },
     {
       "slug": "tet-nguyen-dan/banh-chung-banh-tet-mam-ngu-qua",
       "id": "dfa72d7c-5024-49df-aecf-4eed8842695e",
       "title": "Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết",
-      "at": "2026-11-07T15:10:02.240Z"
+      "at": "2026-11-07T15:10:02.240Z",
+      "en": {
+        "id": "badfe253-0c1c-4737-9210-0d73d2d30def",
+        "title": "Bánh chưng, bánh tét and the five-fruit tray: the essentials on the Tết altar"
+      }
     },
     {
       "slug": "tet-nguyen-dan/ong-cong-ong-tao",
       "id": "eb1bb27e-288e-4f0c-81a7-8641c8189df3",
       "title": "Ông Công, ông Táo và ngày 23 tháng Chạp: tiễn thần bếp lên trời, dọn nhà đón Tết",
-      "at": "2026-11-07T15:10:02.541Z"
+      "at": "2026-11-07T15:10:02.541Z",
+      "en": {
+        "id": "9527a060-ca29-4903-8625-bf1a07cfbf02",
+        "title": "Ông Công, Ông Táo and the 23rd of the twelfth lunar month: sending the kitchen gods to heaven and cleaning the house for Tết"
+      }
     },
     {
       "slug": "mang-tren-ubuntu/kiem-tra-ket-noi-ip-ss-ping-tracepath",
       "id": "fb59e522-a573-4aa5-a9b7-797dea1b2e73",
       "title": "Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath",
-      "at": "2026-11-07T16:42:42.113Z"
+      "at": "2026-11-07T16:42:42.113Z",
+      "en": {
+        "id": "078bd90e-ec8c-4eb7-932b-a64ff4c76fd1",
+        "title": "Checking network connectivity on Ubuntu with ip, ss, ping and tracepath"
+      }
     },
     {
       "slug": "mang-tren-ubuntu/resolvectl-va-dns-tren-ubuntu",
       "id": "98e55f1d-23ce-49d7-97f6-6cfae88e4dca",
       "title": "resolvectl và DNS trên Ubuntu: máy bạn tra tên miền như thế nào",
-      "at": "2026-11-07T16:42:42.438Z"
+      "at": "2026-11-07T16:42:42.438Z",
+      "en": {
+        "id": "6b35faed-7fa3-4ae0-a748-e57895fec0cc",
+        "title": "resolvectl and DNS on Ubuntu: how your machine looks up domain names"
+      }
     },
     {
       "slug": "mang-tren-ubuntu/netplan-dat-ip-tinh-va-dhcp",
       "id": "b6154724-dca4-4edc-9251-389e84fe2689",
       "title": "Netplan trên Ubuntu 24.04: đặt IP tĩnh và dùng DHCP bằng một tệp YAML",
-      "at": "2026-11-07T16:42:42.727Z"
+      "at": "2026-11-07T16:42:42.727Z",
+      "en": {
+        "id": "26dd4912-2980-4b2d-b6c2-59aca7a48abe",
+        "title": "Netplan on Ubuntu 24.04: static IPs and DHCP with a single YAML file"
+      }
     },
     {
       "slug": "ghi-chu-hieu-qua/ghi-chu-thanh-cau-hoi-tu-kiem-tra",
       "id": "67f81d85-5c27-4a28-99a4-f95f75d59234",
       "title": "Biến ghi chú thành câu hỏi tự kiểm tra: ôn bài bằng cách tự trả lời",
-      "at": "2026-11-07T19:37:06.414Z"
+      "at": "2026-11-07T19:37:06.414Z",
+      "en": {
+        "id": "a3ddf6d6-75a6-4ded-bbc0-c7fc8e2135c5",
+        "title": "Turning notes into self-test questions: review by answering them yourself"
+      }
     },
     {
       "slug": "ghi-chu-hieu-qua/so-do-tu-duy-mind-map",
       "id": "83377a50-77e4-4390-97ae-0c1b66c77f10",
       "title": "Sơ đồ tư duy (mind map): vẽ ý tưởng thành cây để nhìn thấy toàn cảnh",
-      "at": "2026-11-07T19:37:06.719Z"
+      "at": "2026-11-07T19:37:06.719Z",
+      "en": {
+        "id": "0ce4b176-187e-434f-a9fc-d74f3c275b65",
+        "title": "Mind maps: draw ideas as a tree to see the whole picture"
+      }
     },
     {
       "slug": "ghi-chu-hieu-qua/ghi-chu-kieu-cornell",
       "id": "e263e198-c038-47c7-a16a-ff6d576bbfd2",
       "title": "Ghi chú kiểu Cornell: chia trang giấy thành ba phần để ôn bài dễ hơn",
-      "at": "2026-11-07T19:37:07.008Z"
+      "at": "2026-11-07T19:37:07.008Z",
+      "en": {
+        "id": "c8c96090-afca-4726-80eb-31368b239882",
+        "title": "Cornell note-taking: split the page into three parts to make reviewing easier"
+      }
     },
     {
       "slug": "viec-nha-gon-gang/lich-don-dep-moi-ngay-15-phut",
       "id": "6340d069-9b9f-49c5-8166-0020e2a638dd",
       "title": "Lịch dọn dẹp mỗi ngày 15 phút: nhà sạch mà không mất cả buổi cuối tuần",
-      "at": "2026-11-07T22:37:43.030Z"
+      "at": "2026-11-07T22:37:43.030Z",
+      "en": {
+        "id": "4f37032f-0d37-49f7-aebd-93226aa80240",
+        "title": "A 15-minute daily cleaning schedule: a clean home without losing your whole weekend"
+      }
     },
     {
       "slug": "viec-nha-gon-gang/sap-xep-nha-cua-theo-tung-khu",
       "id": "1a7545ad-7765-4755-8787-34ce10c6924d",
       "title": "Sắp xếp nhà cửa theo từng khu: mỗi món đồ có một chỗ của riêng nó",
-      "at": "2026-11-07T22:37:43.428Z"
+      "at": "2026-11-07T22:37:43.428Z",
+      "en": {
+        "id": "68c21e43-0df5-4cc7-b794-5b801fb6a233",
+        "title": "Organizing your home zone by zone: every item gets a place of its own"
+      }
     },
     {
       "slug": "viec-nha-gon-gang/doc-ky-hieu-giat-ui-tren-nhan-quan-ao",
       "id": "5a8d6b41-1113-48d8-9ef0-fddb8de8f575",
       "title": "Đọc ký hiệu giặt ủi trên nhãn quần áo: hiểu năm hình vẽ nhỏ để áo không bị co, phai hay hỏng",
-      "at": "2026-11-07T22:37:43.837Z"
+      "at": "2026-11-07T22:37:43.837Z",
+      "en": {
+        "id": "de18e706-7228-46ba-828e-7af6d7810655",
+        "title": "Reading laundry symbols on clothing labels: five small pictures that keep clothes from shrinking, fading or getting ruined"
+      }
     }
   ]
 }
