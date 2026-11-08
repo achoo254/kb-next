@@ -56,6 +56,18 @@
       "unitEn": "articles",
       "descriptionVi": "Lễ tết, di sản và những chặng đường lịch sử của Việt Nam.",
       "descriptionEn": "Festivals, heritage and the long history of Vietnam."
+    },
+    {
+      "slug": "khoa-hoc",
+      "nameVi": "Khoa học quanh ta",
+      "nameEn": "Everyday science",
+      "tint": "#DDD6FE",
+      "glow": "#8B5CF6",
+      "art": "/art/orb-universe.webp",
+      "unitVi": "bài",
+      "unitEn": "articles",
+      "descriptionVi": "Bầu trời, thời tiết và những hiện tượng tự nhiên giải thích dễ hiểu.",
+      "descriptionEn": "The sky, weather and natural phenomena explained simply."
     }
   ]
 }

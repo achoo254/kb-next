@@ -11,16 +11,6 @@
       "status": "published"
     },
     {
-      "slug": "an-toan-tren-mang",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "An toàn trên mạng",
-      "nameEn": "Staying safe online",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: nhận diện tin nhắn và cuộc gọi lừa đảo; đặt mật khẩu mạnh và dùng trình quản lý mật khẩu; bật xác thực hai bước cho email và mạng xã hội.",
-      "status": "published"
-    },
-    {
       "slug": "tim-viec",
       "space": "cong-viec",
       "lang": "vi",
@@ -71,6 +61,16 @@
       "status": "published"
     },
     {
+      "slug": "tet-nguyen-dan-en",
+      "space": "van-hoa",
+      "lang": "en",
+      "name": "Tet, the Vietnamese Lunar New Year",
+      "nameEn": "Tet, the Vietnamese Lunar New Year",
+      "tech": false,
+      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Tết Nguyên Đán\". Bài bản Việt để đối chiếu: \"Xông đất, lì xì và mùng một Tết: những phong tục mở đầu năm mới\"; \"Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết\"; \"Ông Công, ông Táo và ngày 23 tháng Chạp: tiễn thần bếp lên trời, dọn nhà đón Tết\". Giải thích ngắn bối cảnh (âm lịch, tháng Chạp) cho người chưa từng đón Tết ở Việt Nam. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
+      "status": "todo"
+    },
+    {
       "slug": "giao-tiep-noi-cong-so",
       "space": "cong-viec",
       "lang": "vi",
@@ -78,6 +78,36 @@
       "nameEn": "Communication at work",
       "tech": false,
       "brief": "Gợi ý 3 bài: viết email công việc rõ ràng; họp hiệu quả với chương trình và biên bản; góp ý cho đồng nghiệp theo mô hình SBI.",
+      "status": "todo"
+    },
+    {
+      "slug": "hoc-cach-hoc-en",
+      "space": "ky-nang",
+      "lang": "en",
+      "name": "Learning how to learn",
+      "nameEn": "Learning how to learn",
+      "tech": false,
+      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Học cách học\". Bài bản Việt để đối chiếu: \"Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn\"; \"Xen kẽ chủ đề khi học: vì sao trộn bài lại giúp nhớ và áp dụng tốt hơn\"; \"Phương pháp Feynman: giải thích lại bằng lời đơn giản để biết mình hiểu đến đâu\"; \"Đường cong quên lãng: vì sao ta quên nhanh và làm gì để nhớ lâu hơn\". Gợi ý 4 bài tương ứng: active recall and spaced repetition; the forgetting curve; the Feynman technique; interleaving. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
+      "status": "todo"
+    },
+    {
+      "slug": "an-toan-tren-mang",
+      "space": "doi-song",
+      "lang": "vi",
+      "name": "An toàn trên mạng",
+      "nameEn": "Staying safe online",
+      "tech": false,
+      "brief": "Đợt bổ sung 2 bài, không lặp ý của 3 bài đã có: (1) sao lưu ảnh và dữ liệu theo quy tắc 3-2-1 (ổ ngoài, đám mây, kiểm tra khôi phục), nối tới \"Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi\"; (2) dùng Wi-Fi công cộng an toàn (mạng giả mạo, HTTPS, chia sẻ mạng từ điện thoại), nối tới \"Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn\" và \"Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm\".",
+      "status": "todo"
+    },
+    {
+      "slug": "mang-tren-ubuntu-en",
+      "space": "networking",
+      "lang": "en",
+      "name": "Networking on Ubuntu",
+      "nameEn": "Networking on Ubuntu",
+      "tech": true,
+      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Mạng trên Ubuntu\". Bài bản Việt để đối chiếu: \"Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath\"; \"resolvectl và DNS trên Ubuntu: máy bạn tra tên miền như thế nào\"; \"Netplan trên Ubuntu 24.04: đặt IP tĩnh và dùng DHCP bằng một tệp YAML\". Lệnh và tệp cấu hình giữ nguyên, ghi rõ phiên bản Ubuntu 24.04. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
       "status": "todo"
     },
     {
@@ -91,6 +121,36 @@
       "status": "todo"
     },
     {
+      "slug": "tim-viec-en",
+      "space": "cong-viec",
+      "lang": "en",
+      "name": "Job hunting",
+      "nameEn": "Job hunting",
+      "tech": false,
+      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Tìm việc\". Bài bản Việt để đối chiếu: \"Thư cảm ơn và theo dõi sau phỏng vấn: kết thúc buổi phỏng vấn một cách chu đáo\"; \"Chuẩn bị phỏng vấn theo cách STAR: kể một câu chuyện có đầu có cuối\"; \"Viết CV một trang: chọn gì, bỏ gì để nhà tuyển dụng đọc hết\". Viết cho người tìm việc nói chung, không gắn với thị trường một nước. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
+      "status": "todo"
+    },
+    {
+      "slug": "he-mat-troi",
+      "space": "khoa-hoc",
+      "lang": "vi",
+      "name": "Hệ Mặt Trời",
+      "nameEn": "The Solar System",
+      "tech": false,
+      "brief": "Hành tinh đầu tiên của Space Khoa học quanh ta. Gợi ý 3 bài: tám hành tinh của Hệ Mặt Trời (kích thước, khoảng cách, vì sao Sao Diêm Vương bị xếp lại thành hành tinh lùn năm 2006); Mặt Trăng và các tuần trăng, liên hệ với âm lịch; nhật thực và nguyệt thực xảy ra thế nào, cách xem nhật thực an toàn. Số liệu đối chiếu NASA hoặc Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "an-toan-tren-mang-en",
+      "space": "doi-song",
+      "lang": "en",
+      "name": "Staying safe online",
+      "nameEn": "Staying safe online",
+      "tech": false,
+      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"An toàn trên mạng\". Bài bản Việt để đối chiếu: \"Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn\"; \"Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi\"; \"Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm\". Hành tinh tiếng Việt đang có đợt bổ sung (sao lưu dữ liệu theo quy tắc 3-2-1; dùng Wi-Fi công cộng an toàn); bản Anh viết 5 bài: ba bài cốt lõi trên cộng hai chủ đề đó. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
+      "status": "todo"
+    },
+    {
       "slug": "dich-vu-va-log-linux",
       "space": "linux",
       "lang": "vi",
@@ -98,6 +158,36 @@
       "nameEn": "Services and logs on Linux",
       "tech": true,
       "brief": "Gợi ý 3 bài: systemd và unit file; systemctl bật, tắt, khởi động lại dịch vụ; journalctl lọc log theo dịch vụ và thời gian.",
+      "status": "todo"
+    },
+    {
+      "slug": "ghi-chu-hieu-qua-en",
+      "space": "ky-nang",
+      "lang": "en",
+      "name": "Effective note taking",
+      "nameEn": "Effective note taking",
+      "tech": false,
+      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Ghi chú hiệu quả\". Bài bản Việt để đối chiếu: \"Biến ghi chú thành câu hỏi tự kiểm tra: ôn bài bằng cách tự trả lời\"; \"Sơ đồ tư duy (mind map): vẽ ý tưởng thành cây để nhìn thấy toàn cảnh\"; \"Ghi chú kiểu Cornell: chia trang giấy thành ba phần để ôn bài dễ hơn\". Nối sang bài tiếng Anh của hành tinh \"Learning how to learn\" khi đã có. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
+      "status": "todo"
+    },
+    {
+      "slug": "di-san-viet-nam",
+      "space": "van-hoa",
+      "lang": "vi",
+      "name": "Di sản Việt Nam",
+      "nameEn": "Vietnamese heritage",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "viec-nha-gon-gang-en",
+      "space": "doi-song",
+      "lang": "en",
+      "name": "A tidy home",
+      "nameEn": "A tidy home",
+      "tech": false,
+      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Việc nhà gọn gàng\". Bài bản Việt để đối chiếu: \"Lịch dọn dẹp mỗi ngày 15 phút: nhà sạch mà không mất cả buổi cuối tuần\"; \"Sắp xếp nhà cửa theo từng khu: mỗi món đồ có một chỗ của riêng nó\"; \"Đọc ký hiệu giặt ủi trên nhãn quần áo: hiểu năm hình vẽ nhỏ để áo không bị co, phai hay hỏng\". Ký hiệu giặt ủi theo chuẩn ISO 3758 dùng chung quốc tế, đối chiếu tài liệu chính thức. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
       "status": "todo"
     },
     {
@@ -128,16 +218,6 @@
       "nameEn": "Teamwork",
       "tech": false,
       "brief": "Gợi ý 3 bài: chia việc và giao trách nhiệm rõ ràng; theo dõi tiến độ bằng bảng Kanban; xử lý bất đồng trong nhóm.",
-      "status": "todo"
-    },
-    {
-      "slug": "di-san-viet-nam",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Di sản Việt Nam",
-      "nameEn": "Vietnamese heritage",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
