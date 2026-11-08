@@ -122,7 +122,10 @@ export function StageCards({ cards, size = 'full', more, className }: StageCards
             style={tiltStyle(fan?.[index] ?? FLAT)}
           >
             <Icon name={card.icon} size={iconSize(size, card.highlight === true)} className="kf-stage-icon" />
-            <span className="kf-stage-title">{card.title}</span>
+            {/* A long title is cut to the lines the card holds (stage-cards.css); the whole of it shows on hover. */}
+            <span className="kf-stage-title" title={card.title}>
+              {card.title}
+            </span>
             {card.sub && <span className="kf-stage-sub">{card.sub}</span>}
             {card.progress !== undefined && (
               <span className="kf-stage-progress">

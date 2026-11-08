@@ -59,8 +59,11 @@
 
 .kf-stage-card {
   box-sizing: border-box;
+  /* Lines a long title keeps before "…": what is left once the icon, the time and the badge have their room. */
+  --kf-title-lines: 2;
   width: 132px;
   height: 148px;
+  overflow: hidden;
   padding: 16px 14px;
   display: flex;
   flex-direction: column;
@@ -107,16 +110,53 @@
 }
 
 .kf-stage-icon {
+  flex-shrink: 0;
   color: var(--violet-200);
 }
 
+/* The progress, the badge and the warning keep their height: the title and the line under it give way. */
+.kf-stage-progress,
+.kf-stage-badge,
+.kf-stage-warning {
+  flex-shrink: 0;
+}
+
+/* A card with only its title and time (no badge, no progress) has room for one more line. */
+.kf-stage-card:not(:has(.kf-stage-badge, .kf-stage-progress, .kf-stage-warning)) {
+  --kf-title-lines: 3;
+}
+
+/* The centre card's short label is never cut. */
+.kf-stage-card[data-highlight] {
+  --kf-title-lines: 2;
+}
+
 .kf-stage-title {
+  flex: 0 1 auto;
+  /* never squeezed below its first line */
+  min-height: 1.25em;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--kf-title-lines);
+  line-clamp: var(--kf-title-lines);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
   font-size: 13px;
   font-weight: 700;
   text-shadow: 0 1px 6px color-mix(in srgb, var(--violet-deep) 50%, transparent);
 }
 
 .kf-stage-sub {
+  /* the second line may be a text's title on the desktop dock: at most three lines, then "…" */
+  flex: 0 1 auto;
+  min-height: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
   font-size: 12px;
   line-height: 1.6;
   color: light-dark(var(--violet-200), var(--violet-300));
