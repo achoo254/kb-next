@@ -13,6 +13,7 @@ import { ORIGIN_RANK, bestLinkTarget } from '../authoring/link-targets';
 import { bodyOf, chunksOf, composeMarkdown, contentHash, foldTitle, linkedTitles } from '../authoring/markdown-text';
 import { titleLine } from '../markdown/sections';
 import type { Db } from '../db/client';
+import { HttpError } from '../http-error';
 import { PLANET_COLOURS, chunks, documentVersions, documents, files, links } from '../db/schema';
 import { TRASH_DAYS } from '../retention';
 import { type DocumentRow, documentColumns } from './content';
@@ -507,4 +508,22 @@ export async function linkedDocumentIds(db: Db, viewer: Viewer, id: string): Pro
     backlinks: unique(rows.filter((r) => r.targetId === id).map((r) => r.sourceId)),
     outgoing: unique(rows.filter((r) => r.sourceId === id).map((r) => r.targetId)),
   };
+}
+
+/**
+ * The published text a new translation (`translationOf`) belongs to: 404 `not-found` for an unknown or deleted one, 409
+ * `not-approved` while it is unpublished, 409 `translation-exists` when its group already has a text in `lang` (the
+ * original's own language included).
+ */
+export async function translationSource(db: Db, id: string, lang: 'vi' | 'en'): Promise<DocumentRow> {
+  const [original] = await db.select(documentColumns).from(documents).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
+  if (!original) throw new HttpError(404, 'not-found');
+  if (original.status !== 'approved') throw new HttpError(409, 'not-approved');
+  const groupId = original.translationGroupId ?? original.id;
+  const group = await db
+    .select({ lang: documents.lang })
+    .from(documents)
+    .where(and(or(eq(documents.id, groupId), eq(documents.translationGroupId, groupId)), isNull(documents.deletedAt)));
+  if (group.some((member) => member.lang === lang)) throw new HttpError(409, 'translation-exists');
+  return original;
 }

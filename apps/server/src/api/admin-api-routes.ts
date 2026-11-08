@@ -31,17 +31,13 @@
  */
 import express, { type ErrorRequestHandler, type Request, type RequestHandler, type Response, type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { and, eq, isNull, or } from 'drizzle-orm';
 import { z } from 'zod';
-import { createDocument, editAccess, saveDocument } from '../access/authoring';
+import { createDocument, editAccess, saveDocument, translationSource } from '../access/authoring';
 import { createCollection, createPublicSpace, spaceForWriting } from '../access/spaces-write';
 import { type AdminViewer, isAdminViewer } from '../access/review';
 import { effectiveRole } from '../access/roles';
 import { createToken, listTokens, logCall, recentCalls, revokeToken, useToken } from '../admin/admin-tokens';
 import { MAX_BODY_CHARS, bodyOf } from '../authoring/markdown-text';
-import type { Db } from '../db/client';
-import { type DocumentRow } from '../access/content';
-import { documents } from '../db/schema';
 import { HttpError } from '../http-error';
 import { safeErrorText } from '../log-error';
 import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
@@ -96,24 +92,6 @@ interface CallRecord {
 /** The call record and the admin of each request in flight (a request's own state, gone with it). */
 const calls = new WeakMap<Response, CallRecord>();
 const admins = new WeakMap<Response, AdminViewer>();
-
-/**
- * The published text a new translation (`translationOf`) belongs to: 404 `not-found` for an unknown or deleted one, 409
- * `not-approved` while it is unpublished, 409 `translation-exists` when its group already has a text in `lang` (the
- * original's own language included).
- */
-async function translationSource(db: Db, id: string, lang: 'vi' | 'en'): Promise<DocumentRow> {
-  const [original] = await db.select().from(documents).where(and(eq(documents.id, id), isNull(documents.deletedAt)));
-  if (!original) throw new HttpError(404, 'not-found');
-  if (original.status !== 'approved') throw new HttpError(409, 'not-approved');
-  const groupId = original.translationGroupId ?? original.id;
-  const group = await db
-    .select({ lang: documents.lang })
-    .from(documents)
-    .where(and(or(eq(documents.id, groupId), eq(documents.translationGroupId, groupId)), isNull(documents.deletedAt)));
-  if (group.some((member) => member.lang === lang)) throw new HttpError(409, 'translation-exists');
-  return original;
-}
 
 function callOf(res: Response): CallRecord {
   const known = calls.get(res);
