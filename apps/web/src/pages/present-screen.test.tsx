@@ -60,6 +60,15 @@ function start(path = '/d/dhcp/present'): void {
   renderWithI18n(<PresentScreen id="dhcp" />);
 }
 
+/**
+ * Waits for the deck, then lets React run its effects: the text loads outside act(), so the key listener may not be
+ * on yet when the deck first shows (a slow CI runner saw N pressed before it was).
+ */
+async function deckReady(): Promise<void> {
+  await screen.findByRole('progressbar');
+  await act(async () => {});
+}
+
 const counter = (): string => screen.getByRole('progressbar').getAttribute('aria-valuenow') ?? '';
 
 beforeEach(() => {
@@ -78,7 +87,8 @@ afterEach(() => {
 describe('PresentScreen (C21)', () => {
   it('opens on the cover, then moves with the arrow keys and keeps the slide in the address', async () => {
     start();
-    expect(await screen.findByRole('heading', { name: 'Giao thức DHCP' })).toBeTruthy();
+    await deckReady();
+    expect(screen.getByRole('heading', { name: 'Giao thức DHCP' })).toBeTruthy();
     expect(counter()).toBe('1');
     fireEvent.keyDown(window, { key: 'ArrowRight' });
     expect(counter()).toBe('2');
@@ -91,7 +101,7 @@ describe('PresentScreen (C21)', () => {
 
   it('opens at the slide of the address, and jumps through the contents with T', async () => {
     start('/d/dhcp/present#5');
-    await screen.findByRole('progressbar');
+    await deckReady();
     expect(counter()).toBe('5');
     fireEvent.keyDown(window, { key: 't' });
     expect(screen.getByText('Contents')).toBeTruthy();
@@ -101,7 +111,7 @@ describe('PresentScreen (C21)', () => {
 
   it('shows each step on its own slide', async () => {
     start();
-    await screen.findByRole('progressbar');
+    await deckReady();
     fireEvent.keyDown(window, { key: 't' });
     fireEvent.click(screen.getByRole('button', { name: 'Bốn bước' }));
     fireEvent.keyDown(window, { key: 'ArrowRight' });
@@ -111,7 +121,8 @@ describe('PresentScreen (C21)', () => {
 
   it('remembers the palette picked', async () => {
     start();
-    const picker = await screen.findByRole('combobox', { name: 'Palette' });
+    await deckReady();
+    const picker = screen.getByRole('combobox', { name: 'Palette' });
     fireEvent.change(picker, { target: { value: 'sunset' } });
     expect(document.querySelector('[data-id="present-screen"]')?.getAttribute('data-palette')).toBe('sunset');
     expect(window.localStorage.getItem('kb.present.palette')).toBe('sunset');
@@ -125,7 +136,7 @@ describe('PresentScreen (C21)', () => {
 
   it('records how far this viewing went as it leaves, once', async () => {
     start();
-    await screen.findByRole('progressbar');
+    await deckReady();
     fireEvent.keyDown(window, { key: 'ArrowRight' });
     fireEvent.keyDown(window, { key: 'ArrowRight' });
     fireEvent.keyDown(window, { key: 'ArrowLeft' });
@@ -140,7 +151,7 @@ describe('PresentScreen (C21)', () => {
     const open = vi.fn(() => ({}) as Window);
     vi.stubGlobal('open', open);
     start('/d/dhcp/present#3');
-    await screen.findByRole('progressbar');
+    await deckReady();
     fireEvent.keyDown(window, { key: 'n' });
     expect(open).toHaveBeenCalledWith('/d/dhcp/present?lang=vi&view=speaker#3', 'kb-speaker');
     cleanup();
@@ -157,7 +168,7 @@ describe('PresentScreen (C21)', () => {
 
   it('moves on a tap: the left third goes back, the rest forward', async () => {
     start('/d/dhcp/present#3');
-    await screen.findByRole('progressbar');
+    await deckReady();
     const el = document.querySelector<HTMLElement>('[data-id="present-stage"]');
     if (!el) throw new Error('no stage');
     el.getBoundingClientRect = () => ({ left: 0, top: 0, width: 300, height: 600, right: 300, bottom: 600, x: 0, y: 0, toJSON: () => ({}) });
