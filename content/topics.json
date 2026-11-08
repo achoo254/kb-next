@@ -79,7 +79,7 @@
       "nameEn": "Communication at work",
       "tech": false,
       "brief": "Gợi ý 3 bài: viết email công việc rõ ràng; họp hiệu quả với chương trình và biên bản; góp ý cho đồng nghiệp theo mô hình SBI.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "hoc-cach-hoc-en",
