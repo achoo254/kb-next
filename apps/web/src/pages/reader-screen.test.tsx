@@ -284,6 +284,14 @@ describe('ReaderScreen', () => {
     expect((await screen.findByRole('link', { name: 'Translate with AI' })).getAttribute('href')).toBe('/d/dhcp/translate?to=en');
   });
 
+  it('links each other language of the text to that translation', async () => {
+    serve(() => answer(200, view({ translations: [{ id: 'dhcp', lang: 'vi', aiTranslated: false }, { id: 'dhcp-en', lang: 'en', aiTranslated: false }] })));
+    renderWithI18n(<ReaderScreen id="dhcp" />);
+    const link = await screen.findByRole('link', { name: 'EN version available' });
+    expect(link.getAttribute('href')).toBe('/d/dhcp-en');
+    expect(link.closest('.reader-meta-text')?.textContent).toBe('4 min read · VI · EN version available · updated 3 Nov');
+  });
+
   it('shows a guest the comments and a sign-in button instead of the composer', async () => {
     serve(
       () => answer(200, view()),

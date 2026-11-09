@@ -32,6 +32,7 @@ import { type ReaderLoad, ReaderFailed, ReaderLoading, readerLoadError, sideAsk 
 import './reader-screen.css';
 import { navigate } from '../router/navigation';
 import { ReaderTextSizeControl } from './reader-text-size-control';
+import { documentHref } from './universe-dock';
 
 function useDocument(id: string): { load: ReaderLoad; reload(): Promise<void> } {
   const { locale } = useI18n();
@@ -122,8 +123,7 @@ function TableOfContents({ view, current, onGo }: { view: DocumentView; current:
 function DocumentMeta({ view, present }: { view: DocumentView; present: boolean }): ReactNode {
   const { t, locale } = useReaderText();
   const doc = view.document;
-  const others = view.translations.filter((tr) => tr.lang !== doc.lang).map((tr) => tr.lang.toUpperCase());
-  const meta = [t('reader.minutes', { count: doc.readingMinutes }), doc.lang.toUpperCase(), ...others.map((lang) => t('reader.hasLang', { lang })), t('reader.updated', { date: shortDate(locale, doc.updatedAt) })];
+  const others = view.translations.filter((tr) => tr.lang !== doc.lang);
   return (
     <div className="reader-meta" data-id="reader-meta">
       <OriginTag origin={originOf(doc)} className="reader-origin" />
@@ -137,7 +137,20 @@ function DocumentMeta({ view, present }: { view: DocumentView; present: boolean 
           {t('reader.aiTranslated')}
         </Badge>
       )}
-      <span className="reader-meta-text">{meta.join(' · ')}</span>
+      <span className="reader-meta-text">
+        {t('reader.minutes', { count: doc.readingMinutes })} · {doc.lang.toUpperCase()}
+        {/* each other language opens that translation */}
+        {others.map((tr) => (
+          <Fragment key={tr.id}>
+            {' · '}
+            <a className="reader-meta-lang" href={documentHref(tr.id)} hrefLang={tr.lang} data-id={`reader-lang-${tr.lang}`}>
+              {t('reader.hasLang', { lang: tr.lang.toUpperCase() })}
+            </a>
+          </Fragment>
+        ))}
+        {' · '}
+        {t('reader.updated', { date: shortDate(locale, doc.updatedAt) })}
+      </span>
       <ReaderTextSizeControl />
       {present && <PresentAction id={doc.id} />}
     </div>
