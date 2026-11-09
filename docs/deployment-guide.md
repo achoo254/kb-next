@@ -1,4 +1,4 @@
-# Triển khai KnowFlow (`kb.hoandat.com`)
+# Triển khai Knowledge Base (`kb.hoandat.com`)
 
 Runbook deploy của repo này. Chạy trên production từ 04/11/2026. Quy tắc chung của hệ sinh thái (tên, IdP, brand, box
 `.65` dùng chung): `docs/ecosystem-architecture.md` của workspace `hoandat-app`. Repo public: không ghi IP, cổng SSH
@@ -58,7 +58,7 @@ mục này.
 | `kb-web` (confidential, BFF) | production | `https://kb.hoandat.com/auth/callback` | `https://kb.hoandat.com/auth/backchannel-logout` |
 | `kb-web-dev` (confidential, loopback) | máy dev | `http://localhost:5321/auth/callback` | không (IdP không gọi được máy dev) |
 
-Cả hai đã bật trên IdP (04/11/2026; biến `KB_WEB_*` và `KB_WEB_DEV_*` trong `.env` của IdP, mục "Client của KnowFlow"
+Cả hai đã bật trên IdP (04/11/2026; biến `KB_WEB_*` và `KB_WEB_DEV_*` trong `.env` của IdP, mục "Client của Knowledge Base"
 trong runbook của `auth-next`). Scope `openid profile email`. Khi người dùng đăng xuất ở IdP, IdP gửi logout token (ký
 ES256) tới `/auth/backchannel-logout`; server kiểm chữ ký bằng JWKS của IdP rồi xoá các phiên đăng nhập từ đúng phiên IdP
 đó (`sessions.idp_sid`), hoặc mọi phiên của tài khoản khi token không có `sid`. Route này nằm trước bước kiểm Origin.

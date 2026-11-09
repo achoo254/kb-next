@@ -43,7 +43,7 @@ export interface OfficeEntry {
   conflict: (ServerVersion & { bytes: ArrayBuffer | null }) | null;
 }
 
-/** Share of the browser's quota KnowFlow may use. */
+/** Share of the browser's quota Knowledge Base may use. */
 export const USABLE_SHARE = 0.8;
 /** Share of that past which H04 warns. */
 export const NEAR_SHARE = 0.9;
@@ -198,7 +198,7 @@ export async function resetOfficeStore(): Promise<void> {
 }
 
 export interface StorageStatus {
-  /** Bytes this origin uses, and what KnowFlow may use of the quota; null when the browser does not tell. */
+  /** Bytes this origin uses, and what Knowledge Base may use of the quota; null when the browser does not tell. */
   usage: number | null;
   usable: number | null;
   /** Past NEAR_SHARE of what may be used: H04 warns. */

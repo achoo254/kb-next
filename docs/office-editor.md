@@ -2,8 +2,8 @@
 
 Kết quả spike bước 1 của phase 10, chạy ngày 05/11/2026: dựng ranuts/document, đo dung lượng tải đầu, thử lấy nội dung
 đã sửa từ iframe. Cả hai câu hỏi đều có câu trả lời là **được**: trang cha nạp file bằng bytes và nhận lại bytes của file
-đã sửa qua `postMessage`. Phase đi tiếp được. Chỗ host đã chốt là tên miền riêng (mục Tự host); cách KnowFlow dùng
-editor ở mục Trong KnowFlow.
+đã sửa qua `postMessage`. Phase đi tiếp được. Chỗ host đã chốt là tên miền riêng (mục Tự host); cách Knowledge Base dùng
+editor ở mục Trong Knowledge Base.
 
 ## Phiên bản
 
@@ -39,7 +39,7 @@ pnpm run build          # bin/build.sh → dist/
 
 **Chủ dự án chốt 05/11/2026: editor ở tên miền riêng `kb-office.hoandat.com`, dùng nguyên bản build** (không fork, không
 đặt dưới `/editor/` của kb). Lý do ở mục con dưới; origin của editor là cấu hình `OFFICE_EDITOR_ORIGIN` của server
-(mục Trong KnowFlow).
+(mục Trong Knowledge Base).
 
 ### Vì sao không đặt ở `/editor/` của kb
 
@@ -195,7 +195,7 @@ Cần lo trong phase:
 - Cache của editor nằm ở origin của editor, tính chung hạn mức với bản nháp trong IndexedDB của kb nếu cùng site. Phần
   `navigator.storage.estimate()` của kb không thấy phần đó nếu khác origin; cộng thêm khoảng 100 MB cho editor khi tính.
 
-## Trong KnowFlow
+## Trong Knowledge Base
 
 Phase 10 dùng editor như sau (mã ở [`apps/web/src/pages/office-view.tsx`](../apps/web/src/pages/office-view.tsx),
 [`office-editor-bridge.ts`](../apps/web/src/pages/office-editor-bridge.ts), [`office-store.ts`](../apps/web/src/pages/office-store.ts),

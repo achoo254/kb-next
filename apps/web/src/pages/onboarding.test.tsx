@@ -43,7 +43,7 @@ describe('Onboarding', () => {
   it('walks language, interests and the four tips, then saves the choices', async () => {
     const onDone = vi.fn();
     renderWithI18n(<Onboarding spaces={SPACES} onDone={onDone} />);
-    const dialog = screen.getByRole('dialog', { name: 'Getting started with KnowFlow' });
+    const dialog = screen.getByRole('dialog', { name: 'Getting started with Knowledge Base' });
     expect(dialog.dataset.step).toBe('0');
     expect(screen.getByRole('button', { name: /EN/ }).getAttribute('aria-pressed')).toBe('true');
     expect((screen.getByRole('button', { name: 'Back' }) as HTMLButtonElement).disabled).toBe(true);

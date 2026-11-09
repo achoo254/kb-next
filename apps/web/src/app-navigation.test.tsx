@@ -63,7 +63,7 @@ describe('in-app navigation', () => {
     expect(container.querySelector('.app-shell-rail')).toBe(rail);
     expect(container.querySelector('[data-id="universe-opening"]')).toBeNull();
     expect(sessionChecks).toBe(1);
-    await waitFor(() => expect(document.title).toMatch(/KnowFlow|·/));
+    await waitFor(() => expect(document.title).toMatch(/Knowledge Base|·/));
     expect(container.querySelector('[data-id="route-announcer"]')?.textContent).toBe(document.title);
 
     act(() => window.history.back());

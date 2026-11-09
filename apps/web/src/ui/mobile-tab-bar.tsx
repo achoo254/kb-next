@@ -23,7 +23,7 @@ interface MobileTabBarProps {
 
 /**
  * The bottom pill of the phone boards (Mobile, M02–M06): five tabs in a glass pill with a glowing rim, the "+" raised
- * in the middle. The only bottom dock of KnowFlow, standing in for the lens rail on a phone. Each tab is at least
+ * in the middle. The only bottom dock of Knowledge Base, standing in for the lens rail on a phone. Each tab is at least
  * 52×52 px, past the 44 px touch target.
  */
 export function MobileTabBar({ label, tabs, activeId, className }: MobileTabBarProps): ReactNode {

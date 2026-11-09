@@ -4,7 +4,7 @@ import { apiFetch } from './api-client';
 
 /**
  * The signed-in account as the IdP named it at the latest sign-in; any field may be null. `id`: the account's id in
- * KnowFlow (what this browser's offline Office drafts are kept under).
+ * Knowledge Base (what this browser's offline Office drafts are kept under).
  */
 const SessionUserSchema = z.object({
   id: z.optional(z.string()),

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { PHONE_MAX_WIDTH, TABLET_MAX_WIDTH } from '../ui/breakpoints';
 
 /**
- * The three layouts of KnowFlow, chosen from the window's width (docs/board-frame.md):
+ * The three layouts of Knowledge Base, chosen from the window's width (docs/board-frame.md):
  * - `desktop`: every screen is its 1440×900 board, zoomed to the window (board-zoom.ts);
  * - `tablet`: the Universe (T01) and the reader (T02) have their own 1180×820 board, zoomed the same way; the other
  *   screens keep their desktop board;

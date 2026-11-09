@@ -471,7 +471,7 @@ export function StatesPage(): ReactNode {
     <UniverseBackdrop veil="radial" stars={false} className="x03-page">
       <main className="x03-main" data-screen="X03-StatesCoverage" data-id="screen-X03-StatesCoverage">
         <header>
-          <div className="x03-kicker">KnowFlow · UI states theo review</div>
+          <div className="x03-kicker">Knowledge Base · UI states theo review</div>
           <GradientTitle size={42} className="x03-heading">
             18 trạng thái giao diện
           </GradientTitle>

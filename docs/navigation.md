@@ -1,6 +1,6 @@
 # Chuyển màn trong app (không tải lại trang)
 
-Bấm link giữa các màn của KnowFlow không tải lại trang nữa: địa chỉ đổi bằng History API, app vẽ lại tại chỗ. Bundle,
+Bấm link giữa các màn của Knowledge Base không tải lại trang nữa: địa chỉ đổi bằng History API, app vẽ lại tại chỗ. Bundle,
 phiên đăng nhập, khung app (lens rail, thanh Orbit/Graph/Canvas/Docs, chuông, ⌘K, nền vũ trụ) giữ nguyên; chỉ phần
 nội dung đổi. Mã: [`apps/web/src/router/`](../apps/web/src/router) và `ShellHost` trong
 [`apps/web/src/layout/app-shell.tsx`](../apps/web/src/layout/app-shell.tsx).

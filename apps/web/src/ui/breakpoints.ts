@@ -1,5 +1,5 @@
 /**
- * The window widths where KnowFlow changes layout (layout/device.ts): up to PHONE_MAX_WIDTH a phone, up to
+ * The window widths where Knowledge Base changes layout (layout/device.ts): up to PHONE_MAX_WIDTH a phone, up to
  * TABLET_MAX_WIDTH a tablet, wider a desktop. Kept in the kit so its components (the backdrop's portrait art) and the
  * layout share one value.
  */

@@ -2,7 +2,7 @@
   "name": "kb-next",
   "private": true,
   "type": "module",
-  "description": "KnowFlow: knowledge base công khai song ngữ Anh – Việt của hệ sinh thái hoandat.com",
+  "description": "Knowledge Base: knowledge base công khai song ngữ Anh – Việt của hệ sinh thái hoandat.com",
   "packageManager": "pnpm@11.9.0",
   "engines": {
     "node": ">=22.12"

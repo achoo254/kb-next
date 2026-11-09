@@ -1,8 +1,8 @@
 {
   "$schema": "./node_modules/@achoo254/brand/brand.config.schema.json",
-  "appName": "KnowFlow",
-  "shortName": "KnowFlow",
-  "description": "Knowledge base song ngữ Anh – Việt về đủ mọi chủ đề: tri thức xếp thành một vũ trụ để đọc, tìm và hỏi AI.",
+  "appName": "Knowledge Base",
+  "shortName": "Knowledge",
+  "description": "Kho tri thức song ngữ Anh – Việt về đủ mọi chủ đề: bài viết xếp thành một vũ trụ để đọc, tìm và hỏi AI.",
   "colors": {
     "primary": "#7c3aed",
     "background": "#06041a",

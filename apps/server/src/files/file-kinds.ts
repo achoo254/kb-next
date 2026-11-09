@@ -1,5 +1,5 @@
 /**
- * The five kinds of file KnowFlow stores (docx, xlsx, pptx, pdf, md; decided 04/11/2026): the extension a name must
+ * The five kinds of file Knowledge Base stores (docx, xlsx, pptx, pdf, md; decided 04/11/2026): the extension a name must
  * carry, the MIME type stored for it, and which kinds the Office editor opens. The content itself is checked by
  * sniff.ts: a name only says what the content must turn out to be.
  */
@@ -25,7 +25,7 @@ export function kindOfName(name: string): FileKind | null {
   return match?.[1] ? (EXTENSIONS[match[1].toLowerCase()] ?? null) : null;
 }
 
-/** The kind of a stored MIME type (parameters aside); null for one KnowFlow does not store. */
+/** The kind of a stored MIME type (parameters aside); null for one Knowledge Base does not store. */
 export function kindOfMime(mime: string): FileKind | null {
   const base = mime.split(';')[0]?.trim().toLowerCase() ?? '';
   return FILE_KINDS.find((kind) => MIME_OF[kind].split(';')[0] === base) ?? null;

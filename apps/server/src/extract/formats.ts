@@ -1,5 +1,5 @@
 /**
- * The kinds of file KnowFlow takes (docx, xlsx, pptx, pdf, md; decided 04/11/2026) and how each is read: a PDF page
+ * The kinds of file Knowledge Base takes (docx, xlsx, pptx, pdf, md; decided 04/11/2026) and how each is read: a PDF page
  * by page (text layer or OCR), an Office file through Tika, Markdown as it is.
  */
 

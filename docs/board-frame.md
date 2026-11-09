@@ -1,6 +1,6 @@
 # Khung board: một màn cho mọi cỡ cửa sổ
 
-Mọi màn của KnowFlow dựng theo board của mock ([`design/`](../design)), tọa độ cố định 1440×900. Khung board
+Mọi màn của Knowledge Base dựng theo board của mock ([`design/`](../design)), tọa độ cố định 1440×900. Khung board
 (`.board-frame`, [`apps/web/src/ui/app.css`](../apps/web/src/ui/app.css); hệ số ở
 [`apps/web/src/layout/board-zoom.ts`](../apps/web/src/layout/board-zoom.ts)) cho các màn đó vừa mọi cửa sổ, nên không
 phải sửa từng màn.

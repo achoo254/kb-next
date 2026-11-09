@@ -2,7 +2,7 @@
  * The "Jev phân loại" step of C16: where an uploaded file probably belongs, for its owner to accept or not. One Jev
  * call: a `choice` of Collection among those of the owner's visible Spaces (or none), and one `noul` per candidate
  * tag. Candidate tags come from the text itself: the technical terms it keeps using (acronyms such as DNS, names such
- * as Kubernetes written mid-sentence), since KnowFlow has no tag vocabulary of its own. Runs for everyone on the
+ * as Kubernetes written mid-sentence), since Knowledge Base has no tag vocabulary of its own. Runs for everyone on the
  * server's Jev key; the owner's own AI key is never involved.
  */
 import type { CollectionOption } from '../access/extraction';

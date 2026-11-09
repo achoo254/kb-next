@@ -1,4 +1,4 @@
-# KnowFlow
+# Knowledge Base
 
 Thư mục repo: `kb-next` (tên hiển thị lấy từ [`brand.config.json`](brand.config.json), không có hậu tố `-next`).
 Chạy tại `https://kb.hoandat.com`, thuộc hệ sinh thái hoandat.com.

@@ -1,5 +1,5 @@
 /**
- * The Office editor's offline flow in a real browser (docs/office-editor.md, "Trong KnowFlow"): a docx opened online,
+ * The Office editor's offline flow in a real browser (docs/office-editor.md, "Trong Knowledge Base"): a docx opened online,
  * saved with the connection cut (Playwright's `setOffline`, so `navigator.onLine` and the `online`/`offline` events
  * are the browser's own) stays in IndexedDB and shows on H04 as waiting; once back online it goes up by itself as
  * version 2 and leaves the queue. The editor is a stub on the editor's origin (office-editor-stub.ts). E2E has no

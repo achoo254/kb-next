@@ -165,7 +165,7 @@ export const collections = pgTable(
 );
 
 export const documentType = pgEnum('document_type', ['lab', 'note', 'process', 'office', 'web', 'journey']);
-/** `official`: published by the KnowFlow team, AI-made or not ("Chính thức"); `community`: published by a member;
+/** `official`: published by the Knowledge Base team, AI-made or not ("Chính thức"); `community`: published by a member;
  * `own`: the author's own. Whether a text is an AI translation is `aiTranslated`, not an origin. */
 export const documentOrigin = pgEnum('document_origin', ['official', 'community', 'own']);
 /**

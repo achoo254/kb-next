@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build KnowFlow locally and release it to the shared server (.65), by hand (every push to main also deploys
+# Build Knowledge Base locally and release it to the shared server (.65), by hand (every push to main also deploys
 # through .github/workflows/deploy.yml).
 #
 #   SSH_TARGET=<ssh host alias> [SSH_OPTS="-F <ssh_config>"] bash infra/deploy.sh setup     # first time; unit or nginx change

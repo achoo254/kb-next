@@ -116,7 +116,7 @@ khi trang vốn có lớp chữ nhưng là rác).
 
 Sau khi chia đoạn, một lượt gọi Jev gồm: `choice` chọn Collection trong các Collection của những Space chủ tệp thấy
 được (mọi Space công khai và Space riêng của họ), có lựa chọn "không hợp Collection nào"; và một `noul` cho mỗi thẻ ứng
-viên. KnowFlow chưa có bộ thẻ riêng nên thẻ ứng viên lấy từ chính văn bản: tối đa 8 thuật ngữ lặp từ 2 lần (viết tắt như
+viên. Knowledge Base chưa có bộ thẻ riêng nên thẻ ứng viên lấy từ chính văn bản: tối đa 8 thuật ngữ lặp từ 2 lần (viết tắt như
 DNS, tên riêng viết hoa giữa câu như Kubernetes). Thẻ có `noul` từ 0,5 trở lên được gợi ý.
 
 Kết quả lưu ở `extract_jobs.suggestions` với `status: "pending"` cho tới khi tác giả tài liệu chấp nhận hay bỏ qua trên

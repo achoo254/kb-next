@@ -65,7 +65,7 @@ describe('the share link page', () => {
     const { status, html, res } = await page(token);
     expect(status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/^text\/html/);
-    const title = `${escapeHtml(TRICKY_TITLE)} · KnowFlow`;
+    const title = `${escapeHtml(TRICKY_TITLE)} · Knowledge Base`;
     const url = `${server.origin}/l/${token}`;
     expect(metaContent(html, 'property', 'og:title')).toEqual([title]);
     expect(metaContent(html, 'property', 'og:url')).toEqual([url]);
@@ -79,7 +79,7 @@ describe('the share link page', () => {
     expect(html.split(token).length - 1).toBe(2);
     expect(html).toContain('<div id="root"></div>');
     // English on ?lang=en.
-    expect(metaContent((await page(token, '?lang=en')).html, 'property', 'og:description')[0]).toMatch(/^A text shared on KnowFlow/);
+    expect(metaContent((await page(token, '?lang=en')).html, 'property', 'og:description')[0]).toMatch(/^A text shared on the bilingual English – Vietnamese Knowledge Base/);
   });
 
   it('is no opening: fetching the preview logs nothing', async () => {
@@ -106,7 +106,7 @@ describe('the share link page', () => {
       // The author's own session changes nothing: the preview is what anyone with the link sees.
       const res = await fetch(`${server.origin}/l/${hiddenToken}`, { headers: { cookie: owner } });
       expect(await res.text()).toBe(generic);
-      expect(metaContent(generic, 'property', 'og:title')).toEqual(['KnowFlow · knowledge base song ngữ Anh – Việt']);
+      expect(metaContent(generic, 'property', 'og:title')).toEqual(['Knowledge Base · song ngữ Anh – Việt']);
     } finally {
       await json(await api(server, `/api/moderation/documents/${DHCP}`, { method: 'PATCH', cookie: admin, body: JSON.stringify({ hidden: false }) }));
     }

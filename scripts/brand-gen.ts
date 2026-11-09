@@ -1,6 +1,6 @@
 /**
  * `pnpm brand:gen`: everything the platforms show of the brand, derived from the vector app icon
- * (brand/app-icon.svg, the KnowFlow mark of the approved Universe mock) and brand.config.json, with the Chromium of
+ * (brand/app-icon.svg, the Knowledge Base mark of the approved Universe mock) and brand.config.json, with the Chromium of
  * @playwright/test:
  *
  * - brand/generated/: web manifest, PNG icons (192, 512, maskable, Apple touch) and favicon.ico (writeBrandFiles);

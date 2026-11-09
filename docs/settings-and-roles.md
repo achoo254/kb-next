@@ -97,7 +97,7 @@ không phân biệt hoa thường; tối đa 5 lần mỗi phút), làm trong m�
 
 Link chia sẻ, token API và link mời người đó tạo bị thu hồi. Dòng tài khoản ở lại như bia mộ không tên (`deletedAt`,
 `sub` đổi thành `deleted:<id>`) để bài giữ lại vẫn có tác giả; cùng tài khoản hoandat đăng nhập lại sẽ có tài khoản
-KnowFlow mới, trống.
+Knowledge Base mới, trống.
 
 ## Giới hạn đã biết
 

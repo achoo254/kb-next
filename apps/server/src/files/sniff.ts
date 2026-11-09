@@ -17,7 +17,7 @@ const ZIP_CENTRAL = 0x02014b50;
 const OLE_MAGIC = Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
 /** End-of-central-directory record (22 bytes) plus the longest zip comment. */
 const ZIP_TAIL = 22 + 0xffff;
-/** A central directory this large is no Office file KnowFlow takes (25 MB files have a few hundred parts). */
+/** A central directory this large is no Office file Knowledge Base takes (25 MB files have a few hundred parts). */
 const MAX_CENTRAL_BYTES = 4 * 1024 * 1024;
 const TEXT_CHUNK = 64 * 1024;
 
@@ -85,7 +85,7 @@ async function isPlainText(file: Handle, size: number): Promise<boolean> {
   return true;
 }
 
-/** What the file at `filePath` (of `size` bytes) is; null when it is none of the kinds KnowFlow takes. */
+/** What the file at `filePath` (of `size` bytes) is; null when it is none of the kinds Knowledge Base takes. */
 export async function sniffFile(filePath: string, size: number): Promise<Sniffed> {
   const file = await open(filePath, 'r');
   try {

@@ -46,7 +46,7 @@ const UPDATED = { vi: 'Cập nhật ngày 05/11/2026', en: 'Last updated 5 Novem
 const PRIVACY_VI: LegalDoc = {
   title: 'Quyền riêng tư',
   updated: UPDATED.vi,
-  intro: `{app} (${host}) là knowledge base song ngữ Anh – Việt của hệ sinh thái ${account}, do một nhà phát triển độc lập vận hành. Trang này nói rõ app giữ gì, gửi gì đi đâu, giữ bao lâu và cách bạn xoá dữ liệu của mình.`,
+  intro: `{app} (${host}) là kho tri thức song ngữ Anh – Việt của hệ sinh thái ${account}, do một nhà phát triển độc lập vận hành. Trang này nói rõ app giữ gì, gửi gì đi đâu, giữ bao lâu và cách bạn xoá dữ liệu của mình.`,
   sections: [
     {
       id: 'account',
@@ -176,7 +176,7 @@ const PRIVACY_VI: LegalDoc = {
 const PRIVACY_EN: LegalDoc = {
   title: 'Privacy',
   updated: UPDATED.en,
-  intro: `{app} (${host}) is a bilingual English – Vietnamese knowledge base of the ${account} ecosystem, run by an independent developer. This page says what the app keeps, what it sends where, for how long, and how you delete your data.`,
+  intro: `{app} (${host}) is a bilingual English – Vietnamese library of the ${account} ecosystem, run by an independent developer. This page says what the app keeps, what it sends where, for how long, and how you delete your data.`,
   sections: [
     {
       id: 'account',
@@ -306,7 +306,7 @@ const PRIVACY_EN: LegalDoc = {
 const TERMS_VI: LegalDoc = {
   title: 'Điều khoản sử dụng',
   updated: UPDATED.vi,
-  intro: `{app} (${host}) là knowledge base miễn phí, không quảng cáo. Dùng app nghĩa là bạn đồng ý với các điều dưới đây và với cách app xử lý dữ liệu ở trang Quyền riêng tư.`,
+  intro: `{app} (${host}) là kho tri thức miễn phí, không quảng cáo. Dùng app nghĩa là bạn đồng ý với các điều dưới đây và với cách app xử lý dữ liệu ở trang Quyền riêng tư.`,
   sections: [
     {
       id: 'account',
@@ -366,7 +366,7 @@ const TERMS_VI: LegalDoc = {
 const TERMS_EN: LegalDoc = {
   title: 'Terms of use',
   updated: UPDATED.en,
-  intro: `{app} (${host}) is a free knowledge base with no ads. By using it you agree to the terms below and to how the app handles data as the Privacy page describes.`,
+  intro: `{app} (${host}) is a free library with no ads. By using it you agree to the terms below and to how the app handles data as the Privacy page describes.`,
   sections: [
     {
       id: 'account',

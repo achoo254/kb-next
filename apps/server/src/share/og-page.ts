@@ -38,8 +38,8 @@ export const PAGE_PERMISSIONS = 'camera=(), microphone=(), geolocation=()';
 type PreviewLocale = 'vi' | 'en';
 
 const PREVIEW_TEXT: Record<PreviewLocale, { title: (doc: string) => string; description: string }> = {
-  vi: { title: (doc) => `${doc} · ${brandConfig.appName}`, description: `Một bài được chia sẻ trên ${brandConfig.appName} · knowledge base song ngữ Anh – Việt` },
-  en: { title: (doc) => `${doc} · ${brandConfig.appName}`, description: `A text shared on ${brandConfig.appName} · a bilingual English – Vietnamese knowledge base` },
+  vi: { title: (doc) => `${doc} · ${brandConfig.appName}`, description: `Một bài được chia sẻ trên ${brandConfig.appName} song ngữ Anh – Việt` },
+  en: { title: (doc) => `${doc} · ${brandConfig.appName}`, description: `A text shared on the bilingual English – Vietnamese ${brandConfig.appName}` },
 };
 
 const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };

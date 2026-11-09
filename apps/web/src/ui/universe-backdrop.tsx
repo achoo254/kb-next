@@ -19,7 +19,7 @@ export const STARS: readonly Star[] = Array.from({ length: 46 }, (_, j) => ({
   delay: (j % 8) * 0.4,
 }));
 
-/** Art in apps/web/public/art (AI-drawn for KnowFlow, see CREDITS.md). */
+/** Art in apps/web/public/art (AI-drawn for Knowledge Base, see CREDITS.md). */
 export const BACKDROP_ART = {
   dark: '/art/bg-universe-dark.webp',
   light: '/art/bg-universe-light.webp',

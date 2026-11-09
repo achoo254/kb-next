@@ -70,7 +70,7 @@ describe('the privacy page', () => {
   it('fills in the brand words and leaves no placeholder', () => {
     renderWithI18n(<LegalPage kind="privacy" />);
     const text = document.body.textContent ?? '';
-    expect(text).toContain('KnowFlow (kb.hoandat.com)');
+    expect(text).toContain('Knowledge Base (kb.hoandat.com)');
     expect(text).not.toMatch(/\{\w+\}/);
   });
 
@@ -118,7 +118,7 @@ describe('the privacy page', () => {
     meta.content = 'the app';
     document.head.append(meta);
     const { unmount } = renderWithI18n(<LegalPage kind="privacy" />);
-    expect(meta.content).toMatch(/^KnowFlow \(kb\.hoandat\.com\) is a bilingual/);
+    expect(meta.content).toMatch(/^Knowledge Base \(kb\.hoandat\.com\) is a bilingual/);
     act(() => unmount());
     expect(meta.content).toBe('the app');
   });

@@ -150,7 +150,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   { board: 'F03-Keys', path: '/settings/keys', signedIn: true, status: 'built', mocks: ['keys-f03'], clock: F03_CLOCK },
   { board: 'F04-Translate', path: `/d/${F04_DOCUMENT_ID}/translate`, signedIn: true, status: 'built', mocks: ['translate-f04'] },
   // Copilot (C14) asked from the DHCP text about the Space, its answer finished; its eight states (F02) side by side.
-  { board: 'C14-Copilot', path: C14_PATH, signedIn: true, status: 'built', mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },
+  // maxDiff: the app's name (Knowledge Base) is longer than the board's KnowFlow, docs/mock-deviations.md.
+  { board: 'C14-Copilot', path: C14_PATH, signedIn: true, status: 'built', maxDiff: 0.035, mocks: ['copilot-c14'], clock: F03_CLOCK, waitFor: '[data-id="copilot-screen"][data-state="done"]' },
   // The Graph of Networking from the seed's documents and links, DHCP picked (its neighbours lit, the panel open).
   // maxDiff: d3-force places the real graph's nodes, not the board's hand-placed 20; docs/mock-deviations.md.
   {
@@ -196,7 +197,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // signed out (H02).
   // maxDiff: no review gate since 07/11/2026 (docs/mock-deviations.md).
   { board: 'C04-Publish', path: `/d/${PUBLISH_DOCUMENT_ID}/publish`, signedIn: true, status: 'built', maxDiff: 0.045, mocks: ['publish-c04'], waitFor: '[data-id="publish-card"]' },
-  { board: 'C05-Preview', path: `/d/${PUBLISH_DOCUMENT_ID}/preview`, signedIn: true, status: 'built', mocks: ['publish-c04'], waitFor: '[data-id="preview-stage"]' },
+  // maxDiff: the app's name (Knowledge Base) is longer than the board's KnowFlow, docs/mock-deviations.md.
+  { board: 'C05-Preview', path: `/d/${PUBLISH_DOCUMENT_ID}/preview`, signedIn: true, status: 'built', maxDiff: 0.035, mocks: ['publish-c04'], waitFor: '[data-id="preview-stage"]' },
   // maxDiff: the people's orbs are deeper than the board's so their white initials read AA; docs/mock-deviations.md.
   { board: 'C18-Share', path: `/d/${C13_DHCP_ID}/share`, signedIn: true, status: 'built', maxDiff: 0.035, mocks: ['share-c18'], clock: C18_CLOCK, waitFor: '[data-id="share-history"]' },
   // maxDiff: the sections are a list of full names, not the board's row of chips; docs/mock-deviations.md.
@@ -227,6 +229,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
     path: `/journey/${JOURNEY_ID}/edit`,
     signedIn: true,
     status: 'built',
+    // maxDiff: the app's name (Knowledge Base) is longer than the board's KnowFlow, docs/mock-deviations.md.
+    maxDiff: 0.035,
     mocks: ['journey-c07'],
     click: '[aria-label="Chọn bước 2"]',
     waitFor: '[data-id="journey-jev"][data-state="ready"] ~ [data-id="journey-pool"][data-state="ready"]',
@@ -240,7 +244,8 @@ export const PARITY_SCREENS: readonly ParityScreen[] = [
   // Boards that show every state of a screen side by side, built from the screens' own components.
   { board: 'S02-Login', path: '/dev/kit/sign-in', signedIn: false, status: 'built' },
   { board: 'X02-Errors', path: '/dev/kit/errors', signedIn: false, status: 'built' },
-  { board: 'F02-CopilotStates', path: '/dev/kit/copilot-states', signedIn: false, status: 'built' },
+  // maxDiff: the app's name (Knowledge Base) is longer than the board's KnowFlow, docs/mock-deviations.md.
+  { board: 'F02-CopilotStates', path: '/dev/kit/copilot-states', signedIn: false, status: 'built', maxDiff: 0.035 },
   // The documentation boards.
   { board: 'Z01-Sitemap', path: '/dev/kit/sitemap', signedIn: false, status: 'built' },
   { board: 'Z02-Spatial3D', path: '/dev/kit/spatial', signedIn: false, status: 'built' },

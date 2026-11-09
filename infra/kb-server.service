@@ -1,6 +1,6 @@
 # .65: /etc/systemd/system/kb-server.service (installed by infra/deploy.sh setup).
 [Unit]
-Description=KnowFlow API (kb.hoandat.com)
+Description=Knowledge Base API (kb.hoandat.com)
 After=network-online.target postgresql.service
 Wants=network-online.target postgresql.service
 

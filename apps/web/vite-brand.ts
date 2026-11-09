@@ -93,7 +93,7 @@ export function renderIndexHtml(html: string, brand: KbBrand): string {
     `<link rel="canonical" href="${origin}/" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="${escapeHtml(brand.appName)}" />`,
-    `<meta property="og:title" content="${escapeHtml(brand.appName)} · knowledge base song ngữ Anh – Việt" />`,
+    `<meta property="og:title" content="${escapeHtml(brand.appName)} · song ngữ Anh – Việt" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:url" content="${origin}/" />`,
     `<meta property="og:locale" content="vi_VN" />`,

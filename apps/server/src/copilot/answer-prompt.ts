@@ -37,11 +37,11 @@ function taskLine(task: CopilotTask, hasQuestion: boolean, answerLanguage: Answe
   const language = `Write the whole answer in ${name}, the language of the ${hasQuestion ? 'question' : 'selected passage'}, even where the sources are in another language (translate what you take from them).`;
   switch (task) {
     case 'answer':
-      return `You are KnowFlow Copilot, answering a question from a knowledge base. ${language}`;
+      return `You are the Copilot of a knowledge base, answering a question from it. ${language}`;
     case 'explain':
-      return `You are KnowFlow Copilot. Explain the selected passage simply, for a learner, in a few sentences${hasQuestion ? ', with the question in mind' : ''}. ${language}`;
+      return `You are the Copilot of a knowledge base. Explain the selected passage simply, for a learner, in a few sentences${hasQuestion ? ', with the question in mind' : ''}. ${language}`;
     case 'summarize':
-      return `You are KnowFlow Copilot. Summarize the selected passage in two to four sentences${hasQuestion ? ', with the question in mind' : ''}. ${language}`;
+      return `You are the Copilot of a knowledge base. Summarize the selected passage in two to four sentences${hasQuestion ? ', with the question in mind' : ''}. ${language}`;
   }
 }
 
