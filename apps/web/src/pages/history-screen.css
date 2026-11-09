@@ -466,11 +466,76 @@
   cursor: pointer;
 }
 
+/* The dialog that shows an old version: wide enough to read, with the text left-aligned (the confirm dialog it is
+   built on centres everything). */
+.kf-dialog.history-version-dialog[data-size="lg"] {
+  width: min(640px, 90vw);
+  align-items: stretch;
+  text-align: left;
+}
+
+.kf-dialog.history-version-dialog .kf-dialog-title {
+  text-align: center;
+}
+
+.kf-dialog.history-version-dialog .kf-dialog-actions {
+  justify-content: center;
+}
+
+/* Fixed to the dialog's width (a flex item centred in a column would otherwise size itself to the Markdown and
+   spill out of the dialog); long words and wide blocks wrap or scroll inside it. */
 .history-version-text {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
   max-height: 420px;
-  overflow-y: auto;
+  overflow: auto;
+  overflow-wrap: anywhere;
   font-size: 14px;
   line-height: 1.6;
+}
+
+.history-version-text :is(h1, h2, h3, h4) {
+  margin: 16px 0 8px;
+  font-family: var(--font-display);
+  line-height: 1.3;
+}
+
+.history-version-text h1 {
+  font-size: 20px;
+}
+
+.history-version-text h2 {
+  font-size: 17px;
+}
+
+.history-version-text :is(h3, h4) {
+  font-size: 15px;
+}
+
+.history-version-text p {
+  margin: 0 0 10px;
+}
+
+.history-version-text :is(ul, ol) {
+  margin: 0 0 10px;
+  padding-left: 22px;
+}
+
+.history-version-text :is(img, video) {
+  max-width: 100%;
+  height: auto;
+}
+
+.history-version-text pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.history-version-text table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .history-toast {

@@ -320,6 +320,7 @@ function Comparison({ id, history, pair, onRestored }: { id: string; history: Do
           onClose={() => setViewing(null)}
           title={viewing.text !== 'loading' && viewing.text !== 'failed' ? t('history.versionTitle', { version: viewing.version, time: eventTime(locale, viewing.text.savedAt) }) : t('history.view', { version: viewing.version })}
           dataId="history-version"
+          className="history-version-dialog"
           actions={
             <Button variant="glass" onClick={() => setViewing(null)}>
               {t('history.close')}
