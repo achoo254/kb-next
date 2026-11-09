@@ -42,7 +42,7 @@ function PanelIntro({ spaces, recent, question, onAsk }: Omit<UniversePanelProps
   const { t, locale } = useI18n();
   const documents = spaces.reduce((sum, space) => sum + space.documentCount, 0);
   return (
-    <>
+    <div className="universe-ai-body" data-id="universe-ai-intro">
       {question && (
         <button type="button" className="universe-ai-question" onClick={() => onAsk(question)} data-id="universe-ai-question">
           <ChatBubble from="user">{question}</ChatBubble>
@@ -66,7 +66,7 @@ function PanelIntro({ spaces, recent, question, onAsk }: Omit<UniversePanelProps
         <SourceRow key={doc.id} title={doc.title} meta={documentMeta(doc, t, locale)} tag={doc.lang.toUpperCase()} href={documentHref(doc.id)} dataId={`universe-source-${doc.id}`} />
       ))}
       <div className="universe-ai-fill" />
-    </>
+    </div>
   );
 }
 
@@ -76,7 +76,7 @@ function PanelThread({ turn, copilot }: { turn: CopilotTurn; copilot: Copilot })
   const { load: keys, switchTo } = useAiKeys();
   const sources = turn.sources.filter((source) => source.available !== false);
   return (
-    <div className="universe-ai-thread" data-id="universe-ai-thread" data-state={turn.failure ?? turn.stage}>
+    <div className="universe-ai-body universe-ai-thread" data-id="universe-ai-thread" data-state={turn.failure ?? turn.stage}>
       <TurnView turn={turn} keys={keys} actions={{ onStop: copilot.stop, onRetry: copilot.retry, onCancel: copilot.cancel, onSwitch: switchTo }} size="compact" />
       {turn.stage === 'done' && sources.length > 0 && (
         <>

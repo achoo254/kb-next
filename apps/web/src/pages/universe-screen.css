@@ -150,7 +150,7 @@
   gap: 12px;
 }
 
-/* As on the board, the question field sits under the last source: when the panel is full it hangs below its rim. */
+/* The question field stays at the panel's foot, inside its rim. */
 .universe-ai > .kf-ask {
   flex: none;
 }
@@ -190,8 +190,9 @@
   cursor: pointer;
 }
 
-/* the question asked in the panel and its answer (copilot-turn.tsx), scrolling inside the panel */
-.universe-ai-thread {
+/* What sits between the head and the question field (the intro, or the question and its answer from copilot-turn.tsx)
+   scrolls inside the panel, so twelve Spaces and long titles never push past the rim. */
+.universe-ai-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -203,8 +204,12 @@
   scrollbar-color: color-mix(in srgb, var(--violet-400) 35%, transparent) transparent;
 }
 
-.universe-ai-thread > * {
+.universe-ai-body > * {
   flex: none;
+}
+
+.universe-ai-body > .universe-ai-fill {
+  flex: 1;
 }
 
 .universe-ai-thread .copilot-actions {

@@ -106,7 +106,8 @@ export const MAX_DIFF_RATIO = 0.03;
 const SEED_CLOCK = '2026-11-03T14:05:00.000Z';
 
 export const PARITY_SCREENS: readonly ParityScreen[] = [
-  { board: 'C09-Universe', path: '/u', signedIn: true, status: 'built', maxDiff: 0.035, mocks: ['onboarded'], clock: UNIVERSE_CLOCK },
+  // maxDiff: the AI panel's question field stays inside its rim (the board hangs it below), docs/mock-deviations.md.
+  { board: 'C09-Universe', path: '/u', signedIn: true, status: 'built', maxDiff: 0.045, mocks: ['onboarded'], clock: UNIVERSE_CLOCK },
   // The Universe loading past 1.5 s (the "Thử lại" chip shows), and a Universe with nothing to read yet (S05 shows
   // only then: a reader without a Space of their own gets C09, docs/mock-deviations.md).
   { board: 'S04-OrbitSkeleton', path: '/u', signedIn: true, status: 'built', mocks: ['onboarded', 'spaces-pending'], waitFor: '[data-id="universe-slow"]' },

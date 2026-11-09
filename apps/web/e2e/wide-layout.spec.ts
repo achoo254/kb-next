@@ -69,3 +69,10 @@ test('C09-Universe fits a 1440×840 laptop window without scrolling', async ({ p
   // the board's 20px gutter, zoomed to 840/900
   expect(Math.abs(width - (panel.x + panel.width) - 20 * (840 / 900))).toBeLessThanOrEqual(1);
 });
+
+test('C09-Universe keeps its question field inside the AI panel', async ({ page }) => {
+  const { panel } = await openUniverse(page, { width: 1440, height: 900 });
+  const field = await page.locator('[data-id="universe-ai"] > .kf-ask').boundingBox();
+  if (!field) throw new Error('the question field is not rendered');
+  expect(field.y + field.height).toBeLessThanOrEqual(panel.y + panel.height);
+});
