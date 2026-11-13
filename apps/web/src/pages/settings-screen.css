@@ -545,7 +545,7 @@
   font-size: 15px;
 }
 
-/* Not on the board: deleting one's data, quiet under the station, away from the everyday controls. */
+/* Not on the board: the way to delete the account (at the IdP), quiet under the station, away from everyday controls. */
 .h03-delete {
   position: absolute;
   left: 600px;
@@ -555,15 +555,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  border: none;
-  background: none;
   color: var(--c-danger-text);
   font: 600 12px var(--font-sans);
-  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
 }
 
-/* Not on the board: the legal links, quiet under "Xoá dữ liệu của tôi". */
+/* Not on the board: the legal links, quiet under the account deletion line. */
 .legal-links.h03-legal {
   position: absolute;
   left: 600px;
@@ -583,61 +581,3 @@
   transform: translateX(-50%);
 }
 
-.h03-delete-list {
-  margin: 0;
-  display: grid;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--c-text);
-}
-
-.h03-delete-list dt {
-  font-weight: 700;
-}
-
-.h03-delete-list dd {
-  margin: 0 0 6px;
-  color: var(--c-text-muted);
-}
-
-.h03-delete-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.h03-delete-check input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--c-danger);
-}
-
-.h03-delete-type {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.h03-delete-input {
-  height: 44px;
-  padding: 0 12px;
-  box-sizing: border-box;
-  border-radius: 14px;
-  border: 1px solid var(--c-border);
-  background: var(--c-surface-solid);
-  color: var(--c-text);
-  font: 600 14px var(--font-sans);
-  letter-spacing: 1px;
-}
-
-.h03-delete-error {
-  font-size: 13px;
-  color: var(--c-danger-text);
-}
-
-.h03-delete-done {
-  font-size: 13px;
-  color: var(--c-success-text);
-}

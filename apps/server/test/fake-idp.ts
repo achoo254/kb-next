@@ -2,7 +2,7 @@
  * Test-only stand-in for auth-next: discovery, an authorize endpoint that consents at once, a token endpoint
  * that checks client_secret_basic, the redirect URI and PKCE before returning an ID token (with the IdP session
  * `sid`) and an access token, a userinfo endpoint that answers for those access tokens, its signing keys (JWKS),
- * and back-channel logout tokens signed with them. Used by the server tests and the Playwright E2E; the app itself
+ * back-channel logout tokens and account-deletion SETs (auth-next ADR 0018) signed with them. Used by the server tests and the Playwright E2E; the app itself
  * always talks to the real IdP's endpoints.
  */
 import { createHash, generateKeyPairSync, randomBytes, randomUUID, sign } from 'node:crypto';
@@ -43,6 +43,11 @@ export interface FakeIdp {
    * published). `claims` adds or overrides claims (`sid`, `sub`, `iat`…).
    */
   logoutToken(claims: Record<string, unknown>, how?: 'valid' | 'stranger'): string;
+  /**
+   * The SET the IdP posts when `sub`'s account is deleted, for the receiver `audience` (`stranger`: signed with a key
+   * the IdP never published). `claims` adds or overrides claims (`aud`, `exp`, `events`…), `typ` the header's.
+   */
+  accountDeletedToken(sub: string, audience: string, options?: { claims?: Record<string, unknown>; how?: 'valid' | 'stranger'; typ?: string }): string;
   close(): Promise<void>;
 }
 
@@ -197,6 +202,11 @@ export async function startFakeIdp(options: FakeIdpOptions): Promise<FakeIdp> {
       const now = Math.floor(Date.now() / 1000);
       const events = { 'http://schemas.openid.net/event/backchannel-logout': {} };
       return signJws({ iss: issuer, aud: options.clientId, iat: now, exp: now + 120, jti: randomUUID(), events, ...claims }, how, 'logout+jwt');
+    },
+    accountDeletedToken: (deleted, audience, { claims = {}, how = 'valid', typ = 'secevent+jwt' } = {}) => {
+      const now = Math.floor(Date.now() / 1000);
+      const events = { 'urn:hoandat:auth:event:account.deleted': {} };
+      return signJws({ iss: issuer, aud: audience, sub: deleted, iat: now, exp: now + 600, jti: randomUUID(), toe: now, events, ...claims }, how, typ);
     },
     close: () => new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve()))),
   };

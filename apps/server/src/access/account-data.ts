@@ -1,19 +1,21 @@
 /**
- * "Xoá dữ liệu của tôi" (H03): an account deletes what it owns, in one transaction.
+ * Deleting an account's data, in one transaction, when the account is deleted at the IdP (auth-next ADR 0018: the
+ * only place an account is deleted; auth/account-deleted.ts receives the notice).
  *
  * Deleted for good:
  * - its non-official texts that are not published (drafts, private, and those left from the review gate) or are in
- *   the trash (published or not), every text of its personal Spaces, and those Spaces; with `removePublished`, its
- *   published community texts too;
+ *   the trash (published or not), every text of its personal Spaces, and those Spaces;
  * - its stored files no remaining text uses (their disk names come back for the caller to unlink);
  * - its own AI keys and the choice of key, Copilot history, reading and journey progress, favourites, notifications,
  *   canvases, comments, and the record of which share links it opened;
  * - every session (it is signed out everywhere).
  * Revoked: the share links, admin tokens and invite links it made (they act as it).
- * Kept: official texts outside its personal Spaces, whatever their step (they belong to the workspace), its published community texts unless it asked otherwise, the
- * review decisions and versions it wrote on texts that remain, and the audit trail. The account row stays as a
- * nameless tombstone (`deletedAt`, its IdP sub replaced, no name, email or picture) so those keep an author; the same
- * hoandat account signing in later starts a fresh, empty account.
+ * Kept: official texts outside its personal Spaces, whatever their step (they belong to the workspace), its published
+ * community texts (public articles others read and link to, now by "Tài khoản đã xoá"), the review decisions and
+ * versions it wrote on texts that remain, and the audit trail. The account row stays as a nameless tombstone
+ * (`deletedAt`, its IdP sub replaced, no name, email or picture) so those keep an author.
+ * Nothing here has a co-owner to hand over to: a personal Space has its owner only, a public Space no owner, and the
+ * workspace's admins are a role, not an ownership.
  */
 import { and, count, eq, inArray, isNotNull, isNull, ne, notExists, or } from 'drizzle-orm';
 import type { Db } from '../db/client';
@@ -41,11 +43,6 @@ import {
 import { AUDIT_ACTIONS, recordAudit } from '../workspace/audit';
 import { deleteDocumentsWhere } from './authoring';
 
-export interface DeleteDataOptions {
-  /** Delete its published community texts as well (default: keep them, by a deleted account). */
-  removePublished: boolean;
-}
-
 export type DeleteDataResult =
   | {
       kind: 'deleted';
@@ -63,7 +60,7 @@ export function tombstoneSub(userId: string): string {
   return `deleted:${userId}`;
 }
 
-export async function deleteAccountData(db: Db, userId: string, options: DeleteDataOptions, now: Date): Promise<DeleteDataResult> {
+export async function deleteAccountData(db: Db, userId: string, now: Date): Promise<DeleteDataResult> {
   return db.transaction(async (tx): Promise<DeleteDataResult> => {
     const [account] = await tx
       .select({ id: users.id })
@@ -73,13 +70,9 @@ export async function deleteAccountData(db: Db, userId: string, options: DeleteD
     if (!account) return { kind: 'not-found' };
 
     const personalSpaces = tx.select({ id: spaces.id }).from(spaces).where(eq(spaces.ownerId, userId));
-    // Official texts belong to the workspace whatever their step; of the others go the unpublished ones, every one in
-    // the trash (published or not), and the published ones when asked.
-    const own = and(
-      eq(documents.authorId, userId),
-      ne(documents.origin, 'official'),
-      or(ne(documents.status, 'approved'), isNotNull(documents.deletedAt), options.removePublished ? eq(documents.status, 'approved') : undefined),
-    );
+    // Official texts belong to the workspace whatever their step; of the others go the unpublished ones and every one
+    // in the trash (published or not).
+    const own = and(eq(documents.authorId, userId), ne(documents.origin, 'official'), or(ne(documents.status, 'approved'), isNotNull(documents.deletedAt)));
     const purged = await deleteDocumentsWhere(tx, or(own, inArray(documents.spaceId, personalSpaces)));
 
     // Its files no remaining text or version uses (an upload never attached, or one whose text just went).
@@ -150,7 +143,7 @@ export async function deleteAccountData(db: Db, userId: string, options: DeleteD
         action: AUDIT_ACTIONS.dataDeleted,
         targetType: 'user',
         targetId: userId,
-        detail: { documents: purged.documentIds.length, keptPublished, removePublished: options.removePublished },
+        detail: { documents: purged.documentIds.length, keptPublished },
       },
       now,
     );

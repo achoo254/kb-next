@@ -20,6 +20,7 @@ import { notificationRoutes } from './api/notification-routes';
 import { reviewRoutes } from './api/review-routes';
 import { workspaceRoutes } from './api/workspace-routes';
 import { authRoutes } from './auth/auth-routes';
+import { accountDeletedRoute } from './auth/account-deleted';
 import { backchannelLogoutRoute } from './auth/backchannel-logout';
 import { type IdpMetadata, idpMetadata } from './auth/idp-metadata';
 import { requireSameOrigin } from './auth/origin-check';
@@ -79,8 +80,8 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
 }
 
 /**
- * The API: health check, sign-in with the hoandat.com account and the IdP's back-channel logout, the account
- * (/api/me), the reading API (Spaces, documents, recent), writing (documents, versions, trash, favourites, Spaces and
+ * The API: health check, sign-in with the hoandat.com account, the IdP's back-channel logout and account deletion
+ * notice, the account (/api/me), the reading API (Spaces, documents, recent), writing (documents, versions, trash, favourites, Spaces and
  * Collections), stored files (upload, download, Office editor saves, the Import Center), the Graph and Canvas, knowledge
  * journeys (builder and run), search,
  * the account's own AI keys, the Copilot, AI translation and AI writing
@@ -124,6 +125,8 @@ export function createApp({
 
   // The IdP calls this server to server, without an Origin: ahead of the same-origin check, proven by its signature.
   app.use(backchannelLogoutRoute({ config, db, idp, now }));
+  // An account deleted at the IdP (its only deletion): the IdP's signed notice, server to server as well.
+  app.use(accountDeletedRoute({ config, db, idp, now, sync: search?.sync ?? null }));
 
   // The admin API authenticates by token, not by the session cookie: called from other servers, without an Origin.
   app.use(adminApiRoutes({ config, db, now, sync: search?.sync ?? null }));
@@ -137,7 +140,7 @@ export function createApp({
   app.use('/api/write', express.json({ limit: WRITE_BODY_LIMIT }));
   app.use(express.json({ limit: '32kb' }));
   app.use(authRoutes({ config, db, idp, now }));
-  app.use(meRoutes({ config, db, now, sync: search?.sync ?? null }));
+  app.use(meRoutes({ config, db, now }));
   app.use(contentRoutes({ config, db, now, captions: new SpaceCaptions(db, jev, now) }));
   app.use(presentRoutes({ config, db, now }));
   app.use(activityRoutes({ config, db, now }));

@@ -63,6 +63,12 @@ trong runbook của `auth-next`). Scope `openid profile email`. Khi người dù
 ES256) tới `/auth/backchannel-logout`; server kiểm chữ ký bằng JWKS của IdP rồi xoá các phiên đăng nhập từ đúng phiên IdP
 đó (`sessions.idp_sid`), hoặc mọi phiên của tài khoản khi token không có `sid`. Route này nằm trước bước kiểm Origin.
 
+Xoá tài khoản chỉ làm ở IdP (ADR 0018 của auth-next). IdP gửi SET ký ES256 tới
+`https://kb.hoandat.com/api/idp/account-deleted`; URL này phải có trong `ACCOUNT_DELETED_URLS` của `.env` IdP, và phải
+đúng từng ký tự với `PUBLIC_URL` + `/api/idp/account-deleted` vì server so `aud` với nó. nginx chuyển sẵn qua
+`location ~ ^/(api|auth)/` (SET nhỏ hơn `client_max_body_size 48k`), không cần sửa cấu hình. Chi tiết kiểm và mã trả lời:
+[`settings-and-roles.md`](settings-and-roles.md#xoá-tài-khoản-adr-0018-của-auth-next).
+
 ## API nội bộ
 
 Cho các dịch vụ khác trên cùng `.65` (Tiểu Đệ đọc chi phí Jev của kb mỗi ngày để ghi vào sổ chi phí hệ sinh thái).

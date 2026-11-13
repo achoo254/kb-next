@@ -294,11 +294,6 @@ export async function clearSyncedCopies(userId: string): Promise<number> {
   return cleared;
 }
 
-/** Drops every record of the account, drafts included: its data was deleted on the server (H03). */
-export async function forgetAccountFiles(userId: string): Promise<void> {
-  for (const entry of await listEntries(userId)) await mutate(entry.key, () => 'delete');
-}
-
 export interface ServerCopy {
   userId: string;
   documentId: string;

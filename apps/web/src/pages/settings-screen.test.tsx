@@ -20,7 +20,6 @@ const SESSION: SessionState = { status: 'ready', signedIn: true, signInAvailable
 type Role = 'admin' | 'member';
 let role: Role;
 let failSave: boolean;
-let failDelete: boolean;
 let calls: Array<{ method: string; url: string; body: unknown }>;
 
 const me = (): Record<string, unknown> => ({
@@ -44,7 +43,6 @@ beforeEach(async () => {
   delete document.documentElement.dataset.motion;
   role = 'admin';
   failSave = false;
-  failDelete = false;
   calls = [];
   await resetOfficeStore();
   indexedDB.deleteDatabase('kb-office');
@@ -58,7 +56,6 @@ beforeEach(async () => {
       if (url === '/api/me' && method === 'GET') return answer(200, me());
       if (url === '/api/me' && method === 'PATCH') return failSave ? answer(500, { error: 'internal' }) : answer(200, { ...me(), ...(body as object) });
       if (url === '/api/me/keys') return answer(200, KEYS_OPENAI);
-      if (url === '/api/me/delete-data') return failDelete ? answer(500, { error: 'internal' }) : answer(200, { deletedDocuments: 4, keptPublished: 2 });
       if (url === '/auth/logout') return new Response(null, { status: 204 });
       return answer(404, { error: 'not-found' });
     }),
@@ -180,45 +177,11 @@ describe('signing out', () => {
   });
 });
 
-describe('deleting my data', () => {
-  it('lists what goes and what stays, and needs the typed word', async () => {
+describe('deleting the account', () => {
+  it('has no deletion of its own, only a link to the hoandat account page', async () => {
     renderScreen();
-    fireEvent.click(await screen.findByRole('button', { name: 'Xoá dữ liệu của tôi' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Xoá dữ liệu của tôi?' });
-    expect(within(dialog).getByText(/Bản nháp, bài riêng tư/)).toBeTruthy();
-    expect(within(dialog).getByText(/Bài chính thức, nhật ký kiểm toán/)).toBeTruthy();
-    const confirm = within(dialog).getByRole('button', { name: 'Xoá vĩnh viễn' });
-    expect(confirm.hasAttribute('disabled')).toBe(true);
-    fireEvent.change(within(dialog).getByLabelText('Gõ XOÁ để xác nhận'), { target: { value: 'xoa' } });
-    expect(confirm.hasAttribute('disabled')).toBe(true);
-    fireEvent.change(within(dialog).getByLabelText('Gõ XOÁ để xác nhận'), { target: { value: 'xoá' } });
-    expect(confirm.hasAttribute('disabled')).toBe(false);
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Huỷ' }));
-    expect(calls.some((c) => c.url === '/api/me/delete-data')).toBe(false);
-  });
-
-  it('deletes, with the published texts when asked, and leaves for the start page', async () => {
-    const assign = vi.fn();
-    vi.stubGlobal('location', { ...window.location, assign });
-    renderScreen();
-    fireEvent.click(await screen.findByRole('button', { name: 'Xoá dữ liệu của tôi' }));
-    const dialog = await screen.findByRole('dialog');
-    fireEvent.click(within(dialog).getByRole('checkbox', { name: /Gỡ cả bài cộng đồng/ }));
-    fireEvent.change(within(dialog).getByLabelText('Gõ XOÁ để xác nhận'), { target: { value: 'XOÁ' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Xoá vĩnh viễn' }));
-    expect(await within(dialog).findByText(/Đã xoá 4 bài/)).toBeTruthy();
-    expect(calls).toContainEqual({ method: 'POST', url: '/api/me/delete-data', body: { confirm: 'XOÁ', removePublished: true } });
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/'), { timeout: 3000 });
-  });
-
-  it('says nothing was deleted when the server refuses', async () => {
-    failDelete = true;
-    renderScreen();
-    fireEvent.click(await screen.findByRole('button', { name: 'Xoá dữ liệu của tôi' }));
-    const dialog = await screen.findByRole('dialog');
-    fireEvent.change(within(dialog).getByLabelText('Gõ XOÁ để xác nhận'), { target: { value: 'XOÁ' } });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Xoá vĩnh viễn' }));
-    expect(await within(dialog).findByRole('alert')).toBeTruthy();
-    expect(within(dialog).getByText(/Dữ liệu vẫn còn nguyên/)).toBeTruthy();
+    const link = await screen.findByRole('link', { name: 'Xoá tài khoản ở auth.hoandat.com' });
+    expect(link.getAttribute('href')).toBe('https://auth.hoandat.com/account#account-delete');
+    expect(screen.queryByRole('button', { name: /Xoá dữ liệu/ })).toBeNull();
   });
 });

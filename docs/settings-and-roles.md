@@ -1,4 +1,4 @@
-# Cài đặt, vai trò và xoá dữ liệu
+# Cài đặt, vai trò và xoá tài khoản
 
 Cài đặt cá nhân (H03, `/settings`) và cài đặt workspace (C19, `/admin/settings`, chỉ quản trị). Mã chính:
 [`apps/server/src/access/roles.ts`](../apps/server/src/access/roles.ts),
@@ -25,7 +25,7 @@ Hai vai trò (chủ dự án chốt 07/11/2026: tác giả toàn quyền với b
   [`roles.ts`](../apps/server/src/access/roles.ts) trả `member`); quản trị đổi vai trò ở C19 thì dòng được ghi lại.
 - Quy tắc đọc ([`visibility.ts`](../apps/server/src/access/visibility.ts)): mọi người, kể cả khách, đọc bài đã đăng và
   không ẩn; tác giả đọc mọi bài của mình; quản trị đọc mọi bài.
-- Phiên của tài khoản đã bị gỡ hay đã xoá dữ liệu không dùng được: mỗi lần tra phiên đều kiểm lại tài khoản, nên một
+- Phiên của tài khoản đã bị gỡ hay đã bị xoá không dùng được: mỗi lần tra phiên đều kiểm lại tài khoản, nên một
   phiên mở ra đúng lúc bị gỡ hay xoá cũng bị bỏ ngay.
 - C19 liệt kê tối đa 1000 tài khoản (quản trị, rồi người vào gần nhất trước) và ghi tổng số.
 - Token API quản trị chỉ chạy khi người tạo còn là quản trị (gốc hoặc theo vai trò) và còn trong workspace.
@@ -81,27 +81,47 @@ API), mới nhất trước, lọc theo Thành viên / Nội dung / API / Đăng
   đang đọc ở chỗ cũ trên màn hình nên tiến độ đọc và anchor không nhảy. Trên điện thoại hai nút là ô chạm 44px; ở đầu
   và cuối thang nút vẫn nhận focus (`aria-disabled`). H03 không có nút riêng: chọn ngay trong lúc đọc là đủ.
 
-## Xoá dữ liệu của tôi (H03)
+## Xoá tài khoản (ADR 0018 của auth-next)
 
-Hộp thoại liệt kê điều sẽ xoá và điều giữ lại, bắt gõ `XOÁ` (`DELETE` khi giao diện tiếng Anh) mới bấm được. Server
-nhận `POST /api/me/delete-data {confirm, removePublished}` với chữ người dùng gõ và cũng kiểm nó (`XOÁ` hoặc `DELETE`,
-không phân biệt hoa thường; tối đa 5 lần mỗi phút), làm trong một giao dịch.
+Tài khoản chỉ xoá ở `https://auth.hoandat.com/account#account-delete`. App không có nút, hộp thoại hay API xoá: chỗ cũ
+ở H03 (dưới tâm trạm) chỉ còn một dòng "Xoá tài khoản ở auth.hoandat.com" mở trang đó trong tab mới (`IDP_ACCOUNT_URL`
+ở `apps/web/src/brand.ts`); trang Quyền riêng tư (`/privacy#delete`) dẫn tới cùng chỗ.
+
+Xoá ở IdP thì IdP gửi `POST https://kb.hoandat.com/api/idp/account-deleted`
+([`account-deleted.ts`](../apps/server/src/auth/account-deleted.ts)), body là SET (RFC 8417,
+`Content-Type: application/secevent+jwt`). Server kiểm bằng JWKS từ discovery của IdP (cùng bộ đệm khoá với back-channel
+logout): header `alg` ES256, `typ` `secevent+jwt`; `iss` là `AUTH_ISSUER`; `aud` đúng `PUBLIC_URL/api/idp/account-deleted`;
+`exp` chưa qua (lệch giờ 60 giây); có event `urn:hoandat:auth:event:account.deleted`; có `sub`. Route nằm trước bước
+kiểm Origin, giới hạn tần suất chung với back-channel logout.
+
+| Trả lời | Khi |
+|---|---|
+| `202` | Đã xoá xong trong một giao dịch, hoặc không có tài khoản nào mang `sub` đó (chưa từng đăng nhập, hoặc đã xoá: IdP gửi lại thì không làm gì thêm) |
+| `400` | Body không phải SET (sai media type, không phải JWS, `typ` khác) |
+| `401` | Thuật toán khác ES256, chữ ký sai, `iss`/`aud` sai, hết hạn, thiếu event hay `sub` |
+| `503` | Không đọc được khoá của IdP, đăng nhập chưa bật, hoặc xoá lỗi: IdP thử lại |
+
+Log chỉ ghi id nội bộ của tài khoản và kết quả, không ghi SET hay `sub`.
 
 | Xoá hẳn | Giữ lại |
 |---|---|
 | Bài không chính thức chưa xuất bản (nháp, riêng tư, kể cả bài còn lại từ vòng duyệt cũ) hoặc nằm trong thùng rác (kể cả bài đã xuất bản), mọi bài trong Space cá nhân và chính Space đó | Bài **chính thức** ngoài Space cá nhân, ở bất kỳ bước nào (thuộc workspace) |
-| Bài cộng đồng đã xuất bản, nếu chọn "Gỡ cả bài cộng đồng tôi đã xuất bản" | Bài cộng đồng đã xuất bản nếu không chọn: tác giả hiện là "Tài khoản đã xoá" |
-| Tệp đã tải lên không còn bài nào dùng (cả tệp trên đĩa) | Phiên bản và quyết định duyệt cũ người đó viết trên bài còn lại |
-| Key riêng và lựa chọn key, lịch sử Copilot, tiến độ đọc và hành trình, yêu thích, thông báo, Canvas, bình luận, dấu vết đã mở link chia sẻ | Nhật ký kiểm toán (thêm dòng "đã xoá dữ liệu") |
-| Mọi phiên đăng nhập; trên máy đang dùng: bản sao offline, bản nháp và tài khoản đã nhớ | |
+| Tệp đã tải lên không còn bài nào dùng (cả tệp trên đĩa) | Bài cộng đồng đã xuất bản: tác giả hiện là "Tài khoản đã xoá" |
+| Key riêng và lựa chọn key, lịch sử Copilot, tiến độ đọc và hành trình, yêu thích, thông báo, Canvas, bình luận, dấu vết đã mở link chia sẻ | Phiên bản và quyết định duyệt cũ người đó viết trên bài còn lại |
+| Mọi phiên đăng nhập | Nhật ký kiểm toán (thêm dòng `account.data-deleted`) |
 
-Link chia sẻ, token API và link mời người đó tạo bị thu hồi. Dòng tài khoản ở lại như bia mộ không tên (`deletedAt`,
-`sub` đổi thành `deleted:<id>`) để bài giữ lại vẫn có tác giả; cùng tài khoản hoandat đăng nhập lại sẽ có tài khoản
-Knowledge Base mới, trống.
+Bài cộng đồng đã xuất bản được giữ vì đó là bài công khai người khác đọc, dẫn link và Copilot trích; kb đã có sẵn dòng
+tài khoản "bia mộ" không tên làm tác giả. Muốn gỡ thì tác giả thôi xuất bản hay xoá bài trước khi xoá tài khoản (trang
+Quyền riêng tư ghi rõ). Link chia sẻ, token API và link mời người đó tạo bị thu hồi. Dòng tài khoản ở lại như bia mộ
+(`deletedAt`, `sub` đổi thành `deleted:<id>`, không tên, email, ảnh).
+
+Không có gì để chuyển chủ: Space cá nhân chỉ có chủ của nó (xoá cùng tài khoản), Space công khai không có chủ, quản trị
+workspace là vai trò chứ không phải quyền sở hữu (quản trị gốc `ADMIN_SUBS` luôn còn). Bản sao offline trên máy người
+dùng (IndexedDB) không bị server xoá được; trang Quyền riêng tư hướng dẫn xoá dữ liệu trang trong trình duyệt.
 
 ## Giới hạn đã biết
 
-- Một lần tải tệp hay lưu Office đang chạy ở tab khác đúng lúc xoá dữ liệu có thể ghi xong một dòng tệp thuộc tài
+- Một lần tải tệp hay lưu Office đang chạy đúng lúc tài khoản bị xoá có thể ghi xong một dòng tệp thuộc tài
   khoản đã xoá; dòng và tệp đó không được dọn. Phiên đã bị bỏ nên không có lần ghi mới sau đó.
 - Migration 0016 thêm giá trị `admin` cho enum `user_role` trong giao dịch của migration (Postgres 12 trở lên cho
   phép, prod là 16.8); không được dùng giá trị đó trong cùng migration. Migration sau cần `'admin'` phải là tệp riêng.

@@ -58,13 +58,16 @@ describe('the privacy page', () => {
     expect(sectionText('Servers, web logs and backups')).toContain(`for ${BACKUP_KEEP_DAYS} days`);
   });
 
-  it('lists what deleting your data removes and keeps, and leads to Settings', () => {
+  it('lists what deleting the account removes and keeps, and leads to the account page where it is deleted', () => {
     renderWithI18n(<LegalPage kind="privacy" />);
-    expect(sectionText('Deleting your data')).toContain('Copilot history');
+    expect(sectionText('Deleting your account and data')).toContain('Copilot history');
+    const deleting = screen.getByRole('heading', { level: 2, name: 'Deleting your account and data' }).closest('section');
+    if (!deleting) throw new Error('the section of "Deleting your account and data" is missing');
+    expect(within(deleting).getByRole('link', { name: 'Open the account deletion page' }).getAttribute('href')).toBe('https://auth.hoandat.com/account#account-delete');
     const kept = screen.getByRole('heading', { level: 2, name: 'What stays after deleting' }).closest('section');
     if (!kept) throw new Error('the section of "What stays after deleting" is missing');
     expect(kept.textContent).toContain('Official texts outside your personal Space');
-    expect(within(kept).getByRole('link', { name: 'Open Settings' }).getAttribute('href')).toBe('/settings');
+    expect(kept.textContent).toContain('Deleted account');
   });
 
   it('fills in the brand words and leaves no placeholder', () => {

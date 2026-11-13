@@ -26,7 +26,7 @@ lý mọi bài. Viết, lưu, yêu thích, bình luận, hỏi AI, cài đặt v
 nhập" ở thanh trên, đăng nhập xong quay về đúng trang. `/sitemap.xml` do server dựng từ các Space và bài công khai.
 Ngoài app còn trang giới thiệu `/` (S01), `/login` (S02), link chia sẻ `/l/<token>` (H02), trang lỗi (X02) và hai trang
 pháp lý song ngữ không có board: `/privacy` (quyền riêng tư: câu hỏi AI đi tới nhà cung cấp người dùng chọn bằng key riêng,
-Jev xử lý tìm kiếm phía server, cookie, link chia sẻ, sao lưu, cách xoá dữ liệu) và `/terms` (điều khoản sử dụng).
+Jev xử lý tìm kiếm phía server, cookie, link chia sẻ, sao lưu, xoá tài khoản và dữ liệu) và `/terms` (điều khoản sử dụng).
 Chữ ở [`apps/web/src/pages/legal-docs.ts`](apps/web/src/pages/legal-docs.ts); mọi thời hạn lưu giữ in từ
 [`apps/server/src/retention.ts`](apps/server/src/retention.ts), cùng hằng số server dùng. Đổi cách app giữ hay gửi dữ
 liệu thì sửa trang này cùng lúc. Link tới hai trang ở chân landing, trang đăng nhập, H02 và H03.
@@ -48,7 +48,7 @@ duyệt bằng `BroadcastChannel`), `#n` là slide đang xem. Mỗi lượt xem 
 ghi người xem) vào bảng `present_views`, giữ 180 ngày; số liệu ở `GET /api/admin/stats/present`
 ([`docs/admin-api.md`](docs/admin-api.md)).
 Cài đặt cá nhân và workspace, vai trò (Quản trị, Thành viên), mời bằng link, nhật ký kiểm toán, giao diện
-Sáng/Tối, xoá dữ liệu của tôi (H03, C19): [`docs/settings-and-roles.md`](docs/settings-and-roles.md).
+Sáng/Tối, xoá tài khoản (chỉ ở IdP; kb nhận thông báo và dọn dữ liệu) (H03, C19): [`docs/settings-and-roles.md`](docs/settings-and-roles.md).
 Tablet và điện thoại: tablet (641–1279px) dựng Universe và reader trên board 1180×820 (T01, T02: 3D nhẹ, mục lục
 dạng ngăn kéo); điện thoại (đến 640px) có bố cục riêng, chỉ 2D, thanh pill dưới thay lens rail cho Universe, tạo bài,
 đăng bài, Copilot, reader và tìm kiếm (Mobile, M02–M06), kể cả trình soạn, các bước đăng bài, trình dựng và chạy lối đi; không có Canvas,

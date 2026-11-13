@@ -149,11 +149,3 @@ export type Integration = z.infer<typeof IntegrationSchema>;
 export function fetchIntegrations(): Promise<Integration[]> {
   return getJson(z.object({ integrations: z.array(IntegrationSchema) }), '/api/workspace/integrations').then((r) => r.integrations);
 }
-
-const DeletedSchema = z.object({ deletedDocuments: z.number(), keptPublished: z.number() });
-export type Deleted = z.infer<typeof DeletedSchema>;
-
-/** Deletes the account's data (H03) with the word the person typed (`XOÁ` or `DELETE`); the session ends with it. */
-export function deleteMyData(typed: string, removePublished: boolean): Promise<Deleted> {
-  return getJson(DeletedSchema, '/api/me/delete-data', json('POST', { confirm: typed, removePublished }));
-}

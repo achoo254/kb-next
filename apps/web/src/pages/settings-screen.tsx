@@ -6,16 +6,15 @@
  *   applied at once to every screen, kept per account on the server and in this browser for the first paint
  *   (ui/display-prefs.ts). The theme switch lives only here.
  * - How C08 and A02 open on this device (orbit or list), what is kept offline here (Office copies and unsent drafts)
- *   with "Xoá bộ nhớ đệm" (synced copies only), the own keys (F03), signing out, and "Xoá dữ liệu của tôi" (a typed
- *   confirmation; what goes and what stays is listed before anything happens).
+ *   with "Xoá bộ nhớ đệm" (synced copies only), the own keys (F03), signing out, and one line pointing to the hoandat
+ *   account page: an account is deleted there only, and this app's data goes with it (auth-next ADR 0018).
  */
-import { type CSSProperties, type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react';
+import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { writePreference } from '@achoo254/app-shell/preferences';
 import { fetchMe, type Me, updateMe } from '../api/content-api';
 import { type KeysResponse, fetchKeys } from '../api/keys-api';
-import { REMEMBERED_ACCOUNT_KEY, signOut } from '../api/session-api';
-import { deleteMyData } from '../api/workspace-api';
-import { brand } from '../brand';
+import { signOut } from '../api/session-api';
+import { IDP_ACCOUNT_URL, brand } from '../brand';
 import { type Locale, useI18n } from '../i18n/i18n';
 import { AppShell, SHELL_PATHS, accountInitial } from '../layout/app-shell';
 import { LegalLinks } from '../layout/legal-links';
@@ -25,9 +24,9 @@ import { type DefaultView, type DisplayPrefs, type ThemeChoice, applyPrefs, read
 import { Modal } from '../ui/modal';
 import { useTheme } from '../ui/theme';
 import { Toast } from '../ui/toast';
-import { deleteDraft, listDrafts } from './editor-drafts';
+import { listDrafts } from './editor-drafts';
 import { PROVIDERS } from './keys-messages';
-import { type StorageStatus, clearSyncedCopies, forgetAccountFiles, listEntries, pending, storageStatus } from './office-store';
+import { type StorageStatus, clearSyncedCopies, listEntries, pending, storageStatus } from './office-store';
 import { type SettingsMessageKey, sizeText, useSettingsText } from './settings-messages';
 import type { ScreenTranslate } from './space-messages';
 import './settings-screen.css';
@@ -157,88 +156,9 @@ function StaffLink({ me, t }: { me: Me | null; t: T }): ReactNode {
   );
 }
 
-function DeleteDialog({ open, onClose, userId, t }: { open: boolean; onClose(): void; userId: string | null; t: T }): ReactNode {
-  const word = t('settings.delete.word');
-  const [typed, setTyped] = useState('');
-  const [removePublished, setRemovePublished] = useState(false);
-  const [state, setState] = useState<{ kind: 'idle' } | { kind: 'busy' } | { kind: 'failed' } | { kind: 'done'; count: number }>({ kind: 'idle' });
-  const inputId = useId();
-  const close = (): void => {
-    if (state.kind === 'busy' || state.kind === 'done') return;
-    setTyped('');
-    setRemovePublished(false);
-    setState({ kind: 'idle' });
-    onClose();
-  };
-  const confirmed = typed.trim().toLocaleUpperCase() === word.toLocaleUpperCase();
-  async function remove(): Promise<void> {
-    if (!confirmed || state.kind === 'busy') return;
-    setState({ kind: 'busy' });
-    try {
-      const result = await deleteMyData(typed.trim(), removePublished);
-      // What this browser kept of the account goes too: its offline copies and drafts, the remembered account.
-      if (userId) {
-        await forgetAccountFiles(userId).catch((error: unknown) => console.warn('offline copies not cleared', error));
-        for (const draft of await listDrafts(userId).catch(() => [])) await deleteDraft(draft.id).catch(() => undefined);
-      }
-      try {
-        localStorage.removeItem(REMEMBERED_ACCOUNT_KEY);
-      } catch {
-        // Storage blocked: nothing was remembered.
-      }
-      setState({ kind: 'done', count: result.deletedDocuments });
-      window.setTimeout(() => window.location.assign('/'), 1500);
-    } catch (error) {
-      console.error('delete my data failed', error);
-      setState({ kind: 'failed' });
-    }
-  }
-  return (
-    <Modal
-      open={open}
-      onClose={close}
-      tone="danger"
-      title={t('settings.delete.title')}
-      description={t('settings.delete.text')}
-      dataId="settings-delete-dialog"
-      actions={
-        <>
-          <Button variant="ghost" onClick={close} disabled={state.kind === 'busy' || state.kind === 'done'}>
-            {t('settings.delete.cancel')}
-          </Button>
-          <Button variant="danger-solid" onClick={() => void remove()} disabled={!confirmed || state.kind === 'busy' || state.kind === 'done'} dataId="settings-delete-confirm">
-            {state.kind === 'busy' ? t('settings.delete.busy') : t('settings.delete.confirm')}
-          </Button>
-        </>
-      }
-    >
-      <dl className="h03-delete-list">
-        <dt>{t('settings.delete.gone')}</dt>
-        <dd>{t('settings.delete.gone.list')}</dd>
-        <dt>{t('settings.delete.kept')}</dt>
-        <dd>{t('settings.delete.kept.list')}</dd>
-      </dl>
-      <label className="h03-delete-check">
-        <input type="checkbox" checked={removePublished} onChange={(event) => setRemovePublished(event.target.checked)} data-id="settings-delete-published" />
-        {t('settings.delete.published')}
-      </label>
-      <label className="h03-delete-type" htmlFor={inputId}>
-        {t('settings.delete.type', { word })}
-      </label>
-      <input id={inputId} className="h03-delete-input" value={typed} autoComplete="off" spellCheck={false} onChange={(event) => setTyped(event.target.value)} data-id="settings-delete-input" />
-      {state.kind === 'failed' && (
-        <span role="alert" className="h03-delete-error">
-          {t('settings.delete.failed')}
-        </span>
-      )}
-      {state.kind === 'done' && (
-        <span role="status" className="h03-delete-done">
-          {t('settings.delete.done', { count: state.count })}
-        </span>
-      )}
-    </Modal>
-  );
-}
+/** Where an account is deleted (auth-next ADR 0018): the hoandat account page, at its deletion section. */
+const ACCOUNT_DELETE_URL = `${IDP_ACCOUNT_URL}#account-delete`;
+const ACCOUNT_DELETE_HOST = new URL(IDP_ACCOUNT_URL).host;
 
 export function SettingsScreen(): ReactNode {
   const { t, locale } = useSettingsText();
@@ -262,7 +182,6 @@ export function SettingsScreen(): ReactNode {
   const [toast, setToast] = useState<string | null>(null);
   const [cleared, setCleared] = useState(false);
   const [logout, setLogout] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   /** Applies a change at once, then keeps it on the server; a failed save keeps it here and says so. */
   async function change(next: DisplayPrefs): Promise<void> {
@@ -487,10 +406,9 @@ export function SettingsScreen(): ReactNode {
           </span>
         </button>
 
-        <button type="button" className="h03-delete" onClick={() => setDeleting(true)} data-id="settings-delete">
-          <Svg d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" size={14} />
-          {t('settings.delete')}
-        </button>
+        <a className="h03-delete" href={ACCOUNT_DELETE_URL} target="_blank" rel="noopener noreferrer" data-id="settings-delete">
+          {t('settings.delete', { host: ACCOUNT_DELETE_HOST })}
+        </a>
         <LegalLinks className="h03-legal" />
       </div>
 
@@ -512,7 +430,6 @@ export function SettingsScreen(): ReactNode {
           </>
         }
       />
-      <DeleteDialog open={deleting} onClose={() => setDeleting(false)} userId={userId} t={t} />
       {toast && <Toast tone="error" message={toast} onClose={() => setToast(null)} className="h03-toast" />}
     </AppShell>
   );

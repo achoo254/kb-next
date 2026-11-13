@@ -4,6 +4,7 @@
  * so the page says what the code does. The facts behind the rest: docs/settings-and-roles.md (what deleting your data
  * removes and keeps), docs/deployment-guide.md ("Key riêng", "Link chia sẻ", "Sao lưu và khôi phục").
  */
+import { IDP_ACCOUNT_URL } from '../brand';
 import type { Locale } from '../i18n/i18n';
 import { BRAND_WORDS } from '../layout/brand-words';
 import {
@@ -41,7 +42,10 @@ const { account, idp, host } = BRAND_WORDS;
 /** Where a reader asks questions (the ecosystem's page, as on the other hoandat apps). */
 const CONTACT = { vi: 'Trang Facebook Hoandat Apps', en: 'the Hoandat Apps Facebook Page' } as const;
 
-const UPDATED = { vi: 'Cập nhật ngày 05/11/2026', en: 'Last updated 5 November 2026' } as const;
+const UPDATED = { vi: 'Cập nhật ngày 13/11/2026', en: 'Last updated 13 November 2026' } as const;
+
+/** Where an account is deleted: the hoandat account page, at its deletion section (auth-next ADR 0018). */
+const ACCOUNT_DELETE_URL = `${IDP_ACCOUNT_URL}#account-delete`;
 
 const PRIVACY_VI: LegalDoc = {
   title: 'Quyền riêng tư',
@@ -129,7 +133,7 @@ const PRIVACY_VI: LegalDoc = {
       heading: 'Trên máy của bạn',
       items: [
         'Để đọc và sửa khi mất mạng, trình duyệt giữ bản sao tệp Office, bản nháp chưa gửi và bản Office lưu lúc offline trong IndexedDB; Canvas đang sửa có bản nháp trong localStorage. Trình duyệt cũng nhớ giao diện, chế độ xem và tài khoản vừa dùng, để bản offline chỉ mở cho đúng tài khoản đó.',
-        'Những bản này chỉ nằm trên máy đó. "Xoá bộ nhớ đệm" ở Cài đặt xoá các bản đã có trên máy chủ; đăng xuất thì máy thôi hiện bản offline của bạn cho tới khi bạn đăng nhập lại; "Xoá dữ liệu của tôi" xoá hết chúng trên máy đang dùng.',
+        `Những bản này chỉ nằm trên máy đó. "Xoá bộ nhớ đệm" ở Cài đặt xoá các bản đã có trên máy chủ; đăng xuất thì máy thôi hiện bản offline của bạn cho tới khi bạn đăng nhập lại; xoá tài khoản không xoá được chúng: muốn bỏ hẳn, xoá dữ liệu trang web của ${host} trong trình duyệt.`,
       ],
     },
     {
@@ -143,27 +147,28 @@ const PRIVACY_VI: LegalDoc = {
     },
     {
       id: 'delete',
-      heading: 'Xoá dữ liệu của bạn',
-      paragraphs: ['Ở Cài đặt, "Xoá dữ liệu của tôi" (gõ XOÁ để xác nhận) xoá hẳn ngay, trong một lần:'],
+      heading: 'Xoá tài khoản và dữ liệu của bạn',
+      paragraphs: [
+        `Tài khoản ${account} chỉ xoá được ở trang tài khoản trên ${idp}. Khi bạn xoá ở đó, ${idp} báo cho {app} và {app} xoá hẳn ngay, trong một lần:`,
+      ],
       items: [
         'bài không phải bài chính thức chưa xuất bản (nháp, riêng tư, kể cả bài còn lại từ vòng duyệt cũ), mọi bài trong thùng rác, mọi bài trong Space cá nhân và chính Space đó;',
-        'bài cộng đồng bạn đã xuất bản, nếu bạn chọn "Gỡ cả bài cộng đồng tôi đã xuất bản";',
         'tệp tải lên không còn bài nào dùng, cả tệp trên đĩa;',
         'key AI và lựa chọn key, lịch sử Copilot, tiến độ đọc và lối đi, yêu thích, thông báo, Canvas, bình luận, dấu vết bạn đã mở link chia sẻ;',
-        'mọi phiên đăng nhập, và trên máy đang dùng: bản sao offline, bản nháp và tài khoản đã nhớ.',
+        'mọi phiên đăng nhập.',
       ],
+      link: { href: ACCOUNT_DELETE_URL, label: 'Mở trang xoá tài khoản' },
     },
     {
       id: 'kept',
       heading: 'Những gì còn lại sau khi xoá',
       items: [
         'Bài chính thức ngoài Space cá nhân, ở bất kỳ bước nào: chúng thuộc workspace.',
-        'Bài cộng đồng đã xuất bản nếu bạn không chọn gỡ; tác giả hiện là "Tài khoản đã xoá".',
-        'Các phiên bản và quyết định duyệt bạn viết trên những bài còn lại, và nhật ký kiểm toán (thêm một dòng ghi tài khoản đã xoá dữ liệu).',
+        'Bài cộng đồng đã xuất bản: đó là bài công khai người khác đọc và dẫn tới, tác giả hiện là "Tài khoản đã xoá". Muốn gỡ, hãy thôi xuất bản hay xoá chúng trước khi xoá tài khoản.',
+        'Các phiên bản và quyết định duyệt bạn viết trên những bài còn lại, và nhật ký kiểm toán (thêm một dòng ghi tài khoản đã bị xoá).',
         `Bản sao lưu, cho tới khi hết ${BACKUP_KEEP_DAYS} ngày.`,
-        `Link chia sẻ, token API và link mời bạn tạo bị thu hồi. Tên, email và ảnh bị xoá khỏi tài khoản: chỉ còn một dòng không tên để bài giữ lại vẫn có tác giả. Đăng nhập lại bằng cùng tài khoản ${account} sẽ tạo một tài khoản {app} mới, trống. Tài khoản ${account} dùng chung do ${idp} quản lý; xoá dữ liệu ở đây không xoá tài khoản đó.`,
+        'Link chia sẻ, token API và link mời bạn tạo bị thu hồi. Tên, email và ảnh bị xoá khỏi tài khoản: chỉ còn một dòng không tên để bài giữ lại vẫn có tác giả.',
       ],
-      link: { href: '/settings', label: 'Mở Cài đặt' },
     },
     {
       id: 'contact',
@@ -259,7 +264,7 @@ const PRIVACY_EN: LegalDoc = {
       heading: 'On your device',
       items: [
         'To read and edit offline, your browser keeps copies of Office files, unsent drafts and Office files saved offline in IndexedDB; a Canvas being edited has a draft in localStorage. The browser also remembers your theme, view and the account last used, so offline copies open only for that account.',
-        'These copies stay on that device. "Clear the cache" in Settings removes the copies the server already has; signing out stops the device showing your offline copies until you sign in again; "Delete my data" removes them all on the device in use.',
+        `These copies stay on that device. "Clear the cache" in Settings removes the copies the server already has; signing out stops the device showing your offline copies until you sign in again; deleting the account does not remove them: to get rid of them for good, clear the site data of ${host} in the browser.`,
       ],
     },
     {
@@ -273,27 +278,28 @@ const PRIVACY_EN: LegalDoc = {
     },
     {
       id: 'delete',
-      heading: 'Deleting your data',
-      paragraphs: ['In Settings, "Delete my data" (type DELETE to confirm) deletes at once, in one go:'],
+      heading: 'Deleting your account and data',
+      paragraphs: [
+        `Your ${account} account is deleted only on the account page at ${idp}. When you delete it there, ${idp} tells {app}, and {app} deletes at once, in one go:`,
+      ],
       items: [
         'unpublished texts that are not official (drafts, private, and those left from the former review step), every text in the trash, every text in your personal Space and that Space itself;',
-        'community texts you published, if you tick "Also remove the community texts I published";',
         'uploaded files no remaining text uses, from the disk too;',
         'your AI keys and key choice, Copilot history, reading and journey progress, favourites, notifications, Canvases, comments, and the record of share links you opened;',
-        'every session, and on the device in use: offline copies, drafts and the remembered account.',
+        'every session.',
       ],
+      link: { href: ACCOUNT_DELETE_URL, label: 'Open the account deletion page' },
     },
     {
       id: 'kept',
       heading: 'What stays after deleting',
       items: [
         'Official texts outside your personal Space, at any stage: they belong to the workspace.',
-        'Community texts you published, if you did not tick the box; their author shows as "Deleted account".',
-        'The versions and review decisions you wrote on the texts that stay, and the audit log (with a line saying the account deleted its data).',
+        'Community texts you published: they are public texts others read and link to, and their author shows as "Deleted account". To take them down, unpublish or delete them before deleting the account.',
+        'The versions and review decisions you wrote on the texts that stay, and the audit log (with a line saying the account was deleted).',
         `Backups, until their ${BACKUP_KEEP_DAYS} days are up.`,
-        `Share links, API tokens and invite links you made are revoked. Your name, email and picture are removed from the account: only a nameless row remains so the texts that stay keep an author. Signing in again with the same ${account} account creates a new, empty {app} account. The shared ${account} account is managed by ${idp}; deleting your data here does not delete it.`,
+        'Share links, API tokens and invite links you made are revoked. Your name, email and picture are removed from the account: only a nameless row remains so the texts that stay keep an author.',
       ],
-      link: { href: '/settings', label: 'Open Settings' },
     },
     {
       id: 'contact',
@@ -323,7 +329,7 @@ const TERMS_VI: LegalDoc = {
         'Bạn chịu trách nhiệm về bài, bình luận và tệp mình đưa lên. Chỉ đưa lên thứ bạn có quyền chia sẻ; không đăng nội dung trái pháp luật, xúc phạm, lừa đảo, mã độc hay thông tin riêng của người khác.',
         'Bạn tự chọn đăng bài công khai hay giữ riêng tư; bài công khai thì mọi người đọc được ngay khi đăng. Quản trị quản lý mọi bài: có thể ẩn, hiện lại, sửa, chuyển chỗ hay xoá bài. Bài quản trị đã ẩn chỉ hiện lại khi quản trị bật hiện.',
         'Bài đã xuất bản là bài công khai: người dùng app đọc và tìm thấy được, Copilot dùng làm nguồn, và tác giả hay quản trị chia sẻ được bằng link. Người nhận link có quyền "Remix" chép được bài thành bản nháp của họ.',
-        'Bài chính thức thuộc workspace và ở lại khi bạn xoá dữ liệu; bài cộng đồng đã xuất bản ở lại nếu bạn không chọn gỡ (chi tiết ở trang Quyền riêng tư).',
+        'Bài chính thức thuộc workspace và ở lại khi tài khoản của bạn bị xoá; bài cộng đồng đã xuất bản cũng ở lại, ghi tác giả "Tài khoản đã xoá" (chi tiết ở trang Quyền riêng tư).',
       ],
     },
     {
@@ -383,7 +389,7 @@ const TERMS_EN: LegalDoc = {
         'You are responsible for the texts, comments and files you put in. Only put in what you have the right to share; post nothing unlawful, abusive, fraudulent, malicious, or anyone else’s private information.',
         'You choose to publish a text or keep it private; a public text is readable by everyone as soon as it is published. Admins manage every text: they can hide, show again, edit, move or delete it. A text an admin hid shows again only when an admin shows it.',
         'A published text is public: app users can read and find it, the Copilot uses it as a source, and its author or an admin can share it by link. Someone receiving a link with "Remix" allowed can copy the text into their own drafts.',
-        'Official texts belong to the workspace and stay when you delete your data; community texts you published stay unless you choose to remove them (details on the Privacy page).',
+        'Official texts belong to the workspace and stay when your account is deleted; community texts you published stay too, by "Deleted account" (details on the Privacy page).',
       ],
     },
     {

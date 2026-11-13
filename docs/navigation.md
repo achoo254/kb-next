@@ -20,7 +20,7 @@ preview). Link `#anchor` của chính trang đang xem cũng để trình duyệt
 (`/privacy#delete`) mở trang đó rồi cuộn tới anchor.
 
 Code chuyển màn sau một thao tác dùng `navigate(href, { replace? })` thay cho `window.location.assign/replace`: địa chỉ
-ngoài app (hoặc khi router chưa chạy, như test từng màn) vẫn tải trang. Đăng xuất, xoá dữ liệu của tôi và các bước
+ngoài app (hoặc khi router chưa chạy, như test từng màn) vẫn tải trang. Đăng xuất và các bước
 đăng nhập (`login-page.tsx`) cố ý tải trang để không giữ gì của phiên cũ trong bộ nhớ.
 
 ## Một lần chuyển màn
