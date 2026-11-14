@@ -14,8 +14,8 @@ file names in [`design/blob-map.json`](design/blob-map.json)).
 
 ## Brand
 
-The Knowledge Base mark ([`brand/app-icon.svg`](brand/app-icon.svg)) is the logo of the approved Universe mock, drawn as
-vector; owned by hoandat, all rights reserved.
+The Knowledge Base mark ([`brand/app-icon.svg`](brand/app-icon.svg), from [`brand/app-icon-master-1024.png`](brand/app-icon-master-1024.png)) is
+AI-generated (FLUX.2 klein) for the hoandat ecosystem; owned by hoandat, all rights reserved (not CC0).
 
 ## Fonts
 

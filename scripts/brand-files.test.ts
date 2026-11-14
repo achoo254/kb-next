@@ -9,11 +9,12 @@ describe('generated brand files', () => {
     expect(recorded).toEqual(iconSourceHashes(loadKbBrand(), BRAND_ROOT));
   });
 
-  it('are vector icons of the mock mark with their ownership line', () => {
+  it('embed the AI-drawn master icon with their ownership line', () => {
     for (const file of ['brand/app-icon.svg', 'brand/app-icon-maskable.svg']) {
       const svg = readFileSync(new URL(file, BRAND_ROOT), 'utf8');
       expect(svg).toContain('owned by hoandat, all rights reserved');
-      expect(svg).toContain('M3 21L12 5l8 13 8-13 9 16');
+      expect(svg).toContain('AI-generated');
+      expect(svg).toContain('href="data:image/webp;base64,');
     }
   });
 });
