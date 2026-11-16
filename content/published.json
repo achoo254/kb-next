@@ -47,6 +47,12 @@
       "space": "cong-viec",
       "collectionId": "d09eef4d-f427-4120-8cd8-c5447fdf1c46",
       "at": "2026-11-08T01:43:22.359Z"
+    },
+    {
+      "slug": "tet-trung-thu",
+      "space": "van-hoa",
+      "collectionId": "2e10493d-f0db-4af3-96ae-dd3805c186b3",
+      "at": "2026-11-16T14:43:31.465Z"
     }
   ],
   "posts": [
@@ -318,6 +324,36 @@
       "en": {
         "id": "d9141933-090d-459e-8599-975b466d8ff5",
         "title": "Backing up photos and data with the 3-2-1 rule: don't let one failed drive wipe out your memories"
+      }
+    },
+    {
+      "slug": "tet-trung-thu/banh-trung-thu-pha-co",
+      "id": "0f83fab9-2464-47c1-8406-5bf987ad7da2",
+      "title": "Bánh trung thu và phá cỗ: mâm cỗ đêm rằm của trẻ nhỏ",
+      "at": "2026-11-16T14:43:31.782Z",
+      "en": {
+        "id": "efc6b646-0fff-46cd-a014-59f0222ebce9",
+        "title": "Mooncakes and phá cỗ: the full-moon feast tray for children"
+      }
+    },
+    {
+      "slug": "tet-trung-thu/den-ong-sao-ruoc-den-mua-lan",
+      "id": "c9d0fd77-8a97-48eb-a1df-c4c6942fba5c",
+      "title": "Đèn ông sao, rước đèn và múa lân: không khí đêm hội Trung thu của trẻ em",
+      "at": "2026-11-16T14:43:32.435Z",
+      "en": {
+        "id": "2ac3c4cc-438a-415d-883a-6f7dd3f90818",
+        "title": "Star lanterns, lantern processions and lion dances: the festive night of Mid-Autumn for children"
+      }
+    },
+    {
+      "slug": "tet-trung-thu/su-tich-chu-cuoi-chi-hang",
+      "id": "ae7d0150-5aef-4197-9979-76a04b9f2210",
+      "title": "Sự tích chú Cuội và chị Hằng: những câu chuyện trên mặt trăng đêm rằm tháng Tám",
+      "at": "2026-11-16T14:43:33.027Z",
+      "en": {
+        "id": "747beaa0-a0f8-4383-b517-7ead08fcc919",
+        "title": "The legends of Chú Cuội and Chị Hằng: stories of the moon on the Mid-Autumn night"
       }
     }
   ]
