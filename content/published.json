@@ -59,6 +59,12 @@
       "space": "khoa-hoc",
       "collectionId": "d9c84578-1bf1-4727-8a87-90c0cffb092f",
       "at": "2026-11-17T02:37:53.965Z"
+    },
+    {
+      "slug": "dich-vu-va-log-linux",
+      "space": "linux",
+      "collectionId": "f29dfc35-4814-41c1-9926-ecc9763c5ba9",
+      "at": "2026-11-17T14:37:40.261Z"
     }
   ],
   "posts": [
@@ -390,6 +396,36 @@
       "en": {
         "id": "47659eda-0857-468f-b02c-4a31af874455",
         "title": "The eight planets of the Solar System: size, distance and why Pluto became a dwarf planet"
+      }
+    },
+    {
+      "slug": "dich-vu-va-log-linux/systemd-va-unit-file",
+      "id": "638dd24c-d91e-426d-8ba2-6e72642efc46",
+      "title": "systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào",
+      "at": "2026-11-17T14:37:40.651Z",
+      "en": {
+        "id": "91ce0b69-f3ac-4250-ada6-290a4f801d5e",
+        "title": "systemd and unit files on Ubuntu 24.04: how services are described and started"
+      }
+    },
+    {
+      "slug": "dich-vu-va-log-linux/systemctl-bat-tat-khoi-dong-lai-dich-vu",
+      "id": "fef7a35d-d34b-43c6-9451-e16bc645f342",
+      "title": "systemctl trên Ubuntu 24.04: bật, tắt, khởi động lại dịch vụ và xem trạng thái",
+      "at": "2026-11-17T14:37:41.295Z",
+      "en": {
+        "id": "db3555d5-d96d-4faf-a862-1d2616616203",
+        "title": "systemctl on Ubuntu 24.04: enabling, disabling and restarting services and checking their status"
+      }
+    },
+    {
+      "slug": "dich-vu-va-log-linux/journalctl-loc-log-theo-dich-vu-thoi-gian",
+      "id": "74e7c94b-e943-4c05-993d-ac2a9e08ec05",
+      "title": "journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04",
+      "at": "2026-11-17T14:37:41.889Z",
+      "en": {
+        "id": "ca96210e-98d7-4a45-aaad-d890a9f75fd9",
+        "title": "journalctl: filtering logs by service and by time on Ubuntu 24.04"
       }
     }
   ]

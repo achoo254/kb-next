@@ -175,7 +175,7 @@
       "nameEn": "Services and logs on Linux",
       "tech": true,
       "brief": "Gợi ý 3 bài: systemd và unit file; systemctl bật, tắt, khởi động lại dịch vụ; journalctl lọc log theo dịch vụ và thời gian.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "quan-ly-thoi-gian",
