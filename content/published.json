@@ -53,6 +53,12 @@
       "space": "van-hoa",
       "collectionId": "2e10493d-f0db-4af3-96ae-dd3805c186b3",
       "at": "2026-11-16T14:43:31.465Z"
+    },
+    {
+      "slug": "he-mat-troi",
+      "space": "khoa-hoc",
+      "collectionId": "d9c84578-1bf1-4727-8a87-90c0cffb092f",
+      "at": "2026-11-17T02:37:53.965Z"
     }
   ],
   "posts": [
@@ -354,6 +360,36 @@
       "en": {
         "id": "747beaa0-a0f8-4383-b517-7ead08fcc919",
         "title": "The legends of Chú Cuội and Chị Hằng: stories of the moon on the Mid-Autumn night"
+      }
+    },
+    {
+      "slug": "he-mat-troi/nhat-thuc-va-nguyet-thuc",
+      "id": "dd4e21e2-8a53-4a9c-90a1-5910cc827f44",
+      "title": "Nhật thực và nguyệt thực: xảy ra thế nào và cách xem nhật thực an toàn",
+      "at": "2026-11-17T02:37:54.736Z",
+      "en": {
+        "id": "0dedec34-5923-4678-b1fd-01af0661c827",
+        "title": "Solar and lunar eclipses: how they happen and how to watch a solar eclipse safely"
+      }
+    },
+    {
+      "slug": "he-mat-troi/mat-trang-va-cac-tuan-trang",
+      "id": "853c8092-630d-47ab-bd84-c92c5183069f",
+      "title": "Mặt Trăng và các tuần trăng: vì sao trăng đầy rồi khuyết và liên hệ với âm lịch",
+      "at": "2026-11-17T02:37:56.319Z",
+      "en": {
+        "id": "93e06fd7-a6ed-479c-b88f-b9942098b67c",
+        "title": "The Moon and its phases: why it waxes and wanes, and how it relates to the lunar calendar"
+      }
+    },
+    {
+      "slug": "he-mat-troi/tam-hanh-tinh-he-mat-troi",
+      "id": "1e1f149d-7277-47c5-8129-ddc6a09fa444",
+      "title": "Tám hành tinh của Hệ Mặt Trời: kích thước, khoảng cách và vì sao Sao Diêm Vương thành hành tinh lùn",
+      "at": "2026-11-17T02:37:56.969Z",
+      "en": {
+        "id": "47659eda-0857-468f-b02c-4a31af874455",
+        "title": "The eight planets of the Solar System: size, distance and why Pluto became a dwarf planet"
       }
     }
   ]

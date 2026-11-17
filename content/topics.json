@@ -165,7 +165,7 @@
       "nameEn": "The Solar System",
       "tech": false,
       "brief": "Hành tinh đầu tiên của Space Khoa học quanh ta. Gợi ý 3 bài: tám hành tinh của Hệ Mặt Trời (kích thước, khoảng cách, vì sao Sao Diêm Vương bị xếp lại thành hành tinh lùn năm 2006); Mặt Trăng và các tuần trăng, liên hệ với âm lịch; nhật thực và nguyệt thực xảy ra thế nào, cách xem nhật thực an toàn. Số liệu đối chiếu NASA hoặc Wikipedia.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "dich-vu-va-log-linux",
