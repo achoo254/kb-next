@@ -21,16 +21,6 @@
       "status": "published"
     },
     {
-      "slug": "tet-nguyen-dan",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Tết Nguyên Đán",
-      "nameEn": "Lunar New Year",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: ông Công ông Táo và ngày 23 tháng Chạp; mâm ngũ quả và bánh chưng, bánh tét; xông đất, lì xì và các phong tục mùng một. Đối chiếu Wikipedia.",
-      "status": "published"
-    },
-    {
       "slug": "mang-tren-ubuntu",
       "space": "networking",
       "lang": "vi",
@@ -135,16 +125,6 @@
       "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
-      "slug": "he-mat-troi",
-      "space": "khoa-hoc",
-      "lang": "vi",
-      "name": "Hệ Mặt Trời",
-      "nameEn": "The Solar System",
-      "tech": false,
-      "brief": "Hành tinh đầu tiên của Space Khoa học quanh ta. Gợi ý 3 bài: tám hành tinh của Hệ Mặt Trời (kích thước, khoảng cách, vì sao Sao Diêm Vương bị xếp lại thành hành tinh lùn năm 2006); Mặt Trăng và các tuần trăng, liên hệ với âm lịch; nhật thực và nguyệt thực xảy ra thế nào, cách xem nhật thực an toàn. Số liệu đối chiếu NASA hoặc Wikipedia.",
-      "status": "todo"
-    },
-    {
       "slug": "an-toan-tren-mang-en",
       "space": "doi-song",
       "lang": "en",
@@ -154,16 +134,6 @@
       "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"An toàn trên mạng\". Bài bản Việt để đối chiếu: \"Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn\"; \"Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi\"; \"Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm\". Hành tinh tiếng Việt đang có đợt bổ sung (sao lưu dữ liệu theo quy tắc 3-2-1; dùng Wi-Fi công cộng an toàn); bản Anh viết 5 bài: ba bài cốt lõi trên cộng hai chủ đề đó. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
       "status": "skipped",
       "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
-    },
-    {
-      "slug": "dich-vu-va-log-linux",
-      "space": "linux",
-      "lang": "vi",
-      "name": "Dịch vụ và log trên Linux",
-      "nameEn": "Services and logs on Linux",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: systemd và unit file; systemctl bật, tắt, khởi động lại dịch vụ; journalctl lọc log theo dịch vụ và thời gian.",
-      "status": "todo"
     },
     {
       "slug": "ghi-chu-hieu-qua-en",
@@ -177,16 +147,6 @@
       "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
-      "slug": "di-san-viet-nam",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Di sản Việt Nam",
-      "nameEn": "Vietnamese heritage",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
-      "status": "todo"
-    },
-    {
       "slug": "viec-nha-gon-gang-en",
       "space": "doi-song",
       "lang": "en",
@@ -198,6 +158,26 @@
       "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
+      "slug": "he-mat-troi",
+      "space": "khoa-hoc",
+      "lang": "vi",
+      "name": "Hệ Mặt Trời",
+      "nameEn": "The Solar System",
+      "tech": false,
+      "brief": "Hành tinh đầu tiên của Space Khoa học quanh ta. Gợi ý 3 bài: tám hành tinh của Hệ Mặt Trời (kích thước, khoảng cách, vì sao Sao Diêm Vương bị xếp lại thành hành tinh lùn năm 2006); Mặt Trăng và các tuần trăng, liên hệ với âm lịch; nhật thực và nguyệt thực xảy ra thế nào, cách xem nhật thực an toàn. Số liệu đối chiếu NASA hoặc Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "dich-vu-va-log-linux",
+      "space": "linux",
+      "lang": "vi",
+      "name": "Dịch vụ và log trên Linux",
+      "nameEn": "Services and logs on Linux",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: systemd và unit file; systemctl bật, tắt, khởi động lại dịch vụ; journalctl lọc log theo dịch vụ và thời gian.",
+      "status": "todo"
+    },
+    {
       "slug": "quan-ly-thoi-gian",
       "space": "ky-nang",
       "lang": "vi",
@@ -205,6 +185,16 @@
       "nameEn": "Time management",
       "tech": false,
       "brief": "Gợi ý 3 bài: kỹ thuật Pomodoro; chặn lịch (time blocking); ma trận Eisenhower phân loại việc gấp và quan trọng.",
+      "status": "todo"
+    },
+    {
+      "slug": "tet-nguyen-dan",
+      "space": "van-hoa",
+      "lang": "vi",
+      "name": "Tết Nguyên Đán",
+      "nameEn": "Lunar New Year",
+      "tech": false,
+      "brief": "Đợt bổ sung trước Tết 2027 (mùng một rơi vào 06/02/2027), không lặp lại ba bài đã có. Gợi ý 3 bài: hoa đào, hoa mai, cây quất và câu đối đỏ trang trí nhà ngày Tết (nối tới \"Ông Công, ông Táo và ngày 23 tháng Chạp: tiễn thần bếp lên trời, dọn nhà đón Tết\"); đêm Giao thừa: cúng Giao thừa, đi lễ chùa và hái lộc đầu năm (nối tới \"Xông đất, lì xì và mùng một Tết: những phong tục mở đầu năm mới\"); Tết ở ba miền Bắc, Trung, Nam: món ăn và nếp quen khác nhau (nối tới \"Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết\"). Đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
@@ -218,6 +208,16 @@
       "status": "todo"
     },
     {
+      "slug": "docker-co-ban",
+      "space": "docker",
+      "lang": "vi",
+      "name": "Docker từ đầu",
+      "nameEn": "Docker from scratch",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: cài Docker Engine trên Ubuntu từ kho chính thức; Dockerfile nhiều tầng (multi-stage); chạy container không bằng root và HEALTHCHECK.",
+      "status": "todo"
+    },
+    {
       "slug": "lam-viec-nhom",
       "space": "cong-viec",
       "lang": "vi",
@@ -228,13 +228,13 @@
       "status": "todo"
     },
     {
-      "slug": "mang-docker",
-      "space": "docker",
+      "slug": "di-san-viet-nam",
+      "space": "van-hoa",
       "lang": "vi",
-      "name": "Mạng trong Docker",
-      "nameEn": "Docker networking",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
+      "name": "Di sản Việt Nam",
+      "nameEn": "Vietnamese heritage",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
@@ -245,6 +245,16 @@
       "nameEn": "Reading books",
       "tech": false,
       "brief": "Gợi ý 3 bài: ba mức đọc lướt, đọc hiểu, đọc phân tích; ghi chú bên lề và tóm tắt một trang; giữ thói quen đọc mỗi ngày.",
+      "status": "todo"
+    },
+    {
+      "slug": "cap-nhat-ung-dung-k8s",
+      "space": "kubernetes",
+      "lang": "vi",
+      "name": "Cập nhật ứng dụng trên Kubernetes",
+      "nameEn": "Updating apps on Kubernetes",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
       "status": "todo"
     },
     {
@@ -268,13 +278,13 @@
       "status": "todo"
     },
     {
-      "slug": "trang-phuc-viet",
-      "space": "van-hoa",
+      "slug": "thoi-tiet-viet-nam",
+      "space": "khoa-hoc",
       "lang": "vi",
-      "name": "Trang phục truyền thống Việt",
-      "nameEn": "Traditional Vietnamese dress",
+      "name": "Thời tiết và khí hậu Việt Nam",
+      "nameEn": "Weather and climate in Vietnam",
       "tech": false,
-      "brief": "Gợi ý 3 bài: áo dài qua các thời kỳ; áo tứ thân và áo yếm; nón lá. Đối chiếu Wikipedia.",
+      "brief": "Gợi ý 3 bài: gió mùa đông bắc và gió mùa tây nam, vì sao miền Bắc có bốn mùa còn miền Nam chỉ có mùa mưa và mùa khô; bão và áp thấp nhiệt đới hình thành thế nào, đọc cấp gió và bản tin bão; nồm ẩm và mưa phùn miền Bắc cuối đông xuân, vì sao tường đổ mồ hôi. Nối sang Hệ Mặt Trời khi nói về mùa. Đối chiếu Wikipedia hoặc Tổng cục Khí tượng Thuỷ văn.",
       "status": "todo"
     },
     {
@@ -285,6 +295,16 @@
       "nameEn": "Web and HTTPS",
       "tech": true,
       "brief": "Gợi ý 3 bài: nginx làm reverse proxy; chứng chỉ TLS và HTTPS hoạt động thế nào; certbot cấp và tự gia hạn chứng chỉ Let's Encrypt.",
+      "status": "todo"
+    },
+    {
+      "slug": "trang-phuc-viet",
+      "space": "van-hoa",
+      "lang": "vi",
+      "name": "Trang phục truyền thống Việt",
+      "nameEn": "Traditional Vietnamese dress",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: áo dài qua các thời kỳ; áo tứ thân và áo yếm; nón lá. Đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
@@ -318,6 +338,16 @@
       "status": "todo"
     },
     {
+      "slug": "mang-docker",
+      "space": "docker",
+      "lang": "vi",
+      "name": "Mạng trong Docker",
+      "nameEn": "Docker networking",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
+      "status": "todo"
+    },
+    {
       "slug": "lich-su-viet-nam",
       "space": "van-hoa",
       "lang": "vi",
@@ -328,16 +358,6 @@
       "status": "todo"
     },
     {
-      "slug": "dia-tren-linux",
-      "space": "linux",
-      "lang": "vi",
-      "name": "Đĩa trên Linux",
-      "nameEn": "Disks on Linux",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
-      "status": "todo"
-    },
-    {
       "slug": "ngoai-ngu-tu-hoc",
       "space": "ky-nang",
       "lang": "vi",
@@ -345,6 +365,16 @@
       "nameEn": "Self-taught languages",
       "tech": false,
       "brief": "Gợi ý 3 bài: lập kế hoạch tự học tiếng Anh; học từ vựng bằng flashcard; luyện nghe với phụ đề hai bước.",
+      "status": "todo"
+    },
+    {
+      "slug": "dia-tren-linux",
+      "space": "linux",
+      "lang": "vi",
+      "name": "Đĩa trên Linux",
+      "nameEn": "Disks on Linux",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
       "status": "todo"
     },
     {
@@ -365,26 +395,6 @@
       "nameEn": "Personal task management",
       "tech": false,
       "brief": "Gợi ý 3 bài: phương pháp GTD gom việc vào một chỗ; danh sách việc mỗi ngày ba việc chính; xem lại tuần vào cuối tuần.",
-      "status": "todo"
-    },
-    {
-      "slug": "docker-co-ban",
-      "space": "docker",
-      "lang": "vi",
-      "name": "Docker từ đầu",
-      "nameEn": "Docker from scratch",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: cài Docker Engine trên Ubuntu từ kho chính thức; Dockerfile nhiều tầng (multi-stage); chạy container không bằng root và HEALTHCHECK.",
-      "status": "todo"
-    },
-    {
-      "slug": "cap-nhat-ung-dung-k8s",
-      "space": "kubernetes",
-      "lang": "vi",
-      "name": "Cập nhật ứng dụng trên Kubernetes",
-      "nameEn": "Updating apps on Kubernetes",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
       "status": "todo"
     }
   ]
