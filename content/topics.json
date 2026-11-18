@@ -178,6 +178,16 @@
       "status": "published"
     },
     {
+      "slug": "thoi-tiet-viet-nam",
+      "space": "khoa-hoc",
+      "lang": "vi",
+      "name": "Thời tiết và khí hậu Việt Nam",
+      "nameEn": "Weather and climate in Vietnam",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: gió mùa đông bắc và gió mùa tây nam, vì sao miền Bắc có bốn mùa còn miền Nam chỉ có mùa mưa và mùa khô; bão và áp thấp nhiệt đới hình thành thế nào, đọc cấp gió và bản tin bão; nồm ẩm và mưa phùn miền Bắc cuối đông xuân, vì sao tường đổ mồ hôi. Nối sang Hệ Mặt Trời khi nói về mùa. Đối chiếu Wikipedia hoặc Tổng cục Khí tượng Thuỷ văn.",
+      "status": "todo"
+    },
+    {
       "slug": "quan-ly-thoi-gian",
       "space": "ky-nang",
       "lang": "vi",
@@ -228,33 +238,13 @@
       "status": "todo"
     },
     {
-      "slug": "di-san-viet-nam",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Di sản Việt Nam",
-      "nameEn": "Vietnamese heritage",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
-      "status": "todo"
-    },
-    {
-      "slug": "doc-sach",
+      "slug": "tu-duy-phan-bien",
       "space": "ky-nang",
       "lang": "vi",
-      "name": "Đọc sách",
-      "nameEn": "Reading books",
+      "name": "Tư duy phản biện",
+      "nameEn": "Critical thinking",
       "tech": false,
-      "brief": "Gợi ý 3 bài: ba mức đọc lướt, đọc hiểu, đọc phân tích; ghi chú bên lề và tóm tắt một trang; giữ thói quen đọc mỗi ngày.",
-      "status": "todo"
-    },
-    {
-      "slug": "cap-nhat-ung-dung-k8s",
-      "space": "kubernetes",
-      "lang": "vi",
-      "name": "Cập nhật ứng dụng trên Kubernetes",
-      "nameEn": "Updating apps on Kubernetes",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
+      "brief": "Gợi ý 3 bài: kiểm tra nguồn của một thông tin; phân biệt sự thật và ý kiến; các ngụy biện hay gặp kèm ví dụ.",
       "status": "todo"
     },
     {
@@ -268,23 +258,13 @@
       "status": "todo"
     },
     {
-      "slug": "thuyet-trinh",
-      "space": "cong-viec",
+      "slug": "di-san-viet-nam",
+      "space": "van-hoa",
       "lang": "vi",
-      "name": "Thuyết trình",
-      "nameEn": "Presenting",
+      "name": "Di sản Việt Nam",
+      "nameEn": "Vietnamese heritage",
       "tech": false,
-      "brief": "Gợi ý 3 bài: xây một thông điệp chính và cấu trúc ba phần; làm slide ít chữ; tập nói và trả lời câu hỏi khó.",
-      "status": "todo"
-    },
-    {
-      "slug": "thoi-tiet-viet-nam",
-      "space": "khoa-hoc",
-      "lang": "vi",
-      "name": "Thời tiết và khí hậu Việt Nam",
-      "nameEn": "Weather and climate in Vietnam",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: gió mùa đông bắc và gió mùa tây nam, vì sao miền Bắc có bốn mùa còn miền Nam chỉ có mùa mưa và mùa khô; bão và áp thấp nhiệt đới hình thành thế nào, đọc cấp gió và bản tin bão; nồm ẩm và mưa phùn miền Bắc cuối đông xuân, vì sao tường đổ mồ hôi. Nối sang Hệ Mặt Trời khi nói về mùa. Đối chiếu Wikipedia hoặc Tổng cục Khí tượng Thuỷ văn.",
+      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
@@ -298,6 +278,46 @@
       "status": "todo"
     },
     {
+      "slug": "thuyet-trinh",
+      "space": "cong-viec",
+      "lang": "vi",
+      "name": "Thuyết trình",
+      "nameEn": "Presenting",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: xây một thông điệp chính và cấu trúc ba phần; làm slide ít chữ; tập nói và trả lời câu hỏi khó.",
+      "status": "todo"
+    },
+    {
+      "slug": "anh-sang-va-mau-sac",
+      "space": "khoa-hoc",
+      "lang": "vi",
+      "name": "Ánh sáng và màu sắc",
+      "nameEn": "Light and colour",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: vì sao bầu trời màu xanh còn hoàng hôn màu đỏ cam (tán xạ Rayleigh), nối tới \"Nhật thực và nguyệt thực: xảy ra thế nào và cách xem nhật thực an toàn\" khi giải thích vì sao Mặt Trăng đỏ lúc nguyệt thực toàn phần; cầu vồng hình thành thế nào, vì sao luôn ở phía đối diện Mặt Trời và có cầu vồng kép; vì sao lá cây xanh và chuyển vàng, đỏ khi trời lạnh (diệp lục, carotenoid, anthocyanin). Giải thích bằng ví dụ đời thường, đối chiếu Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "cap-nhat-ung-dung-k8s",
+      "space": "kubernetes",
+      "lang": "vi",
+      "name": "Cập nhật ứng dụng trên Kubernetes",
+      "nameEn": "Updating apps on Kubernetes",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
+      "status": "todo"
+    },
+    {
+      "slug": "doc-sach",
+      "space": "ky-nang",
+      "lang": "vi",
+      "name": "Đọc sách",
+      "nameEn": "Reading books",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: ba mức đọc lướt, đọc hiểu, đọc phân tích; ghi chú bên lề và tóm tắt một trang; giữ thói quen đọc mỗi ngày.",
+      "status": "todo"
+    },
+    {
       "slug": "trang-phuc-viet",
       "space": "van-hoa",
       "lang": "vi",
@@ -305,16 +325,6 @@
       "nameEn": "Traditional Vietnamese dress",
       "tech": false,
       "brief": "Gợi ý 3 bài: áo dài qua các thời kỳ; áo tứ thân và áo yếm; nón lá. Đối chiếu Wikipedia.",
-      "status": "todo"
-    },
-    {
-      "slug": "tu-duy-phan-bien",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Tư duy phản biện",
-      "nameEn": "Critical thinking",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: kiểm tra nguồn của một thông tin; phân biệt sự thật và ý kiến; các ngụy biện hay gặp kèm ví dụ.",
       "status": "todo"
     },
     {
@@ -368,16 +378,6 @@
       "status": "todo"
     },
     {
-      "slug": "dia-tren-linux",
-      "space": "linux",
-      "lang": "vi",
-      "name": "Đĩa trên Linux",
-      "nameEn": "Disks on Linux",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
-      "status": "todo"
-    },
-    {
       "slug": "di-lai-an-toan",
       "space": "doi-song",
       "lang": "vi",
@@ -385,6 +385,16 @@
       "nameEn": "Getting around safely",
       "tech": false,
       "brief": "Gợi ý 3 bài: kiểm tra xe máy trước chuyến đi xa; chuẩn bị hành lý cho chuyến du lịch ngắn; dùng bản đồ trên điện thoại khi mất sóng. Không đưa lời khuyên y tế.",
+      "status": "todo"
+    },
+    {
+      "slug": "dia-tren-linux",
+      "space": "linux",
+      "lang": "vi",
+      "name": "Đĩa trên Linux",
+      "nameEn": "Disks on Linux",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
       "status": "todo"
     },
     {
