@@ -71,6 +71,12 @@
       "space": "khoa-hoc",
       "collectionId": "0c5402ee-1ff5-4c2e-9ed0-9347dd0610ec",
       "at": "2026-11-18T02:38:24.020Z"
+    },
+    {
+      "slug": "quan-ly-thoi-gian",
+      "space": "ky-nang",
+      "collectionId": "cde684aa-3454-46b2-84e3-9481a16e5138",
+      "at": "2026-11-18T08:37:58.974Z"
     }
   ],
   "posts": [
@@ -462,6 +468,36 @@
       "en": {
         "id": "273da298-c873-4ddc-b2e2-6c476dc7fc0b",
         "title": "Monsoons and the seasons in Vietnam: why the north has four seasons while the south only has wet and dry"
+      }
+    },
+    {
+      "slug": "quan-ly-thoi-gian/ma-tran-eisenhower",
+      "id": "89837095-4122-42a2-a36e-2182eceaa7fd",
+      "title": "Ma trận Eisenhower: phân loại việc gấp và việc quan trọng để biết làm gì trước",
+      "at": "2026-11-18T08:37:59.274Z",
+      "en": {
+        "id": "9ad72b72-de42-4453-9c84-3804ef7dffb3",
+        "title": "The Eisenhower matrix: sorting urgent from important tasks to know what to do first"
+      }
+    },
+    {
+      "slug": "quan-ly-thoi-gian/chan-lich-time-blocking",
+      "id": "a3f09218-3c5b-4f60-9c2b-6298208c7527",
+      "title": "Chặn lịch (time blocking): xếp sẵn khung giờ cho việc quan trọng thay vì chỉ ghi danh sách",
+      "at": "2026-11-18T08:37:59.904Z",
+      "en": {
+        "id": "181b5b6c-7293-4fae-a77d-ae8091630224",
+        "title": "Time blocking: schedule time slots for important work instead of only keeping a list"
+      }
+    },
+    {
+      "slug": "quan-ly-thoi-gian/ky-thuat-pomodoro",
+      "id": "fc0e4acc-fe31-4734-8c20-da2a403d3bc7",
+      "title": "Kỹ thuật Pomodoro: làm việc theo từng đợt 25 phút để giữ tập trung",
+      "at": "2026-11-18T08:38:00.584Z",
+      "en": {
+        "id": "67a312e6-eb20-465a-bf82-2468e1d843f9",
+        "title": "The Pomodoro Technique: work in 25-minute sprints to stay focused"
       }
     }
   ]
