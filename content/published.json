@@ -65,6 +65,12 @@
       "space": "linux",
       "collectionId": "f29dfc35-4814-41c1-9926-ecc9763c5ba9",
       "at": "2026-11-17T14:37:40.261Z"
+    },
+    {
+      "slug": "thoi-tiet-viet-nam",
+      "space": "khoa-hoc",
+      "collectionId": "0c5402ee-1ff5-4c2e-9ed0-9347dd0610ec",
+      "at": "2026-11-18T02:38:24.020Z"
     }
   ],
   "posts": [
@@ -426,6 +432,36 @@
       "en": {
         "id": "ca96210e-98d7-4a45-aaad-d890a9f75fd9",
         "title": "journalctl: filtering logs by service and by time on Ubuntu 24.04"
+      }
+    },
+    {
+      "slug": "thoi-tiet-viet-nam/nom-am-va-mua-phun-mien-bac",
+      "id": "a2041985-0fb2-479e-87d6-94bd42372cea",
+      "title": "Nồm ẩm và mưa phùn ở miền Bắc: vì sao cuối đông xuân tường nhà \"đổ mồ hôi\"",
+      "at": "2026-11-18T02:38:26.644Z",
+      "en": {
+        "id": "3e79804c-cee0-4dcc-8bc0-b0b3693807c7",
+        "title": "Damp spells and drizzle in northern Vietnam: why walls \"sweat\" in late winter and spring"
+      }
+    },
+    {
+      "slug": "thoi-tiet-viet-nam/bao-va-ap-thap-nhiet-doi",
+      "id": "76708870-8303-4521-a287-f2928c22264d",
+      "title": "Bão và áp thấp nhiệt đới: hình thành thế nào, đọc cấp gió và bản tin bão ra sao",
+      "at": "2026-11-18T02:38:29.417Z",
+      "en": {
+        "id": "08cbe764-4091-4eae-b2b9-4e63b05fc7a3",
+        "title": "Tropical storms and depressions: how they form, how to read wind scales and storm bulletins"
+      }
+    },
+    {
+      "slug": "thoi-tiet-viet-nam/gio-mua-va-bon-mua-viet-nam",
+      "id": "c78427cc-51ee-4899-85b5-a16867ee6ee0",
+      "title": "Gió mùa và các mùa ở Việt Nam: vì sao miền Bắc có bốn mùa còn miền Nam chỉ có mưa và khô",
+      "at": "2026-11-18T02:38:31.826Z",
+      "en": {
+        "id": "273da298-c873-4ddc-b2e2-6c476dc7fc0b",
+        "title": "Monsoons and the seasons in Vietnam: why the north has four seasons while the south only has wet and dry"
       }
     }
   ]
