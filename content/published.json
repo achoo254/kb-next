@@ -499,6 +499,36 @@
         "id": "67a312e6-eb20-465a-bf82-2468e1d843f9",
         "title": "The Pomodoro Technique: work in 25-minute sprints to stay focused"
       }
+    },
+    {
+      "slug": "tet-nguyen-dan/dem-giao-thua-hai-loc",
+      "id": "79bbe913-dd6e-451f-a102-dacada9e760e",
+      "title": "Đêm Giao thừa: cúng Giao thừa, đi lễ chùa và hái lộc đầu năm",
+      "at": "2026-11-18T14:38:04.476Z",
+      "en": {
+        "id": "70039dc0-12c8-4eff-bc7d-ff031a9d9b82",
+        "title": "New Year's Eve at Tết: the Giao thừa offerings, temple visits and picking the first lucky twig"
+      }
+    },
+    {
+      "slug": "tet-nguyen-dan/hoa-dao-mai-quat-cau-doi",
+      "id": "4c8fd25c-e828-4313-be8f-ab60c8d6ff31",
+      "title": "Hoa đào, hoa mai, cây quất và câu đối đỏ: cách người Việt trang trí nhà ngày Tết",
+      "at": "2026-11-18T14:38:05.364Z",
+      "en": {
+        "id": "8d5205ad-d5db-4e61-9564-ebda0f19bec9",
+        "title": "Peach blossoms, yellow apricot blossoms, kumquat trees and red couplets: how Vietnamese families decorate their homes for Tết"
+      }
+    },
+    {
+      "slug": "tet-nguyen-dan/tet-ba-mien",
+      "id": "c290ac7c-f38a-4cf8-b1cb-431eba4a8391",
+      "title": "Tết ở ba miền Bắc, Trung, Nam: món ăn và nếp quen khác nhau",
+      "at": "2026-11-18T14:38:06.091Z",
+      "en": {
+        "id": "9123e7cc-49d0-42b9-be4f-cb0173ee28cd",
+        "title": "Tết in the three regions, North, Central and South: different foods and habits"
+      }
     }
   ]
 }
