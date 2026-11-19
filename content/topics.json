@@ -215,7 +215,7 @@
       "nameEn": "Docker from scratch",
       "tech": true,
       "brief": "Gợi ý 3 bài: cài Docker Engine trên Ubuntu từ kho chính thức; Dockerfile nhiều tầng (multi-stage); chạy container không bằng root và HEALTHCHECK.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "di-san-viet-nam",

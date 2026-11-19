@@ -77,6 +77,12 @@
       "space": "ky-nang",
       "collectionId": "cde684aa-3454-46b2-84e3-9481a16e5138",
       "at": "2026-11-18T08:37:58.974Z"
+    },
+    {
+      "slug": "docker-co-ban",
+      "space": "docker",
+      "collectionId": "0511db56-fe89-4372-ad6d-b60a3f0b5de4",
+      "at": "2026-11-19T02:38:50.687Z"
     }
   ],
   "posts": [
@@ -528,6 +534,36 @@
       "en": {
         "id": "9123e7cc-49d0-42b9-be4f-cb0173ee28cd",
         "title": "Tết in the three regions, North, Central and South: different foods and habits"
+      }
+    },
+    {
+      "slug": "docker-co-ban/cai-docker-engine-ubuntu-24-04",
+      "id": "4c303ab8-19ad-44d1-9ad6-f9c259de5249",
+      "title": "Cài Docker Engine trên Ubuntu 24.04 từ kho apt chính thức của Docker",
+      "at": "2026-11-19T02:38:51.155Z",
+      "en": {
+        "id": "3b8a03c0-64f6-4955-a15e-6f1192907ef9",
+        "title": "Installing Docker Engine on Ubuntu 24.04 from Docker's official apt repository"
+      }
+    },
+    {
+      "slug": "docker-co-ban/dockerfile-multi-stage",
+      "id": "1268f1da-1e29-455f-8355-17eb361400b4",
+      "title": "Dockerfile nhiều tầng (multi-stage): build nặng, image chạy nhẹ",
+      "at": "2026-11-19T02:38:52.071Z",
+      "en": {
+        "id": "b42c8afd-dd31-476f-a526-d9ea06ddcd1d",
+        "title": "Multi-stage Dockerfiles: heavy builds, light runtime images"
+      }
+    },
+    {
+      "slug": "docker-co-ban/container-khong-root-healthcheck",
+      "id": "f55be9d9-f430-4cc4-a21d-e27458b06655",
+      "title": "Chạy container không bằng root và thêm HEALTHCHECK để biết ứng dụng còn sống",
+      "at": "2026-11-19T02:38:53.000Z",
+      "en": {
+        "id": "6caec4d8-3e7f-4632-93c2-5e47e0245456",
+        "title": "Running containers as non-root and adding a HEALTHCHECK to know your app is alive"
       }
     }
   ]
