@@ -83,6 +83,12 @@
       "space": "docker",
       "collectionId": "0511db56-fe89-4372-ad6d-b60a3f0b5de4",
       "at": "2026-11-19T02:38:50.687Z"
+    },
+    {
+      "slug": "di-san-viet-nam",
+      "space": "van-hoa",
+      "collectionId": "2dd58824-7565-4677-a36c-f62de12402d2",
+      "at": "2026-11-19T08:39:20.477Z"
     }
   ],
   "posts": [
@@ -564,6 +570,36 @@
       "en": {
         "id": "6caec4d8-3e7f-4632-93c2-5e47e0245456",
         "title": "Running containers as non-root and adding a HEALTHCHECK to know your app is alive"
+      }
+    },
+    {
+      "slug": "di-san-viet-nam/nha-nhac-cung-dinh-hue",
+      "id": "eba0d8cf-1567-48c4-bb85-c386dd4616d2",
+      "title": "Nhã nhạc cung đình Huế: âm nhạc của triều đình được UNESCO ghi danh",
+      "at": "2026-11-19T08:39:20.847Z",
+      "en": {
+        "id": "e454a35b-36bb-405f-b345-8760c07b9e43",
+        "title": "Nhã nhạc, Vietnamese court music of Huế: the imperial music recognised by UNESCO"
+      }
+    },
+    {
+      "slug": "di-san-viet-nam/cong-chieng-tay-nguyen",
+      "id": "aa696e9a-d70d-460b-87c7-724d70288387",
+      "title": "Không gian văn hoá Cồng chiêng Tây Nguyên: tiếng chiêng nối con người với thần linh",
+      "at": "2026-11-19T08:39:21.476Z",
+      "en": {
+        "id": "6cb08367-2c69-45f4-b99d-1307a3a177d3",
+        "title": "The gong culture of the Central Highlands: when gongs connect people and spirits"
+      }
+    },
+    {
+      "slug": "di-san-viet-nam/ca-tru",
+      "id": "bbe88f3c-8ce7-4ceb-b2d3-16e6196070ca",
+      "title": "Ca trù: nghệ thuật hát ả đào với ba người, ba nhạc cụ",
+      "at": "2026-11-19T08:39:22.111Z",
+      "en": {
+        "id": "bb74bece-b168-4396-b327-fae23a9084e8",
+        "title": "Ca trù: the art of hát ả đào, with three performers and three instruments"
       }
     }
   ]
