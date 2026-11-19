@@ -208,16 +208,6 @@
       "status": "published"
     },
     {
-      "slug": "tiet-kiem-trong-nha",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "Tiết kiệm trong nhà",
-      "nameEn": "Saving at home",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: tính số điện từ công suất thiết bị; dùng điều hoà và bình nóng lạnh tiết kiệm; giảm lãng phí thực phẩm khi đi chợ và nấu ăn.",
-      "status": "todo"
-    },
-    {
       "slug": "docker-co-ban",
       "space": "docker",
       "lang": "vi",
@@ -228,6 +218,36 @@
       "status": "todo"
     },
     {
+      "slug": "di-san-viet-nam",
+      "space": "van-hoa",
+      "lang": "vi",
+      "name": "Di sản Việt Nam",
+      "nameEn": "Vietnamese heritage",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "anh-sang-va-mau-sac",
+      "space": "khoa-hoc",
+      "lang": "vi",
+      "name": "Ánh sáng và màu sắc",
+      "nameEn": "Light and colour",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: vì sao bầu trời màu xanh còn hoàng hôn màu đỏ cam (tán xạ Rayleigh), nối tới \"Nhật thực và nguyệt thực: xảy ra thế nào và cách xem nhật thực an toàn\" khi giải thích vì sao Mặt Trăng đỏ lúc nguyệt thực toàn phần; cầu vồng hình thành thế nào, vì sao luôn ở phía đối diện Mặt Trời và có cầu vồng kép; vì sao lá cây xanh và chuyển vàng, đỏ khi trời lạnh (diệp lục, carotenoid, anthocyanin). Giải thích bằng ví dụ đời thường, đối chiếu Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "tiet-kiem-trong-nha",
+      "space": "doi-song",
+      "lang": "vi",
+      "name": "Tiết kiệm trong nhà",
+      "nameEn": "Saving at home",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: tính số điện từ công suất thiết bị; dùng điều hoà và bình nóng lạnh tiết kiệm; giảm lãng phí thực phẩm khi đi chợ và nấu ăn.",
+      "status": "todo"
+    },
+    {
       "slug": "lam-viec-nhom",
       "space": "cong-viec",
       "lang": "vi",
@@ -235,6 +255,16 @@
       "nameEn": "Teamwork",
       "tech": false,
       "brief": "Gợi ý 3 bài: chia việc và giao trách nhiệm rõ ràng; theo dõi tiến độ bằng bảng Kanban; xử lý bất đồng trong nhóm.",
+      "status": "todo"
+    },
+    {
+      "slug": "prometheus-co-ban",
+      "space": "observability",
+      "lang": "vi",
+      "name": "Prometheus cơ bản",
+      "nameEn": "Prometheus basics",
+      "tech": true,
+      "brief": "Hành tinh đầu tiên của Space Observability. Gợi ý 3 bài: cài node_exporter và Prometheus trên Ubuntu 24.04 chạy như dịch vụ systemd, nối tới \"systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào\"; PromQL cơ bản (counter và gauge, rate, sum by, avg by) qua ví dụ CPU, RAM, ổ đĩa; quy tắc cảnh báo và Alertmanager gửi thông báo khi máy chủ có vấn đề, nói rõ metric khác log thế nào và nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\". Đối chiếu tài liệu chính thức prometheus.io.",
       "status": "todo"
     },
     {
@@ -258,43 +288,13 @@
       "status": "todo"
     },
     {
-      "slug": "di-san-viet-nam",
+      "slug": "lich-su-viet-nam",
       "space": "van-hoa",
       "lang": "vi",
-      "name": "Di sản Việt Nam",
-      "nameEn": "Vietnamese heritage",
+      "name": "Lịch sử Việt Nam",
+      "nameEn": "Vietnamese history",
       "tech": false,
-      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
-      "status": "todo"
-    },
-    {
-      "slug": "web-va-https",
-      "space": "networking",
-      "lang": "vi",
-      "name": "Web và HTTPS",
-      "nameEn": "Web and HTTPS",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: nginx làm reverse proxy; chứng chỉ TLS và HTTPS hoạt động thế nào; certbot cấp và tự gia hạn chứng chỉ Let's Encrypt.",
-      "status": "todo"
-    },
-    {
-      "slug": "thuyet-trinh",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Thuyết trình",
-      "nameEn": "Presenting",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: xây một thông điệp chính và cấu trúc ba phần; làm slide ít chữ; tập nói và trả lời câu hỏi khó.",
-      "status": "todo"
-    },
-    {
-      "slug": "anh-sang-va-mau-sac",
-      "space": "khoa-hoc",
-      "lang": "vi",
-      "name": "Ánh sáng và màu sắc",
-      "nameEn": "Light and colour",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: vì sao bầu trời màu xanh còn hoàng hôn màu đỏ cam (tán xạ Rayleigh), nối tới \"Nhật thực và nguyệt thực: xảy ra thế nào và cách xem nhật thực an toàn\" khi giải thích vì sao Mặt Trăng đỏ lúc nguyệt thực toàn phần; cầu vồng hình thành thế nào, vì sao luôn ở phía đối diện Mặt Trời và có cầu vồng kép; vì sao lá cây xanh và chuyển vàng, đỏ khi trời lạnh (diệp lục, carotenoid, anthocyanin). Giải thích bằng ví dụ đời thường, đối chiếu Wikipedia.",
+      "brief": "Gợi ý 3 bài: các triều đại phong kiến qua một trục thời gian; trận Bạch Đằng năm 938; kinh đô Thăng Long. Đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
@@ -308,13 +308,13 @@
       "status": "todo"
     },
     {
-      "slug": "doc-sach",
-      "space": "ky-nang",
+      "slug": "thuyet-trinh",
+      "space": "cong-viec",
       "lang": "vi",
-      "name": "Đọc sách",
-      "nameEn": "Reading books",
+      "name": "Thuyết trình",
+      "nameEn": "Presenting",
       "tech": false,
-      "brief": "Gợi ý 3 bài: ba mức đọc lướt, đọc hiểu, đọc phân tích; ghi chú bên lề và tóm tắt một trang; giữ thói quen đọc mỗi ngày.",
+      "brief": "Gợi ý 3 bài: xây một thông điệp chính và cấu trúc ba phần; làm slide ít chữ; tập nói và trả lời câu hỏi khó.",
       "status": "todo"
     },
     {
@@ -325,6 +325,26 @@
       "nameEn": "Traditional Vietnamese dress",
       "tech": false,
       "brief": "Gợi ý 3 bài: áo dài qua các thời kỳ; áo tứ thân và áo yếm; nón lá. Đối chiếu Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "web-va-https",
+      "space": "networking",
+      "lang": "vi",
+      "name": "Web và HTTPS",
+      "nameEn": "Web and HTTPS",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: nginx làm reverse proxy; chứng chỉ TLS và HTTPS hoạt động thế nào; certbot cấp và tự gia hạn chứng chỉ Let's Encrypt.",
+      "status": "todo"
+    },
+    {
+      "slug": "doc-sach",
+      "space": "ky-nang",
+      "lang": "vi",
+      "name": "Đọc sách",
+      "nameEn": "Reading books",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: ba mức đọc lướt, đọc hiểu, đọc phân tích; ghi chú bên lề và tóm tắt một trang; giữ thói quen đọc mỗi ngày.",
       "status": "todo"
     },
     {
@@ -355,16 +375,6 @@
       "nameEn": "Docker networking",
       "tech": true,
       "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
-      "status": "todo"
-    },
-    {
-      "slug": "lich-su-viet-nam",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Lịch sử Việt Nam",
-      "nameEn": "Vietnamese history",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: các triều đại phong kiến qua một trục thời gian; trận Bạch Đằng năm 938; kinh đô Thăng Long. Đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
