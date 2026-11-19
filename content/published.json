@@ -89,6 +89,12 @@
       "space": "van-hoa",
       "collectionId": "2dd58824-7565-4677-a36c-f62de12402d2",
       "at": "2026-11-19T08:39:20.477Z"
+    },
+    {
+      "slug": "anh-sang-va-mau-sac",
+      "space": "khoa-hoc",
+      "collectionId": "514c52c5-3bab-499a-baa7-adadbeacda10",
+      "at": "2026-11-19T14:37:56.842Z"
     }
   ],
   "posts": [
@@ -600,6 +606,36 @@
       "en": {
         "id": "bb74bece-b168-4396-b327-fae23a9084e8",
         "title": "Ca trù: the art of hát ả đào, with three performers and three instruments"
+      }
+    },
+    {
+      "slug": "anh-sang-va-mau-sac/bau-troi-xanh-hoang-hon-do-cam",
+      "id": "2de34b4b-16f4-4338-8f26-6d387875d3ce",
+      "title": "Vì sao bầu trời màu xanh còn hoàng hôn đỏ cam: tán xạ Rayleigh trong đời thường",
+      "at": "2026-11-19T14:37:57.217Z",
+      "en": {
+        "id": "2fb82dff-4542-4f8e-9fb2-a239d9b221cd",
+        "title": "Why the sky is blue and sunsets are orange-red: Rayleigh scattering in everyday life"
+      }
+    },
+    {
+      "slug": "anh-sang-va-mau-sac/cau-vong-hinh-thanh-nhu-the-nao",
+      "id": "1e1ea28c-fcd9-411c-8329-24357056065e",
+      "title": "Cầu vồng hình thành thế nào: vì sao luôn ở phía đối diện Mặt Trời và đôi khi có cầu vồng kép",
+      "at": "2026-11-19T14:37:58.488Z",
+      "en": {
+        "id": "37d74640-9258-4031-b4f2-6c986e49f692",
+        "title": "How a rainbow forms: why it appears opposite the Sun and why you sometimes see a double rainbow"
+      }
+    },
+    {
+      "slug": "anh-sang-va-mau-sac/la-cay-doi-mau-diep-luc-carotenoid-anthocyanin",
+      "id": "c480100f-528a-445d-9445-ba8c19b0e6f4",
+      "title": "Vì sao lá cây xanh rồi chuyển vàng, đỏ khi trời lạnh: diệp lục, carotenoid và anthocyanin",
+      "at": "2026-11-19T14:37:59.124Z",
+      "en": {
+        "id": "c8711f1d-db80-4af5-bfac-413996935722",
+        "title": "Why leaves turn from green to yellow and red in cool weather: chlorophyll, carotenoids and anthocyanins"
       }
     }
   ]
