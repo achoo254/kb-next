@@ -68,6 +68,18 @@
       "unitEn": "articles",
       "descriptionVi": "Bầu trời, thời tiết và những hiện tượng tự nhiên giải thích dễ hiểu.",
       "descriptionEn": "The sky, weather and natural phenomena explained simply."
+    },
+    {
+      "slug": "am-thuc",
+      "nameVi": "Ẩm thực & nấu ăn",
+      "nameEn": "Food & cooking",
+      "tint": "#FED7AA",
+      "glow": "#F97316",
+      "art": "/art/orb-universe.webp",
+      "unitVi": "bài",
+      "unitEn": "articles",
+      "descriptionVi": "Kỹ thuật nấu ăn cơ bản, món ăn gia đình và ẩm thực các vùng miền.",
+      "descriptionEn": "Basic cooking techniques, home dishes and regional food."
     }
   ]
 }

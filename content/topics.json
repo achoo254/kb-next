@@ -238,33 +238,13 @@
       "status": "published"
     },
     {
-      "slug": "tiet-kiem-trong-nha",
-      "space": "doi-song",
+      "slug": "lich-su-viet-nam",
+      "space": "van-hoa",
       "lang": "vi",
-      "name": "Tiết kiệm trong nhà",
-      "nameEn": "Saving at home",
+      "name": "Lịch sử Việt Nam",
+      "nameEn": "Vietnamese history",
       "tech": false,
-      "brief": "Gợi ý 3 bài: tính số điện từ công suất thiết bị; dùng điều hoà và bình nóng lạnh tiết kiệm; giảm lãng phí thực phẩm khi đi chợ và nấu ăn.",
-      "status": "todo"
-    },
-    {
-      "slug": "lam-viec-nhom",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Làm việc nhóm",
-      "nameEn": "Teamwork",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: chia việc và giao trách nhiệm rõ ràng; theo dõi tiến độ bằng bảng Kanban; xử lý bất đồng trong nhóm.",
-      "status": "todo"
-    },
-    {
-      "slug": "prometheus-co-ban",
-      "space": "observability",
-      "lang": "vi",
-      "name": "Prometheus cơ bản",
-      "nameEn": "Prometheus basics",
-      "tech": true,
-      "brief": "Hành tinh đầu tiên của Space Observability. Gợi ý 3 bài: cài node_exporter và Prometheus trên Ubuntu 24.04 chạy như dịch vụ systemd, nối tới \"systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào\"; PromQL cơ bản (counter và gauge, rate, sum by, avg by) qua ví dụ CPU, RAM, ổ đĩa; quy tắc cảnh báo và Alertmanager gửi thông báo khi máy chủ có vấn đề, nói rõ metric khác log thế nào và nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\". Đối chiếu tài liệu chính thức prometheus.io.",
+      "brief": "Gợi ý 3 bài: các triều đại phong kiến qua một trục thời gian (từ Ngô, Đinh, Tiền Lê đến nhà Nguyễn); trận Bạch Đằng năm 938; kinh đô Thăng Long. Bài trục thời gian nối tới \"Nhã nhạc cung đình Huế: âm nhạc của triều đình được UNESCO ghi danh\" khi nói về nhà Nguyễn. Mốc năm đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
@@ -284,47 +264,37 @@
       "name": "Bếp an toàn",
       "nameEn": "A safe kitchen",
       "tech": false,
-      "brief": "Gợi ý 3 bài: bảo quản thực phẩm trong tủ lạnh đúng ngăn; rã đông an toàn; giữ thớt, dao, khăn bếp sạch để tránh nhiễm chéo.",
+      "brief": "Gợi ý 3 bài: bảo quản thực phẩm trong tủ lạnh đúng ngăn; rã đông an toàn; giữ thớt, dao, khăn bếp sạch để tránh nhiễm chéo. Bài tủ lạnh có thể nối tới \"Lịch dọn dẹp mỗi ngày 15 phút: nhà sạch mà không mất cả buổi cuối tuần\" khi nói về lau tủ định kỳ.",
       "status": "todo"
     },
     {
-      "slug": "lich-su-viet-nam",
-      "space": "van-hoa",
+      "slug": "trai-dat-chuyen-dong",
+      "space": "khoa-hoc",
       "lang": "vi",
-      "name": "Lịch sử Việt Nam",
-      "nameEn": "Vietnamese history",
+      "name": "Trái Đất chuyển động",
+      "nameEn": "Our restless Earth",
       "tech": false,
-      "brief": "Gợi ý 3 bài: các triều đại phong kiến qua một trục thời gian; trận Bạch Đằng năm 938; kinh đô Thăng Long. Đối chiếu Wikipedia.",
+      "brief": "Gợi ý 3 bài: kiến tạo mảng và vì sao các lục địa trôi dần (vỏ Trái Đất, các mảng lớn, dãy Himalaya); động đất hình thành thế nào, thang độ lớn Richter và moment, việc nên làm khi có rung lắc; núi lửa và sóng thần, vì sao chúng hay xuất hiện quanh Vành đai lửa Thái Bình Dương. Bài kiến tạo mảng nối tới \"Tám hành tinh của Hệ Mặt Trời: kích thước, khoảng cách và vì sao Sao Diêm Vương thành hành tinh lùn\" khi nói về cấu tạo hành tinh đá. Số liệu đối chiếu USGS hoặc Wikipedia.",
       "status": "todo"
     },
     {
-      "slug": "cap-nhat-ung-dung-k8s",
-      "space": "kubernetes",
-      "lang": "vi",
-      "name": "Cập nhật ứng dụng trên Kubernetes",
-      "nameEn": "Updating apps on Kubernetes",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
-      "status": "todo"
-    },
-    {
-      "slug": "thuyet-trinh",
+      "slug": "lam-viec-nhom",
       "space": "cong-viec",
       "lang": "vi",
-      "name": "Thuyết trình",
-      "nameEn": "Presenting",
+      "name": "Làm việc nhóm",
+      "nameEn": "Teamwork",
       "tech": false,
-      "brief": "Gợi ý 3 bài: xây một thông điệp chính và cấu trúc ba phần; làm slide ít chữ; tập nói và trả lời câu hỏi khó.",
+      "brief": "Gợi ý 3 bài: chia việc và giao trách nhiệm rõ ràng; theo dõi tiến độ bằng bảng Kanban; xử lý bất đồng trong nhóm.",
       "status": "todo"
     },
     {
-      "slug": "trang-phuc-viet",
-      "space": "van-hoa",
+      "slug": "nau-an-co-ban",
+      "space": "am-thuc",
       "lang": "vi",
-      "name": "Trang phục truyền thống Việt",
-      "nameEn": "Traditional Vietnamese dress",
+      "name": "Nấu ăn cơ bản",
+      "nameEn": "Cooking basics",
       "tech": false,
-      "brief": "Gợi ý 3 bài: áo dài qua các thời kỳ; áo tứ thân và áo yếm; nón lá. Đối chiếu Wikipedia.",
+      "brief": "Hành tinh đầu tiên của Space Ẩm thực & nấu ăn. Gợi ý 3 bài: nấu cơm ngon bằng nồi cơm điện (vo gạo, tỉ lệ nước theo loại gạo, ủ cơm); luộc rau xanh giữ màu và luộc thịt không hôi; pha nước mắm chấm chua ngọt cân vị. Bài nước mắm nối tới \"Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết\" hoặc \"Tết ở ba miền Bắc, Trung, Nam: món ăn và nếp quen khác nhau\" khi nói vị mỗi miền; nếu \"Bếp an toàn\" đã đăng thì nối thêm bài về thớt, dao. Hướng dẫn từng bước, lượng nguyên liệu cụ thể, không quảng cáo thương hiệu.",
       "status": "todo"
     },
     {
@@ -338,6 +308,26 @@
       "status": "todo"
     },
     {
+      "slug": "trang-phuc-viet",
+      "space": "van-hoa",
+      "lang": "vi",
+      "name": "Trang phục truyền thống Việt",
+      "nameEn": "Traditional Vietnamese dress",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: áo dài qua các thời kỳ; áo tứ thân và áo yếm; nón lá. Đối chiếu Wikipedia.",
+      "status": "todo"
+    },
+    {
+      "slug": "tiet-kiem-trong-nha",
+      "space": "doi-song",
+      "lang": "vi",
+      "name": "Tiết kiệm trong nhà",
+      "nameEn": "Saving at home",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: tính số điện từ công suất thiết bị; dùng điều hoà và bình nóng lạnh tiết kiệm; giảm lãng phí thực phẩm khi đi chợ và nấu ăn.",
+      "status": "todo"
+    },
+    {
       "slug": "doc-sach",
       "space": "ky-nang",
       "lang": "vi",
@@ -348,33 +338,23 @@
       "status": "todo"
     },
     {
-      "slug": "sua-chua-nho",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "Sửa chữa nhỏ trong nhà",
-      "nameEn": "Small home repairs",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: thay bóng đèn và ổ cắm an toàn (ngắt cầu dao trước); thông bồn rửa bị tắc; xử lý vòi nước rỉ. Nhấn mạnh an toàn điện.",
-      "status": "todo"
-    },
-    {
-      "slug": "phat-trien-ban-than",
+      "slug": "thuyet-trinh",
       "space": "cong-viec",
       "lang": "vi",
-      "name": "Phát triển bản thân",
-      "nameEn": "Personal growth",
+      "name": "Thuyết trình",
+      "nameEn": "Presenting",
       "tech": false,
-      "brief": "Gợi ý 3 bài: đặt mục tiêu SMART; viết nhật ký công việc hằng tuần; học kỹ năng mới song song với công việc.",
+      "brief": "Gợi ý 3 bài: xây một thông điệp chính và cấu trúc ba phần; làm slide ít chữ; tập nói và trả lời câu hỏi khó.",
       "status": "todo"
     },
     {
-      "slug": "mang-docker",
-      "space": "docker",
+      "slug": "prometheus-co-ban",
+      "space": "observability",
       "lang": "vi",
-      "name": "Mạng trong Docker",
-      "nameEn": "Docker networking",
+      "name": "Prometheus cơ bản",
+      "nameEn": "Prometheus basics",
       "tech": true,
-      "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
+      "brief": "Hành tinh đầu tiên của Space Observability. Gợi ý 3 bài: cài node_exporter và Prometheus trên Ubuntu 24.04 chạy như dịch vụ systemd, nối tới \"systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào\"; PromQL cơ bản (counter và gauge, rate, sum by, avg by) qua ví dụ CPU, RAM, ổ đĩa; quy tắc cảnh báo và Alertmanager gửi thông báo khi máy chủ có vấn đề, nói rõ metric khác log thế nào và nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\". Đối chiếu tài liệu chính thức prometheus.io.",
       "status": "todo"
     },
     {
@@ -388,6 +368,36 @@
       "status": "todo"
     },
     {
+      "slug": "sua-chua-nho",
+      "space": "doi-song",
+      "lang": "vi",
+      "name": "Sửa chữa nhỏ trong nhà",
+      "nameEn": "Small home repairs",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: thay bóng đèn và ổ cắm an toàn (ngắt cầu dao trước); thông bồn rửa bị tắc; xử lý vòi nước rỉ. Nhấn mạnh an toàn điện.",
+      "status": "todo"
+    },
+    {
+      "slug": "cap-nhat-ung-dung-k8s",
+      "space": "kubernetes",
+      "lang": "vi",
+      "name": "Cập nhật ứng dụng trên Kubernetes",
+      "nameEn": "Updating apps on Kubernetes",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
+      "status": "todo"
+    },
+    {
+      "slug": "phat-trien-ban-than",
+      "space": "cong-viec",
+      "lang": "vi",
+      "name": "Phát triển bản thân",
+      "nameEn": "Personal growth",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: đặt mục tiêu SMART; viết nhật ký công việc hằng tuần; học kỹ năng mới song song với công việc.",
+      "status": "todo"
+    },
+    {
       "slug": "di-lai-an-toan",
       "space": "doi-song",
       "lang": "vi",
@@ -398,13 +408,13 @@
       "status": "todo"
     },
     {
-      "slug": "dia-tren-linux",
-      "space": "linux",
+      "slug": "mang-docker",
+      "space": "docker",
       "lang": "vi",
-      "name": "Đĩa trên Linux",
-      "nameEn": "Disks on Linux",
+      "name": "Mạng trong Docker",
+      "nameEn": "Docker networking",
       "tech": true,
-      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
+      "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
       "status": "todo"
     },
     {
@@ -415,6 +425,16 @@
       "nameEn": "Personal task management",
       "tech": false,
       "brief": "Gợi ý 3 bài: phương pháp GTD gom việc vào một chỗ; danh sách việc mỗi ngày ba việc chính; xem lại tuần vào cuối tuần.",
+      "status": "todo"
+    },
+    {
+      "slug": "dia-tren-linux",
+      "space": "linux",
+      "lang": "vi",
+      "name": "Đĩa trên Linux",
+      "nameEn": "Disks on Linux",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
       "status": "todo"
     }
   ]
