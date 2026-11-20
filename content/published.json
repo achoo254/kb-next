@@ -95,6 +95,12 @@
       "space": "khoa-hoc",
       "collectionId": "514c52c5-3bab-499a-baa7-adadbeacda10",
       "at": "2026-11-19T14:37:56.842Z"
+    },
+    {
+      "slug": "lich-su-viet-nam",
+      "space": "van-hoa",
+      "collectionId": "a47e08b6-a969-47b7-bdf6-de3e6d1f97e2",
+      "at": "2026-11-20T14:38:08.062Z"
     }
   ],
   "posts": [
@@ -636,6 +642,36 @@
       "en": {
         "id": "c8711f1d-db80-4af5-bfac-413996935722",
         "title": "Why leaves turn from green to yellow and red in cool weather: chlorophyll, carotenoids and anthocyanins"
+      }
+    },
+    {
+      "slug": "lich-su-viet-nam/kinh-do-thang-long",
+      "id": "cab0d724-93bc-48a0-8c29-dbdb02ac9e37",
+      "title": "Kinh đô Thăng Long: từ Chiếu dời đô năm 1010 đến Hoàng thành ngày nay",
+      "at": "2026-11-20T14:38:08.389Z",
+      "en": {
+        "id": "126f45ec-255d-44a5-a39e-02937ae71686",
+        "title": "Thăng Long, the dragon capital: from the 1010 move to today's Imperial Citadel"
+      }
+    },
+    {
+      "slug": "lich-su-viet-nam/tran-bach-dang-nam-938",
+      "id": "242477bc-f70d-409b-8f66-aecd447297b0",
+      "title": "Trận Bạch Đằng năm 938: Ngô Quyền, bãi cọc ngầm và nền độc lập của người Việt",
+      "at": "2026-11-20T14:38:09.403Z",
+      "en": {
+        "id": "ac4c6aa7-a348-491f-9210-49c61d0d287e",
+        "title": "The Battle of Bạch Đằng in 938: Ngô Quyền, the hidden stakes and the road to independence"
+      }
+    },
+    {
+      "slug": "lich-su-viet-nam/cac-trieu-dai-viet-nam-truc-thoi-gian",
+      "id": "c1daa501-b8ac-4ef4-9d28-96179e265fd2",
+      "title": "Các triều đại phong kiến Việt Nam trên một trục thời gian: từ Ngô, Đinh, Tiền Lê đến nhà Nguyễn",
+      "at": "2026-11-20T14:38:10.059Z",
+      "en": {
+        "id": "552280a6-d432-4609-8e74-5710aae1f38a",
+        "title": "Vietnam's dynasties on a single timeline: from the Ngô, Đinh and Early Lê to the Nguyễn"
       }
     }
   ]
