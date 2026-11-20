@@ -66,7 +66,7 @@ describe('GET /api/spaces', () => {
   it('lists the Universe of C09 in order, with the reader’s personal Space, counts and collections', async () => {
     const { status, body } = await get<{ spaces: SpaceListItem[] }>('/api/spaces', owner);
     expect(status).toBe(200);
-    expect(body.spaces.map((s) => s.nameVi)).toEqual(['Networking', 'Kubernetes', 'Linux', 'Observability', 'Docker', 'Học hàng tuần', 'Vũ trụ của bạn']);
+    expect(body.spaces.map((s) => s.nameVi)).toEqual(['Networking', 'Kubernetes', 'Linux', 'Observability', 'Docker', 'Vũ trụ của bạn']);
     const [net] = body.spaces;
     expect(net).toMatchObject({ slug: 'networking', nameEn: 'Networking', tint: '#C4B5FD', glow: '#8B5CF6', art: '/art/crystal-networking.webp', kind: 'public' });
     // 8 labs (one hidden by an admin, one in the trash: 6) + 4 notes + 1 path + 1 file; ARP and its translation
@@ -83,7 +83,7 @@ describe('GET /api/spaces', () => {
   it('shows a guest and another member only the public Spaces and published documents', async () => {
     for (const cookie of [undefined, stranger]) {
       const { body } = await get<{ spaces: SpaceListItem[] }>('/api/spaces', cookie);
-      expect(body.spaces).toHaveLength(6);
+      expect(body.spaces).toHaveLength(5);
       expect(body.spaces.some((s) => s.kind === 'personal')).toBe(false);
       // 6 labs + the two community notes + the path.
       expect(body.spaces[0]?.documentCount).toBe(9);

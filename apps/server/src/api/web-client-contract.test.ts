@@ -72,7 +72,7 @@ describe('web client ↔ reading API', () => {
     expect((await completeOnboarding({ lang: 'vi', interests: ['networking'] })).onboardedAt).not.toBeNull();
 
     const spaces = await fetchSpaces();
-    expect(spaces).toHaveLength(7);
+    expect(spaces).toHaveLength(6);
     const space = await fetchSpace('networking', 'en');
     expect(space.collections).toHaveLength(4);
     expect((await fetchSpace(`personal-${ownerId}`)).uncollected).toHaveLength(7);

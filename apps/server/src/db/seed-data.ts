@@ -139,21 +139,6 @@ export const SEED_SPACES: SeedSpace[] = [
     ],
   },
   {
-    key: 'wk',
-    slug: 'weekly',
-    vi: 'Học hàng tuần',
-    en: 'Weekly learning',
-    tint: '#F0ABFC',
-    glow: '#C026D3',
-    art: '/art/crystal-weekly.webp',
-    kind: 'public',
-    unitVi: 'tuần',
-    unitEn: 'weeks',
-    caption: { vi: '5 tuần', en: '5 weeks' },
-    description: { vi: 'Nhật ký từng buổi học: thực hành Docker, Compose và dựng cụm Kubernetes.', en: 'A journal of each study session: hands-on Docker, Compose and building a Kubernetes cluster.' },
-    collections: ['11-07', '18-07', '01-08', '08-08', '17-09'].map((week) => ({ vi: week, en: week })),
-  },
-  {
     key: 'me',
     slug: null,
     vi: 'Vũ trụ của bạn',
@@ -336,13 +321,6 @@ export const SEED_DOCUMENTS: SeedDocument[] = [
     key: 'docker-compose', space: 'dkr', collection: 2, title: 'Docker Compose', type: 'lab', ...official,
     chunks: [['compose-file', 'compose.yaml', 'Một tệp compose.yaml mô tả nhiều dịch vụ, mạng và volume; docker compose up chạy tất cả.']],
   },
-  // Học hàng tuần: one page a week
-  ...['11-07', '18-07', '01-08', '08-08', '17-09'].map(
-    (week, i): SeedDocument => ({
-      key: `week-${week}`, space: 'wk', collection: i, title: `Học hàng tuần ${week}`, type: 'note', ...official,
-      chunks: [['tom-tat', 'Tóm tắt tuần', `Những gì đã học trong tuần ${week}: bài lab, câu hỏi còn mở và việc tuần sau.`]],
-    }),
-  ),
   // Vũ trụ của bạn: the three private files of C09
   {
     key: 'lab-notes', space: 'me', collection: null, title: 'lab-notes.docx', type: 'office', ...mine,

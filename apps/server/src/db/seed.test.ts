@@ -21,21 +21,20 @@ describe('dev seed', () => {
     expect(() => assertSeedAllowed('development')).not.toThrow();
   });
 
-  it('gives the Universe of the mock: 7 Spaces, their captions and Networking as in C10', async () => {
+  it('gives the Universe of the mock: 6 Spaces, their captions and Networking as in C10', async () => {
     const first = await seedDatabase(database.db, 'dev:me');
     const again = await seedDatabase(database.db, 'dev:me');
     expect(again).toEqual(first);
 
     const me = await viewerFor(database.db, new Set(), first.ownerId);
     const spaces = await listSpaces(database.db, me);
-    expect(spaces.map((s) => s.nameEn)).toEqual(['Networking', 'Kubernetes', 'Linux', 'Observability', 'Docker', 'Weekly learning', 'Your universe']);
+    expect(spaces.map((s) => s.nameEn)).toEqual(['Networking', 'Kubernetes', 'Linux', 'Observability', 'Docker', 'Your universe']);
     expect(spaces.map((s) => s.art)).toEqual([
       '/art/crystal-networking.webp',
       '/art/crystal-kubernetes.webp',
       '/art/crystal-linux.webp',
       '/art/crystal-observability.webp',
       '/art/crystal-docker.webp',
-      '/art/crystal-weekly.webp',
       '/art/crystal-personal.webp',
     ]);
 
@@ -51,14 +50,13 @@ describe('dev seed', () => {
     expect(await caption('linux')).toBe(3);
     expect(await caption('observability')).toBe(1);
     expect(await caption('docker')).toBe(3);
-    expect(await caption('weekly')).toBe(5);
     // "3 tệp · riêng tư": the three files; the draft note of C02 and the three notes of C08 sit beside them.
     expect(await caption('personal', 'office')).toBe(3);
     expect(await caption('personal', 'note')).toBe(4);
 
     // A guest sees neither the personal Space nor the private and pending notes.
     const guestSpaces = await listSpaces(database.db, GUEST);
-    expect(guestSpaces).toHaveLength(6);
+    expect(guestSpaces).toHaveLength(5);
     const networking = guestSpaces.find((s) => s.slug === 'networking');
     if (!networking) throw new Error('no Networking');
     const titles = (await listDocuments(database.db, GUEST, { spaceId: networking.id })).map((d) => d.title);

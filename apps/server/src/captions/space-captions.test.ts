@@ -125,7 +125,7 @@ describe('captions chosen by Jev', () => {
   });
 
   it('falls back to the plain count without a key, on a failure or an answer outside the options', async () => {
-    const weekly: CaptionInput = { space: { ...space({ unitVi: 'tuần', unitEn: 'weeks' }), id: seedId('space:wk') }, counts: { note: 5 } };
+    const weekly: CaptionInput = { space: { ...space({ unitVi: 'tuần', unitEn: 'weeks' }), id: seedId('space:lnx') }, counts: { note: 5 } };
     expect((await new SpaceCaptions(database.db, null).captionsFor([weekly])).get(weekly.space.id)).toEqual({ vi: '5 bài', en: '5 docs' });
 
     let clock = new Date('2026-11-04T08:00:00Z');
@@ -182,7 +182,6 @@ describe('GET /api/spaces with Jev', () => {
       linux: '3 bài tập',
       observability: '1 lab',
       docker: '3 phần',
-      weekly: '5 tuần',
     });
     expect(await captions()).toMatchObject({ networking: '8 lab' });
     expect(jev.calls).toHaveLength(1);
@@ -199,13 +198,13 @@ describe('board captions seeded for E2E (KB_SEED=mock)', () => {
   let server: TestServer;
   let owner: string;
   const SECRET = 'test-secret-'.padEnd(40, 'x');
-  const BOARD = { networking: '8 lab', kubernetes: '2 bài', linux: '3 bài tập', observability: '1 lab', docker: '3 phần', weekly: '5 tuần' };
+  const BOARD = { networking: '8 lab', kubernetes: '2 bài', linux: '3 bài tập', observability: '1 lab', docker: '3 phần' };
 
   beforeAll(async () => {
     idp = await startFakeIdp({ clientId: 'kb-web', clientSecret: SECRET, sub: 'e2e-account' });
     server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET });
     const { ownerId } = await seedDatabase(server.database.db, 'e2e-account');
-    expect(await seedMockCaptions(server.database.db, server.config.adminSubs, ownerId)).toBe(13);
+    expect(await seedMockCaptions(server.database.db, server.config.adminSubs, ownerId)).toBe(11);
     owner = await signIn(server);
   });
   afterAll(async () => {
