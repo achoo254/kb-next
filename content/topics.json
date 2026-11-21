@@ -81,7 +81,8 @@
       "nameEn": "Personal Data Protection Law 91/2025",
       "tech": true,
       "brief": "Gợi ý 3 bài: Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP hướng dẫn: khái niệm dữ liệu cá nhân cơ bản và nhạy cảm, quyền của chủ thể, nghĩa vụ của bên kiểm soát và bên xử lý; hồ sơ đánh giá tác động xử lý dữ liệu và hồ sơ chuyển dữ liệu xuyên biên giới: khi nào bắt buộc, nội dung chính, nộp cho cơ quan nào, thời hạn; việc kỹ thuật để tuân thủ (phân loại dữ liệu, mã hoá, nhật ký truy cập, xoá dữ liệu khi hết mục đích, xử lý khi lộ lọt). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
+      "status": "skipped",
+    "note": "Could not verify article numbers, impact-assessment and cross-border dossier contents, authority and deadlines of Law 91/2025/QH15 and Decree 356/2025/ND-CP against an official readable source on 21/11/2026 (vbpl.moj.gov.vn not resolvable, thuvienphapluat.vn 403, chinhphu.vn unreachable); only law-firm summaries were reachable. Retry when the official text is accessible."
     },
     {
       "slug": "luat-an-ninh-mang-116-2025",
