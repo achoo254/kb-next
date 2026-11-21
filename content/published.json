@@ -137,6 +137,12 @@
       "space": "phap-ly-anm",
       "collectionId": "37118608-c1fe-4390-9824-ef7e0ae35cf3",
       "at": "2026-11-21T23:25:34.518Z"
+    },
+    {
+      "slug": "luat-bao-ve-du-lieu-ca-nhan-91-2025",
+      "space": "phap-ly-anm",
+      "collectionId": "c0f2539f-4e33-4d34-8093-348ed2c4bce8",
+      "at": "2026-11-21T23:29:27.895Z"
     }
   ],
   "posts": [
@@ -888,6 +894,36 @@
       "en": {
         "id": "f12f635a-770e-4feb-a247-0e5a81399550",
         "title": "Decision 1964/QĐ-TTg at a glance: the groups of criteria in the Cybersecurity Assurance Index"
+      }
+    },
+    {
+      "slug": "luat-bao-ve-du-lieu-ca-nhan-91-2025/luat91-khai-niem-quyen-chu-the-kiem-soat-xu-ly",
+      "id": "a732666a-2399-47ec-843d-529def2ff5ef",
+      "title": "Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15: dữ liệu cơ bản và nhạy cảm, quyền của chủ thể, bên kiểm soát và bên xử lý",
+      "at": "2026-11-21T23:29:28.203Z",
+      "en": {
+        "id": "f8c84965-9d84-49b6-98f5-85fc1876ead8",
+        "title": "Personal Data Protection Law 91/2025/QH15: basic and sensitive data, data subject rights, controllers and processors"
+      }
+    },
+    {
+      "slug": "luat-bao-ve-du-lieu-ca-nhan-91-2025/luat91-danh-gia-tac-dong-xuyen-bien-gioi",
+      "id": "9533e10b-421a-4902-8a4a-80332709a276",
+      "title": "Đánh giá tác động xử lý dữ liệu và chuyển dữ liệu xuyên biên giới theo Luật 91/2025/QH15: khi nào, nộp gì, thời hạn nào",
+      "at": "2026-11-21T23:29:28.844Z",
+      "en": {
+        "id": "1e74296e-d5f4-4653-956a-31c2ce8d99d8",
+        "title": "Impact assessments and cross-border transfers under Law 91/2025/QH15: when, what to file, and the deadlines"
+      }
+    },
+    {
+      "slug": "luat-bao-ve-du-lieu-ca-nhan-91-2025/luat91-viec-ky-thuat-tuan-thu",
+      "id": "506b027b-d2f2-41d7-b26c-e27671464710",
+      "title": "Làm gì về kỹ thuật để tuân thủ Luật 91/2025/QH15: phân loại, mã hoá, nhật ký, xoá dữ liệu và thông báo sự cố",
+      "at": "2026-11-21T23:29:29.519Z",
+      "en": {
+        "id": "106aa517-17e5-4a10-a413-bfa7e58b42c3",
+        "title": "Technical measures for complying with Law 91/2025/QH15: classification, encryption, logging, deletion and breach notification"
       }
     }
   ]
