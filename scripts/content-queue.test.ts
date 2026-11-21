@@ -11,7 +11,7 @@ const englishBody = `> [!TLDR]\n> - First point.\n> - Second point.\n\n## Introd
 /** The same in English. */
 const linkedEn = (title: string, ...links: string[]): string => article(`title: ${title}\ntags: test`, `${links.map((l) => `See [[${l}]].`).join(' ')}\n\n${englishBody}`);
 const spaces: Spaces = { existing: ['networking'], create: [{ slug: 'ky-nang', nameVi: 'Kỹ năng', nameEn: 'Skills', tint: '#FBCFE8', glow: '#EC4899', art: '/art/orb-universe.webp', unitVi: 'bài', unitEn: 'articles' }] };
-const topic = (slug: string, extra: Partial<Topic> = {}): Topic => ({ slug, space: 'ky-nang', lang: 'vi', name: slug, nameEn: slug, tech: false, brief: '', status: 'todo', ...extra });
+const topic = (slug: string, extra: Partial<Topic> = {}): Topic => ({ slug, space: 'ky-nang', lang: 'vi', name: slug, nameEn: slug, tech: true, brief: '', status: 'todo', ...extra });
 const empty: Ledger = { planets: [], posts: [] };
 /** The English twin of a Vietnamese test article: its title and each link get " EN" added. */
 const twinOf = (text: string): string => {
@@ -78,11 +78,11 @@ describe('links', () => {
 });
 
 describe('checkTopics', () => {
-  it('needs known Spaces, unique slugs, names and tech at most a third', () => {
-    expect(checkTopics([topic('a'), topic('b'), topic('c', { tech: true, space: 'networking' })], spaces)).toEqual([]);
+  it('needs known Spaces, unique slugs, names and engineering-only topics', () => {
+    expect(checkTopics([topic('a'), topic('b'), topic('c', { space: 'networking' })], spaces)).toEqual([]);
     const problems = checkTopics([topic('a', { space: 'nowhere' }), topic('a'), topic('B', { name: '' })], spaces).map((p) => p.message);
     expect(problems).toEqual(['unknown Space "nowhere"', 'slug is listed twice', 'slug must be lowercase letters, digits and dashes', 'name must be 1–80 characters']);
-    expect(checkTopics([topic('a', { tech: true }), topic('b')], spaces).map((p) => p.message)).toEqual(['1 of 2 topics are tech; keep tech at most a third']);
+    expect(checkTopics([topic('a', { tech: false })], spaces).map((p) => p.message)).toEqual(['tech must be true: the knowledge base covers engineering topics only']);
   });
 });
 

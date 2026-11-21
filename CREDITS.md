@@ -3,7 +3,7 @@
 ## AI-generated art
 
 The images in [`apps/web/public/art/`](apps/web/public/art) (the Universe landscapes, the central orb, the crystals,
-the stage platform and the illustrations) are AI-generated for the hoandat ecosystem; owned by hoandat, all rights
+the planets, the stage platform and the illustrations) are AI-generated for the hoandat ecosystem; owned by hoandat, all rights
 reserved (not CC0). They may not be reused outside Knowledge Base without permission.
 
 The share card picture [`apps/web/public/og-share.png`](apps/web/public/og-share.png) (the link preview of `/l/<token>`)

@@ -54,7 +54,7 @@ export interface Topic {
   /** The Collection's name. */
   name: string;
   nameEn: string;
-  /** A tech topic; these stay at most a third of the list (the knowledge base covers all kinds of topics). */
+  /** Always true: the knowledge base covers infrastructure and software engineering only (cloud, servers, networks, data, mail, web, AI tooling). */
   tech: boolean;
   /** What the planet covers and the articles it could hold. */
   brief: string;
@@ -217,13 +217,11 @@ export function checkTopics(topics: readonly Topic[], spaces: Spaces, file = 'co
     if (!known.has(topic.space)) problems.push({ file: where, message: `unknown Space "${topic.space}"` });
     if (!(TOPIC_STATUSES as readonly string[]).includes(topic.status)) problems.push({ file: where, message: `status must be one of ${TOPIC_STATUSES.join(', ')}` });
     if (topic.lang !== 'vi' && topic.lang !== 'en') problems.push({ file: where, message: 'lang must be vi or en' });
-    if (typeof topic.tech !== 'boolean') problems.push({ file: where, message: 'tech must be true or false' });
+    if (topic.tech !== true) problems.push({ file: where, message: 'tech must be true: the knowledge base covers engineering topics only' });
     for (const [key, value] of [['name', topic.name], ['nameEn', topic.nameEn]] as const) {
       if (!value?.trim() || value.length > MAX_NAME_CHARS) problems.push({ file: where, message: `${key} must be 1–${MAX_NAME_CHARS} characters` });
     }
   }
-  const tech = topics.filter((t) => t.tech).length;
-  if (tech * 3 > topics.length) problems.push({ file, message: `${tech} of ${topics.length} topics are tech; keep tech at most a third` });
   return problems;
 }
 

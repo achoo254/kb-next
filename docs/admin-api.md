@@ -115,7 +115,7 @@ Bài đăng xong hiện ngay ở C09/C10 với nhãn Chính thức; `"hidden": t
 Hai cloud routine của Claude lo hàng chờ:
 
 - **Routine chiến lược** (Opus, mỗi ngày một lần): chỉ sửa `content/topics.json` và `content/spaces.json`. Nó giữ danh
-  sách chủ đề cân bằng giữa các Space, thêm hành tinh mới khi còn ít hơn 6 mục
+  sách chủ đề trong phạm vi kỹ thuật, cân bằng giữa các Space, thêm hành tinh mới khi còn ít hơn 6 mục
   `todo` và mở **đợt bổ sung** cho hành tinh đã đăng (đặt chủ đề `published` về `todo` kèm `brief` mới nêu các bài cần
   thêm). Nó không viết bài và không lập chủ đề `-en` cho hành tinh tiếng Việt: bản tiếng Anh đi kèm từng bài.
 - **Routine viết bài** (Sonnet, nhiều lượt mỗi ngày): mỗi lượt làm **một** mục `todo` đầu tiên trong danh sách, viết bài
@@ -125,8 +125,8 @@ Hai cloud routine của Claude lo hàng chờ:
   bổ sung** (1–5 bài, mỗi bài nối vào bài đã đăng hoặc đang chờ của chính hành tinh đó).
 
 GitHub Actions đăng bài **hiện ngay**, không chờ người duyệt (chủ dự án chốt 07/11/2026). Bài có lỗi thì quản trị ẩn
-hoặc sửa ở A02 (`/admin/content`), hoặc qua `PUT /api/admin/posts/:id/text`. kb là kho kiến thức đủ mọi chủ đề nên bài
-công nghệ không quá một phần ba.
+hoặc sửa ở A02 (`/admin/content`), hoặc qua `PUT /api/admin/posts/:id/text`. kb chỉ giữ chủ đề hạ tầng và kỹ thuật phần mềm (từ 21/11/2026; trước đó có cả đời sống, kỹ năng, văn hoá, khoa học): mọi chủ đề
+phải có `tech: true`, `check:queue` từ chối chủ đề khác.
 
 **Song ngữ (từ 08/11/2026):** mỗi bài tiếng Việt của hành tinh `lang: "vi"` có **bản dịch tiếng Anh** đi kèm, đăng
 như một ngôn ngữ khác của chính bài đó (cùng nhóm dịch, Space và Collection; giao diện chọn bản theo ngôn ngữ người
