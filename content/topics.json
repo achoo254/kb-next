@@ -92,7 +92,7 @@
       "nameEn": "Prometheus basics",
       "tech": true,
       "brief": "Hành tinh đầu tiên của Space Observability. Gợi ý 3 bài: cài node_exporter và Prometheus trên Ubuntu 24.04 chạy như dịch vụ systemd, nối tới \"systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào\"; PromQL cơ bản (counter và gauge, rate, sum by, avg by) qua ví dụ CPU, RAM, ổ đĩa; quy tắc cảnh báo và Alertmanager gửi thông báo khi máy chủ có vấn đề, nói rõ metric khác log thế nào và nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\". Đối chiếu tài liệu chính thức prometheus.io.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "mang-docker",
