@@ -255,7 +255,7 @@
       "nameEn": "A safe kitchen",
       "tech": false,
       "brief": "Gợi ý 3 bài: bảo quản thực phẩm trong tủ lạnh đúng ngăn; rã đông an toàn; giữ thớt, dao, khăn bếp sạch để tránh nhiễm chéo. Bài tủ lạnh có thể nối tới \"Lịch dọn dẹp mỗi ngày 15 phút: nhà sạch mà không mất cả buổi cuối tuần\" khi nói về lau tủ định kỳ.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "tu-duy-phan-bien",
