@@ -107,6 +107,12 @@
       "space": "doi-song",
       "collectionId": "6d01b4e2-56a7-4e05-a463-e891bcd69374",
       "at": "2026-11-21T02:38:17.258Z"
+    },
+    {
+      "slug": "tu-duy-phan-bien",
+      "space": "ky-nang",
+      "collectionId": "d14e52ba-778b-4aad-9e4a-a2683f0eb9de",
+      "at": "2026-11-21T08:38:07.750Z"
     }
   ],
   "posts": [
@@ -708,6 +714,36 @@
       "en": {
         "id": "67b25d89-e8ab-4ed6-a012-1296919d3322",
         "title": "Storing food in the fridge on the right shelf: temperature, order and habits that keep food fresh longer"
+      }
+    },
+    {
+      "slug": "tu-duy-phan-bien/kiem-tra-nguon-thong-tin",
+      "id": "f281078b-76f8-4faf-ba0b-9b212d3fff50",
+      "title": "Kiểm tra nguồn của một thông tin: năm câu hỏi trước khi tin và chia sẻ",
+      "at": "2026-11-21T08:38:08.026Z",
+      "en": {
+        "id": "62633e3a-4cbe-4b20-b4fd-c23b0956cc5b",
+        "title": "Checking the source of a piece of information: five questions before you believe and share"
+      }
+    },
+    {
+      "slug": "tu-duy-phan-bien/phan-biet-su-that-va-y-kien",
+      "id": "73410118-4c12-4a60-8e20-a0deac68bcb7",
+      "title": "Phân biệt sự thật và ý kiến: ba cách nhận ra một câu nói đang khẳng định điều gì",
+      "at": "2026-11-21T08:38:08.561Z",
+      "en": {
+        "id": "67e1f02b-b6d7-48e2-af85-32050a0d6f42",
+        "title": "Telling fact from opinion: three ways to see what a statement is really claiming"
+      }
+    },
+    {
+      "slug": "tu-duy-phan-bien/nguy-bien-hay-gap-kem-vi-du",
+      "id": "37e08d76-8165-4073-8a7a-b7f329230987",
+      "title": "Năm ngụy biện hay gặp kèm ví dụ: nhận ra lập luận có vẻ hợp lý mà thực ra sai",
+      "at": "2026-11-21T08:38:09.459Z",
+      "en": {
+        "id": "08542ddd-540e-479f-b7d1-759a64126532",
+        "title": "Five common fallacies with examples: spotting arguments that sound reasonable but are flawed"
       }
     }
   ]
