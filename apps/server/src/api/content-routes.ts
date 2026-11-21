@@ -5,7 +5,7 @@
  * other end of a link. Texts come in the reader's language (`?lang=`, else the account's, else Vietnamese).
  */
 import express, { type Router } from 'express';
-import { type CollectionRow, type DocumentRow, type SpaceRow, findLatestVersion, listChunks, listDocuments, listLinks, listSpaces } from '../access/content';
+import { type CollectionRow, type DocumentRow, type SpaceRow, findLatestVersion, listChunks, listDocuments, hasReadableContent, listLinks, listSpaces } from '../access/content';
 import { headingsOf, linksTouching, progressOf } from '../access/participation';
 import {
   findApproval,
@@ -19,7 +19,7 @@ import {
   spacesById,
   userNames,
 } from '../access/reading';
-import type { Viewer } from '../access/viewer';
+import { GUEST, type Viewer } from '../access/viewer';
 import { editRight } from '../access/authoring';
 import { currentFileOf } from '../access/files';
 import { favoriteIds } from '../access/my-content';
@@ -205,7 +205,11 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
 
   router.get('/api/spaces', async (req, res) => {
     const { viewer } = await reader(req);
-    const spaces = await listSpaces(db, viewer);
+    // A public Space with nothing published in it is left off the Universe for everyone, admins included (an admin
+    // counts hidden texts too, so the guest view decides); admins still reach it by its address and in /admin/content.
+    const listed = await listSpaces(db, viewer);
+    const withPublished = new Set((await listSpaces(db, GUEST)).filter(hasReadableContent).map((s) => s.id));
+    const spaces = listed.filter((s) => s.kind === 'personal' || withPublished.has(s.id));
     const cards = await spaceCards(viewer, spaces);
     const collections = await listCollectionsOf(
       db,

@@ -6,7 +6,7 @@
  */
 import express, { type Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { listPublicTexts, listSpaces } from '../access/content';
+import { hasReadableContent, listPublicTexts, listSpaces } from '../access/content';
 import { GUEST } from '../access/viewer';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
@@ -37,7 +37,8 @@ export function sitemapRoutes({ config, db }: { config: ServerConfig; db: Db }):
     '/sitemap.xml',
     rateLimit({ windowMs: 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: 'Too many requests' }),
     async (_req, res) => {
-      const spaces = await listSpaces(db, GUEST);
+      // An emptied Space (all its texts hidden) is left out so search engines do not crawl a blank page.
+      const spaces = (await listSpaces(db, GUEST)).filter(hasReadableContent);
       const texts = await listPublicTexts(db, MAX_URLS);
       const entries: SitemapEntry[] = [
         { path: '/' },

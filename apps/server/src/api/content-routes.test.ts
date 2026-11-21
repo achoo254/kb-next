@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createDocument, createLink, updateDocument } from '../../test/content-fixtures';
+import { createDocument, createLink, createSpace, updateDocument } from '../../test/content-fixtures';
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { api, signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
@@ -61,6 +61,22 @@ beforeAll(async () => {
 afterAll(async () => {
   await server.close();
   await idp.close();
+});
+
+describe('a Space with nothing published', () => {
+  it('is left off the Universe and the sitemap for everyone, admins included, but still opens by its address for an admin', async () => {
+    const db = server.database.db;
+    const spaceId = await createSpace(db, 'emptied');
+    const hiddenId = await createDocument(db, { spaceId, authorId: ownerId, title: 'Hidden note', hidden: true, texts: ['Nothing readers may see.'] });
+    for (const cookie of [undefined, stranger, admin]) {
+      const { body } = await get<{ spaces: SpaceListItem[] }>('/api/spaces', cookie);
+      expect(body.spaces.map((s) => s.slug)).not.toContain('emptied');
+    }
+    expect(await (await api(server, '/sitemap.xml')).text()).not.toContain('/s/emptied');
+    expect((await get('/api/spaces/emptied', admin)).status).toBe(200);
+    // Out of the way of the tests that list what admins can read.
+    await updateDocument(db, hiddenId, { deletedAt: new Date() });
+  });
 });
 
 describe('GET /api/spaces', () => {

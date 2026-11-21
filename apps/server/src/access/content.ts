@@ -86,6 +86,11 @@ export async function listSpaces(db: Db, viewer: Viewer): Promise<SpaceWithCount
   return rows.map(({ space, n, latest }) => ({ ...space, documentCount: Number(n ?? 0), latestAt: latest ? new Date(latest) : null }));
 }
 
+/** Whether a Space is worth showing to readers: a personal Space always is, a public one once it holds a readable text. */
+export function hasReadableContent(space: Pick<SpaceWithCount, 'kind' | 'documentCount'>): boolean {
+  return space.kind === 'personal' || space.documentCount > 0;
+}
+
 export async function findSpaceBySlug(db: Db, viewer: Viewer, slug: string): Promise<SpaceRow | null> {
   const [row] = await db
     .select()
