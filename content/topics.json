@@ -248,16 +248,6 @@
       "status": "published"
     },
     {
-      "slug": "tu-duy-phan-bien",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Tư duy phản biện",
-      "nameEn": "Critical thinking",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: kiểm tra nguồn của một thông tin; phân biệt sự thật và ý kiến; các ngụy biện hay gặp kèm ví dụ.",
-      "status": "todo"
-    },
-    {
       "slug": "bep-an-toan",
       "space": "doi-song",
       "lang": "vi",
@@ -268,23 +258,13 @@
       "status": "todo"
     },
     {
-      "slug": "trai-dat-chuyen-dong",
-      "space": "khoa-hoc",
+      "slug": "tu-duy-phan-bien",
+      "space": "ky-nang",
       "lang": "vi",
-      "name": "Trái Đất chuyển động",
-      "nameEn": "Our restless Earth",
+      "name": "Tư duy phản biện",
+      "nameEn": "Critical thinking",
       "tech": false,
-      "brief": "Gợi ý 3 bài: kiến tạo mảng và vì sao các lục địa trôi dần (vỏ Trái Đất, các mảng lớn, dãy Himalaya); động đất hình thành thế nào, thang độ lớn Richter và moment, việc nên làm khi có rung lắc; núi lửa và sóng thần, vì sao chúng hay xuất hiện quanh Vành đai lửa Thái Bình Dương. Bài kiến tạo mảng nối tới \"Tám hành tinh của Hệ Mặt Trời: kích thước, khoảng cách và vì sao Sao Diêm Vương thành hành tinh lùn\" khi nói về cấu tạo hành tinh đá. Số liệu đối chiếu USGS hoặc Wikipedia.",
-      "status": "todo"
-    },
-    {
-      "slug": "lam-viec-nhom",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Làm việc nhóm",
-      "nameEn": "Teamwork",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: chia việc và giao trách nhiệm rõ ràng; theo dõi tiến độ bằng bảng Kanban; xử lý bất đồng trong nhóm.",
+      "brief": "Gợi ý 3 bài: kiểm tra nguồn của một thông tin; phân biệt sự thật và ý kiến; các ngụy biện hay gặp kèm ví dụ.",
       "status": "todo"
     },
     {
@@ -308,6 +288,26 @@
       "status": "todo"
     },
     {
+      "slug": "lam-viec-nhom",
+      "space": "cong-viec",
+      "lang": "vi",
+      "name": "Làm việc nhóm",
+      "nameEn": "Teamwork",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: chia việc và giao trách nhiệm rõ ràng; theo dõi tiến độ bằng bảng Kanban; xử lý bất đồng trong nhóm.",
+      "status": "todo"
+    },
+    {
+      "slug": "trai-dat-chuyen-dong",
+      "space": "khoa-hoc",
+      "lang": "vi",
+      "name": "Trái Đất chuyển động",
+      "nameEn": "Our restless Earth",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: kiến tạo mảng và vì sao các lục địa trôi dần (vỏ Trái Đất, các mảng lớn, dãy Himalaya); động đất hình thành thế nào, thang độ lớn Richter và moment, việc nên làm khi có rung lắc; núi lửa và sóng thần, vì sao chúng hay xuất hiện quanh Vành đai lửa Thái Bình Dương. Bài kiến tạo mảng nối tới \"Tám hành tinh của Hệ Mặt Trời: kích thước, khoảng cách và vì sao Sao Diêm Vương thành hành tinh lùn\" khi nói về cấu tạo hành tinh đá. Số liệu đối chiếu USGS hoặc Wikipedia.",
+      "status": "todo"
+    },
+    {
       "slug": "trang-phuc-viet",
       "space": "van-hoa",
       "lang": "vi",
@@ -318,13 +318,13 @@
       "status": "todo"
     },
     {
-      "slug": "tiet-kiem-trong-nha",
-      "space": "doi-song",
+      "slug": "prometheus-co-ban",
+      "space": "observability",
       "lang": "vi",
-      "name": "Tiết kiệm trong nhà",
-      "nameEn": "Saving at home",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: tính số điện từ công suất thiết bị; dùng điều hoà và bình nóng lạnh tiết kiệm; giảm lãng phí thực phẩm khi đi chợ và nấu ăn.",
+      "name": "Prometheus cơ bản",
+      "nameEn": "Prometheus basics",
+      "tech": true,
+      "brief": "Hành tinh đầu tiên của Space Observability. Gợi ý 3 bài: cài node_exporter và Prometheus trên Ubuntu 24.04 chạy như dịch vụ systemd, nối tới \"systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào\"; PromQL cơ bản (counter và gauge, rate, sum by, avg by) qua ví dụ CPU, RAM, ổ đĩa; quy tắc cảnh báo và Alertmanager gửi thông báo khi máy chủ có vấn đề, nói rõ metric khác log thế nào và nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\". Đối chiếu tài liệu chính thức prometheus.io.",
       "status": "todo"
     },
     {
@@ -338,6 +338,16 @@
       "status": "todo"
     },
     {
+      "slug": "tiet-kiem-trong-nha",
+      "space": "doi-song",
+      "lang": "vi",
+      "name": "Tiết kiệm trong nhà",
+      "nameEn": "Saving at home",
+      "tech": false,
+      "brief": "Gợi ý 3 bài: tính số điện từ công suất thiết bị; dùng điều hoà và bình nóng lạnh tiết kiệm; giảm lãng phí thực phẩm khi đi chợ và nấu ăn.",
+      "status": "todo"
+    },
+    {
       "slug": "thuyet-trinh",
       "space": "cong-viec",
       "lang": "vi",
@@ -348,13 +358,13 @@
       "status": "todo"
     },
     {
-      "slug": "prometheus-co-ban",
-      "space": "observability",
+      "slug": "mang-docker",
+      "space": "docker",
       "lang": "vi",
-      "name": "Prometheus cơ bản",
-      "nameEn": "Prometheus basics",
+      "name": "Mạng trong Docker",
+      "nameEn": "Docker networking",
       "tech": true,
-      "brief": "Hành tinh đầu tiên của Space Observability. Gợi ý 3 bài: cài node_exporter và Prometheus trên Ubuntu 24.04 chạy như dịch vụ systemd, nối tới \"systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào\"; PromQL cơ bản (counter và gauge, rate, sum by, avg by) qua ví dụ CPU, RAM, ổ đĩa; quy tắc cảnh báo và Alertmanager gửi thông báo khi máy chủ có vấn đề, nói rõ metric khác log thế nào và nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\". Đối chiếu tài liệu chính thức prometheus.io.",
+      "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
       "status": "todo"
     },
     {
@@ -378,16 +388,6 @@
       "status": "todo"
     },
     {
-      "slug": "cap-nhat-ung-dung-k8s",
-      "space": "kubernetes",
-      "lang": "vi",
-      "name": "Cập nhật ứng dụng trên Kubernetes",
-      "nameEn": "Updating apps on Kubernetes",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
-      "status": "todo"
-    },
-    {
       "slug": "phat-trien-ban-than",
       "space": "cong-viec",
       "lang": "vi",
@@ -398,6 +398,16 @@
       "status": "todo"
     },
     {
+      "slug": "cap-nhat-ung-dung-k8s",
+      "space": "kubernetes",
+      "lang": "vi",
+      "name": "Cập nhật ứng dụng trên Kubernetes",
+      "nameEn": "Updating apps on Kubernetes",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
+      "status": "todo"
+    },
+    {
       "slug": "di-lai-an-toan",
       "space": "doi-song",
       "lang": "vi",
@@ -405,16 +415,6 @@
       "nameEn": "Getting around safely",
       "tech": false,
       "brief": "Gợi ý 3 bài: kiểm tra xe máy trước chuyến đi xa; chuẩn bị hành lý cho chuyến du lịch ngắn; dùng bản đồ trên điện thoại khi mất sóng. Không đưa lời khuyên y tế.",
-      "status": "todo"
-    },
-    {
-      "slug": "mang-docker",
-      "space": "docker",
-      "lang": "vi",
-      "name": "Mạng trong Docker",
-      "nameEn": "Docker networking",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
       "status": "todo"
     },
     {
