@@ -85,36 +85,6 @@
       "note": "Could not verify article numbers, impact-assessment and cross-border dossier contents, authority and deadlines of Law 91/2025/QH15 and Decree 356/2025/ND-CP against an official readable source on 21/11/2026 (vbpl.moj.gov.vn not resolvable, thuvienphapluat.vn 403, chinhphu.vn unreachable); only law-firm summaries were reachable. Retry when the official text is accessible."
     },
     {
-      "slug": "phat-trien-phan-mem-an-toan",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "Phát triển phần mềm an toàn",
-      "nameEn": "Secure software development",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: vòng đời phát triển an toàn (yêu cầu bảo mật, review mã, kiểm thử xâm nhập, nghiệm thu); quản lý bí mật, khoá và chứng thư trong kho mã và CI/CD; theo dõi lỗ hổng của thư viện phụ thuộc và xử lý thành phần hết hỗ trợ (EOL). Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
-      "status": "todo"
-    },
-    {
-      "slug": "xu-ly-su-co-an-ninh-mang",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "Xử lý sự cố an ninh mạng",
-      "nameEn": "Handling cybersecurity incidents",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
-      "status": "todo"
-    },
-    {
-      "slug": "web-va-https",
-      "space": "networking",
-      "lang": "vi",
-      "name": "Web và HTTPS",
-      "nameEn": "Web and HTTPS",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: nginx làm reverse proxy; chứng chỉ TLS và HTTPS hoạt động thế nào; certbot cấp và tự gia hạn chứng chỉ Let's Encrypt.",
-      "status": "todo"
-    },
-    {
       "slug": "prometheus-co-ban",
       "space": "observability",
       "lang": "vi",
@@ -152,6 +122,36 @@
       "nameEn": "Disks on Linux",
       "tech": true,
       "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
+      "status": "todo"
+    },
+    {
+      "slug": "web-va-https",
+      "space": "networking",
+      "lang": "vi",
+      "name": "Web và HTTPS",
+      "nameEn": "Web and HTTPS",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: nginx làm reverse proxy; chứng chỉ TLS và HTTPS hoạt động thế nào; certbot cấp và tự gia hạn chứng chỉ Let's Encrypt.",
+      "status": "todo"
+    },
+    {
+      "slug": "phat-trien-phan-mem-an-toan",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Phát triển phần mềm an toàn",
+      "nameEn": "Secure software development",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: vòng đời phát triển an toàn (yêu cầu bảo mật, review mã, kiểm thử xâm nhập, nghiệm thu); quản lý bí mật, khoá và chứng thư trong kho mã và CI/CD; theo dõi lỗ hổng của thư viện phụ thuộc và xử lý thành phần hết hỗ trợ (EOL). Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "xu-ly-su-co-an-ninh-mang",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Xử lý sự cố an ninh mạng",
+      "nameEn": "Handling cybersecurity incidents",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
       "status": "todo"
     },
     {
