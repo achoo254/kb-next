@@ -59,7 +59,8 @@
       "nameEn": "TCVN 14423:2026 information system security",
       "tech": true,
       "brief": "Gợi ý 3 bài: TCVN 14423:2026 là gì, công bố theo Quyết định 3243/QĐ-BKHCN ngày 24/7/2026, thay thế những bản nào (TCVN 11930:2017); cấu trúc theo 5 cấp độ và các nhóm yêu cầu (15 nhóm ở cấp 1 và 2, đủ 18 nhóm từ cấp 3), tài liệu tham khảo của tiêu chuẩn; đọc một nhóm yêu cầu cấp 3 thành việc cụ thể cho đội kỹ thuật (kiểm kê tài sản, phân quyền, nhật ký, sao lưu). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "Could not verify the structure of TCVN 14423:2026 (requirement groups per level, references) against an official readable source on 21/11/2026; only a commercial summary was reachable. Retry when the official text is accessible."
     },
     {
       "slug": "chi-so-bao-dam-an-ninh-mang",
