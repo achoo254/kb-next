@@ -125,6 +125,12 @@
       "space": "observability",
       "collectionId": "8c4ee233-e00e-40dd-a4b1-e9fe9dbd013c",
       "at": "2026-11-21T16:38:16.033Z"
+    },
+    {
+      "slug": "mang-docker",
+      "space": "docker",
+      "collectionId": "886369de-a218-49e0-b884-5a407a7d5b61",
+      "at": "2026-11-21T16:42:10.257Z"
     }
   ],
   "posts": [
@@ -816,6 +822,36 @@
       "en": {
         "id": "2f43c13a-fa1d-4db4-bd54-7ace7b60f530",
         "title": "Alerting with Prometheus and Alertmanager: how metrics differ from logs"
+      }
+    },
+    {
+      "slug": "mang-docker/mang-bridge-mac-dinh-publish-cong",
+      "id": "e5a9c494-8c0b-43fe-87cb-caed10c230c5",
+      "title": "Mạng bridge mặc định của Docker và cách publish cổng bằng -p",
+      "at": "2026-11-21T16:42:10.529Z",
+      "en": {
+        "id": "fa9aae00-b348-4be4-82c0-c3ed3882239c",
+        "title": "Docker's default bridge network and publishing ports with -p"
+      }
+    },
+    {
+      "slug": "mang-docker/mang-tu-tao-dns-noi-bo",
+      "id": "2662fe2f-90ab-4494-b499-5e8512bbd012",
+      "title": "Mạng bridge tự tạo trong Docker: container gọi nhau bằng tên nhờ DNS nội bộ",
+      "at": "2026-11-21T16:42:11.035Z",
+      "en": {
+        "id": "875fa4b4-4031-4a2f-b721-930e1be443df",
+        "title": "User-defined bridge networks in Docker: containers calling each other by name through built-in DNS"
+      }
+    },
+    {
+      "slug": "mang-docker/mang-host-khi-nao-nen-dung",
+      "id": "c9e10ef1-068e-4a0b-bd47-c4ab84e43c92",
+      "title": "Mạng host trong Docker: bỏ lớp cách ly mạng và khi nào nên dùng",
+      "at": "2026-11-21T16:42:11.539Z",
+      "en": {
+        "id": "c91cfb25-b72e-4100-b2ca-b135cfe4be80",
+        "title": "Docker host networking: dropping network isolation, and when to use it"
       }
     }
   ]
