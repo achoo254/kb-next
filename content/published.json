@@ -131,6 +131,12 @@
       "space": "docker",
       "collectionId": "886369de-a218-49e0-b884-5a407a7d5b61",
       "at": "2026-11-21T16:42:10.257Z"
+    },
+    {
+      "slug": "chi-so-bao-dam-an-ninh-mang",
+      "space": "phap-ly-anm",
+      "collectionId": "37118608-c1fe-4390-9824-ef7e0ae35cf3",
+      "at": "2026-11-21T23:25:34.518Z"
     }
   ],
   "posts": [
@@ -852,6 +858,36 @@
       "en": {
         "id": "c91cfb25-b72e-4100-b2ca-b135cfe4be80",
         "title": "Docker host networking: dropping network isolation, and when to use it"
+      }
+    },
+    {
+      "slug": "chi-so-bao-dam-an-ninh-mang/qd1964-chuan-bi-bang-chung-tu-danh-gia",
+      "id": "76d9a5be-9a38-42b2-817e-9bd4b27f20a0",
+      "title": "Chuẩn bị bằng chứng để tự đánh giá theo Chỉ số bảo đảm an ninh mạng: ví dụ sao lưu và số liệu Nhóm III",
+      "at": "2026-11-21T23:25:34.931Z",
+      "en": {
+        "id": "51802698-f0dd-48f2-812c-f06dd3b8cccd",
+        "title": "Preparing evidence for a self-assessment under the Cybersecurity Assurance Index: a backup example and Group III figures"
+      }
+    },
+    {
+      "slug": "chi-so-bao-dam-an-ninh-mang/qd1964-thang-cham-va-xep-loai",
+      "id": "1cd3b629-5ab2-455d-9a0b-5fd15fe49327",
+      "title": "Chấm điểm Chỉ số bảo đảm an ninh mạng: Mức 0 đến 3, công thức tổng hợp và bốn mức xếp loại",
+      "at": "2026-11-21T23:25:35.813Z",
+      "en": {
+        "id": "304e4317-58c2-4c88-9981-0c9edfe2c885",
+        "title": "Scoring the Cybersecurity Assurance Index: Levels 0 to 3, the aggregation formula and four rating levels"
+      }
+    },
+    {
+      "slug": "chi-so-bao-dam-an-ninh-mang/qd1964-tong-quan-cau-truc-chi-so",
+      "id": "0daad8bb-c0c1-41bc-942e-94e233e9c11a",
+      "title": "Quyết định 1964/QĐ-TTg tổng quan: Chỉ số bảo đảm an ninh mạng gồm những nhóm tiêu chí nào",
+      "at": "2026-11-21T23:25:36.675Z",
+      "en": {
+        "id": "f12f635a-770e-4feb-a247-0e5a81399550",
+        "title": "Decision 1964/QĐ-TTg at a glance: the groups of criteria in the Cybersecurity Assurance Index"
       }
     }
   ]
