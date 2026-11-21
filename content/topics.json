@@ -102,7 +102,7 @@
       "nameEn": "Docker networking",
       "tech": true,
       "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "cap-nhat-ung-dung-k8s",
