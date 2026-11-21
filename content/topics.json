@@ -82,37 +82,7 @@
       "tech": true,
       "brief": "Gợi ý 3 bài: Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP hướng dẫn: khái niệm dữ liệu cá nhân cơ bản và nhạy cảm, quyền của chủ thể, nghĩa vụ của bên kiểm soát và bên xử lý; hồ sơ đánh giá tác động xử lý dữ liệu và hồ sơ chuyển dữ liệu xuyên biên giới: khi nào bắt buộc, nội dung chính, nộp cho cơ quan nào, thời hạn; việc kỹ thuật để tuân thủ (phân loại dữ liệu, mã hoá, nhật ký truy cập, xoá dữ liệu khi hết mục đích, xử lý khi lộ lọt). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
       "status": "skipped",
-    "note": "Could not verify article numbers, impact-assessment and cross-border dossier contents, authority and deadlines of Law 91/2025/QH15 and Decree 356/2025/ND-CP against an official readable source on 21/11/2026 (vbpl.moj.gov.vn not resolvable, thuvienphapluat.vn 403, chinhphu.vn unreachable); only law-firm summaries were reachable. Retry when the official text is accessible."
-    },
-    {
-      "slug": "luat-an-ninh-mang-116-2025",
-      "space": "phap-ly-anm",
-      "lang": "vi",
-      "name": "Luật An ninh mạng 116/2025",
-      "nameEn": "Cybersecurity Law 116/2025",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: Luật An ninh mạng 116/2025/QH15 trong bức tranh các văn bản (liên hệ với Nghị định 331/2026 và các nghị định hướng dẫn cùng đợt), hiệu lực và những điểm mới so với luật cũ; nghĩa vụ chính của doanh nghiệp cung cấp dịch vụ trên không gian mạng; hệ thống thông tin quan trọng về an ninh quốc gia và việc bảo vệ theo cấp độ. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
-    },
-    {
-      "slug": "iso-27001-2022-co-ban",
-      "space": "phap-ly-anm",
-      "lang": "vi",
-      "name": "ISO/IEC 27001:2022 cơ bản",
-      "nameEn": "ISO/IEC 27001:2022 basics",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: ISMS là gì, các điều khoản 4 đến 10 và chu trình lập kế hoạch, thực hiện, kiểm tra, cải tiến; Phụ lục A phiên bản 2022 với 93 biện pháp trong 4 nhóm (tổ chức, con người, vật lý, công nghệ) và Tuyên bố áp dụng; lộ trình đạt chứng nhận từ phạm vi, đánh giá rủi ro, đánh giá nội bộ đến đánh giá của tổ chức chứng nhận. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
-    },
-    {
-      "slug": "iso-27001-doi-chieu-tcvn-14423",
-      "space": "phap-ly-anm",
-      "lang": "vi",
-      "name": "ISO 27001 đối chiếu với TCVN 14423",
-      "nameEn": "Mapping ISO 27001 to TCVN 14423",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: một hệ thống quản lý làm đúng ISO 27001 đáp ứng được những phần nào của TCVN 14423:2026 và Chỉ số 1964 (tài liệu hoá điều 7.5, đo lường điều 9.1, cải tiến điều 10) và phần nào còn thiếu; xây một bộ tài liệu dùng chung cho cả ba khung để không làm ba lần; lỗi hay gặp khi chuẩn bị bằng chứng. Nêu rõ bảng đối chiếu là phân tích của người viết, không phải văn bản chính thức. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
+      "note": "Could not verify article numbers, impact-assessment and cross-border dossier contents, authority and deadlines of Law 91/2025/QH15 and Decree 356/2025/ND-CP against an official readable source on 21/11/2026 (vbpl.moj.gov.vn not resolvable, thuvienphapluat.vn 403, chinhphu.vn unreachable); only law-firm summaries were reachable. Retry when the official text is accessible."
     },
     {
       "slug": "phat-trien-phan-mem-an-toan",
@@ -402,6 +372,36 @@
       "nameEn": "How engineers use AI",
       "tech": true,
       "brief": "Gợi ý 3 bài: các nhóm việc kỹ sư thường dùng AI (viết và rà soát code, gỡ lỗi, tài liệu, vận hành); cách đọc các khảo sát về mức độ dùng AI của lập trình viên và những giới hạn của chúng; thiết kế sản phẩm và nội dung cho người dùng đã quen AI agent. Chỉ trích số liệu có nguồn và ghi rõ năm.",
+      "status": "todo"
+    },
+    {
+      "slug": "luat-an-ninh-mang-116-2025",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "Luật An ninh mạng 116/2025",
+      "nameEn": "Cybersecurity Law 116/2025",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Luật An ninh mạng 116/2025/QH15 trong bức tranh các văn bản (liên hệ với Nghị định 331/2026 và các nghị định hướng dẫn cùng đợt), hiệu lực và những điểm mới so với luật cũ; nghĩa vụ chính của doanh nghiệp cung cấp dịch vụ trên không gian mạng; hệ thống thông tin quan trọng về an ninh quốc gia và việc bảo vệ theo cấp độ. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "iso-27001-2022-co-ban",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "ISO/IEC 27001:2022 cơ bản",
+      "nameEn": "ISO/IEC 27001:2022 basics",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: ISMS là gì, các điều khoản 4 đến 10 và chu trình lập kế hoạch, thực hiện, kiểm tra, cải tiến; Phụ lục A phiên bản 2022 với 93 biện pháp trong 4 nhóm (tổ chức, con người, vật lý, công nghệ) và Tuyên bố áp dụng; lộ trình đạt chứng nhận từ phạm vi, đánh giá rủi ro, đánh giá nội bộ đến đánh giá của tổ chức chứng nhận. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "iso-27001-doi-chieu-tcvn-14423",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "ISO 27001 đối chiếu với TCVN 14423",
+      "nameEn": "Mapping ISO 27001 to TCVN 14423",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: một hệ thống quản lý làm đúng ISO 27001 đáp ứng được những phần nào của TCVN 14423:2026 và Chỉ số 1964 (tài liệu hoá điều 7.5, đo lường điều 9.1, cải tiến điều 10) và phần nào còn thiếu; xây một bộ tài liệu dùng chung cho cả ba khung để không làm ba lần; lỗi hay gặp khi chuẩn bị bằng chứng. Nêu rõ bảng đối chiếu là phân tích của người viết, không phải văn bản chính thức. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
       "status": "todo"
     }
   ]
