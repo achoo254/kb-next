@@ -119,6 +119,12 @@
       "space": "phap-ly-anm",
       "collectionId": "e7bdc395-1bba-480f-b3e1-4dbf5f3d4da3",
       "at": "2026-11-21T16:08:22.960Z"
+    },
+    {
+      "slug": "prometheus-co-ban",
+      "space": "observability",
+      "collectionId": "8c4ee233-e00e-40dd-a4b1-e9fe9dbd013c",
+      "at": "2026-11-21T16:38:16.033Z"
     }
   ],
   "posts": [
@@ -780,6 +786,36 @@
       "en": {
         "id": "58e1e381-6a69-45d6-810f-81a049e5d39e",
         "title": "Level dossiers under Decree 331/2026/NĐ-CP: who appraises, who approves, processing times and periodic reports"
+      }
+    },
+    {
+      "slug": "prometheus-co-ban/cai-node-exporter-prometheus-systemd",
+      "id": "50e52f62-a7c9-4db5-bef3-81ec922e6ed0",
+      "title": "Cài node_exporter và Prometheus trên Ubuntu 24.04 chạy như dịch vụ systemd",
+      "at": "2026-11-21T16:38:16.488Z",
+      "en": {
+        "id": "b5bb4fcb-51d6-43b7-a4af-09bfc8e34166",
+        "title": "Installing node_exporter and Prometheus on Ubuntu 24.04 as systemd services"
+      }
+    },
+    {
+      "slug": "prometheus-co-ban/promql-co-ban-cpu-ram-o-dia",
+      "id": "fddd7cdf-e8d7-477f-a245-c05067a9b57b",
+      "title": "PromQL cơ bản: counter, gauge, rate và sum by qua ví dụ CPU, RAM, ổ đĩa",
+      "at": "2026-11-21T16:38:17.403Z",
+      "en": {
+        "id": "ff4ac5d1-915b-4bcc-89b7-0fc91d95b4e8",
+        "title": "PromQL basics: counters, gauges, rate and sum by, with CPU, RAM and disk examples"
+      }
+    },
+    {
+      "slug": "prometheus-co-ban/canh-bao-prometheus-alertmanager",
+      "id": "92e5a70d-abf5-41b1-a64e-e85a111b47a0",
+      "title": "Cảnh báo với Prometheus và Alertmanager: metric khác log thế nào",
+      "at": "2026-11-21T16:38:18.280Z",
+      "en": {
+        "id": "2f43c13a-fa1d-4db4-bd54-7ace7b60f530",
+        "title": "Alerting with Prometheus and Alertmanager: how metrics differ from logs"
       }
     }
   ]
