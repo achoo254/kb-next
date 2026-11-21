@@ -1,26 +1,6 @@
 {
   "topics": [
     {
-      "slug": "hoc-cach-hoc",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Học cách học",
-      "nameEn": "Learning how to learn",
-      "tech": false,
-      "brief": "Nối với bài đã có \"Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn\". Gợi ý 3 bài: đường cong quên lãng và vì sao ta quên; phương pháp Feynman giải thích lại bằng lời đơn giản; xen kẽ chủ đề khi học (interleaving).",
-      "status": "published"
-    },
-    {
-      "slug": "tim-viec",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Tìm việc",
-      "nameEn": "Finding a job",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: viết CV một trang; chuẩn bị phỏng vấn theo cách STAR; viết thư cảm ơn và theo dõi sau phỏng vấn.",
-      "status": "published"
-    },
-    {
       "slug": "mang-tren-ubuntu",
       "space": "networking",
       "lang": "vi",
@@ -28,68 +8,6 @@
       "nameEn": "Networking on Ubuntu",
       "tech": true,
       "brief": "Gợi ý 3 bài: netplan và systemd-networkd đặt IP tĩnh, DHCP; resolvectl và DNS trên máy; kiểm kết nối bằng ip, ss, ping, tracepath.",
-      "status": "published"
-    },
-    {
-      "slug": "ghi-chu-hieu-qua",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Ghi chú hiệu quả",
-      "nameEn": "Effective note taking",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: ghi chú kiểu Cornell; sơ đồ tư duy (mind map); biến ghi chú thành câu hỏi tự kiểm tra.",
-      "status": "published"
-    },
-    {
-      "slug": "viec-nha-gon-gang",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "Việc nhà gọn gàng",
-      "nameEn": "Tidy housework",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: đọc ký hiệu giặt ủi trên nhãn quần áo; sắp xếp nhà cửa theo từng khu; lịch dọn dẹp mỗi ngày 15 phút.",
-      "status": "published"
-    },
-    {
-      "slug": "tet-nguyen-dan-en",
-      "space": "van-hoa",
-      "lang": "en",
-      "name": "Tet, the Vietnamese Lunar New Year",
-      "nameEn": "Tet, the Vietnamese Lunar New Year",
-      "tech": false,
-      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Tết Nguyên Đán\". Bài bản Việt để đối chiếu: \"Xông đất, lì xì và mùng một Tết: những phong tục mở đầu năm mới\"; \"Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết\"; \"Ông Công, ông Táo và ngày 23 tháng Chạp: tiễn thần bếp lên trời, dọn nhà đón Tết\". Giải thích ngắn bối cảnh (âm lịch, tháng Chạp) cho người chưa từng đón Tết ở Việt Nam. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "skipped",
-      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
-    },
-    {
-      "slug": "giao-tiep-noi-cong-so",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Giao tiếp nơi công sở",
-      "nameEn": "Communication at work",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: viết email công việc rõ ràng; họp hiệu quả với chương trình và biên bản; góp ý cho đồng nghiệp theo mô hình SBI.",
-      "status": "published"
-    },
-    {
-      "slug": "hoc-cach-hoc-en",
-      "space": "ky-nang",
-      "lang": "en",
-      "name": "Learning how to learn",
-      "nameEn": "Learning how to learn",
-      "tech": false,
-      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Học cách học\". Bài bản Việt để đối chiếu: \"Học chủ động và lặp lại ngắt quãng: nhớ lâu hơn với ít thời gian hơn\"; \"Xen kẽ chủ đề khi học: vì sao trộn bài lại giúp nhớ và áp dụng tốt hơn\"; \"Phương pháp Feynman: giải thích lại bằng lời đơn giản để biết mình hiểu đến đâu\"; \"Đường cong quên lãng: vì sao ta quên nhanh và làm gì để nhớ lâu hơn\". Gợi ý 4 bài tương ứng: active recall and spaced repetition; the forgetting curve; the Feynman technique; interleaving. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "skipped",
-      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
-    },
-    {
-      "slug": "an-toan-tren-mang",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "An toàn trên mạng",
-      "nameEn": "Staying safe online",
-      "tech": false,
-      "brief": "Đợt bổ sung 2 bài, không lặp ý của 3 bài đã có: (1) sao lưu ảnh và dữ liệu theo quy tắc 3-2-1 (ổ ngoài, đám mây, kiểm tra khôi phục), nối tới \"Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi\"; (2) dùng Wi-Fi công cộng an toàn (mạng giả mạo, HTTPS, chia sẻ mạng từ điện thoại), nối tới \"Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn\" và \"Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm\".",
       "status": "published"
     },
     {
@@ -104,70 +22,6 @@
       "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
     },
     {
-      "slug": "tet-trung-thu",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Tết Trung thu",
-      "nameEn": "Mid-Autumn Festival",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: nguồn gốc và sự tích chú Cuội, chị Hằng; đèn ông sao, rước đèn và múa lân; bánh trung thu và phong tục phá cỗ. Đối chiếu Wikipedia.",
-      "status": "published"
-    },
-    {
-      "slug": "tim-viec-en",
-      "space": "cong-viec",
-      "lang": "en",
-      "name": "Job hunting",
-      "nameEn": "Job hunting",
-      "tech": false,
-      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Tìm việc\". Bài bản Việt để đối chiếu: \"Thư cảm ơn và theo dõi sau phỏng vấn: kết thúc buổi phỏng vấn một cách chu đáo\"; \"Chuẩn bị phỏng vấn theo cách STAR: kể một câu chuyện có đầu có cuối\"; \"Viết CV một trang: chọn gì, bỏ gì để nhà tuyển dụng đọc hết\". Viết cho người tìm việc nói chung, không gắn với thị trường một nước. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "skipped",
-      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
-    },
-    {
-      "slug": "an-toan-tren-mang-en",
-      "space": "doi-song",
-      "lang": "en",
-      "name": "Staying safe online",
-      "nameEn": "Staying safe online",
-      "tech": false,
-      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"An toàn trên mạng\". Bài bản Việt để đối chiếu: \"Bật xác thực hai bước cho email và mạng xã hội: thêm một khoá nữa cho tài khoản của bạn\"; \"Mật khẩu mạnh và trình quản lý mật khẩu: bỏ thói quen đặt một mật khẩu cho mọi nơi\"; \"Nhận diện tin nhắn và cuộc gọi lừa đảo: năm dấu hiệu để dừng lại trước khi bấm\". Hành tinh tiếng Việt đang có đợt bổ sung (sao lưu dữ liệu theo quy tắc 3-2-1; dùng Wi-Fi công cộng an toàn); bản Anh viết 5 bài: ba bài cốt lõi trên cộng hai chủ đề đó. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "skipped",
-      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
-    },
-    {
-      "slug": "ghi-chu-hieu-qua-en",
-      "space": "ky-nang",
-      "lang": "en",
-      "name": "Effective note taking",
-      "nameEn": "Effective note taking",
-      "tech": false,
-      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Ghi chú hiệu quả\". Bài bản Việt để đối chiếu: \"Biến ghi chú thành câu hỏi tự kiểm tra: ôn bài bằng cách tự trả lời\"; \"Sơ đồ tư duy (mind map): vẽ ý tưởng thành cây để nhìn thấy toàn cảnh\"; \"Ghi chú kiểu Cornell: chia trang giấy thành ba phần để ôn bài dễ hơn\". Nối sang bài tiếng Anh của hành tinh \"Learning how to learn\" khi đã có. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "skipped",
-      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
-    },
-    {
-      "slug": "viec-nha-gon-gang-en",
-      "space": "doi-song",
-      "lang": "en",
-      "name": "A tidy home",
-      "nameEn": "A tidy home",
-      "tech": false,
-      "brief": "Viết mới bằng tiếng Anh cho người đọc quốc tế (không dịch từng câu), cùng nội dung cốt lõi với bản tiếng Việt \"Việc nhà gọn gàng\". Bài bản Việt để đối chiếu: \"Lịch dọn dẹp mỗi ngày 15 phút: nhà sạch mà không mất cả buổi cuối tuần\"; \"Sắp xếp nhà cửa theo từng khu: mỗi món đồ có một chỗ của riêng nó\"; \"Đọc ký hiệu giặt ủi trên nhãn quần áo: hiểu năm hình vẽ nhỏ để áo không bị co, phai hay hỏng\". Ký hiệu giặt ủi theo chuẩn ISO 3758 dùng chung quốc tế, đối chiếu tài liệu chính thức. Tiêu đề và thân bài đều bằng tiếng Anh; nối bài trong hành tinh bằng [[Tiêu đề]] và nối sang ít nhất một bài tiếng Anh của hành tinh khác khi đã có.",
-      "status": "skipped",
-      "note": "English versions published as translations of the Vietnamese articles (08/11/2026)"
-    },
-    {
-      "slug": "he-mat-troi",
-      "space": "khoa-hoc",
-      "lang": "vi",
-      "name": "Hệ Mặt Trời",
-      "nameEn": "The Solar System",
-      "tech": false,
-      "brief": "Hành tinh đầu tiên của Space Khoa học quanh ta. Gợi ý 3 bài: tám hành tinh của Hệ Mặt Trời (kích thước, khoảng cách, vì sao Sao Diêm Vương bị xếp lại thành hành tinh lùn năm 2006); Mặt Trăng và các tuần trăng, liên hệ với âm lịch; nhật thực và nguyệt thực xảy ra thế nào, cách xem nhật thực an toàn. Số liệu đối chiếu NASA hoặc Wikipedia.",
-      "status": "published"
-    },
-    {
       "slug": "dich-vu-va-log-linux",
       "space": "linux",
       "lang": "vi",
@@ -175,36 +29,6 @@
       "nameEn": "Services and logs on Linux",
       "tech": true,
       "brief": "Gợi ý 3 bài: systemd và unit file; systemctl bật, tắt, khởi động lại dịch vụ; journalctl lọc log theo dịch vụ và thời gian.",
-      "status": "published"
-    },
-    {
-      "slug": "thoi-tiet-viet-nam",
-      "space": "khoa-hoc",
-      "lang": "vi",
-      "name": "Thời tiết và khí hậu Việt Nam",
-      "nameEn": "Weather and climate in Vietnam",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: gió mùa đông bắc và gió mùa tây nam, vì sao miền Bắc có bốn mùa còn miền Nam chỉ có mùa mưa và mùa khô; bão và áp thấp nhiệt đới hình thành thế nào, đọc cấp gió và bản tin bão; nồm ẩm và mưa phùn miền Bắc cuối đông xuân, vì sao tường đổ mồ hôi. Nối sang Hệ Mặt Trời khi nói về mùa. Đối chiếu Wikipedia hoặc Tổng cục Khí tượng Thuỷ văn.",
-      "status": "published"
-    },
-    {
-      "slug": "quan-ly-thoi-gian",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Quản lý thời gian",
-      "nameEn": "Time management",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: kỹ thuật Pomodoro; chặn lịch (time blocking); ma trận Eisenhower phân loại việc gấp và quan trọng.",
-      "status": "published"
-    },
-    {
-      "slug": "tet-nguyen-dan",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Tết Nguyên Đán",
-      "nameEn": "Lunar New Year",
-      "tech": false,
-      "brief": "Đợt bổ sung trước Tết 2027 (mùng một rơi vào 06/02/2027), không lặp lại ba bài đã có. Gợi ý 3 bài: hoa đào, hoa mai, cây quất và câu đối đỏ trang trí nhà ngày Tết (nối tới \"Ông Công, ông Táo và ngày 23 tháng Chạp: tiễn thần bếp lên trời, dọn nhà đón Tết\"); đêm Giao thừa: cúng Giao thừa, đi lễ chùa và hái lộc đầu năm (nối tới \"Xông đất, lì xì và mùng một Tết: những phong tục mở đầu năm mới\"); Tết ở ba miền Bắc, Trung, Nam: món ăn và nếp quen khác nhau (nối tới \"Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết\"). Đối chiếu Wikipedia.",
       "status": "published"
     },
     {
@@ -218,66 +42,6 @@
       "status": "published"
     },
     {
-      "slug": "di-san-viet-nam",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Di sản Việt Nam",
-      "nameEn": "Vietnamese heritage",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: Nhã nhạc cung đình Huế; Không gian văn hoá Cồng chiêng Tây Nguyên; Ca trù. Các di sản được UNESCO ghi danh; đối chiếu Wikipedia.",
-      "status": "published"
-    },
-    {
-      "slug": "anh-sang-va-mau-sac",
-      "space": "khoa-hoc",
-      "lang": "vi",
-      "name": "Ánh sáng và màu sắc",
-      "nameEn": "Light and colour",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: vì sao bầu trời màu xanh còn hoàng hôn màu đỏ cam (tán xạ Rayleigh), nối tới \"Nhật thực và nguyệt thực: xảy ra thế nào và cách xem nhật thực an toàn\" khi giải thích vì sao Mặt Trăng đỏ lúc nguyệt thực toàn phần; cầu vồng hình thành thế nào, vì sao luôn ở phía đối diện Mặt Trời và có cầu vồng kép; vì sao lá cây xanh và chuyển vàng, đỏ khi trời lạnh (diệp lục, carotenoid, anthocyanin). Giải thích bằng ví dụ đời thường, đối chiếu Wikipedia.",
-      "status": "published"
-    },
-    {
-      "slug": "lich-su-viet-nam",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Lịch sử Việt Nam",
-      "nameEn": "Vietnamese history",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: các triều đại phong kiến qua một trục thời gian (từ Ngô, Đinh, Tiền Lê đến nhà Nguyễn); trận Bạch Đằng năm 938; kinh đô Thăng Long. Bài trục thời gian nối tới \"Nhã nhạc cung đình Huế: âm nhạc của triều đình được UNESCO ghi danh\" khi nói về nhà Nguyễn. Mốc năm đối chiếu Wikipedia.",
-      "status": "published"
-    },
-    {
-      "slug": "bep-an-toan",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "Bếp an toàn",
-      "nameEn": "A safe kitchen",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: bảo quản thực phẩm trong tủ lạnh đúng ngăn; rã đông an toàn; giữ thớt, dao, khăn bếp sạch để tránh nhiễm chéo. Bài tủ lạnh có thể nối tới \"Lịch dọn dẹp mỗi ngày 15 phút: nhà sạch mà không mất cả buổi cuối tuần\" khi nói về lau tủ định kỳ.",
-      "status": "published"
-    },
-    {
-      "slug": "tu-duy-phan-bien",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Tư duy phản biện",
-      "nameEn": "Critical thinking",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: kiểm tra nguồn của một thông tin; phân biệt sự thật và ý kiến; các ngụy biện hay gặp kèm ví dụ.",
-      "status": "published"
-    },
-    {
-      "slug": "nau-an-co-ban",
-      "space": "am-thuc",
-      "lang": "vi",
-      "name": "Nấu ăn cơ bản",
-      "nameEn": "Cooking basics",
-      "tech": false,
-      "brief": "Hành tinh đầu tiên của Space Ẩm thực & nấu ăn. Gợi ý 3 bài: nấu cơm ngon bằng nồi cơm điện (vo gạo, tỉ lệ nước theo loại gạo, ủ cơm); luộc rau xanh giữ màu và luộc thịt không hôi; pha nước mắm chấm chua ngọt cân vị. Bài nước mắm nối tới \"Bánh chưng, bánh tét và mâm ngũ quả: những món không thể thiếu trên bàn thờ ngày Tết\" hoặc \"Tết ở ba miền Bắc, Trung, Nam: món ăn và nếp quen khác nhau\" khi nói vị mỗi miền; nếu \"Bếp an toàn\" đã đăng thì nối thêm bài về thớt, dao. Hướng dẫn từng bước, lượng nguyên liệu cụ thể, không quảng cáo thương hiệu.",
-      "status": "todo"
-    },
-    {
       "slug": "web-va-https",
       "space": "networking",
       "lang": "vi",
@@ -285,36 +49,6 @@
       "nameEn": "Web and HTTPS",
       "tech": true,
       "brief": "Gợi ý 3 bài: nginx làm reverse proxy; chứng chỉ TLS và HTTPS hoạt động thế nào; certbot cấp và tự gia hạn chứng chỉ Let's Encrypt.",
-      "status": "todo"
-    },
-    {
-      "slug": "lam-viec-nhom",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Làm việc nhóm",
-      "nameEn": "Teamwork",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: chia việc và giao trách nhiệm rõ ràng; theo dõi tiến độ bằng bảng Kanban; xử lý bất đồng trong nhóm.",
-      "status": "todo"
-    },
-    {
-      "slug": "trai-dat-chuyen-dong",
-      "space": "khoa-hoc",
-      "lang": "vi",
-      "name": "Trái Đất chuyển động",
-      "nameEn": "Our restless Earth",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: kiến tạo mảng và vì sao các lục địa trôi dần (vỏ Trái Đất, các mảng lớn, dãy Himalaya); động đất hình thành thế nào, thang độ lớn Richter và moment, việc nên làm khi có rung lắc; núi lửa và sóng thần, vì sao chúng hay xuất hiện quanh Vành đai lửa Thái Bình Dương. Bài kiến tạo mảng nối tới \"Tám hành tinh của Hệ Mặt Trời: kích thước, khoảng cách và vì sao Sao Diêm Vương thành hành tinh lùn\" khi nói về cấu tạo hành tinh đá. Số liệu đối chiếu USGS hoặc Wikipedia.",
-      "status": "todo"
-    },
-    {
-      "slug": "trang-phuc-viet",
-      "space": "van-hoa",
-      "lang": "vi",
-      "name": "Trang phục truyền thống Việt",
-      "nameEn": "Traditional Vietnamese dress",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: áo dài qua các thời kỳ; áo tứ thân và áo yếm; nón lá. Đối chiếu Wikipedia.",
       "status": "todo"
     },
     {
@@ -328,36 +62,6 @@
       "status": "todo"
     },
     {
-      "slug": "doc-sach",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Đọc sách",
-      "nameEn": "Reading books",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: ba mức đọc lướt, đọc hiểu, đọc phân tích; ghi chú bên lề và tóm tắt một trang; giữ thói quen đọc mỗi ngày.",
-      "status": "todo"
-    },
-    {
-      "slug": "tiet-kiem-trong-nha",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "Tiết kiệm trong nhà",
-      "nameEn": "Saving at home",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: tính số điện từ công suất thiết bị; dùng điều hoà và bình nóng lạnh tiết kiệm; giảm lãng phí thực phẩm khi đi chợ và nấu ăn.",
-      "status": "todo"
-    },
-    {
-      "slug": "thuyet-trinh",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Thuyết trình",
-      "nameEn": "Presenting",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: xây một thông điệp chính và cấu trúc ba phần; làm slide ít chữ; tập nói và trả lời câu hỏi khó.",
-      "status": "todo"
-    },
-    {
       "slug": "mang-docker",
       "space": "docker",
       "lang": "vi",
@@ -365,36 +69,6 @@
       "nameEn": "Docker networking",
       "tech": true,
       "brief": "Gợi ý 3 bài: mạng bridge mặc định và publish cổng; mạng tự tạo và DNS nội bộ giữa container; mạng host và khi nào nên dùng.",
-      "status": "todo"
-    },
-    {
-      "slug": "ngoai-ngu-tu-hoc",
-      "space": "ky-nang",
-      "lang": "vi",
-      "name": "Tự học ngoại ngữ",
-      "nameEn": "Self-taught languages",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: lập kế hoạch tự học tiếng Anh; học từ vựng bằng flashcard; luyện nghe với phụ đề hai bước.",
-      "status": "todo"
-    },
-    {
-      "slug": "sua-chua-nho",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "Sửa chữa nhỏ trong nhà",
-      "nameEn": "Small home repairs",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: thay bóng đèn và ổ cắm an toàn (ngắt cầu dao trước); thông bồn rửa bị tắc; xử lý vòi nước rỉ. Nhấn mạnh an toàn điện.",
-      "status": "todo"
-    },
-    {
-      "slug": "phat-trien-ban-than",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Phát triển bản thân",
-      "nameEn": "Personal growth",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: đặt mục tiêu SMART; viết nhật ký công việc hằng tuần; học kỹ năng mới song song với công việc.",
       "status": "todo"
     },
     {
@@ -408,26 +82,6 @@
       "status": "todo"
     },
     {
-      "slug": "di-lai-an-toan",
-      "space": "doi-song",
-      "lang": "vi",
-      "name": "Đi lại an toàn",
-      "nameEn": "Getting around safely",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: kiểm tra xe máy trước chuyến đi xa; chuẩn bị hành lý cho chuyến du lịch ngắn; dùng bản đồ trên điện thoại khi mất sóng. Không đưa lời khuyên y tế.",
-      "status": "todo"
-    },
-    {
-      "slug": "quan-ly-cong-viec-ca-nhan",
-      "space": "cong-viec",
-      "lang": "vi",
-      "name": "Quản lý việc cá nhân",
-      "nameEn": "Personal task management",
-      "tech": false,
-      "brief": "Gợi ý 3 bài: phương pháp GTD gom việc vào một chỗ; danh sách việc mỗi ngày ba việc chính; xem lại tuần vào cuối tuần.",
-      "status": "todo"
-    },
-    {
       "slug": "dia-tren-linux",
       "space": "linux",
       "lang": "vi",
@@ -435,6 +89,226 @@
       "nameEn": "Disks on Linux",
       "tech": true,
       "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
+      "status": "todo"
+    },
+    {
+      "slug": "ssh-an-toan",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "SSH an toàn",
+      "nameEn": "Securing SSH",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: khoá SSH thay mật khẩu và cách tạo, phân phối khoá; sshd_config cần chỉnh (tắt đăng nhập root, đổi cổng có đáng không, giới hạn người dùng); chặn dò mật khẩu bằng fail2ban và đọc nhật ký đăng nhập.",
+      "status": "todo"
+    },
+    {
+      "slug": "tuong-lua-linux",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Tường lửa trên Linux",
+      "nameEn": "Linux firewalls",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: nguyên lý lọc gói tin (trạng thái kết nối, chain, policy); ufw cho người mới; nftables và iptables khác nhau thế nào, đọc một bộ luật có sẵn.",
+      "status": "todo"
+    },
+    {
+      "slug": "tls-chung-chi",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "TLS và chứng chỉ SSL",
+      "nameEn": "TLS and certificates",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
+      "status": "todo"
+    },
+    {
+      "slug": "mongodb-chi-muc",
+      "space": "co-so-du-lieu",
+      "lang": "vi",
+      "name": "MongoDB: chỉ mục và truy vấn",
+      "nameEn": "MongoDB indexes and queries",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chỉ mục đơn và chỉ mục ghép, quy tắc ESR; đọc explain() để biết truy vấn chậm ở đâu; thiết kế tài liệu nhúng hay tham chiếu và chỉ mục TTL cho dữ liệu nhật ký.",
+      "status": "todo"
+    },
+    {
+      "slug": "postgres-van-hanh",
+      "space": "co-so-du-lieu",
+      "lang": "vi",
+      "name": "PostgreSQL vận hành cơ bản",
+      "nameEn": "PostgreSQL operations basics",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: kết nối, vai trò và pg_hba.conf; sao lưu và khôi phục với pg_dump và sao lưu vật lý; VACUUM, autovacuum và theo dõi truy vấn chậm bằng pg_stat_statements.",
+      "status": "todo"
+    },
+    {
+      "slug": "tim-kiem-van-ban",
+      "space": "co-so-du-lieu",
+      "lang": "vi",
+      "name": "Tìm kiếm toàn văn",
+      "nameEn": "Full-text search",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chỉ mục ngược và cách một công cụ tìm kiếm xếp hạng; so sánh Elasticsearch, Typesense và Meilisearch khi nào dùng cái nào; xử lý tiếng Việt có dấu trong tìm kiếm.",
+      "status": "todo"
+    },
+    {
+      "slug": "email-spf-dkim-dmarc",
+      "space": "email",
+      "lang": "vi",
+      "name": "SPF, DKIM và DMARC",
+      "nameEn": "SPF, DKIM and DMARC",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: thư đi từ máy gửi tới hộp thư nhận qua những chặng nào; ba bản ghi DNS SPF, DKIM, DMARC làm gì và cấu hình từng bước; đọc báo cáo DMARC và sửa thư bị vào spam.",
+      "status": "todo"
+    },
+    {
+      "slug": "zimbra-quan-tri",
+      "space": "email",
+      "lang": "vi",
+      "name": "Quản trị Zimbra",
+      "nameEn": "Zimbra administration",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các thành phần của Zimbra (MTA, mailbox, LDAP, proxy); tạo tài khoản, lớp dịch vụ và hạn mức qua zmprov; hàng đợi thư và cách đọc nhật ký khi thư không tới.",
+      "status": "todo"
+    },
+    {
+      "slug": "api-rest-thiet-ke",
+      "space": "lap-trinh",
+      "lang": "vi",
+      "name": "Thiết kế REST API",
+      "nameEn": "Designing REST APIs",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: đặt tên tài nguyên, phương thức và mã trạng thái cho đúng; phân trang, lọc và sắp xếp; lỗi trả về thống nhất, idempotency và đánh phiên bản.",
+      "status": "todo"
+    },
+    {
+      "slug": "typescript-thuc-hanh",
+      "space": "lap-trinh",
+      "lang": "vi",
+      "name": "TypeScript thực hành",
+      "nameEn": "Practical TypeScript",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: kiểu hẹp dần (narrowing) và type guard thay cho any; generic và utility types dùng hằng ngày; cấu hình tsconfig nghiêm ngặt và lỗi hay gặp khi bật strict.",
+      "status": "todo"
+    },
+    {
+      "slug": "node-hieu-nang",
+      "space": "lap-trinh",
+      "lang": "vi",
+      "name": "Node.js và hiệu năng",
+      "nameEn": "Node.js performance",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: vòng lặp sự kiện và vì sao một tác vụ nặng làm cả server đứng; đo bằng profiler và đọc flame graph; luồng (stream), áp lực ngược và pool kết nối.",
+      "status": "todo"
+    },
+    {
+      "slug": "ci-cd-pipeline",
+      "space": "devops",
+      "lang": "vi",
+      "name": "CI/CD pipeline",
+      "nameEn": "CI/CD pipelines",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các giai đoạn của một pipeline (build, test, deploy) và khái niệm artifact, cache; viết GitLab CI và GitHub Actions cho cùng một dự án để so sánh; triển khai không gián đoạn và cách quay lui.",
+      "status": "todo"
+    },
+    {
+      "slug": "shell-tu-dong-hoa",
+      "space": "devops",
+      "lang": "vi",
+      "name": "Shell script tự động hoá",
+      "nameEn": "Automating with shell scripts",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: bash an toàn (set -euo pipefail, trích dẫn biến); xử lý văn bản với grep, sed, awk, jq; cron và systemd timer cho việc chạy định kỳ.",
+      "status": "todo"
+    },
+    {
+      "slug": "sao-luu-khoi-phuc",
+      "space": "devops",
+      "lang": "vi",
+      "name": "Sao lưu và khôi phục",
+      "nameEn": "Backup and restore",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: quy tắc 3-2-1, RPO và RTO; sao lưu tập tin, cơ sở dữ liệu và máy ảo khác nhau thế nào; diễn tập khôi phục và kiểm tra bản sao lưu còn dùng được.",
+      "status": "todo"
+    },
+    {
+      "slug": "mcp-la-gi",
+      "space": "ai-ky-su",
+      "lang": "vi",
+      "name": "MCP là gì",
+      "nameEn": "What is MCP",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Model Context Protocol giải quyết vấn đề gì và gồm những phần nào (server, tool, resource); viết một MCP server nhỏ bằng TypeScript; phân quyền và an toàn khi cho AI gọi công cụ thật.",
+      "status": "todo"
+    },
+    {
+      "slug": "ai-agent-viet-code",
+      "space": "ai-ky-su",
+      "lang": "vi",
+      "name": "Dùng AI agent viết code",
+      "nameEn": "Coding with AI agents",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chia việc cho agent (kế hoạch, thực hiện, rà soát) và viết yêu cầu đủ rõ; kiểm chứng kết quả bằng test, lint, typecheck thay vì tin lời agent; những việc không nên giao cho agent.",
+      "status": "todo"
+    },
+    {
+      "slug": "object-storage-s3",
+      "space": "cloud",
+      "lang": "vi",
+      "name": "Object Storage và giao thức S3",
+      "nameEn": "Object storage and the S3 protocol",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: object, bucket, key khác tập tin và thư mục ở chỗ nào; ký yêu cầu, URL có chữ ký tạm và chính sách truy cập; tải lên nhiều phần, vòng đời đối tượng và cách tính chi phí.",
+      "status": "todo"
+    },
+    {
+      "slug": "ceph-co-ban",
+      "space": "cloud",
+      "lang": "vi",
+      "name": "Ceph cơ bản",
+      "nameEn": "Ceph basics",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: kiến trúc Ceph (MON, OSD, MGR) và thuật toán CRUSH; ba kiểu lưu trữ RBD, CephFS, RGW; theo dõi sức khoẻ cụm và xử lý khi một OSD hỏng.",
+      "status": "todo"
+    },
+    {
+      "slug": "marketing-cho-nguoi-lam-ky-thuat",
+      "space": "marketing-ky-thuat",
+      "lang": "vi",
+      "name": "Marketing cho sản phẩm kỹ thuật",
+      "nameEn": "Marketing for technical products",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: khác biệt giữa bán cho kỹ sư và bán cho người dùng phổ thông (tin vào tài liệu, bản dùng thử, ví dụ chạy được); phễu nhà phát triển từ biết đến, dùng thử, tích hợp, trả tiền; nội dung kỹ thuật làm marketing (tài liệu, blog, mã mẫu, changelog) và cách đo hiệu quả.",
+      "status": "todo"
+    },
+    {
+      "slug": "doc-xu-huong-cong-nghe",
+      "space": "marketing-ky-thuat",
+      "lang": "vi",
+      "name": "Đọc xu hướng công nghệ",
+      "nameEn": "Reading technology trends",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các nguồn dữ liệu công khai đáng tin để biết kỹ sư đang quan tâm gì (Stack Overflow Developer Survey, GitHub Octoverse, Google Trends, thống kê tải gói, CNCF Annual Survey); cách đọc số liệu khảo sát đúng cách, tránh thiên lệch người trả lời; biến tín hiệu xu hướng thành quyết định nội dung và sản phẩm. Chỉ trích số liệu có nguồn và ghi rõ năm.",
+      "status": "todo"
+    },
+    {
+      "slug": "insight-nguoi-dung-ky-thuat",
+      "space": "marketing-ky-thuat",
+      "lang": "vi",
+      "name": "Insight từ người dùng kỹ thuật",
+      "nameEn": "User insight for technical products",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: phỏng vấn người dùng kỹ thuật hỏi gì và tránh hỏi gì; lấy insight từ dữ liệu có sẵn (câu hỏi hỗ trợ, tìm kiếm trong tài liệu, phản hồi, nhật ký sử dụng ẩn danh); phân nhóm nhu cầu bằng jobs-to-be-done và ưu tiên. Không nêu số liệu người dùng thật của bất kỳ công ty nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "ai-trong-cong-viec-ky-su",
+      "space": "marketing-ky-thuat",
+      "lang": "vi",
+      "name": "Kỹ sư dùng AI như thế nào",
+      "nameEn": "How engineers use AI",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các nhóm việc kỹ sư thường dùng AI (viết và rà soát code, gỡ lỗi, tài liệu, vận hành); cách đọc các khảo sát về mức độ dùng AI của lập trình viên và những giới hạn của chúng; thiết kế sản phẩm và nội dung cho người dùng đã quen AI agent. Chỉ trích số liệu có nguồn và ghi rõ năm.",
       "status": "todo"
     }
   ]
