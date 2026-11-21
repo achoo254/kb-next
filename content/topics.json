@@ -42,6 +42,96 @@
       "status": "published"
     },
     {
+      "slug": "cap-do-an-ninh-he-thong-thong-tin",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "Cấp độ an ninh hệ thống thông tin",
+      "nameEn": "Security levels of information systems",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Nghị định 331/2026/NĐ-CP (ban hành 19/8/2026) về bảo vệ an ninh mạng đối với hệ thống thông tin: phạm vi, đối tượng, vai trò chủ quản và đơn vị vận hành; tiêu chí xác định cấp độ 1 đến 5 (ví dụ ngưỡng chủ thể dữ liệu cá nhân của dịch vụ trực tuyến) và nguyên tắc không chia tách hay gộp để hạ cấp độ; quy trình hồ sơ cấp độ (đánh giá rủi ro, hồ sơ đề xuất, thuyết minh, thẩm định và phê duyệt, ai thẩm định cấp 3, cấp 4 và 5) cùng nghĩa vụ báo cáo định kỳ. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "tcvn-14423-2026-yeu-cau-co-ban",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "TCVN 14423:2026 về an toàn hệ thống thông tin",
+      "nameEn": "TCVN 14423:2026 information system security",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: TCVN 14423:2026 là gì, công bố theo Quyết định 3243/QĐ-BKHCN ngày 24/7/2026, thay thế những bản nào (TCVN 11930:2017); cấu trúc theo 5 cấp độ và các nhóm yêu cầu (15 nhóm ở cấp 1 và 2, đủ 18 nhóm từ cấp 3), tài liệu tham khảo của tiêu chuẩn; đọc một nhóm yêu cầu cấp 3 thành việc cụ thể cho đội kỹ thuật (kiểm kê tài sản, phân quyền, nhật ký, sao lưu). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "chi-so-bao-dam-an-ninh-mang",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "Chỉ số bảo đảm an ninh mạng",
+      "nameEn": "The cybersecurity assurance index",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Quyết định 1964/QĐ-TTg (12/10/2026) ban hành Chỉ số bảo đảm an ninh mạng: ba nhóm tiêu chí, 29 tiêu chí thành phần, đối tượng áp dụng thí điểm và việc tổ chức khác chỉ tham khảo; thang chấm 0 đến 3 (có quy định được ký, có đo lường định kỳ, có cải tiến dựa trên số liệu) và cách xếp loại; mối quan hệ với TCVN 14423:2026 và cách chuẩn bị bằng chứng để tự đánh giá. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "luat-bao-ve-du-lieu-ca-nhan-91-2025",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "Luật Bảo vệ dữ liệu cá nhân 91/2025",
+      "nameEn": "Personal Data Protection Law 91/2025",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP hướng dẫn: khái niệm dữ liệu cá nhân cơ bản và nhạy cảm, quyền của chủ thể, nghĩa vụ của bên kiểm soát và bên xử lý; hồ sơ đánh giá tác động xử lý dữ liệu và hồ sơ chuyển dữ liệu xuyên biên giới: khi nào bắt buộc, nội dung chính, nộp cho cơ quan nào, thời hạn; việc kỹ thuật để tuân thủ (phân loại dữ liệu, mã hoá, nhật ký truy cập, xoá dữ liệu khi hết mục đích, xử lý khi lộ lọt). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "luat-an-ninh-mang-116-2025",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "Luật An ninh mạng 116/2025",
+      "nameEn": "Cybersecurity Law 116/2025",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Luật An ninh mạng 116/2025/QH15 trong bức tranh các văn bản (liên hệ với Nghị định 331/2026 và các nghị định hướng dẫn cùng đợt), hiệu lực và những điểm mới so với luật cũ; nghĩa vụ chính của doanh nghiệp cung cấp dịch vụ trên không gian mạng; hệ thống thông tin quan trọng về an ninh quốc gia và việc bảo vệ theo cấp độ. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "iso-27001-2022-co-ban",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "ISO/IEC 27001:2022 cơ bản",
+      "nameEn": "ISO/IEC 27001:2022 basics",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: ISMS là gì, các điều khoản 4 đến 10 và chu trình lập kế hoạch, thực hiện, kiểm tra, cải tiến; Phụ lục A phiên bản 2022 với 93 biện pháp trong 4 nhóm (tổ chức, con người, vật lý, công nghệ) và Tuyên bố áp dụng; lộ trình đạt chứng nhận từ phạm vi, đánh giá rủi ro, đánh giá nội bộ đến đánh giá của tổ chức chứng nhận. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "iso-27001-doi-chieu-tcvn-14423",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "ISO 27001 đối chiếu với TCVN 14423",
+      "nameEn": "Mapping ISO 27001 to TCVN 14423",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: một hệ thống quản lý làm đúng ISO 27001 đáp ứng được những phần nào của TCVN 14423:2026 và Chỉ số 1964 (tài liệu hoá điều 7.5, đo lường điều 9.1, cải tiến điều 10) và phần nào còn thiếu; xây một bộ tài liệu dùng chung cho cả ba khung để không làm ba lần; lỗi hay gặp khi chuẩn bị bằng chứng. Nêu rõ bảng đối chiếu là phân tích của người viết, không phải văn bản chính thức. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "phat-trien-phan-mem-an-toan",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Phát triển phần mềm an toàn",
+      "nameEn": "Secure software development",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: vòng đời phát triển an toàn (yêu cầu bảo mật, review mã, kiểm thử xâm nhập, nghiệm thu); quản lý bí mật, khoá và chứng thư trong kho mã và CI/CD; theo dõi lỗ hổng của thư viện phụ thuộc và xử lý thành phần hết hỗ trợ (EOL). Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "xu-ly-su-co-an-ninh-mang",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Xử lý sự cố an ninh mạng",
+      "nameEn": "Handling cybersecurity incidents",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
+      "status": "todo"
+    },
+    {
       "slug": "web-va-https",
       "space": "networking",
       "lang": "vi",

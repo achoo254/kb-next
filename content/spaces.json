@@ -92,6 +92,18 @@
       "unitEn": "articles",
       "descriptionVi": "Đọc xu hướng công nghệ, hiểu người dùng kỹ thuật quan tâm gì và dùng AI ra sao, rồi biến insight thành nội dung.",
       "descriptionEn": "Reading technology trends, learning what technical users care about and how they use AI, and turning insight into content."
+    },
+    {
+      "slug": "phap-ly-anm",
+      "nameVi": "Pháp lý & tiêu chuẩn an ninh mạng",
+      "nameEn": "Cybersecurity law & standards",
+      "tint": "#C7D2FE",
+      "glow": "#4F46E5",
+      "art": "/art/crystal-legal.webp",
+      "unitVi": "bài",
+      "unitEn": "articles",
+      "descriptionVi": "Luật, nghị định, TCVN và ISO về an ninh mạng, bảo vệ dữ liệu cá nhân và hồ sơ cấp độ, giải thích cho người làm kỹ thuật.",
+      "descriptionEn": "Laws, decrees, TCVN and ISO standards on cybersecurity, personal data protection and system security levels, explained for engineers."
     }
   ]
 }

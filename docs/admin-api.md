@@ -125,7 +125,7 @@ Hai cloud routine của Claude lo hàng chờ:
   bổ sung** (1–5 bài, mỗi bài nối vào bài đã đăng hoặc đang chờ của chính hành tinh đó).
 
 GitHub Actions đăng bài **hiện ngay**, không chờ người duyệt (chủ dự án chốt 07/11/2026). Bài có lỗi thì quản trị ẩn
-hoặc sửa ở A02 (`/admin/content`), hoặc qua `PUT /api/admin/posts/:id/text`. kb chỉ giữ chủ đề hạ tầng và kỹ thuật phần mềm (từ 21/11/2026; trước đó có cả đời sống, kỹ năng, văn hoá, khoa học): mọi chủ đề
+hoặc sửa ở A02 (`/admin/content`), hoặc qua `PUT /api/admin/posts/:id/text`. kb chỉ giữ chủ đề hạ tầng và kỹ thuật phần mềm, kể cả pháp lý và tiêu chuẩn an ninh mạng, marketing kỹ thuật (từ 21/11/2026; trước đó có cả đời sống, kỹ năng, văn hoá, khoa học): mọi chủ đề
 phải có `tech: true`, `check:queue` từ chối chủ đề khác.
 
 **Song ngữ (từ 08/11/2026):** mỗi bài tiếng Việt của hành tinh `lang: "vi"` có **bản dịch tiếng Anh** đi kèm, đăng
