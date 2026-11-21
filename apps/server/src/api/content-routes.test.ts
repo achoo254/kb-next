@@ -3,6 +3,7 @@ import { createDocument, createLink, updateDocument } from '../../test/content-f
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { api, signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
+import { PLANET_LOOKS } from '../access/planet-art';
 import { seedDatabase, seedId } from '../db/seed-database';
 import type { DocumentResponse, SpaceDetailResponse, SpaceListItem } from './content-routes';
 import type { DocumentSummary } from './content-views';
@@ -166,13 +167,13 @@ describe('GET /api/spaces/:slug', () => {
     expect(titles).not.toContain('subnet.xlsx');
   });
 
-  it('gives each collection its own crystal, or the Space’s when it has none, so no card is left without art', async () => {
+  it('gives each collection its own crystal, or a planet when it has none, so no card is left without art', async () => {
     const net = await get<SpaceDetailResponse>('/api/spaces/networking', owner);
     expect(net.body.collections.map((c) => c.art)).toEqual(['/art/crystal-networking.webp', '/art/crystal-linux.webp', '/art/crystal-weekly.webp', '/art/crystal-kubernetes.webp']);
-    // The seed's Docker collections have no image of their own.
+    // The seed's Docker collections have no image of their own: each shows a planet with that planet's colours.
     const docker = await get<SpaceDetailResponse>('/api/spaces/docker', owner);
     expect(docker.body.collections.length).toBeGreaterThan(0);
-    for (const c of docker.body.collections) expect(c).toMatchObject({ art: '/art/crystal-docker.webp', tint: '#FDE68A', glow: '#F59E0B' });
+    for (const c of docker.body.collections) expect(PLANET_LOOKS).toContainEqual({ art: c.art, tint: c.tint, glow: c.glow });
   });
 
   it('lists the personal Space’s files outside collections for its owner, and refuses it to anyone else', async () => {

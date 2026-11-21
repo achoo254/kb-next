@@ -23,6 +23,7 @@ import type { Viewer } from '../access/viewer';
 import { editRight } from '../access/authoring';
 import { currentFileOf } from '../access/files';
 import { favoriteIds } from '../access/my-content';
+import { planetFor } from '../access/planet-art';
 import { EDITABLE_KINDS, type FileKind, kindOfMime } from '../files/file-kinds';
 import { type Caption, type SpaceCaptions, captionInputsFor, fallbackCaption, textTotal } from '../captions/space-captions';
 import type { ServerConfig } from '../config';
@@ -237,7 +238,9 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
       });
     const collections = (await listCollectionsOf(db, [space.id])).map((c: CollectionRow) => {
       const documents = inCollection(c.id);
-      return { ...collectionBrief(c), tint: c.tint, glow: c.glow, art: c.art ?? space.art, documentCount: documents.length, documents };
+      // A Collection without art of its own shows a planet (picked from its id) with that planet's colours.
+      const look = c.art ? { art: c.art, tint: c.tint, glow: c.glow } : planetFor(c.id);
+      return { ...collectionBrief(c), ...look, documentCount: documents.length, documents };
     });
 
     // Related: Spaces linked to this one, most linked first; else the next public Spaces of the Universe.
