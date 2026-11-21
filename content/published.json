@@ -113,6 +113,12 @@
       "space": "ky-nang",
       "collectionId": "d14e52ba-778b-4aad-9e4a-a2683f0eb9de",
       "at": "2026-11-21T08:38:07.750Z"
+    },
+    {
+      "slug": "cap-do-an-ninh-he-thong-thong-tin",
+      "space": "phap-ly-anm",
+      "collectionId": "e7bdc395-1bba-480f-b3e1-4dbf5f3d4da3",
+      "at": "2026-11-21T16:08:22.960Z"
     }
   ],
   "posts": [
@@ -744,6 +750,36 @@
       "en": {
         "id": "08542ddd-540e-479f-b7d1-759a64126532",
         "title": "Five common fallacies with examples: spotting arguments that sound reasonable but are flawed"
+      }
+    },
+    {
+      "slug": "cap-do-an-ninh-he-thong-thong-tin/nd331-tong-quan-pham-vi-chu-quan",
+      "id": "478c798b-1d47-4e85-ad00-14506f4ac319",
+      "title": "Nghị định 331/2026/NĐ-CP tổng quan: phạm vi, đối tượng, chủ quản và đơn vị vận hành hệ thống thông tin",
+      "at": "2026-11-21T16:08:23.298Z",
+      "en": {
+        "id": "95dfd9a9-86f1-412f-b72e-fbb24b86f32b",
+        "title": "Decree 331/2026/NĐ-CP at a glance: scope, who it applies to, system owners and operators"
+      }
+    },
+    {
+      "slug": "cap-do-an-ninh-he-thong-thong-tin/nd331-tieu-chi-cap-do-1-den-5",
+      "id": "66674576-1b99-417e-9368-94afaab18867",
+      "title": "Năm cấp độ an ninh hệ thống thông tin theo Nghị định 331/2026/NĐ-CP: tiêu chí, ngưỡng dữ liệu cá nhân và nguyên tắc cấp cao nhất",
+      "at": "2026-11-21T16:08:23.928Z",
+      "en": {
+        "id": "d24a127a-998f-46b2-a241-7db5a5507958",
+        "title": "The five security levels under Decree 331/2026/NĐ-CP: criteria, personal-data thresholds and the highest-level rule"
+      }
+    },
+    {
+      "slug": "cap-do-an-ninh-he-thong-thong-tin/nd331-ho-so-cap-do-tham-dinh-bao-cao",
+      "id": "4521f8eb-19bf-4f0e-9899-516738a59684",
+      "title": "Hồ sơ cấp độ theo Nghị định 331/2026/NĐ-CP: ai thẩm định, ai phê duyệt, thời hạn xử lý và báo cáo định kỳ",
+      "at": "2026-11-21T16:08:24.554Z",
+      "en": {
+        "id": "58e1e381-6a69-45d6-810f-81a049e5d39e",
+        "title": "Level dossiers under Decree 331/2026/NĐ-CP: who appraises, who approves, processing times and periodic reports"
       }
     }
   ]
