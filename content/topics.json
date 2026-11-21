@@ -60,7 +60,7 @@
       "tech": true,
       "brief": "Gợi ý 3 bài: TCVN 14423:2026 là gì, công bố theo Quyết định 3243/QĐ-BKHCN ngày 24/7/2026, thay thế những bản nào (TCVN 11930:2017); cấu trúc theo 5 cấp độ và các nhóm yêu cầu (15 nhóm ở cấp 1 và 2, đủ 18 nhóm từ cấp 3), tài liệu tham khảo của tiêu chuẩn; đọc một nhóm yêu cầu cấp 3 thành việc cụ thể cho đội kỹ thuật (kiểm kê tài sản, phân quyền, nhật ký, sao lưu). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
       "status": "skipped",
-      "note": "Could not verify the structure of TCVN 14423:2026 (requirement groups per level, references) against an official readable source on 21/11/2026; only a commercial summary was reachable. Retry when the official text is accessible."
+      "note": "Could not verify the structure of TCVN 14423:2026 (requirement groups per level, references) against an official readable source on 21/11/2026; only a commercial summary was reachable. Retry when the official text is accessible. Toàn văn TCVN không đưa vào repo (bản quyền tiêu chuẩn): chỉ dùng thông tin công khai trên trang VSQI/BKHCN nếu mở được."
     },
     {
       "slug": "chi-so-bao-dam-an-ninh-mang",
@@ -69,9 +69,8 @@
       "name": "Chỉ số bảo đảm an ninh mạng",
       "nameEn": "The cybersecurity assurance index",
       "tech": true,
-      "brief": "Gợi ý 3 bài: Quyết định 1964/QĐ-TTg (12/10/2026) ban hành Chỉ số bảo đảm an ninh mạng: ba nhóm tiêu chí, 29 tiêu chí thành phần, đối tượng áp dụng thí điểm và việc tổ chức khác chỉ tham khảo; thang chấm 0 đến 3 (có quy định được ký, có đo lường định kỳ, có cải tiến dựa trên số liệu) và cách xếp loại; mối quan hệ với TCVN 14423:2026 và cách chuẩn bị bằng chứng để tự đánh giá. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "skipped",
-      "note": "Could not verify the 0-3 scoring scale, ranking method, article numbers or the link to TCVN 14423:2026 against the official text and 7 appendices of Decision 1964/QD-TTg on 21/11/2026; only secondary news summaries were reachable. Retry when the official text is accessible."
+      "brief": "Gợi ý 3 bài: Quyết định 1964/QĐ-TTg (12/10/2026) ban hành Chỉ số bảo đảm an ninh mạng: ba nhóm tiêu chí, 29 tiêu chí thành phần, đối tượng áp dụng thí điểm và việc tổ chức khác chỉ tham khảo; thang chấm 0 đến 3 (có quy định được ký, có đo lường định kỳ, có cải tiến dựa trên số liệu) và cách xếp loại; mối quan hệ với TCVN 14423:2026 và cách chuẩn bị bằng chứng để tự đánh giá. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào. NGUỒN: đọc tệp content/sources/qd-1964-qd-ttg-2026-phu-luc.md (chép lại Phụ lục, chép bằng AI từ bản PDF chính thức, chưa đối soát từng câu: chỉ dùng cho điều khoản đọc rõ, số điều/mức điểm nào còn nghi thì viết chung); Điều 1–4 không có trong tệp nên không nêu số điều của phần đó. Link Tham khảo dẫn tới URL gốc ghi ở đầu tệp.",
+      "status": "todo"
     },
     {
       "slug": "luat-bao-ve-du-lieu-ca-nhan-91-2025",
@@ -80,9 +79,8 @@
       "name": "Luật Bảo vệ dữ liệu cá nhân 91/2025",
       "nameEn": "Personal Data Protection Law 91/2025",
       "tech": true,
-      "brief": "Gợi ý 3 bài: Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP hướng dẫn: khái niệm dữ liệu cá nhân cơ bản và nhạy cảm, quyền của chủ thể, nghĩa vụ của bên kiểm soát và bên xử lý; hồ sơ đánh giá tác động xử lý dữ liệu và hồ sơ chuyển dữ liệu xuyên biên giới: khi nào bắt buộc, nội dung chính, nộp cho cơ quan nào, thời hạn; việc kỹ thuật để tuân thủ (phân loại dữ liệu, mã hoá, nhật ký truy cập, xoá dữ liệu khi hết mục đích, xử lý khi lộ lọt). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "skipped",
-      "note": "Could not verify article numbers, impact-assessment and cross-border dossier contents, authority and deadlines of Law 91/2025/QH15 and Decree 356/2025/ND-CP against an official readable source on 21/11/2026 (vbpl.moj.gov.vn not resolvable, thuvienphapluat.vn 403, chinhphu.vn unreachable); only law-firm summaries were reachable. Retry when the official text is accessible."
+      "brief": "Gợi ý 3 bài: Luật 91/2025/QH15 và Nghị định 356/2025/NĐ-CP hướng dẫn: khái niệm dữ liệu cá nhân cơ bản và nhạy cảm, quyền của chủ thể, nghĩa vụ của bên kiểm soát và bên xử lý; hồ sơ đánh giá tác động xử lý dữ liệu và hồ sơ chuyển dữ liệu xuyên biên giới: khi nào bắt buộc, nội dung chính, nộp cho cơ quan nào, thời hạn; việc kỹ thuật để tuân thủ (phân loại dữ liệu, mã hoá, nhật ký truy cập, xoá dữ liệu khi hết mục đích, xử lý khi lộ lọt). Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào. NGUỒN: đọc tệp content/sources/luat-91-2025-qh15-ocr.txt (toàn văn Luật 91/2025/QH15 chép bằng OCR, có thể sai chữ: không trích số điều nào chưa đọc rõ). Chỉ giải thích Luật; phần Nghị định 356/2025/NĐ-CP không có toàn văn trong repo nên chỉ nhắc chung, không nêu số điều của nghị định.",
+      "status": "todo"
     },
     {
       "slug": "prometheus-co-ban",
