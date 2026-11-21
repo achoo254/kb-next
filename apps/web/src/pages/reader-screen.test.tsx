@@ -134,6 +134,9 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
+  // A failed assertion must not leave `navigator.onLine` mocked offline: that turned one failure into three (the
+  // Favourite tests then ran with a disabled star).
+  vi.restoreAllMocks();
 });
 
 describe('ReaderScreen', () => {
@@ -396,7 +399,8 @@ describe('ReaderScreen', () => {
     act(() => {
       window.dispatchEvent(new Event('offline'));
     });
-    expect(document.querySelector('[data-id="reader-offline-banner"]')?.textContent).toMatch(/^Offline · reading the copy loaded at \d\d:\d\d · AI paused$/);
+    // The banner follows a state update, so wait for it instead of reading the DOM at once.
+    await waitFor(() => expect(document.querySelector('[data-id="reader-offline-banner"]')?.textContent).toMatch(/^Offline · reading the copy loaded at \d\d:\d\d · AI paused$/));
     expect((screen.getByRole('button', { name: 'Explain this passage' }) as HTMLButtonElement).disabled).toBe(true);
     vi.restoreAllMocks();
   });
