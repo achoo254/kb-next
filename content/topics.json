@@ -160,7 +160,7 @@
       "nameEn": "Grafana and Loki: dashboards and centralised logs",
       "tech": true,
       "brief": "Gợi ý 3 bài: cài Grafana trên Ubuntu 24.04, thêm nguồn dữ liệu Prometheus và dựng dashboard CPU, RAM, ổ đĩa từ truy vấn PromQL (nối tới \"PromQL cơ bản: counter, gauge, rate và sum by qua ví dụ CPU, RAM, ổ đĩa\"); gom log journald của nhiều máy về Loki bằng Grafana Alloy (Promtail đã ngừng phát triển, đối chiếu tài liệu chính thức của Grafana trước khi viết), nhãn log đặt sao cho rẻ (nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\"); LogQL lọc và đếm log, đặt cảnh báo từ log và khi nào nên dùng metric thay vì log (nối tới \"Cảnh báo với Prometheus và Alertmanager: metric khác log thế nào\"). Ghi rõ phiên bản đã thử.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "ci-cd-pipeline",

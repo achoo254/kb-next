@@ -173,6 +173,12 @@
       "space": "email",
       "collectionId": "32a55295-c80a-4f44-8725-5b7db946d6c8",
       "at": "2026-11-22T11:39:31.422Z"
+    },
+    {
+      "slug": "grafana-loki-log-tap-trung",
+      "space": "observability",
+      "collectionId": "297c826c-ba5b-4614-b2cd-183f44b93197",
+      "at": "2026-11-22T11:44:02.858Z"
     }
   ],
   "posts": [
@@ -1104,6 +1110,36 @@
       "en": {
         "id": "8863bafe-69ff-4119-a168-055c30cf152e",
         "title": "How an email travels from sender to inbox: MUA, MSA, MTA, MX records and the two sender addresses"
+      }
+    },
+    {
+      "slug": "grafana-loki-log-tap-trung/logql-canh-bao-log-metric-hay-log",
+      "id": "7f6cbe09-5414-4e50-92e9-745373d1e108",
+      "title": "LogQL cơ bản và cảnh báo từ log: khi nào dùng metric thay vì log",
+      "at": "2026-11-22T11:44:03.861Z",
+      "en": {
+        "id": "787a7464-7c5a-4340-8e43-7f35553851e4",
+        "title": "LogQL basics and log-based alerts: when to use metrics instead of logs"
+      }
+    },
+    {
+      "slug": "grafana-loki-log-tap-trung/gom-log-journald-loki-alloy",
+      "id": "ce8bda87-e615-4366-9f8a-da5191e90465",
+      "title": "Gom log journald về Loki bằng Grafana Alloy: nhãn log đặt sao cho rẻ",
+      "at": "2026-11-22T11:44:04.882Z",
+      "en": {
+        "id": "35bbf3b1-d39f-4cbd-82bc-693ae9418da8",
+        "title": "Shipping journald logs to Loki with Grafana Alloy: keeping log labels cheap"
+      }
+    },
+    {
+      "slug": "grafana-loki-log-tap-trung/cai-grafana-dashboard-prometheus",
+      "id": "c7ec5573-643e-45ab-aba6-dd0ca995c243",
+      "title": "Cài Grafana trên Ubuntu 24.04 và dựng dashboard CPU, RAM, ổ đĩa từ Prometheus",
+      "at": "2026-11-22T11:44:05.467Z",
+      "en": {
+        "id": "6b93ec26-4def-4f07-902b-7d6172ba9bdb",
+        "title": "Installing Grafana on Ubuntu 24.04 and building CPU, memory and disk dashboards from Prometheus"
       }
     }
   ]
