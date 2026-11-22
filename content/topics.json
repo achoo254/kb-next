@@ -140,7 +140,7 @@
       "nameEn": "PostgreSQL operations basics",
       "tech": true,
       "brief": "Gợi ý 3 bài: kết nối, vai trò và pg_hba.conf; sao lưu và khôi phục với pg_dump và sao lưu vật lý; VACUUM, autovacuum và theo dõi truy vấn chậm bằng pg_stat_statements.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "email-spf-dkim-dmarc",
