@@ -120,7 +120,7 @@
       "nameEn": "Secure software development",
       "tech": true,
       "brief": "Gợi ý 3 bài: vòng đời phát triển an toàn (yêu cầu bảo mật, review mã, kiểm thử xâm nhập, nghiệm thu); quản lý bí mật, khoá và chứng thư trong kho mã và CI/CD; theo dõi lỗ hổng của thư viện phụ thuộc và xử lý thành phần hết hỗ trợ (EOL). Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "object-storage-s3",
