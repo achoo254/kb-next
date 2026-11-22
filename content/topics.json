@@ -113,26 +113,6 @@
       "status": "todo"
     },
     {
-      "slug": "dia-tren-linux",
-      "space": "linux",
-      "lang": "vi",
-      "name": "Đĩa trên Linux",
-      "nameEn": "Disks on Linux",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
-      "status": "todo"
-    },
-    {
-      "slug": "web-va-https",
-      "space": "networking",
-      "lang": "vi",
-      "name": "Web và HTTPS",
-      "nameEn": "Web and HTTPS",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: nginx làm reverse proxy; chứng chỉ TLS và HTTPS hoạt động thế nào; certbot cấp và tự gia hạn chứng chỉ Let's Encrypt.",
-      "status": "todo"
-    },
-    {
       "slug": "phat-trien-phan-mem-an-toan",
       "space": "bao-mat",
       "lang": "vi",
@@ -140,176 +120,6 @@
       "nameEn": "Secure software development",
       "tech": true,
       "brief": "Gợi ý 3 bài: vòng đời phát triển an toàn (yêu cầu bảo mật, review mã, kiểm thử xâm nhập, nghiệm thu); quản lý bí mật, khoá và chứng thư trong kho mã và CI/CD; theo dõi lỗ hổng của thư viện phụ thuộc và xử lý thành phần hết hỗ trợ (EOL). Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
-      "status": "todo"
-    },
-    {
-      "slug": "xu-ly-su-co-an-ninh-mang",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "Xử lý sự cố an ninh mạng",
-      "nameEn": "Handling cybersecurity incidents",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
-      "status": "todo"
-    },
-    {
-      "slug": "ssh-an-toan",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "SSH an toàn",
-      "nameEn": "Securing SSH",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: khoá SSH thay mật khẩu và cách tạo, phân phối khoá; sshd_config cần chỉnh (tắt đăng nhập root, đổi cổng có đáng không, giới hạn người dùng); chặn dò mật khẩu bằng fail2ban và đọc nhật ký đăng nhập.",
-      "status": "todo"
-    },
-    {
-      "slug": "tuong-lua-linux",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "Tường lửa trên Linux",
-      "nameEn": "Linux firewalls",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: nguyên lý lọc gói tin (trạng thái kết nối, chain, policy); ufw cho người mới; nftables và iptables khác nhau thế nào, đọc một bộ luật có sẵn.",
-      "status": "todo"
-    },
-    {
-      "slug": "tls-chung-chi",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "TLS và chứng chỉ SSL",
-      "nameEn": "TLS and certificates",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
-      "status": "todo"
-    },
-    {
-      "slug": "mongodb-chi-muc",
-      "space": "co-so-du-lieu",
-      "lang": "vi",
-      "name": "MongoDB: chỉ mục và truy vấn",
-      "nameEn": "MongoDB indexes and queries",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: chỉ mục đơn và chỉ mục ghép, quy tắc ESR; đọc explain() để biết truy vấn chậm ở đâu; thiết kế tài liệu nhúng hay tham chiếu và chỉ mục TTL cho dữ liệu nhật ký.",
-      "status": "todo"
-    },
-    {
-      "slug": "postgres-van-hanh",
-      "space": "co-so-du-lieu",
-      "lang": "vi",
-      "name": "PostgreSQL vận hành cơ bản",
-      "nameEn": "PostgreSQL operations basics",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: kết nối, vai trò và pg_hba.conf; sao lưu và khôi phục với pg_dump và sao lưu vật lý; VACUUM, autovacuum và theo dõi truy vấn chậm bằng pg_stat_statements.",
-      "status": "todo"
-    },
-    {
-      "slug": "tim-kiem-van-ban",
-      "space": "co-so-du-lieu",
-      "lang": "vi",
-      "name": "Tìm kiếm toàn văn",
-      "nameEn": "Full-text search",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: chỉ mục ngược và cách một công cụ tìm kiếm xếp hạng; so sánh Elasticsearch, Typesense và Meilisearch khi nào dùng cái nào; xử lý tiếng Việt có dấu trong tìm kiếm.",
-      "status": "todo"
-    },
-    {
-      "slug": "email-spf-dkim-dmarc",
-      "space": "email",
-      "lang": "vi",
-      "name": "SPF, DKIM và DMARC",
-      "nameEn": "SPF, DKIM and DMARC",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: thư đi từ máy gửi tới hộp thư nhận qua những chặng nào; ba bản ghi DNS SPF, DKIM, DMARC làm gì và cấu hình từng bước; đọc báo cáo DMARC và sửa thư bị vào spam.",
-      "status": "todo"
-    },
-    {
-      "slug": "zimbra-quan-tri",
-      "space": "email",
-      "lang": "vi",
-      "name": "Quản trị Zimbra",
-      "nameEn": "Zimbra administration",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: các thành phần của Zimbra (MTA, mailbox, LDAP, proxy); tạo tài khoản, lớp dịch vụ và hạn mức qua zmprov; hàng đợi thư và cách đọc nhật ký khi thư không tới.",
-      "status": "todo"
-    },
-    {
-      "slug": "api-rest-thiet-ke",
-      "space": "lap-trinh",
-      "lang": "vi",
-      "name": "Thiết kế REST API",
-      "nameEn": "Designing REST APIs",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: đặt tên tài nguyên, phương thức và mã trạng thái cho đúng; phân trang, lọc và sắp xếp; lỗi trả về thống nhất, idempotency và đánh phiên bản.",
-      "status": "todo"
-    },
-    {
-      "slug": "typescript-thuc-hanh",
-      "space": "lap-trinh",
-      "lang": "vi",
-      "name": "TypeScript thực hành",
-      "nameEn": "Practical TypeScript",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: kiểu hẹp dần (narrowing) và type guard thay cho any; generic và utility types dùng hằng ngày; cấu hình tsconfig nghiêm ngặt và lỗi hay gặp khi bật strict.",
-      "status": "todo"
-    },
-    {
-      "slug": "node-hieu-nang",
-      "space": "lap-trinh",
-      "lang": "vi",
-      "name": "Node.js và hiệu năng",
-      "nameEn": "Node.js performance",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: vòng lặp sự kiện và vì sao một tác vụ nặng làm cả server đứng; đo bằng profiler và đọc flame graph; luồng (stream), áp lực ngược và pool kết nối.",
-      "status": "todo"
-    },
-    {
-      "slug": "ci-cd-pipeline",
-      "space": "devops",
-      "lang": "vi",
-      "name": "CI/CD pipeline",
-      "nameEn": "CI/CD pipelines",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: các giai đoạn của một pipeline (build, test, deploy) và khái niệm artifact, cache; viết GitLab CI và GitHub Actions cho cùng một dự án để so sánh; triển khai không gián đoạn và cách quay lui.",
-      "status": "todo"
-    },
-    {
-      "slug": "shell-tu-dong-hoa",
-      "space": "devops",
-      "lang": "vi",
-      "name": "Shell script tự động hoá",
-      "nameEn": "Automating with shell scripts",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: bash an toàn (set -euo pipefail, trích dẫn biến); xử lý văn bản với grep, sed, awk, jq; cron và systemd timer cho việc chạy định kỳ.",
-      "status": "todo"
-    },
-    {
-      "slug": "sao-luu-khoi-phuc",
-      "space": "devops",
-      "lang": "vi",
-      "name": "Sao lưu và khôi phục",
-      "nameEn": "Backup and restore",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: quy tắc 3-2-1, RPO và RTO; sao lưu tập tin, cơ sở dữ liệu và máy ảo khác nhau thế nào; diễn tập khôi phục và kiểm tra bản sao lưu còn dùng được.",
-      "status": "todo"
-    },
-    {
-      "slug": "mcp-la-gi",
-      "space": "ai-ky-su",
-      "lang": "vi",
-      "name": "MCP là gì",
-      "nameEn": "What is MCP",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: Model Context Protocol giải quyết vấn đề gì và gồm những phần nào (server, tool, resource); viết một MCP server nhỏ bằng TypeScript; phân quyền và an toàn khi cho AI gọi công cụ thật.",
-      "status": "todo"
-    },
-    {
-      "slug": "ai-agent-viet-code",
-      "space": "ai-ky-su",
-      "lang": "vi",
-      "name": "Dùng AI agent viết code",
-      "nameEn": "Coding with AI agents",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: chia việc cho agent (kế hoạch, thực hiện, rà soát) và viết yêu cầu đủ rõ; kiểm chứng kết quả bằng test, lint, typecheck thay vì tin lời agent; những việc không nên giao cho agent.",
       "status": "todo"
     },
     {
@@ -323,13 +133,43 @@
       "status": "todo"
     },
     {
-      "slug": "ceph-co-ban",
-      "space": "cloud",
+      "slug": "postgres-van-hanh",
+      "space": "co-so-du-lieu",
       "lang": "vi",
-      "name": "Ceph cơ bản",
-      "nameEn": "Ceph basics",
+      "name": "PostgreSQL vận hành cơ bản",
+      "nameEn": "PostgreSQL operations basics",
       "tech": true,
-      "brief": "Gợi ý 3 bài: kiến trúc Ceph (MON, OSD, MGR) và thuật toán CRUSH; ba kiểu lưu trữ RBD, CephFS, RGW; theo dõi sức khoẻ cụm và xử lý khi một OSD hỏng.",
+      "brief": "Gợi ý 3 bài: kết nối, vai trò và pg_hba.conf; sao lưu và khôi phục với pg_dump và sao lưu vật lý; VACUUM, autovacuum và theo dõi truy vấn chậm bằng pg_stat_statements.",
+      "status": "todo"
+    },
+    {
+      "slug": "email-spf-dkim-dmarc",
+      "space": "email",
+      "lang": "vi",
+      "name": "SPF, DKIM và DMARC",
+      "nameEn": "SPF, DKIM and DMARC",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: thư đi từ máy gửi tới hộp thư nhận qua những chặng nào; ba bản ghi DNS SPF, DKIM, DMARC làm gì và cấu hình từng bước; đọc báo cáo DMARC và sửa thư bị vào spam.",
+      "status": "todo"
+    },
+    {
+      "slug": "grafana-loki-log-tap-trung",
+      "space": "observability",
+      "lang": "vi",
+      "name": "Grafana và Loki: dashboard và log tập trung",
+      "nameEn": "Grafana and Loki: dashboards and centralised logs",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: cài Grafana trên Ubuntu 24.04, thêm nguồn dữ liệu Prometheus và dựng dashboard CPU, RAM, ổ đĩa từ truy vấn PromQL (nối tới \"PromQL cơ bản: counter, gauge, rate và sum by qua ví dụ CPU, RAM, ổ đĩa\"); gom log journald của nhiều máy về Loki bằng Grafana Alloy (Promtail đã ngừng phát triển, đối chiếu tài liệu chính thức của Grafana trước khi viết), nhãn log đặt sao cho rẻ (nối tới \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\"); LogQL lọc và đếm log, đặt cảnh báo từ log và khi nào nên dùng metric thay vì log (nối tới \"Cảnh báo với Prometheus và Alertmanager: metric khác log thế nào\"). Ghi rõ phiên bản đã thử.",
+      "status": "todo"
+    },
+    {
+      "slug": "ci-cd-pipeline",
+      "space": "devops",
+      "lang": "vi",
+      "name": "CI/CD pipeline",
+      "nameEn": "CI/CD pipelines",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các giai đoạn của một pipeline (build, test, deploy) và khái niệm artifact, cache; viết GitLab CI và GitHub Actions cho cùng một dự án để so sánh; triển khai không gián đoạn và cách quay lui.",
       "status": "todo"
     },
     {
@@ -343,6 +183,86 @@
       "status": "todo"
     },
     {
+      "slug": "api-rest-thiet-ke",
+      "space": "lap-trinh",
+      "lang": "vi",
+      "name": "Thiết kế REST API",
+      "nameEn": "Designing REST APIs",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: đặt tên tài nguyên, phương thức và mã trạng thái cho đúng; phân trang, lọc và sắp xếp; lỗi trả về thống nhất, idempotency và đánh phiên bản.",
+      "status": "todo"
+    },
+    {
+      "slug": "iso-27001-2022-co-ban",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "ISO/IEC 27001:2022 cơ bản",
+      "nameEn": "ISO/IEC 27001:2022 basics",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: ISMS là gì, các điều khoản 4 đến 10 và chu trình lập kế hoạch, thực hiện, kiểm tra, cải tiến; Phụ lục A phiên bản 2022 với 93 biện pháp trong 4 nhóm (tổ chức, con người, vật lý, công nghệ) và Tuyên bố áp dụng; lộ trình đạt chứng nhận từ phạm vi, đánh giá rủi ro, đánh giá nội bộ đến đánh giá của tổ chức chứng nhận. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "mcp-la-gi",
+      "space": "ai-ky-su",
+      "lang": "vi",
+      "name": "MCP là gì",
+      "nameEn": "What is MCP",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Model Context Protocol giải quyết vấn đề gì và gồm những phần nào (server, tool, resource); viết một MCP server nhỏ bằng TypeScript; phân quyền và an toàn khi cho AI gọi công cụ thật.",
+      "status": "todo"
+    },
+    {
+      "slug": "dia-tren-linux",
+      "space": "linux",
+      "lang": "vi",
+      "name": "Đĩa trên Linux",
+      "nameEn": "Disks on Linux",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
+      "status": "todo"
+    },
+    {
+      "slug": "xu-ly-su-co-an-ninh-mang",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Xử lý sự cố an ninh mạng",
+      "nameEn": "Handling cybersecurity incidents",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "web-va-https",
+      "space": "networking",
+      "lang": "vi",
+      "name": "Web và HTTPS",
+      "nameEn": "Web and HTTPS",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: nginx làm reverse proxy trước một ứng dụng (proxy_pass, header X-Forwarded-*, timeout); cân bằng tải nhiều upstream và kiểm tra sức khoẻ thụ động; nén, cache tệp tĩnh và giới hạn tốc độ (limit_req). Không viết lại phần chứng chỉ TLS và certbot: để cho hành tinh tls-chung-chi; nối sang bài \"Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath\" và \"systemctl trên Ubuntu 24.04: bật, tắt, khởi động lại dịch vụ và xem trạng thái\".",
+      "status": "todo"
+    },
+    {
+      "slug": "mongodb-chi-muc",
+      "space": "co-so-du-lieu",
+      "lang": "vi",
+      "name": "MongoDB: chỉ mục và truy vấn",
+      "nameEn": "MongoDB indexes and queries",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chỉ mục đơn và chỉ mục ghép, quy tắc ESR; đọc explain() để biết truy vấn chậm ở đâu; thiết kế tài liệu nhúng hay tham chiếu và chỉ mục TTL cho dữ liệu nhật ký.",
+      "status": "todo"
+    },
+    {
+      "slug": "shell-tu-dong-hoa",
+      "space": "devops",
+      "lang": "vi",
+      "name": "Shell script tự động hoá",
+      "nameEn": "Automating with shell scripts",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: bash an toàn (set -euo pipefail, trích dẫn biến); xử lý văn bản với grep, sed, awk, jq; cron và systemd timer cho việc chạy định kỳ.",
+      "status": "todo"
+    },
+    {
       "slug": "doc-xu-huong-cong-nghe",
       "space": "marketing-ky-thuat",
       "lang": "vi",
@@ -353,23 +273,43 @@
       "status": "todo"
     },
     {
-      "slug": "insight-nguoi-dung-ky-thuat",
-      "space": "marketing-ky-thuat",
+      "slug": "typescript-thuc-hanh",
+      "space": "lap-trinh",
       "lang": "vi",
-      "name": "Insight từ người dùng kỹ thuật",
-      "nameEn": "User insight for technical products",
+      "name": "TypeScript thực hành",
+      "nameEn": "Practical TypeScript",
       "tech": true,
-      "brief": "Gợi ý 3 bài: phỏng vấn người dùng kỹ thuật hỏi gì và tránh hỏi gì; lấy insight từ dữ liệu có sẵn (câu hỏi hỗ trợ, tìm kiếm trong tài liệu, phản hồi, nhật ký sử dụng ẩn danh); phân nhóm nhu cầu bằng jobs-to-be-done và ưu tiên. Không nêu số liệu người dùng thật của bất kỳ công ty nào.",
+      "brief": "Gợi ý 3 bài: kiểu hẹp dần (narrowing) và type guard thay cho any; generic và utility types dùng hằng ngày; cấu hình tsconfig nghiêm ngặt và lỗi hay gặp khi bật strict.",
       "status": "todo"
     },
     {
-      "slug": "ai-trong-cong-viec-ky-su",
-      "space": "marketing-ky-thuat",
+      "slug": "ssh-an-toan",
+      "space": "bao-mat",
       "lang": "vi",
-      "name": "Kỹ sư dùng AI như thế nào",
-      "nameEn": "How engineers use AI",
+      "name": "SSH an toàn",
+      "nameEn": "Securing SSH",
       "tech": true,
-      "brief": "Gợi ý 3 bài: các nhóm việc kỹ sư thường dùng AI (viết và rà soát code, gỡ lỗi, tài liệu, vận hành); cách đọc các khảo sát về mức độ dùng AI của lập trình viên và những giới hạn của chúng; thiết kế sản phẩm và nội dung cho người dùng đã quen AI agent. Chỉ trích số liệu có nguồn và ghi rõ năm.",
+      "brief": "Gợi ý 3 bài: khoá SSH thay mật khẩu và cách tạo, phân phối khoá; sshd_config cần chỉnh (tắt đăng nhập root, đổi cổng có đáng không, giới hạn người dùng); chặn dò mật khẩu bằng fail2ban và đọc nhật ký đăng nhập.",
+      "status": "todo"
+    },
+    {
+      "slug": "ai-agent-viet-code",
+      "space": "ai-ky-su",
+      "lang": "vi",
+      "name": "Dùng AI agent viết code",
+      "nameEn": "Coding with AI agents",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chia việc cho agent (kế hoạch, thực hiện, rà soát) và viết yêu cầu đủ rõ; kiểm chứng kết quả bằng test, lint, typecheck thay vì tin lời agent; những việc không nên giao cho agent.",
+      "status": "todo"
+    },
+    {
+      "slug": "ceph-co-ban",
+      "space": "cloud",
+      "lang": "vi",
+      "name": "Ceph cơ bản",
+      "nameEn": "Ceph basics",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: kiến trúc Ceph (MON, OSD, MGR) và thuật toán CRUSH; ba kiểu lưu trữ RBD, CephFS, RGW; theo dõi sức khoẻ cụm và xử lý khi một OSD hỏng.",
       "status": "todo"
     },
     {
@@ -383,13 +323,83 @@
       "status": "todo"
     },
     {
-      "slug": "iso-27001-2022-co-ban",
-      "space": "phap-ly-anm",
+      "slug": "zimbra-quan-tri",
+      "space": "email",
       "lang": "vi",
-      "name": "ISO/IEC 27001:2022 cơ bản",
-      "nameEn": "ISO/IEC 27001:2022 basics",
+      "name": "Quản trị Zimbra",
+      "nameEn": "Zimbra administration",
       "tech": true,
-      "brief": "Gợi ý 3 bài: ISMS là gì, các điều khoản 4 đến 10 và chu trình lập kế hoạch, thực hiện, kiểm tra, cải tiến; Phụ lục A phiên bản 2022 với 93 biện pháp trong 4 nhóm (tổ chức, con người, vật lý, công nghệ) và Tuyên bố áp dụng; lộ trình đạt chứng nhận từ phạm vi, đánh giá rủi ro, đánh giá nội bộ đến đánh giá của tổ chức chứng nhận. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
+      "brief": "Gợi ý 3 bài: các thành phần của Zimbra (MTA, mailbox, LDAP, proxy); tạo tài khoản, lớp dịch vụ và hạn mức qua zmprov; hàng đợi thư và cách đọc nhật ký khi thư không tới.",
+      "status": "todo"
+    },
+    {
+      "slug": "tuong-lua-linux",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Tường lửa trên Linux",
+      "nameEn": "Linux firewalls",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: nguyên lý lọc gói tin (trạng thái kết nối, chain, policy); ufw cho người mới; nftables và iptables khác nhau thế nào, đọc một bộ luật có sẵn.",
+      "status": "todo"
+    },
+    {
+      "slug": "insight-nguoi-dung-ky-thuat",
+      "space": "marketing-ky-thuat",
+      "lang": "vi",
+      "name": "Insight từ người dùng kỹ thuật",
+      "nameEn": "User insight for technical products",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: phỏng vấn người dùng kỹ thuật hỏi gì và tránh hỏi gì; lấy insight từ dữ liệu có sẵn (câu hỏi hỗ trợ, tìm kiếm trong tài liệu, phản hồi, nhật ký sử dụng ẩn danh); phân nhóm nhu cầu bằng jobs-to-be-done và ưu tiên. Không nêu số liệu người dùng thật của bất kỳ công ty nào.",
+      "status": "todo"
+    },
+    {
+      "slug": "tim-kiem-van-ban",
+      "space": "co-so-du-lieu",
+      "lang": "vi",
+      "name": "Tìm kiếm toàn văn",
+      "nameEn": "Full-text search",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chỉ mục ngược và cách một công cụ tìm kiếm xếp hạng; so sánh Elasticsearch, Typesense và Meilisearch khi nào dùng cái nào; xử lý tiếng Việt có dấu trong tìm kiếm.",
+      "status": "todo"
+    },
+    {
+      "slug": "sao-luu-khoi-phuc",
+      "space": "devops",
+      "lang": "vi",
+      "name": "Sao lưu và khôi phục",
+      "nameEn": "Backup and restore",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: quy tắc 3-2-1, RPO và RTO; sao lưu tập tin, cơ sở dữ liệu và máy ảo khác nhau thế nào; diễn tập khôi phục và kiểm tra bản sao lưu còn dùng được.",
+      "status": "todo"
+    },
+    {
+      "slug": "node-hieu-nang",
+      "space": "lap-trinh",
+      "lang": "vi",
+      "name": "Node.js và hiệu năng",
+      "nameEn": "Node.js performance",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: vòng lặp sự kiện và vì sao một tác vụ nặng làm cả server đứng; đo bằng profiler và đọc flame graph; luồng (stream), áp lực ngược và pool kết nối.",
+      "status": "todo"
+    },
+    {
+      "slug": "tls-chung-chi",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "TLS và chứng chỉ SSL",
+      "nameEn": "TLS and certificates",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
+      "status": "todo"
+    },
+    {
+      "slug": "ai-trong-cong-viec-ky-su",
+      "space": "marketing-ky-thuat",
+      "lang": "vi",
+      "name": "Kỹ sư dùng AI như thế nào",
+      "nameEn": "How engineers use AI",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các nhóm việc kỹ sư thường dùng AI (viết và rà soát code, gỡ lỗi, tài liệu, vận hành); cách đọc các khảo sát về mức độ dùng AI của lập trình viên và những giới hạn của chúng; thiết kế sản phẩm và nội dung cho người dùng đã quen AI agent. Chỉ trích số liệu có nguồn và ghi rõ năm.",
       "status": "todo"
     },
     {
