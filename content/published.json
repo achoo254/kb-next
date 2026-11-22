@@ -179,6 +179,12 @@
       "space": "observability",
       "collectionId": "297c826c-ba5b-4614-b2cd-183f44b93197",
       "at": "2026-11-22T11:44:02.858Z"
+    },
+    {
+      "slug": "ci-cd-pipeline",
+      "space": "devops",
+      "collectionId": "16b6be04-f2c3-403e-a5a0-d6503798ddff",
+      "at": "2026-11-22T14:38:42.236Z"
     }
   ],
   "posts": [
@@ -1140,6 +1146,36 @@
       "en": {
         "id": "6b93ec26-4def-4f07-902b-7d6172ba9bdb",
         "title": "Installing Grafana on Ubuntu 24.04 and building CPU, memory and disk dashboards from Prometheus"
+      }
+    },
+    {
+      "slug": "ci-cd-pipeline/trien-khai-khong-gian-doan-quay-lui",
+      "id": "07910fc8-9c04-4135-914d-97e28f9bd1e2",
+      "title": "Triển khai không gián đoạn và quay lui trong pipeline: rolling, blue/green, canary",
+      "at": "2026-11-22T14:38:42.499Z",
+      "en": {
+        "id": "c960828c-39ae-40fb-a920-bfb289028124",
+        "title": "Zero-downtime deployment and rollback in a pipeline: rolling, blue/green and canary"
+      }
+    },
+    {
+      "slug": "ci-cd-pipeline/github-actions-va-gitlab-ci-so-sanh",
+      "id": "10d0eab5-fa82-4be5-9f8d-526982a3049c",
+      "title": "GitHub Actions và GitLab CI cho cùng một dự án Node.js: viết hai pipeline để so sánh",
+      "at": "2026-11-22T14:38:42.987Z",
+      "en": {
+        "id": "0b3f7cdb-9e3b-41ba-9061-76551bbd488f",
+        "title": "GitHub Actions and GitLab CI for the same Node.js project: writing two pipelines side by side"
+      }
+    },
+    {
+      "slug": "ci-cd-pipeline/cac-giai-doan-pipeline-artifact-cache",
+      "id": "44f62d8a-1f8f-4094-9698-1bc01f234b80",
+      "title": "Pipeline CI/CD gồm những giai đoạn nào: build, test, deploy, artifact và cache",
+      "at": "2026-11-22T14:38:43.480Z",
+      "en": {
+        "id": "0b47995a-40e5-41da-bb84-edeb285eb22f",
+        "title": "What stages make up a CI/CD pipeline: build, test, deploy, artifacts and cache"
       }
     }
   ]
