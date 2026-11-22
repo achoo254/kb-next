@@ -161,6 +161,12 @@
       "space": "cloud",
       "collectionId": "68887b41-b3b9-4839-b79f-e342ba01711c",
       "at": "2026-11-22T11:29:58.883Z"
+    },
+    {
+      "slug": "postgres-van-hanh",
+      "space": "co-so-du-lieu",
+      "collectionId": "4bb52f57-953f-4c92-9d53-a2f4b157f53a",
+      "at": "2026-11-22T11:35:03.328Z"
     }
   ],
   "posts": [
@@ -1032,6 +1038,36 @@
       "en": {
         "id": "ee91f6ec-fc11-44a1-9b64-bb32c9965568",
         "title": "Objects, buckets and keys in object storage: how they differ from files and folders"
+      }
+    },
+    {
+      "slug": "postgres-van-hanh/vacuum-autovacuum-pg-stat-statements",
+      "id": "e7b67c7c-a44e-4f1a-a279-fc9d5b928c97",
+      "title": "VACUUM, autovacuum và truy vấn chậm trong PostgreSQL với pg_stat_statements",
+      "at": "2026-11-22T11:35:03.581Z",
+      "en": {
+        "id": "d5900994-85ea-4bbe-9c8c-2a1d6c7400d2",
+        "title": "VACUUM, autovacuum and slow queries in PostgreSQL with pg_stat_statements"
+      }
+    },
+    {
+      "slug": "postgres-van-hanh/sao-luu-khoi-phuc-pg-dump-basebackup",
+      "id": "05a2867d-048e-4274-ad30-6545f6ac842e",
+      "title": "Sao lưu và khôi phục PostgreSQL: pg_dump, pg_restore và pg_basebackup",
+      "at": "2026-11-22T11:35:04.056Z",
+      "en": {
+        "id": "67e68b4d-65b9-4104-9d22-d2f8d8477179",
+        "title": "Backing up and restoring PostgreSQL: pg_dump, pg_restore and pg_basebackup"
+      }
+    },
+    {
+      "slug": "postgres-van-hanh/ket-noi-vai-tro-pg-hba",
+      "id": "f4998ba9-c5ed-4e6b-a4ae-51b4c81a28fd",
+      "title": "PostgreSQL trên Ubuntu 24.04: kết nối, vai trò và tệp pg_hba.conf",
+      "at": "2026-11-22T11:35:04.549Z",
+      "en": {
+        "id": "01d1c405-dfc7-440e-be2e-a11608ae746f",
+        "title": "PostgreSQL on Ubuntu 24.04: connections, roles and pg_hba.conf"
       }
     }
   ]
