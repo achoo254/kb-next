@@ -143,6 +143,12 @@
       "space": "phap-ly-anm",
       "collectionId": "c0f2539f-4e33-4d34-8093-348ed2c4bce8",
       "at": "2026-11-21T23:29:27.895Z"
+    },
+    {
+      "slug": "cap-nhat-ung-dung-k8s",
+      "space": "kubernetes",
+      "collectionId": "3675fdd1-d816-4ed3-8048-69b87f2694c5",
+      "at": "2026-11-22T11:20:32.513Z"
     }
   ],
   "posts": [
@@ -924,6 +930,36 @@
       "en": {
         "id": "106aa517-17e5-4a10-a413-bfa7e58b42c3",
         "title": "Technical measures for complying with Law 91/2025/QH15: classification, encryption, logging, deletion and breach notification"
+      }
+    },
+    {
+      "slug": "cap-nhat-ung-dung-k8s/configmap-secret-cau-hinh",
+      "id": "85509f0f-0261-49f0-aa36-52af5055f005",
+      "title": "ConfigMap và Secret: tách cấu hình khỏi image ứng dụng trên Kubernetes",
+      "at": "2026-11-22T11:20:32.808Z",
+      "en": {
+        "id": "815ef0e2-6d8b-48a5-bf92-30f65e35fdf3",
+        "title": "ConfigMaps and Secrets: separating configuration from your application image on Kubernetes"
+      }
+    },
+    {
+      "slug": "cap-nhat-ung-dung-k8s/rollout-undo-rollback",
+      "id": "d721861c-5473-44dc-a8b0-a925c91d20ea",
+      "title": "Quay lại phiên bản cũ trên Kubernetes bằng kubectl rollout undo",
+      "at": "2026-11-22T11:20:33.927Z",
+      "en": {
+        "id": "fee2e863-6f7e-459f-956c-4ba2201b33a2",
+        "title": "Rolling back on Kubernetes with kubectl rollout undo"
+      }
+    },
+    {
+      "slug": "cap-nhat-ung-dung-k8s/deployment-rolling-update",
+      "id": "8999e828-1b70-4042-aacb-39bff5bbd744",
+      "title": "Deployment và rolling update trong Kubernetes: cập nhật ứng dụng mà không gián đoạn",
+      "at": "2026-11-22T11:20:34.529Z",
+      "en": {
+        "id": "e1d71d22-84b6-49e7-9072-c850c5f7620c",
+        "title": "Kubernetes Deployments and rolling updates: updating your app without downtime"
       }
     }
   ]
