@@ -155,6 +155,12 @@
       "space": "bao-mat",
       "collectionId": "d0e32c81-1c7e-4720-859a-3fe4b2262020",
       "at": "2026-11-22T11:25:20.857Z"
+    },
+    {
+      "slug": "object-storage-s3",
+      "space": "cloud",
+      "collectionId": "68887b41-b3b9-4839-b79f-e342ba01711c",
+      "at": "2026-11-22T11:29:58.883Z"
     }
   ],
   "posts": [
@@ -996,6 +1002,36 @@
       "en": {
         "id": "e0ec7bf2-95cd-43a0-91ef-2fdd6909eaba",
         "title": "The secure software development lifecycle: building security into every step instead of waiting until the end"
+      }
+    },
+    {
+      "slug": "object-storage-s3/tai-len-nhieu-phan-vong-doi-chi-phi",
+      "id": "de2c0e80-ee92-40a1-8818-9ebf0f97c41f",
+      "title": "Tải lên nhiều phần, vòng đời đối tượng và cách tính chi phí object storage",
+      "at": "2026-11-22T11:29:59.200Z",
+      "en": {
+        "id": "16b8e2db-59e3-430a-a4c1-8cbf3bfe93cc",
+        "title": "Multipart uploads, object lifecycle and how object storage costs add up"
+      }
+    },
+    {
+      "slug": "object-storage-s3/ky-yeu-cau-s3-url-ky-tam-chinh-sach",
+      "id": "128726d8-43da-4196-ad89-ca1b32c2dcc5",
+      "title": "Ký yêu cầu S3, URL có chữ ký tạm và chính sách truy cập bucket",
+      "at": "2026-11-22T11:29:59.841Z",
+      "en": {
+        "id": "3c267f18-c15f-4d10-a5bb-7496e0260920",
+        "title": "S3 request signing, presigned URLs and bucket access policies"
+      }
+    },
+    {
+      "slug": "object-storage-s3/object-bucket-key-khac-tap-tin",
+      "id": "48a26da7-58c6-40ac-8a7d-d23d065f3283",
+      "title": "Object, bucket và key trong object storage: khác tập tin và thư mục ở chỗ nào",
+      "at": "2026-11-22T11:30:00.488Z",
+      "en": {
+        "id": "ee91f6ec-fc11-44a1-9b64-bb32c9965568",
+        "title": "Objects, buckets and keys in object storage: how they differ from files and folders"
       }
     }
   ]

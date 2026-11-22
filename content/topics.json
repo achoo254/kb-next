@@ -130,7 +130,7 @@
       "nameEn": "Object storage and the S3 protocol",
       "tech": true,
       "brief": "Gợi ý 3 bài: object, bucket, key khác tập tin và thư mục ở chỗ nào; ký yêu cầu, URL có chữ ký tạm và chính sách truy cập; tải lên nhiều phần, vòng đời đối tượng và cách tính chi phí.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "postgres-van-hanh",
