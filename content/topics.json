@@ -170,7 +170,7 @@
       "nameEn": "CI/CD pipelines",
       "tech": true,
       "brief": "Gợi ý 3 bài: các giai đoạn của một pipeline (build, test, deploy) và khái niệm artifact, cache; viết GitLab CI và GitHub Actions cho cùng một dự án để so sánh; triển khai không gián đoạn và cách quay lui.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "marketing-cho-nguoi-lam-ky-thuat",
