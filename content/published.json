@@ -149,6 +149,12 @@
       "space": "kubernetes",
       "collectionId": "3675fdd1-d816-4ed3-8048-69b87f2694c5",
       "at": "2026-11-22T11:20:32.513Z"
+    },
+    {
+      "slug": "phat-trien-phan-mem-an-toan",
+      "space": "bao-mat",
+      "collectionId": "d0e32c81-1c7e-4720-859a-3fe4b2262020",
+      "at": "2026-11-22T11:25:20.857Z"
     }
   ],
   "posts": [
@@ -960,6 +966,36 @@
       "en": {
         "id": "e1d71d22-84b6-49e7-9072-c850c5f7620c",
         "title": "Kubernetes Deployments and rolling updates: updating your app without downtime"
+      }
+    },
+    {
+      "slug": "phat-trien-phan-mem-an-toan/lo-hong-thu-vien-phu-thuoc-eol",
+      "id": "4c28326e-0a3f-40e5-a020-b60c2cb02730",
+      "title": "Theo dõi lỗ hổng của thư viện phụ thuộc và xử lý thành phần hết hỗ trợ (EOL)",
+      "at": "2026-11-22T11:25:21.265Z",
+      "en": {
+        "id": "3578f0d3-9fe7-4b4f-a71a-77f3761e4a3f",
+        "title": "Tracking vulnerabilities in dependencies and handling end-of-life (EOL) components"
+      }
+    },
+    {
+      "slug": "phat-trien-phan-mem-an-toan/quan-ly-bi-mat-kho-ma-ci-cd",
+      "id": "02147111-1bd3-4c1d-b46e-be3891672eeb",
+      "title": "Quản lý bí mật trong kho mã và CI/CD: không commit khoá, quét rò rỉ và xoay vòng khi lộ",
+      "at": "2026-11-22T11:25:22.072Z",
+      "en": {
+        "id": "b4d99e53-da22-4909-86a7-81900158f293",
+        "title": "Secrets in code repositories and CI/CD: never commit keys, scan for leaks and rotate on exposure"
+      }
+    },
+    {
+      "slug": "phat-trien-phan-mem-an-toan/vong-doi-phat-trien-an-toan",
+      "id": "48b319e4-93ee-4fe4-9fee-7c8b31f9afe2",
+      "title": "Vòng đời phát triển phần mềm an toàn: đưa bảo mật vào từng bước thay vì chờ đến cuối dự án",
+      "at": "2026-11-22T11:25:22.910Z",
+      "en": {
+        "id": "e0ec7bf2-95cd-43a0-91ef-2fdd6909eaba",
+        "title": "The secure software development lifecycle: building security into every step instead of waiting until the end"
       }
     }
   ]
