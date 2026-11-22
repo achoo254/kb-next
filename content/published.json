@@ -167,6 +167,12 @@
       "space": "co-so-du-lieu",
       "collectionId": "4bb52f57-953f-4c92-9d53-a2f4b157f53a",
       "at": "2026-11-22T11:35:03.328Z"
+    },
+    {
+      "slug": "email-spf-dkim-dmarc",
+      "space": "email",
+      "collectionId": "32a55295-c80a-4f44-8725-5b7db946d6c8",
+      "at": "2026-11-22T11:39:31.422Z"
     }
   ],
   "posts": [
@@ -1068,6 +1074,36 @@
       "en": {
         "id": "01d1c405-dfc7-440e-be2e-a11608ae746f",
         "title": "PostgreSQL on Ubuntu 24.04: connections, roles and pg_hba.conf"
+      }
+    },
+    {
+      "slug": "email-spf-dkim-dmarc/doc-bao-cao-dmarc-va-sua-thu-vao-spam",
+      "id": "0ba20913-768f-4930-a63d-303ae99fad38",
+      "title": "Đọc báo cáo tổng hợp DMARC và xử lý thư bị vào spam: từ p=none đến reject",
+      "at": "2026-11-22T11:39:32.230Z",
+      "en": {
+        "id": "b11b85b7-6532-4eca-ac46-796cadc761c3",
+        "title": "Reading DMARC aggregate reports and fixing mail that lands in spam: from p=none to reject"
+      }
+    },
+    {
+      "slug": "email-spf-dkim-dmarc/spf-dkim-dmarc-ban-ghi-dns",
+      "id": "5a1f4bd7-de5e-466f-a8c7-a8e7b517a92a",
+      "title": "SPF, DKIM và DMARC: ba bản ghi DNS chứng minh thư gửi từ tên miền của bạn",
+      "at": "2026-11-22T11:39:32.874Z",
+      "en": {
+        "id": "67613560-d0b6-4694-bb95-af9812c541d5",
+        "title": "SPF, DKIM and DMARC: three DNS records that prove mail comes from your domain"
+      }
+    },
+    {
+      "slug": "email-spf-dkim-dmarc/thu-di-tu-may-gui-den-hop-thu",
+      "id": "eb751a9a-0d75-429d-8b7a-990f438968c6",
+      "title": "Thư điện tử đi từ máy gửi đến hộp thư nhận: MUA, MSA, MTA, bản ghi MX và hai địa chỉ người gửi",
+      "at": "2026-11-22T11:39:33.501Z",
+      "en": {
+        "id": "8863bafe-69ff-4119-a168-055c30cf152e",
+        "title": "How an email travels from sender to inbox: MUA, MSA, MTA, MX records and the two sender addresses"
       }
     }
   ]

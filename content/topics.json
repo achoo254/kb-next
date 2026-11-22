@@ -150,7 +150,7 @@
       "nameEn": "SPF, DKIM and DMARC",
       "tech": true,
       "brief": "Gợi ý 3 bài: thư đi từ máy gửi tới hộp thư nhận qua những chặng nào; ba bản ghi DNS SPF, DKIM, DMARC làm gì và cấu hình từng bước; đọc báo cáo DMARC và sửa thư bị vào spam.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "grafana-loki-log-tap-trung",
