@@ -110,7 +110,7 @@
       "nameEn": "Updating apps on Kubernetes",
       "tech": true,
       "brief": "Gợi ý 3 bài: Deployment và rolling update; rollback bằng kubectl rollout undo; ConfigMap và Secret cho cấu hình.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "phat-trien-phan-mem-an-toan",
