@@ -185,6 +185,12 @@
       "space": "devops",
       "collectionId": "16b6be04-f2c3-403e-a5a0-d6503798ddff",
       "at": "2026-11-22T14:38:42.236Z"
+    },
+    {
+      "slug": "marketing-cho-nguoi-lam-ky-thuat",
+      "space": "marketing-ky-thuat",
+      "collectionId": "0d6e55d9-8385-4dc2-835f-250d88d8c829",
+      "at": "2026-11-23T02:37:43.959Z"
     }
   ],
   "posts": [
@@ -1176,6 +1182,36 @@
       "en": {
         "id": "0b47995a-40e5-41da-bb84-edeb285eb22f",
         "title": "What stages make up a CI/CD pipeline: build, test, deploy, artifacts and cache"
+      }
+    },
+    {
+      "slug": "marketing-cho-nguoi-lam-ky-thuat/noi-dung-ky-thuat-lam-marketing-do-hieu-qua",
+      "id": "d07194e3-194d-49af-8278-9e784b95829e",
+      "title": "Nội dung kỹ thuật làm marketing: tài liệu, blog, mã mẫu, changelog và cách đo hiệu quả",
+      "at": "2026-11-23T02:37:44.266Z",
+      "en": {
+        "id": "f3fdb274-3822-4fe2-bf3d-b5d8d054840b",
+        "title": "Technical content as marketing: docs, blog posts, sample code, changelogs and how to measure results"
+      }
+    },
+    {
+      "slug": "marketing-cho-nguoi-lam-ky-thuat/pheu-nha-phat-trien-tu-biet-den-tra-tien",
+      "id": "356f4258-6178-4dd8-a199-2dd1d8e63451",
+      "title": "Phễu nhà phát triển: từ biết đến, dùng thử, tích hợp đến trả tiền",
+      "at": "2026-11-23T02:37:44.928Z",
+      "en": {
+        "id": "1066610c-f39e-4366-a913-ebc593286a11",
+        "title": "The developer funnel: from awareness to trial, integration and payment"
+      }
+    },
+    {
+      "slug": "marketing-cho-nguoi-lam-ky-thuat/ban-cho-ky-su-khac-nguoi-dung-pho-thong",
+      "id": "6907d123-907c-484f-90b8-7d40851c9324",
+      "title": "Bán cho kỹ sư khác bán cho người dùng phổ thông: tài liệu, bản dùng thử và ví dụ chạy được",
+      "at": "2026-11-23T02:37:45.576Z",
+      "en": {
+        "id": "bbd864c7-bc4d-43d7-98e0-e20e30558b84",
+        "title": "Selling to engineers vs. mainstream users: documentation, free trials and examples that actually run"
       }
     }
   ]
