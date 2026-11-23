@@ -32,16 +32,6 @@
       "status": "published"
     },
     {
-      "slug": "docker-co-ban",
-      "space": "docker",
-      "lang": "vi",
-      "name": "Docker từ đầu",
-      "nameEn": "Docker from scratch",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: cài Docker Engine trên Ubuntu từ kho chính thức; Dockerfile nhiều tầng (multi-stage); chạy container không bằng root và HEALTHCHECK.",
-      "status": "published"
-    },
-    {
       "slug": "cap-do-an-ninh-he-thong-thong-tin",
       "space": "phap-ly-anm",
       "lang": "vi",
@@ -203,6 +193,16 @@
       "status": "todo"
     },
     {
+      "slug": "mang-va-luu-tru-k8s",
+      "space": "kubernetes",
+      "lang": "vi",
+      "name": "Mạng và lưu trữ trên Kubernetes",
+      "nameEn": "Networking and storage on Kubernetes",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: Service (ClusterIP, NodePort, LoadBalancer) và cách Pod tìm nhau qua DNS của cụm; Ingress với IngressClass, so với Gateway API, đưa ứng dụng ra ngoài qua HTTPS; PersistentVolume, PersistentVolumeClaim và StorageClass cho ứng dụng cần giữ dữ liệu. Nối tới \"Deployment và rolling update trong Kubernetes: cập nhật ứng dụng mà không gián đoạn\" và \"ConfigMap và Secret: tách cấu hình khỏi image ứng dụng trên Kubernetes\"; không lặp lại rolling update hay rollback.",
+      "status": "todo"
+    },
+    {
       "slug": "mcp-la-gi",
       "space": "ai-ky-su",
       "lang": "vi",
@@ -240,6 +240,16 @@
       "nameEn": "Web and HTTPS",
       "tech": true,
       "brief": "Gợi ý 3 bài: nginx làm reverse proxy trước một ứng dụng (proxy_pass, header X-Forwarded-*, timeout); cân bằng tải nhiều upstream và kiểm tra sức khoẻ thụ động; nén, cache tệp tĩnh và giới hạn tốc độ (limit_req). Không viết lại phần chứng chỉ TLS và certbot: để cho hành tinh tls-chung-chi; nối sang bài \"Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath\" và \"systemctl trên Ubuntu 24.04: bật, tắt, khởi động lại dịch vụ và xem trạng thái\".",
+      "status": "todo"
+    },
+    {
+      "slug": "docker-co-ban",
+      "space": "docker",
+      "lang": "vi",
+      "name": "Docker từ đầu",
+      "nameEn": "Docker from scratch",
+      "tech": true,
+      "brief": "Đợt bổ sung 2 bài: Docker Compose chạy ứng dụng nhiều dịch vụ (services, depends_on với điều kiện healthy, biến môi trường và tệp .env), nối tới \"Dockerfile nhiều tầng (multi-stage): build nặng, image chạy nhẹ\" và \"Chạy container không bằng root và thêm HEALTHCHECK để biết ứng dụng còn sống\"; volume có tên và bind mount: dữ liệu sống ở đâu khi container bị xoá, quyền tệp khi chạy không root, sao lưu một volume, nối tới \"Cài Docker Engine trên Ubuntu 24.04 từ kho apt chính thức của Docker\". Không lặp lại cài đặt, multi-stage hay mạng Docker.",
       "status": "todo"
     },
     {
