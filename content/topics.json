@@ -180,7 +180,7 @@
       "nameEn": "Designing REST APIs",
       "tech": true,
       "brief": "Gợi ý 3 bài: đặt tên tài nguyên, phương thức và mã trạng thái cho đúng; phân trang, lọc và sắp xếp; lỗi trả về thống nhất, idempotency và đánh phiên bản.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "iso-27001-2022-co-ban",
