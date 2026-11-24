@@ -190,7 +190,8 @@
       "nameEn": "ISO/IEC 27001:2022 basics",
       "tech": true,
       "brief": "Gợi ý 3 bài: ISMS là gì, các điều khoản 4 đến 10 và chu trình lập kế hoạch, thực hiện, kiểm tra, cải tiến; Phụ lục A phiên bản 2022 với 93 biện pháp trong 4 nhóm (tổ chức, con người, vật lý, công nghệ) và Tuyên bố áp dụng; lộ trình đạt chứng nhận từ phạm vi, đánh giá rủi ro, đánh giá nội bộ đến đánh giá của tổ chức chứng nhận. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "Could not verify against an official source on 24/11/2026: iso.org returned HTTP 403 (page for ISO/IEC 27001:2022 unreachable, every Tham khảo link would fail curl -sI). The standard is copyrighted and no full text is in the repo. Retry when an official page (iso.org, VSQI/BKHCN) is reachable."
     },
     {
       "slug": "mang-va-luu-tru-k8s",
