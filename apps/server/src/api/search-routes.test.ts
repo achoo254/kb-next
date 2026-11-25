@@ -3,6 +3,7 @@
  * boundary (JevJudge): keyword and meaning merged, who sees what, Jev failing, filters, diacritic variants and the
  * rate limit. The opt-in live test at the end calls the real Jev when TYPESAFE_API_KEY is set.
  */
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { SearchResponseSchema } from '../../../web/src/api/search-api';
 import { createDocument, updateDocument } from '../../test/content-fixtures';
@@ -10,6 +11,7 @@ import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { MEILI_SETUP_TIMEOUT_MS, type TestMeili, startTestMeili } from '../../test/meili';
 import { api, signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
+import { spaces } from '../db/schema';
 import { seedDatabase, seedId } from '../db/seed-database';
 import { JevClient, type JevJudge, type JevQuestion, type JevResult } from '../jev/jev-client';
 import { IndexSync } from '../search/index-sync';
@@ -134,6 +136,23 @@ describe('search across languages', () => {
     } finally {
       await updateDocument(server.database.db, spoof, { hidden: false });
     }
+  });
+});
+
+describe('a hidden Space', () => {
+  it('takes its texts out of search and out of direct links until it is shown again', async () => {
+    const spoof = seedId('document:dhcp-spoof');
+    const setHidden = (hidden: boolean) => server.database.db.update(spaces).set({ hidden }).where(eq(spaces.slug, 'networking'));
+    expect(titles(await search({ q: 'snooping', mode: 'keyword' }))).toContain('Ghi chú: DHCP giả mạo');
+    expect((await api(server, `/api/documents/${spoof}`)).status).toBe(200);
+    await setHidden(true);
+    try {
+      expect(titles(await search({ q: 'snooping', mode: 'keyword' }))).not.toContain('Ghi chú: DHCP giả mạo');
+      expect((await api(server, `/api/documents/${spoof}`)).status).toBe(404);
+    } finally {
+      await setHidden(false);
+    }
+    expect(titles(await search({ q: 'snooping', mode: 'keyword' }))).toContain('Ghi chú: DHCP giả mạo');
   });
 });
 

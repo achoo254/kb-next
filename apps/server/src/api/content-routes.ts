@@ -250,7 +250,10 @@ export function contentRoutes({ config, db, now, captions }: ContentRoutesOption
     // Related: Spaces linked to this one, most linked first; else the next public Spaces of the Universe.
     const visible = await listSpaces(db, viewer);
     const linkCounts = await linkedSpaceCounts(db, viewer, space.id);
-    const linked = linkCounts.flatMap(({ spaceId }) => visible.filter((s) => s.id === spaceId));
+    // Equal link counts keep the Universe's order (public Spaces before the viewer's own), not the database's.
+    const universeOrder = new Map(visible.map((s, i) => [s.id, i]));
+    const byLinks = [...linkCounts].sort((a, b) => b.links - a.links || (universeOrder.get(a.spaceId) ?? 0) - (universeOrder.get(b.spaceId) ?? 0));
+    const linked = byLinks.flatMap(({ spaceId }) => visible.filter((s) => s.id === spaceId));
     const position = visible.findIndex((s) => s.id === space.id);
     const following = [...visible.slice(position + 1), ...visible.slice(0, Math.max(position, 0))].filter((s) => s.kind === 'public');
     const related: SpaceRow[] = [];

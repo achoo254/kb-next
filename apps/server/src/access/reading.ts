@@ -10,7 +10,7 @@ import { collections, documentVersions, documents, links, reviewEvents, spaces, 
 import { type CollectionRow, type DocumentRow, type SpaceRow, documentColumns, spacesOf } from './content';
 import { isUuid } from './ids';
 import type { Viewer } from './viewer';
-import { canRead, visibleTo } from './visibility';
+import { canRead, inShownSpace, visibleTo } from './visibility';
 
 /**
  * Why a document opens or not, so the reader can show the right screen: it does not exist (or is in the trash),
@@ -22,6 +22,8 @@ export async function documentAccess(db: Db, viewer: Viewer, id: string): Promis
   if (!isUuid(id)) return { kind: 'not-found' };
   const [doc] = await db.select(documentColumns).from(documents).where(eq(documents.id, id));
   if (!doc || doc.deletedAt !== null) return { kind: 'not-found' };
+  const [shown] = await db.select({ id: documents.id }).from(documents).where(and(eq(documents.id, id), inShownSpace()));
+  if (!shown) return { kind: 'not-found' };
   if (canRead(viewer, doc)) return { kind: 'ok', doc };
   return doc.status === 'approved' && doc.hidden ? { kind: 'hidden' } : { kind: 'no-access' };
 }
