@@ -337,7 +337,7 @@ Tệp bí mật của Key riêng (`/etc/kb-keys/`) không nằm trong bản sao 
 
 ## Deploy qua CI
 
-**Deploy khi gọi (từ 25/11/2026):** push lên `main` chỉ chạy `ci`. Xong một việc thì chạy `tools/deploy-prod.sh` của workspace `hoandat-app` (hoặc `gh workflow run deploy.yml`); mỗi tối 22:15 workflow tự chạy nếu `main` đi trước lần deploy thành công gần nhất. Workflow lấy đầu `main`, chờ `ci` của commit đó xanh rồi `deploy.yml` chạy: job `build`
+**Deploy khi gọi (từ 25/11/2026):** push lên `main` chỉ chạy `ci`. Xong một việc thì chạy `tools/deploy-prod.sh` của workspace `hoandat-app` (hoặc `gh workflow run deploy.yml`); mỗi tối 22:15 workflow tự chạy nếu `main` đi trước lần deploy thành công gần nhất. Workflow lấy đầu `main` (không chờ `ci`) rồi `deploy.yml` chạy: job `build`
 (không có secret) gói `apps/web/dist`, `apps/server/dist`, `apps/server/drizzle` thành artifact; job `deploy`
 (environment `production`) rsync lên `/var/www/kb/ci-incoming/<mã bản>` bằng user `kb-deploy` rồi chạy lệnh sudo duy
 nhất user đó có: `sudo -n /usr/local/sbin/kb-activate-incoming <mã bản>` (bản cài của `infra/activate-incoming.sh`).
