@@ -35,6 +35,7 @@ import { HttpError } from './http-error';
 import { JevClient, type JevJudge, type JevUsageLog } from './jev/jev-client';
 import { JevUsageStore } from './jev/jev-usage';
 import { LIVE_BASES, type ProviderBases } from './llm/providers';
+import { mcpRoutes } from './mcp/mcp-routes';
 import { safeErrorText } from './log-error';
 import { searchRoutes } from './api/search-routes';
 import { shareRoutes } from './api/share-routes';
@@ -86,7 +87,7 @@ export function jevWithUsage(apiKey: string, db: Db, now: () => Date): JevClient
  * journeys (builder and run), search,
  * the account's own AI keys, the Copilot, AI translation and AI writing
  * (all three on those keys), publishing (an author's own texts, the admins' published texts), the inbox, the
- * admin API (token, docs/admin-api.md), workspace settings (members, roles, invites, audit), share links and their
+ * admin API (token, docs/admin-api.md), the MCP endpoint for AI agents (IdP access token, docs/mcp.md), workspace settings (members, roles, invites, audit), share links and their
  * preview page (/l/<token>), and the internal API for other services on this host (loopback only, /api/internal/). The
  * web app is static (nginx in production, Vite in dev).
  */
@@ -130,6 +131,8 @@ export function createApp({
 
   // The admin API authenticates by token, not by the session cookie: called from other servers, without an Origin.
   app.use(adminApiRoutes({ config, db, now, sync: search?.sync ?? null }));
+  // The MCP endpoint for AI agents: the IdP's access tokens (kb:read, kb:write), no cookie, no Origin (docs/mcp.md).
+  app.use(mcpRoutes({ config, db, now, idp, search: { db, meili: search?.meili ?? null, jev, summaries }, sync: search?.sync ?? null }));
 
   app.use(requireSameOrigin(config.publicOrigin));
   // A canvas (its cards and connections) is saved whole: a larger body than the rest of the API takes.

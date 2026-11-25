@@ -48,6 +48,12 @@ export interface FakeIdp {
    * the IdP never published). `claims` adds or overrides claims (`aud`, `exp`, `events`…), `typ` the header's.
    */
   accountDeletedToken(sub: string, audience: string, options?: { claims?: Record<string, unknown>; how?: 'valid' | 'stranger'; typ?: string }): string;
+  /**
+   * A JWT access token (RFC 9068) as the IdP issues for an API resource such as kb's MCP: `typ: at+jwt`, ES256, issued
+   * to `tunelo-agent` for `sub`, valid 15 minutes. `claims` adds or overrides claims (`aud`, `scope`, `exp`…), `typ`
+   * the header's (`stranger`: signed with a key the IdP never published).
+   */
+  accessToken(sub: string, claims: Record<string, unknown>, options?: { how?: 'valid' | 'stranger'; typ?: string }): string;
   close(): Promise<void>;
 }
 
@@ -207,6 +213,10 @@ export async function startFakeIdp(options: FakeIdpOptions): Promise<FakeIdp> {
       const now = Math.floor(Date.now() / 1000);
       const events = { 'urn:hoandat:auth:event:account.deleted': {} };
       return signJws({ iss: issuer, aud: audience, sub: deleted, iat: now, exp: now + 600, jti: randomUUID(), toe: now, events, ...claims }, how, typ);
+    },
+    accessToken: (subject, claims, { how = 'valid', typ = 'at+jwt' } = {}) => {
+      const now = Math.floor(Date.now() / 1000);
+      return signJws({ iss: issuer, sub: subject, client_id: 'tunelo-agent', iat: now, exp: now + 900, jti: randomUUID(), ...claims }, how, typ);
     },
     close: () => new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve()))),
   };
