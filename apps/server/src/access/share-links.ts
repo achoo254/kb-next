@@ -24,7 +24,7 @@ import { HIDE_ACTION, SHOW_ACTION } from './history';
 import { isUuid } from './ids';
 import { findApproval } from './reading';
 import type { Viewer } from './viewer';
-import { canRead, isPublic } from './visibility';
+import { canRead, inShownSpace, isPublic } from './visibility';
 
 const TOKEN_SHAPE = /^[A-Za-z0-9_-]{32}$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -65,7 +65,7 @@ async function liveDocument(db: Db | Tx, id: string): Promise<DocumentRow | null
   const [doc] = await db
     .select(documentColumns)
     .from(documents)
-    .where(and(eq(documents.id, id), isNull(documents.deletedAt)));
+    .where(and(eq(documents.id, id), isNull(documents.deletedAt), inShownSpace()));
   return doc ?? null;
 }
 

@@ -212,6 +212,26 @@ describe('who reads, builds and ticks', () => {
   });
 });
 
+describe('a step in a hidden Space', () => {
+  it('reads as a step the reader may not open until the Space is shown again', async () => {
+    const { db } = server.database;
+    const { sql } = await import('drizzle-orm');
+    const created = await call<{ id: string }>('POST', '/api/journeys', owner, { title: 'Qua Space bị ẩn', documents: [doc('dhcp'), doc('syslog')] });
+    const id = created.body.id;
+    await db.execute(sql`update documents set status = 'approved', origin = 'community', space_id = ${seedId('space:net')} where id = ${id}`);
+    const steps = async () => (await call<JourneyView>('GET', `/api/journeys/${id}`, reader)).body.steps.map((s) => [s.restricted, s.document?.id ?? null]);
+    expect(await steps()).toEqual([[false, doc('dhcp')], [false, doc('syslog')]]);
+    await db.execute(sql`update spaces set hidden = true where id = ${seedId('space:lnx')}`);
+    try {
+      expect(await steps()).toEqual([[false, doc('dhcp')], [true, null]]);
+      expect(JSON.stringify((await call('GET', `/api/journeys/${id}`, reader)).body)).not.toContain(doc('syslog'));
+    } finally {
+      await db.execute(sql`update spaces set hidden = false where id = ${seedId('space:lnx')}`);
+    }
+    expect(await steps()).toEqual([[false, doc('dhcp')], [false, doc('syslog')]]);
+  });
+});
+
 describe('saving the builder', () => {
   it('refuses a stale save, documents the account may not read, and other journeys as steps', async () => {
     const { body } = await call<{ id: string }>('POST', '/api/journeys', owner, {});

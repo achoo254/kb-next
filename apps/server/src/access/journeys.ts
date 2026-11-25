@@ -9,7 +9,7 @@ import { and, asc, eq, inArray, notInArray, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { foldTitle } from '../authoring/markdown-text';
 import type { Db } from '../db/client';
-import { JOURNEY_STEP_KINDS, documents, journeyProgress, journeySteps, links } from '../db/schema';
+import { JOURNEY_STEP_KINDS, documents, journeyProgress, journeySteps, links, spaces } from '../db/schema';
 import { type EditRight, editRight } from './authoring';
 import type { DocumentRow } from './content';
 import { isUuid } from './ids';
@@ -82,6 +82,7 @@ export function isCopiedTitle(stepTitle: string, documentTitle: string): boolean
 }
 
 const stepDocument = alias(documents, 'step_document');
+const stepSpace = alias(spaces, 'step_space');
 
 /**
  * The steps of a journey the viewer may read, in order, each as the viewer may see it (VisibleStepRow); empty for a
@@ -104,16 +105,18 @@ export async function listSteps(db: Db, viewer: Viewer, journeyId: string): Prom
         hidden: stepDocument.hidden,
         authorId: stepDocument.authorId,
         deletedAt: stepDocument.deletedAt,
+        spaceHidden: stepSpace.hidden,
       },
     })
     .from(journeySteps)
     .innerJoin(documents, eq(documents.id, journeySteps.journeyId))
     .leftJoin(stepDocument, eq(stepDocument.id, journeySteps.documentId))
+    .leftJoin(stepSpace, eq(stepSpace.id, stepDocument.spaceId))
     .where(and(eq(journeySteps.journeyId, journeyId), eq(documents.type, 'journey'), visibleTo(viewer)))
     .orderBy(asc(journeySteps.position));
   return rows.map(({ document, ...step }) => {
     const target = document?.title !== undefined && document.title !== null && document.status !== null && document.authorId !== null ? document : null;
-    if (step.documentId === null || target === null || canRead(viewer, { status: target.status, hidden: target.hidden ?? false, authorId: target.authorId, deletedAt: target.deletedAt })) {
+    if (step.documentId === null || target === null || (!target.spaceHidden && canRead(viewer, { status: target.status, hidden: target.hidden ?? false, authorId: target.authorId, deletedAt: target.deletedAt }))) {
       return { ...step, restricted: false };
     }
     return { ...step, documentId: null, title: isCopiedTitle(step.title, target.title) ? '' : step.title, restricted: true };

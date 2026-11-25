@@ -15,7 +15,7 @@ import { signIn } from '../../test/sign-in';
 import { type TestServer, startTestServer } from '../../test/test-server';
 import { eq } from 'drizzle-orm';
 import { pruneShareOpenings } from '../access/share-links';
-import { documents, shareLinkVisits, shareLinks } from '../db/schema';
+import { documents, shareLinkVisits, shareLinks, spaces } from '../db/schema';
 import { seedDatabase, seedId } from '../db/seed-database';
 import { markdownLinkText } from './share-routes';
 
@@ -199,6 +199,25 @@ describe('opening a link', () => {
     expect((await as('guest', () => openSharedLink(token))).document.id).toBe(id);
     const inbox = await as('owner', () => fetchInbox({ kind: 'permission' }));
     expect(inbox.notifications.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('a text in a hidden Space', () => {
+  it('opens through no link until the Space is shown again', async () => {
+    const id = await publishedText('Bài trong Space bị ẩn');
+    const made = await as('owner', () => createShareLink(id, { expiry: 'none', access: 'view' }));
+    const token = tokenOf(made.path);
+    const db = server.database.db;
+    const [row] = await db.select({ spaceId: documents.spaceId }).from(documents).where(eq(documents.id, id));
+    const spaceId = row?.spaceId ?? '';
+    await db.update(spaces).set({ hidden: true }).where(eq(spaces.id, spaceId));
+    try {
+      expect(await as('guest', () => failure(openSharedLink(token)))).toBe('not-found');
+      expect(await as('owner', () => failure(openSharedLink(token)))).toBe('not-found');
+    } finally {
+      await db.update(spaces).set({ hidden: false }).where(eq(spaces.id, spaceId));
+    }
+    expect((await as('guest', () => openSharedLink(token))).document.id).toBe(id);
   });
 });
 
