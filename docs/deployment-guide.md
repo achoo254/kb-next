@@ -278,7 +278,7 @@ nằm ở [`content/summaries.json`](../content/summaries.json) (khoá là `tran
    (kèm `KB_WEB_URL=https://kb.hoandat.com`) trong `.env` của IdP, reload IdP; `seed-clients` phải liệt kê `kb-web`.
 5. **Unit và nginx:** `SSH_TARGET=<alias> bash infra/deploy.sh setup`.
 6. **Release:** `SSH_TARGET=<alias> bash infra/deploy.sh`.
-7. **User CI:** `kb-deploy` và secret của repo (mục Deploy tự động).
+7. **User CI:** `kb-deploy` và secret của repo (mục Deploy qua CI).
 
 ## Link chia sẻ
 
@@ -335,9 +335,9 @@ systemctl start kb-server   # rồi dựng lại chỉ mục: mục "Meilisearch
 
 Tệp bí mật của Key riêng (`/etc/kb-keys/`) không nằm trong bản sao lưu này (xem mục "Key riêng").
 
-## Deploy tự động (CI)
+## Deploy qua CI
 
-**Mỗi lần push lên `main` là tự deploy.** `ci` (lint, typecheck, test, build) xanh thì `deploy.yml` chạy: job `build`
+**Deploy khi gọi (từ 25/11/2026):** push lên `main` chỉ chạy `ci`. Xong một việc thì chạy `tools/deploy-prod.sh` của workspace `hoandat-app` (hoặc `gh workflow run deploy.yml`); mỗi tối 22:15 workflow tự chạy nếu `main` đi trước lần deploy thành công gần nhất. Workflow lấy đầu `main`, chờ `ci` của commit đó xanh rồi `deploy.yml` chạy: job `build`
 (không có secret) gói `apps/web/dist`, `apps/server/dist`, `apps/server/drizzle` thành artifact; job `deploy`
 (environment `production`) rsync lên `/var/www/kb/ci-incoming/<mã bản>` bằng user `kb-deploy` rồi chạy lệnh sudo duy
 nhất user đó có: `sudo -n /usr/local/sbin/kb-activate-incoming <mã bản>` (bản cài của `infra/activate-incoming.sh`).
