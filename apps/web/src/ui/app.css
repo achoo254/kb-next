@@ -98,6 +98,13 @@ button:focus-visible {
   z-index: 1;
 }
 
+.brand-logo-mark {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
 .brand-logo-name {
   font-family: var(--font-display);
   font-weight: 700;

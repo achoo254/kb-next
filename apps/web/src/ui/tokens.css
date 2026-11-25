@@ -298,8 +298,6 @@
   --c-tooltip-text: light-dark(var(--light-tooltip-text), var(--dark-tooltip-text));
   --c-glass: light-dark(var(--light-glass), var(--dark-glass));
   --c-glass-border: light-dark(var(--light-glass-border), var(--dark-glass-border));
-  --c-logo-from: var(--violet-600);
-  --c-logo-to: var(--violet-400);
   /* the night inks of the kit as fills of rows, wells, cards and answers: the dark theme keeps its ink, the light theme
      takes white or a pale violet. Components mix them as the board does (color-mix(in srgb, var(--c-ink-row) 70%,
      transparent)), so the same rule reads in both themes. The raw --night-* stay for art that is dark in both. */
