@@ -201,7 +201,7 @@
       "nameEn": "What is MCP",
       "tech": true,
       "brief": "Gợi ý 3 bài: Model Context Protocol giải quyết vấn đề gì và gồm những phần nào (server, tool, resource); viết một MCP server nhỏ bằng TypeScript; phân quyền và an toàn khi cho AI gọi công cụ thật.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "ssh-an-toan",

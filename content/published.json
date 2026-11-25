@@ -197,6 +197,12 @@
       "space": "lap-trinh",
       "collectionId": "485224c1-fd9b-4c2e-878f-a68f62646576",
       "at": "2026-11-23T08:38:03.746Z"
+    },
+    {
+      "slug": "mcp-la-gi",
+      "space": "ai-ky-su",
+      "collectionId": "44e69ca4-e7a6-458a-8810-584b8398d5a9",
+      "at": "2026-11-25T08:40:36.202Z"
     }
   ],
   "posts": [
@@ -1248,6 +1254,36 @@
       "en": {
         "id": "35678f1c-cf23-4755-a8e8-8e2f6a048076",
         "title": "Designing a REST API: naming resources, choosing HTTP methods and picking the right status codes"
+      }
+    },
+    {
+      "slug": "mcp-la-gi/phan-quyen-va-an-toan-mcp",
+      "id": "635d9c75-cab1-4ca1-bd96-1ef0bbd24433",
+      "title": "Phân quyền và an toàn khi cho AI gọi công cụ thật qua MCP",
+      "at": "2026-11-25T08:40:41.383Z",
+      "en": {
+        "id": "1dea3310-96be-4fb2-ae8c-889cb28994e5",
+        "title": "Permissions and safety when letting AI call real tools through MCP"
+      }
+    },
+    {
+      "slug": "mcp-la-gi/viet-mcp-server-typescript",
+      "id": "aa587d95-8910-4fdc-9cd6-74f7fa4f55e5",
+      "title": "Viết MCP server đầu tiên bằng TypeScript: hai công cụ chạy qua stdio",
+      "at": "2026-11-25T08:40:42.193Z",
+      "en": {
+        "id": "0cf91e21-3642-4471-b727-c5fcc316b804",
+        "title": "Writing your first MCP server in TypeScript: two tools over stdio"
+      }
+    },
+    {
+      "slug": "mcp-la-gi/mcp-la-gi-giao-thuc-ket-noi-ai",
+      "id": "6670dc1b-6047-460a-81c1-38e9f26a9206",
+      "title": "MCP là gì: giao thức giúp ứng dụng AI kết nối với công cụ và dữ liệu",
+      "at": "2026-11-25T08:40:43.012Z",
+      "en": {
+        "id": "b7674561-7189-4221-bbd9-eeba97fe2af0",
+        "title": "What is MCP: the protocol that connects AI applications to tools and data"
       }
     }
   ]
