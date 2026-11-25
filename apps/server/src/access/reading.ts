@@ -31,7 +31,7 @@ export type SpaceAccess = { kind: 'ok'; space: SpaceRow } | { kind: 'not-found' 
 
 export async function spaceAccess(db: Db, viewer: Viewer, slug: string): Promise<SpaceAccess> {
   const [space] = await db.select().from(spaces).where(eq(spaces.slug, slug));
-  if (!space) return { kind: 'not-found' };
+  if (!space || (space.kind === 'public' && space.hidden)) return { kind: 'not-found' };
   const [visible] = await db
     .select({ id: spaces.id })
     .from(spaces)

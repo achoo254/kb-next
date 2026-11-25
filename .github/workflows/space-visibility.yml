@@ -1,0 +1,39 @@
+# Hides or shows one public Space on kb.hoandat.com through the admin API (docs/admin-api.md, PATCH /api/admin/spaces/:slug).
+# Run by hand from the Actions tab. The admin token stays in this repository's secret KB_ADMIN_TOKEN; nothing is deleted.
+name: space-visibility
+
+on:
+  workflow_dispatch:
+    inputs:
+      slugs:
+        description: Space slugs, separated by spaces
+        required: true
+        type: string
+      hidden:
+        description: true hides the Spaces, false shows them again
+        required: true
+        type: choice
+        options: ['true', 'false']
+
+permissions: {}
+
+jobs:
+  set:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Set visibility
+        env:
+          KB_ADMIN_TOKEN: ${{ secrets.KB_ADMIN_TOKEN }}
+          SLUGS: ${{ inputs.slugs }}
+          HIDDEN: ${{ inputs.hidden }}
+        run: |
+          failed=0
+          for slug in $SLUGS; do
+            if ! [[ "$slug" =~ ^[a-z0-9][a-z0-9-]{0,119}$ ]]; then echo "skipped: not a slug: $slug"; failed=1; continue; fi
+            code=$(curl -sS -o /tmp/out.json -w '%{http_code}' -X PATCH "https://kb.hoandat.com/api/admin/spaces/$slug" \
+              -H "Authorization: Bearer $KB_ADMIN_TOKEN" -H 'Content-Type: application/json' -d "{\"hidden\":$HIDDEN}")
+            echo "$slug -> $code $(cat /tmp/out.json)"
+            [ "$code" = 200 ] || failed=1
+          done
+          exit $failed

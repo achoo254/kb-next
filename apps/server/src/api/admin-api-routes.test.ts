@@ -244,6 +244,22 @@ describe('the admin API (token)', () => {
     expect(await as('other', () => failure(fetchAdminCalls()))).toBe('admin-only');
   });
 
+  it('hides a public Space from readers and shows it again, keeping its texts', async () => {
+    const listed = async (): Promise<string[]> => ((await (await call('/api/spaces')).json()) as { spaces: Array<{ slug: string }> }).spaces.map((s) => s.slug);
+    expect(await listed()).toContain('networking');
+    const hid = await call('/api/admin/spaces/networking', { method: 'PATCH', token, body: { hidden: true } });
+    expect([hid.status, await hid.json()]).toEqual([200, { slug: 'networking', hidden: true }]);
+    expect(await listed()).not.toContain('networking');
+    expect((await call('/api/spaces/networking')).status).toBe(404);
+    const shown = await call('/api/admin/spaces/networking', { method: 'PATCH', token, body: { hidden: false } });
+    expect([shown.status, await shown.json()]).toEqual([200, { slug: 'networking', hidden: false }]);
+    expect(await listed()).toContain('networking');
+    const unknown = await call('/api/admin/spaces/no-such-space', { method: 'PATCH', token, body: { hidden: true } });
+    expect(unknown.status).toBe(404);
+    const bad = await call('/api/admin/spaces/networking', { method: 'PATCH', token, body: { hidden: 'yes' } });
+    expect(bad.status).toBe(400);
+  });
+
   it('forgets calls older than 30 days in the daily housekeeping', async () => {
     const db = server.database.db;
     await db.insert(adminApiCalls).values({ method: 'GET', path: PROBE, status: 200, createdAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000) });

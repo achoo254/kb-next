@@ -15,6 +15,8 @@
  * - PUT /api/admin/posts/:id/text `{title?, body, summary?, baseRev?, source?}` → `{id, version, rev, changed}`: a new
  *   version of the text (never merged into an editor's), 409 `stale` when it changed since `baseRev`; a file (Office) or
  *   a journey is 409 `not-editable` / `journey`.
+ * - PATCH /api/admin/spaces/:slug `{hidden}` → `{slug, hidden}`: takes a public Space off the Universe, the Spaces list
+ *   and the sitemap (`true`) or puts it back (`false`); its texts are kept. 404 `not-found` for an unknown slug.
  * - POST /api/admin/spaces `{slug, nameVi, nameEn, tint, glow, art, unitVi, unitEn, descriptionVi?, descriptionEn?}` → 201
  *   `{slug}`: a new public Space (as POST /api/spaces on the web session), 409 `slug-taken` when the slug exists.
  * - POST /api/admin/collections `{space, nameVi, nameEn?}` → 201 `{id, space}`: a new Collection (planet) in a public
@@ -36,7 +38,7 @@ import express, { type ErrorRequestHandler, type Request, type RequestHandler, t
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { createDocument, editAccess, saveDocument, translationSource } from '../access/authoring';
-import { createCollection, createPublicSpace, spaceForWriting } from '../access/spaces-write';
+import { createCollection, createPublicSpace, setSpaceHidden, spaceForWriting } from '../access/spaces-write';
 import { type AdminViewer, isAdminViewer } from '../access/review';
 import { presentStats } from '../access/present-views';
 import { effectiveRole } from '../access/roles';
@@ -56,6 +58,8 @@ import { parseBody, parseQuery } from './validate';
 
 /** GET /api/admin/stats/present: the period, in days. */
 const StatsQuery = z.strictObject({ days: z.coerce.number().int().min(1).max(PRESENT_VIEWS_KEEP_DAYS).optional().default(30) });
+
+const SpaceHiddenBody = z.strictObject({ hidden: z.boolean() });
 
 const Slug = z.string().regex(/^[a-z0-9][a-z0-9-]{0,119}$/);
 
@@ -240,6 +244,15 @@ export function adminApiRoutes(deps: ModerationDeps): Router {
     const space = await createPublicSpace(db, { ...body, descriptionVi: body.descriptionVi ?? null, descriptionEn: body.descriptionEn ?? null });
     if (!space) throw new HttpError(409, 'slug-taken');
     res.status(201).json({ slug: space.slug });
+  });
+
+  api.patch('/spaces/:slug', async (req, res) => {
+    const slug = Slug.safeParse(req.params.slug);
+    if (!slug.success) throw new HttpError(404, 'not-found');
+    const body = parseBody(SpaceHiddenBody, req.body);
+    const space = await setSpaceHidden(db, slug.data, body.hidden);
+    if (!space) throw new HttpError(404, 'not-found');
+    res.json({ slug: space.slug, hidden: space.hidden });
   });
 
   api.post('/collections', async (req, res) => {

@@ -65,9 +65,10 @@ export const documentColumns = {
   tags: documents.tags,
 };
 
-/** Spaces a viewer sees on the Universe: every public Space, plus the viewer's own personal one. */
+/** Spaces a viewer sees on the Universe: every public Space an admin has not hidden, plus the viewer's own personal one. */
 export function spacesOf(viewer: Viewer) {
-  return viewer.kind === 'guest' ? eq(spaces.kind, 'public') : or(eq(spaces.kind, 'public'), eq(spaces.ownerId, viewer.userId));
+  const shown = and(eq(spaces.kind, 'public'), eq(spaces.hidden, false));
+  return viewer.kind === 'guest' ? shown : or(shown, eq(spaces.ownerId, viewer.userId));
 }
 
 export async function listSpaces(db: Db, viewer: Viewer): Promise<SpaceWithCount[]> {

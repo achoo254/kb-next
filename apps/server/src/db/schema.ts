@@ -111,6 +111,8 @@ export const spaces = pgTable(
     descriptionVi: text('description_vi'),
     descriptionEn: text('description_en'),
     sortOrder: integer('sort_order').notNull().default(0),
+    /** An admin took the Space off the Universe: nobody lists or opens it until it is shown again; its texts stay. */
+    hidden: boolean('hidden').notNull().default(false),
     createdAt: createdAt(),
   },
   (table) => [

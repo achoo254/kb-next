@@ -68,6 +68,16 @@ export interface NewPublicSpace {
   descriptionEn: string | null;
 }
 
+/** Hides or shows a public Space on the Universe (admins only; the caller checks). Null for an unknown slug or a personal Space. */
+export async function setSpaceHidden(db: Db, slug: string, hidden: boolean): Promise<SpaceRow | null> {
+  const [row] = await db
+    .update(spaces)
+    .set({ hidden })
+    .where(and(eq(spaces.slug, slug), eq(spaces.kind, 'public')))
+    .returning();
+  return row ?? null;
+}
+
 /** A public Space (admins only; the caller checks). Null when the slug is taken. */
 export async function createPublicSpace(db: Db, input: NewPublicSpace): Promise<SpaceRow | null> {
   const [row] = await db
