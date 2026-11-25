@@ -105,8 +105,8 @@ export async function listSteps(db: Db, viewer: Viewer, journeyId: string): Prom
         hidden: stepDocument.hidden,
         authorId: stepDocument.authorId,
         deletedAt: stepDocument.deletedAt,
-        spaceHidden: stepSpace.hidden,
       },
+      spaceHidden: stepSpace.hidden,
     })
     .from(journeySteps)
     .innerJoin(documents, eq(documents.id, journeySteps.journeyId))
@@ -114,9 +114,9 @@ export async function listSteps(db: Db, viewer: Viewer, journeyId: string): Prom
     .leftJoin(stepSpace, eq(stepSpace.id, stepDocument.spaceId))
     .where(and(eq(journeySteps.journeyId, journeyId), eq(documents.type, 'journey'), visibleTo(viewer)))
     .orderBy(asc(journeySteps.position));
-  return rows.map(({ document, ...step }) => {
+  return rows.map(({ document, spaceHidden, ...step }) => {
     const target = document?.title !== undefined && document.title !== null && document.status !== null && document.authorId !== null ? document : null;
-    if (step.documentId === null || target === null || (!target.spaceHidden && canRead(viewer, { status: target.status, hidden: target.hidden ?? false, authorId: target.authorId, deletedAt: target.deletedAt }))) {
+    if (step.documentId === null || target === null || (spaceHidden !== true && canRead(viewer, { status: target.status, hidden: target.hidden ?? false, authorId: target.authorId, deletedAt: target.deletedAt }))) {
       return { ...step, restricted: false };
     }
     return { ...step, documentId: null, title: isCopiedTitle(step.title, target.title) ? '' : step.title, restricted: true };
