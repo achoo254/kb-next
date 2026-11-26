@@ -214,13 +214,13 @@
       "status": "todo"
     },
     {
-      "slug": "dia-tren-linux",
-      "space": "linux",
+      "slug": "docker-co-ban",
+      "space": "docker",
       "lang": "vi",
-      "name": "Đĩa trên Linux",
-      "nameEn": "Disks on Linux",
+      "name": "Docker từ đầu",
+      "nameEn": "Docker from scratch",
       "tech": true,
-      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
+      "brief": "Đợt bổ sung 2 bài: Docker Compose chạy ứng dụng nhiều dịch vụ (services, depends_on với điều kiện healthy, biến môi trường và tệp .env), nối tới \"Dockerfile nhiều tầng (multi-stage): build nặng, image chạy nhẹ\" và \"Chạy container không bằng root và thêm HEALTHCHECK để biết ứng dụng còn sống\"; volume có tên và bind mount: dữ liệu sống ở đâu khi container bị xoá, quyền tệp khi chạy không root, sao lưu một volume, nối tới \"Cài Docker Engine trên Ubuntu 24.04 từ kho apt chính thức của Docker\". Không lặp lại cài đặt, multi-stage hay mạng Docker.",
       "status": "todo"
     },
     {
@@ -234,33 +234,23 @@
       "status": "todo"
     },
     {
-      "slug": "tls-chung-chi",
-      "space": "bao-mat",
+      "slug": "web-va-https",
+      "space": "networking",
       "lang": "vi",
-      "name": "TLS và chứng chỉ SSL",
-      "nameEn": "TLS and certificates",
+      "name": "Web và HTTPS",
+      "nameEn": "Web and HTTPS",
       "tech": true,
-      "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
+      "brief": "Gợi ý 3 bài: nginx làm reverse proxy trước một ứng dụng (proxy_pass, header X-Forwarded-*, timeout); cân bằng tải nhiều upstream và kiểm tra sức khoẻ thụ động; nén, cache tệp tĩnh và giới hạn tốc độ (limit_req). Không viết lại phần chứng chỉ TLS và certbot: để cho hành tinh tls-chung-chi; nối sang bài \"Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath\" và \"systemctl trên Ubuntu 24.04: bật, tắt, khởi động lại dịch vụ và xem trạng thái\".",
       "status": "todo"
     },
     {
-      "slug": "docker-co-ban",
-      "space": "docker",
+      "slug": "dia-tren-linux",
+      "space": "linux",
       "lang": "vi",
-      "name": "Docker từ đầu",
-      "nameEn": "Docker from scratch",
+      "name": "Đĩa trên Linux",
+      "nameEn": "Disks on Linux",
       "tech": true,
-      "brief": "Đợt bổ sung 2 bài: Docker Compose chạy ứng dụng nhiều dịch vụ (services, depends_on với điều kiện healthy, biến môi trường và tệp .env), nối tới \"Dockerfile nhiều tầng (multi-stage): build nặng, image chạy nhẹ\" và \"Chạy container không bằng root và thêm HEALTHCHECK để biết ứng dụng còn sống\"; volume có tên và bind mount: dữ liệu sống ở đâu khi container bị xoá, quyền tệp khi chạy không root, sao lưu một volume, nối tới \"Cài Docker Engine trên Ubuntu 24.04 từ kho apt chính thức của Docker\". Không lặp lại cài đặt, multi-stage hay mạng Docker.",
-      "status": "todo"
-    },
-    {
-      "slug": "doc-xu-huong-cong-nghe",
-      "space": "marketing-ky-thuat",
-      "lang": "vi",
-      "name": "Đọc xu hướng công nghệ",
-      "nameEn": "Reading technology trends",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: các nguồn dữ liệu công khai đáng tin để biết kỹ sư đang quan tâm gì (Stack Overflow Developer Survey, GitHub Octoverse, Google Trends, thống kê tải gói, CNCF Annual Survey); cách đọc số liệu khảo sát đúng cách, tránh thiên lệch người trả lời; biến tín hiệu xu hướng thành quyết định nội dung và sản phẩm. Chỉ trích số liệu có nguồn và ghi rõ năm.",
+      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
       "status": "todo"
     },
     {
@@ -274,13 +264,33 @@
       "status": "todo"
     },
     {
-      "slug": "web-va-https",
-      "space": "networking",
+      "slug": "doc-xu-huong-cong-nghe",
+      "space": "marketing-ky-thuat",
       "lang": "vi",
-      "name": "Web và HTTPS",
-      "nameEn": "Web and HTTPS",
+      "name": "Đọc xu hướng công nghệ",
+      "nameEn": "Reading technology trends",
       "tech": true,
-      "brief": "Gợi ý 3 bài: nginx làm reverse proxy trước một ứng dụng (proxy_pass, header X-Forwarded-*, timeout); cân bằng tải nhiều upstream và kiểm tra sức khoẻ thụ động; nén, cache tệp tĩnh và giới hạn tốc độ (limit_req). Không viết lại phần chứng chỉ TLS và certbot: để cho hành tinh tls-chung-chi; nối sang bài \"Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath\" và \"systemctl trên Ubuntu 24.04: bật, tắt, khởi động lại dịch vụ và xem trạng thái\".",
+      "brief": "Gợi ý 3 bài: các nguồn dữ liệu công khai đáng tin để biết kỹ sư đang quan tâm gì (Stack Overflow Developer Survey, GitHub Octoverse, Google Trends, thống kê tải gói, CNCF Annual Survey); cách đọc số liệu khảo sát đúng cách, tránh thiên lệch người trả lời; biến tín hiệu xu hướng thành quyết định nội dung và sản phẩm. Chỉ trích số liệu có nguồn và ghi rõ năm.",
+      "status": "todo"
+    },
+    {
+      "slug": "truy-vet-opentelemetry",
+      "space": "observability",
+      "lang": "vi",
+      "name": "Truy vết phân tán với OpenTelemetry",
+      "nameEn": "Distributed tracing with OpenTelemetry",
+      "tech": true,
+      "brief": "Hành tinh thứ ba của Space Observability, hoàn thiện bộ ba metric, log, trace. Gợi ý 3 bài: trace, span, ngữ cảnh lan truyền (W3C traceparent) và khi nào truy vết trả lời được câu hỏi mà metric và log không trả lời được, nối tới \"Cảnh báo với Prometheus và Alertmanager: metric khác log thế nào\" và \"LogQL cơ bản và cảnh báo từ log: khi nào dùng metric thay vì log\"; gắn OpenTelemetry SDK vào một ứng dụng Node.js (tự động và thủ công) rồi gửi qua OpenTelemetry Collector (receiver, processor, exporter); lưu và xem trace bằng Grafana Tempo hoặc Jaeger, lấy mẫu (head và tail sampling) để giữ chi phí, nối trace với log qua trace_id, nối tới \"Gom log journald về Loki bằng Grafana Alloy: nhãn log đặt sao cho rẻ\". Không lặp lại cài Prometheus, PromQL hay LogQL. Đối chiếu tài liệu chính thức opentelemetry.io và grafana.com, ghi rõ phiên bản đã thử.",
+      "status": "todo"
+    },
+    {
+      "slug": "tls-chung-chi",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "TLS và chứng chỉ SSL",
+      "nameEn": "TLS and certificates",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
       "status": "todo"
     },
     {
@@ -294,6 +304,16 @@
       "status": "todo"
     },
     {
+      "slug": "ai-agent-viet-code",
+      "space": "ai-ky-su",
+      "lang": "vi",
+      "name": "Dùng AI agent viết code",
+      "nameEn": "Coding with AI agents",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chia việc cho agent (kế hoạch, thực hiện, rà soát) và viết yêu cầu đủ rõ; kiểm chứng kết quả bằng test, lint, typecheck thay vì tin lời agent; những việc không nên giao cho agent.",
+      "status": "todo"
+    },
+    {
       "slug": "mongodb-chi-muc",
       "space": "co-so-du-lieu",
       "lang": "vi",
@@ -304,16 +324,6 @@
       "status": "todo"
     },
     {
-      "slug": "xu-ly-su-co-an-ninh-mang",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "Xử lý sự cố an ninh mạng",
-      "nameEn": "Handling cybersecurity incidents",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
-      "status": "todo"
-    },
-    {
       "slug": "typescript-thuc-hanh",
       "space": "lap-trinh",
       "lang": "vi",
@@ -321,6 +331,16 @@
       "nameEn": "Practical TypeScript",
       "tech": true,
       "brief": "Gợi ý 3 bài: kiểu hẹp dần (narrowing) và type guard thay cho any; generic và utility types dùng hằng ngày; cấu hình tsconfig nghiêm ngặt và lỗi hay gặp khi bật strict.",
+      "status": "todo"
+    },
+    {
+      "slug": "xu-ly-su-co-an-ninh-mang",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Xử lý sự cố an ninh mạng",
+      "nameEn": "Handling cybersecurity incidents",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
       "status": "todo"
     },
     {
@@ -344,23 +364,13 @@
       "status": "todo"
     },
     {
-      "slug": "tuong-lua-linux",
-      "space": "bao-mat",
+      "slug": "iso-27001-doi-chieu-tcvn-14423",
+      "space": "phap-ly-anm",
       "lang": "vi",
-      "name": "Tường lửa trên Linux",
-      "nameEn": "Linux firewalls",
+      "name": "ISO 27001 đối chiếu với TCVN 14423",
+      "nameEn": "Mapping ISO 27001 to TCVN 14423",
       "tech": true,
-      "brief": "Gợi ý 3 bài: nguyên lý lọc gói tin (trạng thái kết nối, chain, policy); ufw cho người mới; nftables và iptables khác nhau thế nào, đọc một bộ luật có sẵn.",
-      "status": "todo"
-    },
-    {
-      "slug": "ai-agent-viet-code",
-      "space": "ai-ky-su",
-      "lang": "vi",
-      "name": "Dùng AI agent viết code",
-      "nameEn": "Coding with AI agents",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: chia việc cho agent (kế hoạch, thực hiện, rà soát) và viết yêu cầu đủ rõ; kiểm chứng kết quả bằng test, lint, typecheck thay vì tin lời agent; những việc không nên giao cho agent.",
+      "brief": "Gợi ý 3 bài: một hệ thống quản lý làm đúng ISO 27001 đáp ứng được những phần nào của TCVN 14423:2026 và Chỉ số 1964 (tài liệu hoá điều 7.5, đo lường điều 9.1, cải tiến điều 10) và phần nào còn thiếu; xây một bộ tài liệu dùng chung cho cả ba khung để không làm ba lần; lỗi hay gặp khi chuẩn bị bằng chứng. Nêu rõ bảng đối chiếu là phân tích của người viết, không phải văn bản chính thức. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
       "status": "todo"
     },
     {
@@ -371,6 +381,16 @@
       "nameEn": "Ceph basics",
       "tech": true,
       "brief": "Gợi ý 3 bài: kiến trúc Ceph (MON, OSD, MGR) và thuật toán CRUSH; ba kiểu lưu trữ RBD, CephFS, RGW; theo dõi sức khoẻ cụm và xử lý khi một OSD hỏng.",
+      "status": "todo"
+    },
+    {
+      "slug": "tuong-lua-linux",
+      "space": "bao-mat",
+      "lang": "vi",
+      "name": "Tường lửa trên Linux",
+      "nameEn": "Linux firewalls",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: nguyên lý lọc gói tin (trạng thái kết nối, chain, policy); ufw cho người mới; nftables và iptables khác nhau thế nào, đọc một bộ luật có sẵn.",
       "status": "todo"
     },
     {
@@ -411,16 +431,6 @@
       "nameEn": "Node.js performance",
       "tech": true,
       "brief": "Gợi ý 3 bài: vòng lặp sự kiện và vì sao một tác vụ nặng làm cả server đứng; đo bằng profiler và đọc flame graph; luồng (stream), áp lực ngược và pool kết nối.",
-      "status": "todo"
-    },
-    {
-      "slug": "iso-27001-doi-chieu-tcvn-14423",
-      "space": "phap-ly-anm",
-      "lang": "vi",
-      "name": "ISO 27001 đối chiếu với TCVN 14423",
-      "nameEn": "Mapping ISO 27001 to TCVN 14423",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: một hệ thống quản lý làm đúng ISO 27001 đáp ứng được những phần nào của TCVN 14423:2026 và Chỉ số 1964 (tài liệu hoá điều 7.5, đo lường điều 9.1, cải tiến điều 10) và phần nào còn thiếu; xây một bộ tài liệu dùng chung cho cả ba khung để không làm ba lần; lỗi hay gặp khi chuẩn bị bằng chứng. Nêu rõ bảng đối chiếu là phân tích của người viết, không phải văn bản chính thức. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
       "status": "todo"
     }
   ]
