@@ -211,7 +211,7 @@
       "nameEn": "Securing SSH",
       "tech": true,
       "brief": "Gợi ý 3 bài: khoá SSH thay mật khẩu và cách tạo, phân phối khoá; sshd_config cần chỉnh (tắt đăng nhập root, đổi cổng có đáng không, giới hạn người dùng); chặn dò mật khẩu bằng fail2ban và đọc nhật ký đăng nhập.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "docker-co-ban",
