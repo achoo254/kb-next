@@ -1321,6 +1321,26 @@
         "id": "a8bf024c-06ed-422f-a792-1bd57eb46ae8",
         "title": "SSH keys instead of passwords on Ubuntu 24.04: creating, installing and testing an ed25519 key"
       }
+    },
+    {
+      "slug": "docker-co-ban/docker-volume-bind-mount",
+      "id": "fd76e0b4-7c9d-43ac-9b15-5992816e61f3",
+      "title": "Volume có tên và bind mount: dữ liệu sống ở đâu khi container bị xoá",
+      "at": "2026-11-26T08:38:00.351Z",
+      "en": {
+        "id": "b4c7f0f8-34fa-48e4-b6ec-de176706b9e6",
+        "title": "Named volumes and bind mounts: where data lives when a container is removed"
+      }
+    },
+    {
+      "slug": "docker-co-ban/docker-compose-nhieu-dich-vu",
+      "id": "c7d3c643-b5ac-4c48-86b1-75bec87dfb30",
+      "title": "Docker Compose chạy ứng dụng nhiều dịch vụ: depends_on chờ healthy và tệp .env",
+      "at": "2026-11-26T08:38:01.047Z",
+      "en": {
+        "id": "a5f88d06-5b86-4d7b-8f08-211d82ce3634",
+        "title": "Running a multi-service app with Docker Compose: depends_on with healthy checks and a .env file"
+      }
     }
   ]
 }

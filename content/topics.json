@@ -221,7 +221,7 @@
       "nameEn": "Docker from scratch",
       "tech": true,
       "brief": "Đợt bổ sung 2 bài: Docker Compose chạy ứng dụng nhiều dịch vụ (services, depends_on với điều kiện healthy, biến môi trường và tệp .env), nối tới \"Dockerfile nhiều tầng (multi-stage): build nặng, image chạy nhẹ\" và \"Chạy container không bằng root và thêm HEALTHCHECK để biết ứng dụng còn sống\"; volume có tên và bind mount: dữ liệu sống ở đâu khi container bị xoá, quyền tệp khi chạy không root, sao lưu một volume, nối tới \"Cài Docker Engine trên Ubuntu 24.04 từ kho apt chính thức của Docker\". Không lặp lại cài đặt, multi-stage hay mạng Docker.",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "luat-an-ninh-mang-116-2025",
