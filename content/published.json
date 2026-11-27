@@ -215,6 +215,12 @@
       "space": "networking",
       "collectionId": "acefeb55-e463-473c-8075-9066b2093143",
       "at": "2026-11-27T08:37:57.015Z"
+    },
+    {
+      "slug": "tls-chung-chi",
+      "space": "bao-mat",
+      "collectionId": "3f22dd2f-f5c4-4ae5-aa0e-8d526b1dfc73",
+      "at": "2026-11-27T14:38:46.281Z"
     }
   ],
   "posts": [
@@ -1376,6 +1382,36 @@
       "en": {
         "id": "aadeb39d-9b9b-4d13-9beb-342092d99c30",
         "title": "nginx as a reverse proxy for an app: proxy_pass, X-Forwarded-* headers and timeouts"
+      }
+    },
+    {
+      "slug": "tls-chung-chi/loi-chung-chi-openssl",
+      "id": "10f0e194-5b2e-4f91-af70-8b789cf7c4fe",
+      "title": "Lỗi chứng chỉ hay gặp và cách kiểm bằng openssl: hết hạn, thiếu chuỗi trung gian, sai tên miền",
+      "at": "2026-11-27T14:38:46.662Z",
+      "en": {
+        "id": "2b381b96-127b-4046-afaa-4b5a16ccaac6",
+        "title": "Common certificate errors and how to check them with openssl: expiry, missing intermediates, wrong hostname"
+      }
+    },
+    {
+      "slug": "tls-chung-chi/acme-certbot-lets-encrypt",
+      "id": "e6ea1a9d-263c-4bd9-9216-549a4c641045",
+      "title": "Cấp và gia hạn chứng chỉ Let's Encrypt tự động bằng certbot và ACME trên Ubuntu 24.04",
+      "at": "2026-11-27T14:38:48.860Z",
+      "en": {
+        "id": "4f2ff0d9-66f7-4738-bcd7-1abd9329b120",
+        "title": "Issuing and renewing Let's Encrypt certificates automatically with certbot and ACME on Ubuntu 24.04"
+      }
+    },
+    {
+      "slug": "tls-chung-chi/tls-bat-tay-chuoi-chung-chi",
+      "id": "9f7f53b3-02fd-465a-b17d-ea4e5a998711",
+      "title": "Bắt tay TLS và chuỗi chứng chỉ: máy khách tin máy chủ như thế nào",
+      "at": "2026-11-27T14:38:50.987Z",
+      "en": {
+        "id": "3cdd7a91-a2fb-4a51-aa4d-7e212c699484",
+        "title": "TLS handshakes and certificate chains: how a client comes to trust a server"
       }
     }
   ]
