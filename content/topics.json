@@ -252,7 +252,7 @@
       "nameEn": "TLS and certificates",
       "tech": true,
       "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "mang-va-luu-tru-k8s",
