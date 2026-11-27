@@ -209,6 +209,12 @@
       "space": "bao-mat",
       "collectionId": "04ad8df2-f4dd-4313-b6e6-6c74e89d2c05",
       "at": "2026-11-26T02:39:11.042Z"
+    },
+    {
+      "slug": "web-va-https",
+      "space": "networking",
+      "collectionId": "acefeb55-e463-473c-8075-9066b2093143",
+      "at": "2026-11-27T08:37:57.015Z"
     }
   ],
   "posts": [
@@ -1340,6 +1346,36 @@
       "en": {
         "id": "a5f88d06-5b86-4d7b-8f08-211d82ce3634",
         "title": "Running a multi-service app with Docker Compose: depends_on with healthy checks and a .env file"
+      }
+    },
+    {
+      "slug": "web-va-https/nginx-nen-cache-gioi-han",
+      "id": "7071c18e-e863-4163-a2a4-0984270617f3",
+      "title": "nginx nén, cache tệp tĩnh và giới hạn tốc độ bằng limit_req",
+      "at": "2026-11-27T08:37:57.584Z",
+      "en": {
+        "id": "52501f4e-78f5-4eaf-b107-bdfd12addb68",
+        "title": "Compression, static caching and rate limiting with nginx limit_req"
+      }
+    },
+    {
+      "slug": "web-va-https/nginx-can-bang-tai",
+      "id": "2aa77ec5-08f3-405c-9ac4-984b6f8b9612",
+      "title": "Cân bằng tải bằng nginx: upstream, thuật toán chọn máy và kiểm tra sức khoẻ thụ động",
+      "at": "2026-11-27T08:37:58.615Z",
+      "en": {
+        "id": "0608ac6b-eecc-4bab-8731-8652dfe1824d",
+        "title": "Load balancing with nginx: upstream, balancing methods and passive health checks"
+      }
+    },
+    {
+      "slug": "web-va-https/nginx-reverse-proxy",
+      "id": "3b410443-b900-4eea-af4a-2d667e038bd2",
+      "title": "nginx làm reverse proxy cho ứng dụng: proxy_pass, header X-Forwarded-* và timeout",
+      "at": "2026-11-27T08:37:59.555Z",
+      "en": {
+        "id": "aadeb39d-9b9b-4d13-9beb-342092d99c30",
+        "title": "nginx as a reverse proxy for an app: proxy_pass, X-Forwarded-* headers and timeouts"
       }
     }
   ]

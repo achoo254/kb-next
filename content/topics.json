@@ -242,7 +242,7 @@
       "nameEn": "Web and HTTPS",
       "tech": true,
       "brief": "Gợi ý 3 bài: nginx làm reverse proxy trước một ứng dụng (proxy_pass, header X-Forwarded-*, timeout); cân bằng tải nhiều upstream và kiểm tra sức khoẻ thụ động; nén, cache tệp tĩnh và giới hạn tốc độ (limit_req). Không viết lại phần chứng chỉ TLS và certbot: để cho hành tinh tls-chung-chi; nối sang bài \"Kiểm tra kết nối mạng trên Ubuntu bằng ip, ss, ping và tracepath\" và \"systemctl trên Ubuntu 24.04: bật, tắt, khởi động lại dịch vụ và xem trạng thái\".",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "tls-chung-chi",
