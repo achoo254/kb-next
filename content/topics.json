@@ -244,13 +244,13 @@
       "status": "todo"
     },
     {
-      "slug": "dia-tren-linux",
-      "space": "linux",
+      "slug": "tls-chung-chi",
+      "space": "bao-mat",
       "lang": "vi",
-      "name": "Đĩa trên Linux",
-      "nameEn": "Disks on Linux",
+      "name": "TLS và chứng chỉ SSL",
+      "nameEn": "TLS and certificates",
       "tech": true,
-      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn.",
+      "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
       "status": "todo"
     },
     {
@@ -274,6 +274,16 @@
       "status": "todo"
     },
     {
+      "slug": "dia-tren-linux",
+      "space": "linux",
+      "lang": "vi",
+      "name": "Đĩa trên Linux",
+      "nameEn": "Disks on Linux",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: phân vùng và hệ thống tệp; LVM tạo và mở rộng ổ; fstab gắn ổ khi khởi động an toàn. Nối tới \"systemctl trên Ubuntu 24.04: bật, tắt, khởi động lại dịch vụ và xem trạng thái\" (kiểm tra dịch vụ sau khi gắn ổ) và \"Volume có tên và bind mount: dữ liệu sống ở đâu khi container bị xoá\" (dữ liệu Docker nằm trên ổ nào); lệnh thử trên Ubuntu 24.04, nhắc sao lưu trước khi đổi phân vùng.",
+      "status": "todo"
+    },
+    {
       "slug": "truy-vet-opentelemetry",
       "space": "observability",
       "lang": "vi",
@@ -284,23 +294,23 @@
       "status": "todo"
     },
     {
-      "slug": "tls-chung-chi",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "TLS và chứng chỉ SSL",
-      "nameEn": "TLS and certificates",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: bắt tay TLS và chuỗi chứng chỉ; cấp và gia hạn chứng chỉ tự động bằng ACME (Let's Encrypt); lỗi chứng chỉ hay gặp (hết hạn, thiếu chuỗi trung gian, sai tên miền) và cách kiểm bằng openssl.",
-      "status": "todo"
-    },
-    {
       "slug": "shell-tu-dong-hoa",
       "space": "devops",
       "lang": "vi",
       "name": "Shell script tự động hoá",
       "nameEn": "Automating with shell scripts",
       "tech": true,
-      "brief": "Gợi ý 3 bài: bash an toàn (set -euo pipefail, trích dẫn biến); xử lý văn bản với grep, sed, awk, jq; cron và systemd timer cho việc chạy định kỳ.",
+      "brief": "Gợi ý 3 bài: bash an toàn (set -euo pipefail, trích dẫn biến); xử lý văn bản với grep, sed, awk, jq; cron và systemd timer cho việc chạy định kỳ. Nối tới \"systemd và unit file trên Ubuntu 24.04: dịch vụ được mô tả và khởi chạy như thế nào\" (timer cần một unit service đi kèm), \"journalctl: lọc log theo dịch vụ và theo thời gian trên Ubuntu 24.04\" (xem kết quả lần chạy định kỳ) và \"Pipeline CI/CD gồm những giai đoạn nào: build, test, deploy, artifact và cache\" (script dùng trong pipeline); không lặp lại cách viết unit file.",
+      "status": "todo"
+    },
+    {
+      "slug": "mongodb-chi-muc",
+      "space": "co-so-du-lieu",
+      "lang": "vi",
+      "name": "MongoDB: chỉ mục và truy vấn",
+      "nameEn": "MongoDB indexes and queries",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: chỉ mục đơn và chỉ mục ghép, quy tắc ESR; đọc explain() để biết truy vấn chậm ở đâu; thiết kế tài liệu nhúng hay tham chiếu và chỉ mục TTL cho dữ liệu nhật ký. Nối tới \"VACUUM, autovacuum và truy vấn chậm trong PostgreSQL với pg_stat_statements\" để so cách tìm truy vấn chậm ở hai hệ; ghi rõ phiên bản MongoDB đã thử và đối chiếu tài liệu chính thức mongodb.com.",
       "status": "todo"
     },
     {
@@ -314,13 +324,13 @@
       "status": "todo"
     },
     {
-      "slug": "mongodb-chi-muc",
-      "space": "co-so-du-lieu",
+      "slug": "xu-ly-su-co-an-ninh-mang",
+      "space": "bao-mat",
       "lang": "vi",
-      "name": "MongoDB: chỉ mục và truy vấn",
-      "nameEn": "MongoDB indexes and queries",
+      "name": "Xử lý sự cố an ninh mạng",
+      "nameEn": "Handling cybersecurity incidents",
       "tech": true,
-      "brief": "Gợi ý 3 bài: chỉ mục đơn và chỉ mục ghép, quy tắc ESR; đọc explain() để biết truy vấn chậm ở đâu; thiết kế tài liệu nhúng hay tham chiếu và chỉ mục TTL cho dữ liệu nhật ký.",
+      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
       "status": "todo"
     },
     {
@@ -331,16 +341,6 @@
       "nameEn": "Practical TypeScript",
       "tech": true,
       "brief": "Gợi ý 3 bài: kiểu hẹp dần (narrowing) và type guard thay cho any; generic và utility types dùng hằng ngày; cấu hình tsconfig nghiêm ngặt và lỗi hay gặp khi bật strict.",
-      "status": "todo"
-    },
-    {
-      "slug": "xu-ly-su-co-an-ninh-mang",
-      "space": "bao-mat",
-      "lang": "vi",
-      "name": "Xử lý sự cố an ninh mạng",
-      "nameEn": "Handling cybersecurity incidents",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: các giai đoạn ứng phó (phát hiện, phân loại, ngăn chặn, khắc phục, rút kinh nghiệm) và vai trò từng người; thu thập và bảo quản bằng chứng, đọc nhật ký; nghĩa vụ thông báo sự cố theo quy định hiện hành và mẫu phiếu báo cáo. Viết chung, ví dụ lấy từ công cụ phổ biến; không nêu kho mã, quy trình, sự cố hay hệ thống của công ty nào.",
       "status": "todo"
     },
     {
@@ -364,16 +364,6 @@
       "status": "todo"
     },
     {
-      "slug": "iso-27001-doi-chieu-tcvn-14423",
-      "space": "phap-ly-anm",
-      "lang": "vi",
-      "name": "ISO 27001 đối chiếu với TCVN 14423",
-      "nameEn": "Mapping ISO 27001 to TCVN 14423",
-      "tech": true,
-      "brief": "Gợi ý 3 bài: một hệ thống quản lý làm đúng ISO 27001 đáp ứng được những phần nào của TCVN 14423:2026 và Chỉ số 1964 (tài liệu hoá điều 7.5, đo lường điều 9.1, cải tiến điều 10) và phần nào còn thiếu; xây một bộ tài liệu dùng chung cho cả ba khung để không làm ba lần; lỗi hay gặp khi chuẩn bị bằng chứng. Nêu rõ bảng đối chiếu là phân tích của người viết, không phải văn bản chính thức. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
-    },
-    {
       "slug": "ceph-co-ban",
       "space": "cloud",
       "lang": "vi",
@@ -381,6 +371,16 @@
       "nameEn": "Ceph basics",
       "tech": true,
       "brief": "Gợi ý 3 bài: kiến trúc Ceph (MON, OSD, MGR) và thuật toán CRUSH; ba kiểu lưu trữ RBD, CephFS, RGW; theo dõi sức khoẻ cụm và xử lý khi một OSD hỏng.",
+      "status": "todo"
+    },
+    {
+      "slug": "iso-27001-doi-chieu-tcvn-14423",
+      "space": "phap-ly-anm",
+      "lang": "vi",
+      "name": "ISO 27001 đối chiếu với TCVN 14423",
+      "nameEn": "Mapping ISO 27001 to TCVN 14423",
+      "tech": true,
+      "brief": "Gợi ý 3 bài: một hệ thống quản lý làm đúng ISO 27001 đáp ứng được những phần nào của TCVN 14423:2026 và Chỉ số 1964 (tài liệu hoá điều 7.5, đo lường điều 9.1, cải tiến điều 10) và phần nào còn thiếu; xây một bộ tài liệu dùng chung cho cả ba khung để không làm ba lần; lỗi hay gặp khi chuẩn bị bằng chứng. Nêu rõ bảng đối chiếu là phân tích của người viết, không phải văn bản chính thức. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
       "status": "todo"
     },
     {
@@ -400,7 +400,7 @@
       "name": "Sao lưu và khôi phục",
       "nameEn": "Backup and restore",
       "tech": true,
-      "brief": "Gợi ý 3 bài: quy tắc 3-2-1, RPO và RTO; sao lưu tập tin, cơ sở dữ liệu và máy ảo khác nhau thế nào; diễn tập khôi phục và kiểm tra bản sao lưu còn dùng được.",
+      "brief": "Gợi ý 3 bài: quy tắc 3-2-1, RPO và RTO; sao lưu tập tin, cơ sở dữ liệu và máy ảo khác nhau thế nào; diễn tập khôi phục và kiểm tra bản sao lưu còn dùng được. Nối tới \"Sao lưu và khôi phục PostgreSQL: pg_dump, pg_restore và pg_basebackup\" (không lặp lại lệnh pg_dump), \"Volume có tên và bind mount: dữ liệu sống ở đâu khi container bị xoá\" và \"Tải lên nhiều phần, vòng đời đối tượng và cách tính chi phí object storage\" (đích lưu bản sao lưu ngoài máy).",
       "status": "todo"
     },
     {
