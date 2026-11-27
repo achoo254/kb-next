@@ -231,7 +231,8 @@
       "nameEn": "Cybersecurity Law 116/2025",
       "tech": true,
       "brief": "Gợi ý 3 bài: Luật An ninh mạng 116/2025/QH15 trong bức tranh các văn bản (liên hệ với Nghị định 331/2026 và các nghị định hướng dẫn cùng đợt), hiệu lực và những điểm mới so với luật cũ; nghĩa vụ chính của doanh nghiệp cung cấp dịch vụ trên không gian mạng; hệ thống thông tin quan trọng về an ninh quốc gia và việc bảo vệ theo cấp độ. Chỉ giải thích văn bản, không tư vấn pháp lý cho trường hợp cụ thể; nêu số hiệu, ngày ban hành, số điều và đối chiếu với văn bản chính thức (cổng Chính phủ, Cơ sở dữ liệu quốc gia về văn bản pháp luật, VSQI) trước khi viết, ghi rõ tính đến tháng 11/2026; không trích nguyên văn dài; không nhắc bất kỳ công ty hay hệ thống cụ thể nào.",
-      "status": "todo"
+      "status": "skipped",
+      "note": "Không đọc được toàn văn Luật 116/2025/QH15 từ nguồn chính thức (Công báo: tệp tải lỗi 503; vbpl.moj.gov.vn: 502); các nguồn thứ cấp mâu thuẫn về Điều 44 (luật nào hết hiệu lực) nên không thể đối chiếu số điều an toàn. Có thể đặt lại todo khi truy cập được văn bản gốc."
     },
     {
       "slug": "web-va-https",
