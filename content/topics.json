@@ -272,7 +272,7 @@
       "nameEn": "Reading technology trends",
       "tech": true,
       "brief": "Gợi ý 3 bài: các nguồn dữ liệu công khai đáng tin để biết kỹ sư đang quan tâm gì (Stack Overflow Developer Survey, GitHub Octoverse, Google Trends, thống kê tải gói, CNCF Annual Survey); cách đọc số liệu khảo sát đúng cách, tránh thiên lệch người trả lời; biến tín hiệu xu hướng thành quyết định nội dung và sản phẩm. Chỉ trích số liệu có nguồn và ghi rõ năm.",
-      "status": "todo"
+      "status": "queued"
     },
     {
       "slug": "dia-tren-linux",
