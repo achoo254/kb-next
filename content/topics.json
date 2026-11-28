@@ -262,7 +262,7 @@
       "nameEn": "Networking and storage on Kubernetes",
       "tech": true,
       "brief": "Gợi ý 3 bài: Service (ClusterIP, NodePort, LoadBalancer) và cách Pod tìm nhau qua DNS của cụm; Ingress với IngressClass, so với Gateway API, đưa ứng dụng ra ngoài qua HTTPS; PersistentVolume, PersistentVolumeClaim và StorageClass cho ứng dụng cần giữ dữ liệu. Nối tới \"Deployment và rolling update trong Kubernetes: cập nhật ứng dụng mà không gián đoạn\" và \"ConfigMap và Secret: tách cấu hình khỏi image ứng dụng trên Kubernetes\"; không lặp lại rolling update hay rollback. Có thể so DNS của cụm với \"Mạng bridge tự tạo trong Docker: container gọi nhau bằng tên nhờ DNS nội bộ\".",
-      "status": "queued"
+      "status": "published"
     },
     {
       "slug": "doc-xu-huong-cong-nghe",

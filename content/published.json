@@ -221,6 +221,12 @@
       "space": "bao-mat",
       "collectionId": "3f22dd2f-f5c4-4ae5-aa0e-8d526b1dfc73",
       "at": "2026-11-27T14:38:46.281Z"
+    },
+    {
+      "slug": "mang-va-luu-tru-k8s",
+      "space": "kubernetes",
+      "collectionId": "b26823e1-a85a-4f8d-b30b-13f3f1dfbf48",
+      "at": "2026-11-28T02:37:33.338Z"
     }
   ],
   "posts": [
@@ -1412,6 +1418,36 @@
       "en": {
         "id": "3cdd7a91-a2fb-4a51-aa4d-7e212c699484",
         "title": "TLS handshakes and certificate chains: how a client comes to trust a server"
+      }
+    },
+    {
+      "slug": "mang-va-luu-tru-k8s/service-dns-cum",
+      "id": "8117bc05-d301-4705-a6b6-ddf9530a6a84",
+      "title": "Service trên Kubernetes: ClusterIP, NodePort, LoadBalancer và DNS của cụm",
+      "at": "2026-11-28T02:37:33.775Z",
+      "en": {
+        "id": "bcf30706-4d3b-4101-8485-08e0841c2fa2",
+        "title": "Kubernetes Services: ClusterIP, NodePort, LoadBalancer and cluster DNS"
+      }
+    },
+    {
+      "slug": "mang-va-luu-tru-k8s/ingress-gateway-https",
+      "id": "73b2f3c9-55ed-4ba6-9141-0563ddafab64",
+      "title": "Ingress và Gateway API trên Kubernetes: đưa ứng dụng ra ngoài qua HTTPS",
+      "at": "2026-11-28T02:37:34.604Z",
+      "en": {
+        "id": "2feac5f9-b33f-4f7c-b901-2c142d933d3b",
+        "title": "Ingress and Gateway API on Kubernetes: exposing your app over HTTPS"
+      }
+    },
+    {
+      "slug": "mang-va-luu-tru-k8s/pv-pvc-storageclass",
+      "id": "7db10673-0b5c-4e0a-bf6a-a40dee753821",
+      "title": "PersistentVolume, PersistentVolumeClaim và StorageClass: cho Pod giữ dữ liệu trên Kubernetes",
+      "at": "2026-11-28T02:37:35.436Z",
+      "en": {
+        "id": "6f261ad6-5825-492c-a12e-bca1dd7e49ed",
+        "title": "PersistentVolumes, PersistentVolumeClaims and StorageClasses: keeping data in Kubernetes Pods"
       }
     }
   ]
