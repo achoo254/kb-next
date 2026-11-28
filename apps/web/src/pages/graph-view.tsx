@@ -9,7 +9,7 @@ import type { GraphEdge, GraphNode } from '../api/graph-api';
 import { toBoardPx } from '../layout/board-zoom';
 import { WORLD, type PlacedNode } from './graph-layout';
 import { type Direction, nodeInDirection } from './graph-model';
-import { planetForColour } from './graph-planets';
+import { planetFor } from './graph-planets';
 import type { GraphMessageKey } from './graph-messages';
 import type { ScreenTranslate } from './space-messages';
 
@@ -243,7 +243,7 @@ export function GraphView({ t, nodes, edges, positions, visible, selected, colou
                 <div key={node.id} className="graph-node" data-selected={isSelected} data-dim={away} data-named={named} style={style}>
                   <img
                     className="graph-node-planet"
-                    src={planetForColour(colour?.glow)}
+                    src={planetFor(colour?.glow, node.id)}
                     alt=""
                     aria-hidden="true"
                     decoding="async"
