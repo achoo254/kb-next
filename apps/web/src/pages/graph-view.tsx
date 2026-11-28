@@ -9,6 +9,7 @@ import type { GraphEdge, GraphNode } from '../api/graph-api';
 import { toBoardPx } from '../layout/board-zoom';
 import { WORLD, type PlacedNode } from './graph-layout';
 import { type Direction, nodeInDirection } from './graph-model';
+import { planetForColour } from './graph-planets';
 import type { GraphMessageKey } from './graph-messages';
 import type { ScreenTranslate } from './space-messages';
 
@@ -18,6 +19,16 @@ const ZOOM_STEP = 0.2;
 const PAN_STEP = 80;
 /** The minimap draws the world at this scale (board C13: 1040×620 → about 180×108). */
 const MINI_SCALE = 0.17;
+/**
+ * Up to this many nodes every name shows (the board's graph has 20). A larger graph names only its biggest hubs, the
+ * picked node and its neighbours, and a node under the pointer or keyboard; zoomed in far enough, every name shows
+ * again. Twelve Spaces' names all at once covered one another (seen on prod 28/11/2026).
+ */
+const ALL_NAMES_UP_TO = 30;
+const HUB_NAMES = 10;
+const ALL_NAMES_ZOOM = 1.6;
+/** The planet art's sphere fills this share of the picture (the ring reaches past it), so the picture is drawn larger. */
+const PLANET_SPHERE = 0.4;
 
 export interface View {
   zoom: number;
@@ -75,6 +86,13 @@ export function GraphView({ t, nodes, edges, positions, visible, selected, colou
       if (e.target === selected) near.add(e.source);
     }
   }
+  const allNames = shown.length <= ALL_NAMES_UP_TO || view.zoom >= ALL_NAMES_ZOOM;
+  const hubs = new Set(
+    [...shown]
+      .sort((a, b) => b.degree - a.degree)
+      .slice(0, HUB_NAMES)
+      .map((n) => n.id),
+  );
   // The node in the tab order: the one last focused, else the picked one, else the first shown.
   const tabStop = (focusId && visible.has(focusId) ? focusId : null) ?? (selected && visible.has(selected) ? selected : null) ?? shown[0]?.id ?? null;
 
@@ -219,8 +237,18 @@ export function GraphView({ t, nodes, edges, positions, visible, selected, colou
                 '--node-tint': colour?.tint,
                 '--node-glow': colour?.glow,
               } as CSSProperties;
+              const named = allNames || hubs.has(node.id) || near.has(node.id) || node.id === focusId;
+              const planet = p.r * 2 / PLANET_SPHERE;
               return (
-                <div key={node.id} className="graph-node" data-selected={isSelected} data-dim={away} style={style}>
+                <div key={node.id} className="graph-node" data-selected={isSelected} data-dim={away} data-named={named} style={style}>
+                  <img
+                    className="graph-node-planet"
+                    src={planetForColour(colour?.glow)}
+                    alt=""
+                    aria-hidden="true"
+                    decoding="async"
+                    style={{ width: planet, height: planet, left: p.r - planet / 2, top: p.r - planet / 2 }}
+                  />
                   <button
                     type="button"
                     ref={(el) => {

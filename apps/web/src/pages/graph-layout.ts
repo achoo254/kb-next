@@ -34,6 +34,14 @@ const OTHER_SPOTS: ReadonlyArray<Omit<SpaceSpot, 'pull'>> = [
 ];
 const OTHER_PULL = 0.22;
 const TICKS = 320;
+/**
+ * More Spaces than the board's spots (the real Universe has a dozen): the graph's Space sits in the middle and every
+ * other Space gets an even share of an ellipse around it, instead of piling onto the board's six spots.
+ */
+const RING_FOCUS: SpaceSpot = { x: WORLD.width / 2, y: WORLD.height / 2, pull: 0.06 };
+const RING = { rx: 430, ry: 250 } as const;
+/** The smallest node once a large graph is scaled down to fit: still a target a pointer can hit. */
+const MIN_RADIUS = 8;
 
 export interface LayoutNode {
   id: string;
@@ -66,6 +74,8 @@ interface SimNode extends SimulationNodeDatum {
 
 /** Each Space's spot: the focus first, the personal one, then the others in the order given. */
 export function spaceSpots(spaces: ReadonlyArray<{ slug: string; personal: boolean }>, focus: string): Map<string, SpaceSpot> {
+  const others = spaces.filter((space) => space.slug !== focus && !space.personal).length;
+  if (others > OTHER_SPOTS.length) return ringSpots(spaces, focus);
   const spots = new Map<string, SpaceSpot>();
   let next = 0;
   for (const space of spaces) {
@@ -79,6 +89,21 @@ export function spaceSpots(spaces: ReadonlyArray<{ slug: string; personal: boole
       next += 1;
     }
   }
+  return spots;
+}
+
+/** The focus in the middle, the other Spaces (the reader's own last) evenly round an ellipse, starting top left. */
+function ringSpots(spaces: ReadonlyArray<{ slug: string; personal: boolean }>, focus: string): Map<string, SpaceSpot> {
+  const spots = new Map<string, SpaceSpot>([[focus, RING_FOCUS]]);
+  const around = [...spaces.filter((s) => s.slug !== focus && !s.personal), ...spaces.filter((s) => s.slug !== focus && s.personal)];
+  around.forEach((space, i) => {
+    const angle = -0.75 * Math.PI + (2 * Math.PI * i) / around.length;
+    spots.set(space.slug, {
+      x: RING_FOCUS.x + RING.rx * Math.cos(angle),
+      y: RING_FOCUS.y + RING.ry * Math.sin(angle),
+      pull: space.personal ? PERSONAL_SPOT.pull : OTHER_PULL,
+    });
+  });
   return spots;
 }
 
@@ -130,13 +155,16 @@ export function layoutGraph(
 
   // Centred when the graph shows one public Space (with or without the reader's own): the board's left/right split is
   // for several Spaces, and with one it left the cluster in a corner of the stage (seen on prod 06/11/2026).
+  // The ring is drawn round the middle, so it is centred too.
   const shared = new Set(nodes.filter((n) => spots.get(n.space) !== PERSONAL_SPOT).map((n) => n.space));
-  return fit(sim, shared.size <= 1);
+  const ring = [...spots.values()].includes(RING_FOCUS);
+  return fit(sim, shared.size <= 1 || ring);
 }
 
 /**
  * The positions scaled (down only) and moved to sit inside WORLD with room for the names; `centre` puts them in the
- * middle of the room instead of near where the forces left them.
+ * middle of the room instead of near where the forces left them. The nodes shrink with the positions (not below
+ * MIN_RADIUS): scaling the gaps alone piled the nodes of a large graph onto each other (seen on prod 28/11/2026).
  */
 function fit(sim: readonly SimNode[], centre: boolean): Map<string, PlacedNode> {
   const placed = new Map<string, PlacedNode>();
@@ -162,6 +190,6 @@ function fit(sim: readonly SimNode[], centre: boolean): Map<string, PlacedNode> 
     const top = height <= room.h ? (centre ? MARGIN_TOP + (room.h - height) / 2 : kept) : MARGIN_TOP;
     return top + (value - minY) * scale;
   };
-  for (const n of sim) placed.set(n.id, { id: n.id, x: Math.round(shiftX(n.x ?? 0)), y: Math.round(shiftY(n.y ?? 0)), r: n.r });
+  for (const n of sim) placed.set(n.id, { id: n.id, x: Math.round(shiftX(n.x ?? 0)), y: Math.round(shiftY(n.y ?? 0)), r: Math.max(Math.min(n.r, MIN_RADIUS), Math.round(n.r * scale)) });
   return placed;
 }

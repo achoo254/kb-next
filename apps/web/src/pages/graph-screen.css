@@ -204,7 +204,10 @@
   pointer-events: none;
 }
 
-/* ── nodes: orbs tinted by their Space (--node-tint, --node-glow from the data) ── */
+/*
+ * ── nodes: the AI-drawn planet of their Space (graph-planets.ts), its sphere under a round button whose rim says
+ * official (solid) or community (dashed); --node-tint, --node-glow come from the data ──
+ */
 
 .graph-node {
   position: absolute;
@@ -215,17 +218,23 @@
   opacity: 0.18;
 }
 
+.graph-node-planet {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.25s var(--ease-out-back);
+}
+
 .graph-node-orb {
+  position: relative;
   display: block;
   padding: 0;
   border-radius: 50%;
-  border: 2px solid light-dark(color-mix(in srgb, var(--light-text) 35%, transparent), color-mix(in srgb, var(--white) 55%, transparent));
+  border: 1.5px solid light-dark(color-mix(in srgb, var(--light-text) 30%, transparent), color-mix(in srgb, var(--white) 35%, transparent));
   cursor: pointer;
-  background: radial-gradient(circle at 36% 30%, var(--white) 0%, var(--node-tint) 24%, var(--node-glow) 62%, var(--graph-node-core) 100%);
-  box-shadow:
-    inset 0 0 8px color-mix(in srgb, var(--white) 45%, transparent),
-    0 0 12px var(--node-glow),
-    0 0 26px color-mix(in srgb, var(--violet-400) 28%, transparent);
+  background: transparent;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--node-glow) 55%, transparent);
   transition: transform 0.25s var(--ease-out-back);
 }
 
@@ -233,7 +242,8 @@
   border-style: dashed;
 }
 
-.graph-node-orb:hover:not([aria-pressed="true"]) {
+.graph-node:hover .graph-node-orb:not([aria-pressed="true"]),
+.graph-node:hover:not([data-selected="true"]) .graph-node-planet {
   transform: scale(1.12);
 }
 
@@ -255,17 +265,21 @@
   border-width: 3px;
   border-color: var(--cyan-400);
   box-shadow:
-    inset 0 0 8px color-mix(in srgb, var(--white) 45%, transparent),
     0 0 26px var(--node-glow),
     0 0 52px color-mix(in srgb, var(--sky-300) 55%, transparent);
   animation: graph-ring 2s ease-in-out infinite;
 }
 
+/* Above every planet (the nodes make no stacking context), so a ring never hides a name. */
 .graph-node-name {
   position: absolute;
+  z-index: 1;
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin-top: 5px;
   white-space: nowrap;
   font-size: 11px;
@@ -273,9 +287,22 @@
   color: var(--c-text);
   text-shadow: 0 1px 6px light-dark(color-mix(in srgb, var(--white) 90%, transparent), color-mix(in srgb, var(--ink) 80%, transparent));
   pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+/* A large graph names only some nodes (graph-view.tsx); the others show their name under the pointer or focus. */
+.graph-node[data-named="false"] .graph-node-name {
+  opacity: 0;
+}
+
+.graph-node:hover .graph-node-name,
+.graph-node:focus-within .graph-node-name {
+  z-index: 2;
+  opacity: 1;
 }
 
 .graph-node[data-selected="true"] .graph-node-name {
+  max-width: none;
   font-size: 13px;
   font-weight: 700;
 }

@@ -132,6 +132,25 @@ describe('layout', () => {
     expect(layoutGraph([], [], spots).size).toBe(0);
   });
 
+  it('puts more Spaces than the board has spots evenly round the graph’s own, in the middle', () => {
+    const slugs = Array.from({ length: 12 }, (_, i) => `s${i}`);
+    const ring = spaceSpots([...slugs.map((slug) => ({ slug, personal: false })), { slug: 'mine', personal: true }], 's0');
+    const centre = ring.get('s0');
+    expect(centre).toMatchObject({ x: WORLD.width / 2, y: WORLD.height / 2 });
+    const around = [...ring.entries()].filter(([slug]) => slug !== 's0').map(([, spot]) => spot);
+    expect(around).toHaveLength(12);
+    // No two Spaces share a spot (the board's six spots were reused, piling twelve Spaces onto each other).
+    expect(new Set(around.map((s) => `${Math.round(s.x)},${Math.round(s.y)}`)).size).toBe(12);
+  });
+
+  it('shrinks the nodes with a graph scaled down to fit, so they do not pile up', () => {
+    const many = Array.from({ length: 80 }, (_, i) => ({ id: `n${i}`, space: `s${i % 12}`, degree: 6 }));
+    const spots12 = spaceSpots(Array.from({ length: 12 }, (_, i) => ({ slug: `s${i}`, personal: false })), 's0');
+    const placed = [...layoutGraph(many, [], spots12).values()];
+    expect(Math.max(...placed.map((p) => p.r))).toBeLessThan(nodeRadius(6));
+    expect(Math.min(...placed.map((p) => p.r))).toBeGreaterThanOrEqual(8);
+  });
+
   it('gives the reader’s own Space the spot under the graph’s own', () => {
     const own = spaceSpots(
       [
