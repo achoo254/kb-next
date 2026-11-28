@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findPublicInfo, isHarmlessIpv4 } from './check-public-info';
+import { findPublicInfo, isHarmlessIpv4, repoPath } from './check-public-info';
 
 describe('public repository guard', () => {
   it('lets loopback, documentation ranges and the mock example network through', () => {
@@ -20,6 +20,11 @@ describe('public repository guard', () => {
 
   it('ignores placeholders, plain ports and spec sections', () => {
     expect(findPublicInfo('ssh -p <SSH_PORT> <SSH_TARGET>\nlisten 127.0.0.1:5320\nOIDC Core §3.1.3.7', 'x.md')).toEqual([]);
+  });
+
+  it('names files with / on Windows too, so the guard still skips its own files there', () => {
+    expect(repoPath('scripts\\check-public-info.ts')).toBe('scripts/check-public-info.ts');
+    expect(repoPath('scripts/check-public-info.ts')).toBe('scripts/check-public-info.ts');
   });
 
   it('reads a spec section inside a URL as a section, not an address', () => {

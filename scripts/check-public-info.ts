@@ -68,9 +68,14 @@ async function textFiles(dir: string): Promise<string[]> {
 /** This guard and its test spell out what they look for. */
 const SELF = new Set(['scripts/check-public-info.ts', 'scripts/check-public-info.test.ts']);
 
+/** A file's path from the repository root with `/` separators, as on Linux CI (Windows gives `scripts\x.ts`). */
+export function repoPath(relative: string): string {
+  return relative.replaceAll('\\', '/');
+}
+
 async function main(): Promise<number> {
-  const files = (await textFiles(ROOT)).filter((file) => path.basename(file) !== '.env' && !SELF.has(path.relative(ROOT, file)));
-  const findings = (await Promise.all(files.map(async (file) => findPublicInfo(await readFile(file, 'utf8'), path.relative(ROOT, file))))).flat();
+  const files = (await textFiles(ROOT)).filter((file) => path.basename(file) !== '.env' && !SELF.has(repoPath(path.relative(ROOT, file))));
+  const findings = (await Promise.all(files.map(async (file) => findPublicInfo(await readFile(file, 'utf8'), repoPath(path.relative(ROOT, file)))))).flat();
   if (findings.length === 0) {
     console.log(`✓ No server address or SSH detail in ${files.length} text files`);
     return 0;
