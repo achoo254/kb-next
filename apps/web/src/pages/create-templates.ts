@@ -5,7 +5,7 @@
  * Bracketed parts (`[chủ đề]`) are the places to write over.
  */
 import type { NewDocumentRequest, Planet } from '../api/authoring-api';
-import type { Locale } from '../i18n/i18n';
+import { type ContentLang, type Locale, contentLang } from '../i18n/i18n';
 
 export type TemplateId = 'lab' | 'meeting' | 'runbook' | 'exercise' | 'compare';
 
@@ -19,13 +19,31 @@ interface TemplateText {
   body: string;
 }
 
+/** What a template's card shows: its name and the line under it. */
+export type TemplateCard = Pick<TemplateText, 'name' | 'sub'>;
+
 export interface DocumentTemplate {
   id: TemplateId;
   /** A runbook is a process; the rest are notes. */
   type: NonNullable<NewDocumentRequest['type']>;
   /** The card's colour and the new document's planet. */
   planet: Planet;
-  text: Record<Locale, TemplateText>;
+  /** In the languages texts are written in; a Chinese page drafts in English (contentLang). */
+  text: Record<ContentLang, TemplateText>;
+}
+
+/** The cards of a Chinese page: the draft itself is English, as texts are only written in Vietnamese and English. */
+const ZH_CARDS: Readonly<Record<TemplateId, TemplateCard>> = {
+  lab: { name: '动手实验', sub: '目标 · 准备 · 步骤 · 检查' },
+  meeting: { name: '会议记录', sub: '决定 · 待办事项' },
+  runbook: { name: '故障处理手册', sub: '检查 · 处理 · 通报' },
+  exercise: { name: '练习', sub: '解答 · 复习题' },
+  compare: { name: '比较两种技术', sub: '对比表 · 何时选哪个' },
+};
+
+/** The name and line of a template's card in the page's language. */
+export function templateCard(template: DocumentTemplate, locale: Locale): TemplateCard {
+  return locale === 'zh-CN' ? ZH_CARDS[template.id] : template.text[locale];
 }
 
 const LAB_VI = `## Mục tiêu
@@ -370,6 +388,7 @@ export function templateHref(id: TemplateId): string {
 
 /** The draft a template creates for a reader of `locale`: its outline, title, kind and planet, in that language. */
 export function templateRequest(template: DocumentTemplate, locale: Locale): Pick<NewDocumentRequest, 'type' | 'title' | 'body' | 'lang' | 'planet'> {
-  const text = template.text[locale];
-  return { type: template.type, title: text.title, body: text.body, lang: locale, planet: template.planet };
+  const lang = contentLang(locale);
+  const text = template.text[lang];
+  return { type: template.type, title: text.title, body: text.body, lang, planet: template.planet };
 }

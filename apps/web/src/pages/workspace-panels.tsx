@@ -16,7 +16,7 @@ import {
   fetchSignInInfo,
 } from '../api/workspace-api';
 import { SHELL_PATHS } from '../layout/shell-paths';
-import { useI18n } from '../i18n/i18n';
+import { type Locale, useI18n } from '../i18n/i18n';
 import { clockText, dayText } from './admin-messages';
 import { sizeText } from './settings-messages';
 import type { ScreenTranslate } from './space-messages';
@@ -130,7 +130,7 @@ export function SignInPanel({ t }: { t: T }): ReactNode {
   );
 }
 
-function integrationDetail(t: T, item: Integration, locale: 'vi' | 'en'): string {
+function integrationDetail(t: T, item: Integration, locale: Locale): string {
   const num = (key: string): number => (typeof item.facts[key] === 'number' ? Number(item.facts[key]) : 0);
   switch (item.id) {
     case 'jev':

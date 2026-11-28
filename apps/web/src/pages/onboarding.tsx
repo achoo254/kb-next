@@ -2,7 +2,7 @@ import { writePreference } from '@achoo254/app-shell/preferences';
 import { type CSSProperties, type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { type SpaceListItem, completeOnboarding } from '../api/content-api';
 import { brand } from '../brand';
-import { LOCALES, type Locale, useI18n } from '../i18n/i18n';
+import { LOCALES, type Locale, contentLang, useI18n } from '../i18n/i18n';
 import type { MessageKey } from '../i18n/messages';
 import { Button } from '../ui/button';
 import { GradientTitle } from '../ui/gradient-title';
@@ -136,7 +136,7 @@ export function Onboarding({ spaces, onDone }: OnboardingProps): ReactNode {
     setSaving(true);
     let saved = true;
     try {
-      await completeOnboarding({ lang: locale, interests: spaces.filter((space) => picked.has(space.slug)).map((space) => space.slug) });
+      await completeOnboarding({ lang: contentLang(locale), interests: spaces.filter((space) => picked.has(space.slug)).map((space) => space.slug) });
     } catch {
       saved = false;
     }

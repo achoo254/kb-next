@@ -80,6 +80,8 @@ describe('the share link page', () => {
     expect(html).toContain('<div id="root"></div>');
     // English on ?lang=en.
     expect(metaContent((await page(token, '?lang=en')).html, 'property', 'og:description')[0]).toMatch(/^A text shared on the bilingual English – Vietnamese Knowledge Base/);
+    // Simplified Chinese on ?lang=zh-CN, the shared shell's third language.
+    expect(metaContent((await page(token, '?lang=zh-CN')).html, 'property', 'og:description')[0]).toMatch(/^在英越双语的 Knowledge Base 上分享的一篇文章/);
   });
 
   it('is no opening: fetching the preview logs nothing', async () => {

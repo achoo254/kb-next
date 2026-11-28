@@ -70,7 +70,40 @@ export const paletteEn: Record<PaletteMessageKey, string> = {
   'palette.all': 'See all results',
 };
 
-const PALETTE_TEXT: Record<Locale, Record<PaletteMessageKey, string>> = { vi: paletteVi, en: paletteEn };
+export const paletteZh: Record<PaletteMessageKey, string> = {
+  'palette.label': '快速搜索',
+  'palette.inputLabel': '搜索知识或询问 AI',
+  'palette.placeholder': '搜索知识、文档，或询问 AI…',
+  'palette.meaningPending': 'Jev 正在按语义搜索…',
+  'palette.recent': '最近',
+  'palette.commands': '快捷命令',
+  'palette.command.note': '新建笔记',
+  'palette.command.canvas': '打开画布',
+  'palette.command.ask': '询问 AI',
+  'palette.command.upload': '上传 Office 文件',
+  'palette.ask': '询问 AI：“{query}”',
+  'palette.accent': '正在匹配准确的声调符号 · 不带符号输入可查找所有变体',
+  'palette.keywordGroup': '关键词匹配 · {count} · 按空间',
+  'palette.keywordGroupExact': '“{query}”的精确匹配 · {count} · 按空间',
+  'palette.groupCount': '· {count}',
+  'palette.meaningGroup': '按语义 · Jev',
+  'palette.meaningHint': '用英文提问也能找到越南语文档',
+  'palette.keywordOnly': 'Jev 暂未响应 · 仅显示关键词结果',
+  'palette.none.title': '这里还没有内容',
+  'palette.none.text': '按关键词和语义都没有找到“{query}”。',
+  'palette.none.note': '写一篇关于它的笔记',
+  'palette.failed': '搜索没有响应。按 Enter 重试。',
+  'palette.previewLabel': '预览 · Tab',
+  'palette.open': '打开 · Enter',
+  'palette.hint.move': '移动',
+  'palette.hint.open': '打开',
+  'palette.hint.preview': '预览',
+  'palette.hint.close': '关闭',
+  'palette.free': '关键词 + Jev · 免费',
+  'palette.all': '查看全部结果',
+};
+
+const PALETTE_TEXT: Record<Locale, Record<PaletteMessageKey, string>> = { vi: paletteVi, en: paletteEn, 'zh-CN': paletteZh };
 
 export type PaletteTranslate = ScreenTranslate<PaletteMessageKey>;
 

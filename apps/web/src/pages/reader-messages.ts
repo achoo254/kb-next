@@ -168,7 +168,89 @@ export const readerEn: Record<ReaderMessageKey, string> = {
   'reader.anonymous': 'Anonymous',
 };
 
-const READER_TEXT: Record<Locale, Record<ReaderMessageKey, string>> = { vi: readerVi, en: readerEn };
+export const readerZh: Record<ReaderMessageKey, string> = {
+  'reader.toc': '目录',
+  'reader.textSize': '字号',
+  'reader.textSmaller': '缩小字号',
+  'reader.textLarger': '放大字号',
+  'reader.textSizeValue': '{size}px',
+  'reader.overview': '概览',
+  'reader.comments': '评论',
+  'reader.reviewedBy': '由 {name} 审核',
+  'reader.aiTranslated': 'AI 翻译',
+  'reader.minutes': '阅读约 {count} 分钟',
+  'reader.hasLang': '有{lang}版本',
+  'reader.updated': '更新于 {date}',
+  'reader.translate': '用 AI 翻译',
+  'reader.translateNote': '暂无{lang}版本，当前显示原文；添加你自己的密钥后，AI 即可翻译。',
+  'reader.loading': '正在加载文档',
+  'reader.hidden.title': '该文档暂时隐藏',
+  'reader.hidden.text': '管理员已将此文档从宇宙中隐藏，旧的分享链接也暂时无法打开。',
+  'reader.hidden.action': '返回宇宙',
+  'reader.offline.title': '你当前离线',
+  'reader.offline.text': '尚未加载此文档。请重新联网后再试。',
+  'reader.offline.action': '重试',
+  'reader.offlineBanner': '离线 · 正在阅读 {time} 加载的副本 · AI 已暂停',
+  'reader.actions': '文档操作',
+  'reader.edit': '编辑',
+  'reader.share': '分享',
+  'reader.shareCopied': '链接已复制',
+  'reader.canvas': '画布',
+  'reader.favorite': '收藏',
+  'reader.favoriteOffline': '离线 · 重新联网后才能保存收藏',
+  'reader.favoriteFailed': '收藏未保存 · 请重试',
+  'reader.soon': '即将推出',
+  'reader.ai.title': '用 AI 处理此文档',
+  'reader.ai.explain': '解释这一段',
+  'reader.ai.summarize': '总结',
+  'reader.ai.noKey': '还没有密钥 · AI 需要你自己的密钥，Jev 仍可推荐',
+  'reader.ai.offline': '离线 · AI 已暂停',
+  'reader.ai.needKeyExplain': 'AI 需要你自己的密钥才能解释。Jev 仍会在右侧推荐相关文档。',
+  'reader.ai.needKeySummarize': 'AI 需要你自己的密钥才能总结。Jev 仍会在右侧推荐相关文档。',
+  'reader.ai.addKey': '添加密钥',
+  'reader.ai.withKey': '使用你的 {provider} 密钥 ••••{last4} · Jev 免费核对引用',
+  'reader.ai.off': '此服务器已关闭自带密钥',
+  'reader.ai.result': 'AI 结果',
+  'reader.ai.explainSelection': '解释所选内容',
+  'reader.ai.summarizeSelection': '总结所选内容',
+  'reader.ai.explainPassage': '解释“{title}”这一段',
+  'reader.ai.summarizeDocument': '总结文档',
+  'reader.ai.checked': 'Jev 已核对 {ok}/{total}',
+  'reader.ai.key': '{provider} 密钥 ••••{last4}',
+  'reader.sel.label': '对所选内容的操作',
+  'reader.sel.explain': '解释',
+  'reader.sel.summarize': '总结',
+  'reader.sel.ask': '询问 Copilot',
+  'reader.sel.mark': '高亮',
+  'reader.sel.question': '“{text}”是什么意思？',
+  'reader.backlinks': '反向链接 · {count} 篇文档提到了本文',
+  'reader.backlinksNone': '还没有文档提到本文。',
+  'reader.related': '相关',
+  'reader.relatedBy': '· Jev',
+  'reader.relatedNone': '暂无相关文档。',
+  'reader.relevance': '相关度 {value}',
+  'reader.versions': '版本和动态',
+  'reader.versionsReviewed': '{name} 于 {date} 审核 · {count} 个版本',
+  'reader.versionsEdited': '最后编辑于 {date} · {count} 个版本',
+  'reader.versionRow': 'v{version} · {editor} · {date}',
+  'reader.unknownEditor': '未知',
+  'reader.keys': '快捷键',
+  'reader.keyJk': '切换章节',
+  'reader.commentsCount': '评论 · {count}',
+  'reader.commentsClosed': '文档发布后才能评论。',
+  'reader.commentsNone': '还没有评论。',
+  'reader.commentsFailed': '评论未能加载。',
+  'reader.commentLabel': '写评论',
+  'reader.commentPlaceholder': '写评论…',
+  'reader.commentSend': '发送',
+  'reader.commentSignIn': '登录后评论',
+  'reader.commentSending': '正在发送…',
+  'reader.commentFailed': '评论未能发送，请重试。',
+  'reader.commentTooLong': '评论最多 {max} 个字符。',
+  'reader.anonymous': '匿名',
+};
+
+const READER_TEXT: Record<Locale, Record<ReaderMessageKey, string>> = { vi: readerVi, en: readerEn, 'zh-CN': readerZh };
 
 export function useReaderText(): { t: ScreenTranslate<ReaderMessageKey>; locale: Locale } {
   return useScreenText(READER_TEXT);
@@ -182,13 +264,13 @@ export function shortDate(locale: Locale, iso: string): string {
     const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? '';
     return `${part('day')}/${part('month')}`;
   }
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Ho_Chi_Minh' });
+  return date.toLocaleDateString(locale === 'zh-CN' ? 'zh-CN' : 'en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Ho_Chi_Minh' });
 }
 
 /** "2 giờ trước", "2 hours ago": how long ago, from `now`. */
 export function timeAgo(locale: Locale, iso: string, now: number): string {
   const seconds = Math.round((new Date(iso).getTime() - now) / 1000);
-  const format = new Intl.RelativeTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-GB', { numeric: 'auto' });
+  const format = new Intl.RelativeTimeFormat(locale === 'vi' ? 'vi-VN' : locale === 'zh-CN' ? 'zh-CN' : 'en-GB', { numeric: 'auto' });
   const steps: ReadonlyArray<readonly [Intl.RelativeTimeFormatUnit, number]> = [
     ['year', 365 * 86400],
     ['month', 30 * 86400],

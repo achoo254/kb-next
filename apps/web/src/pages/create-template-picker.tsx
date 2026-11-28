@@ -4,7 +4,7 @@
  * in the phone sheet (M02).
  */
 import type { CSSProperties, ReactNode } from 'react';
-import { DOCUMENT_TEMPLATES, templateHref } from './create-templates';
+import { DOCUMENT_TEMPLATES, templateCard, templateHref } from './create-templates';
 import { useCreateText } from './create-messages';
 import './create-template-picker.css';
 
@@ -13,7 +13,7 @@ export function TemplateCards({ layout }: { layout: 'grid' | 'list' }): ReactNod
   return (
     <ul className="create-templates" data-layout={layout} aria-label={t('create.templatePane.title')} data-id="create-templates">
       {DOCUMENT_TEMPLATES.map((template) => {
-        const text = template.text[locale];
+        const text = templateCard(template, locale);
         const tone = { '--tone': `var(--planet-${template.planet})`, '--tone-deep': `var(--planet-${template.planet}-deep)` } as CSSProperties;
         return (
           <li key={template.id}>

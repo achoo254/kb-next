@@ -8,7 +8,7 @@ import { Fragment, type ReactNode, type RefObject, useCallback, useEffect, useMe
 import { ApiError } from '../api/api-client';
 import { type DocumentView, fetchDocument } from '../api/content-api';
 import { brand } from '../brand';
-import { useI18n } from '../i18n/i18n';
+import { contentLang, useI18n } from '../i18n/i18n';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
 import { useDevice } from '../layout/device';
 import { journeyPath } from '../layout/shell-paths';
@@ -41,7 +41,7 @@ function useDocument(id: string): { load: ReaderLoad; reload(): Promise<void> } 
   const [result, setResult] = useState<{ key: string; load: ReaderLoad } | null>(null);
   const request = useCallback(async (): Promise<ReaderLoad> => {
     try {
-      const view = await fetchDocument(id, locale);
+      const view = await fetchDocument(id, contentLang(locale));
       // A journey is run on its own path (Flow), not read as a text.
       if (view.document.type === 'journey') {
         navigate(journeyPath(id), { replace: true });

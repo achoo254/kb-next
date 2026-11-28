@@ -15,7 +15,7 @@
 import { type CSSProperties, type PointerEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ApiError } from '../api/api-client';
 import { type DocumentView, LANGS, type Lang, fetchDocument } from '../api/content-api';
-import { useI18n } from '../i18n/i18n';
+import { contentLang, useI18n } from '../i18n/i18n';
 import { useDevice } from '../layout/device';
 import { navigate } from '../router/navigation';
 import { BACKDROP_ART } from '../ui/universe-backdrop';
@@ -420,7 +420,7 @@ export function PresentScreen({ id }: { id: string }): ReactNode {
   const { t } = usePresentText();
   const { locale } = useI18n();
   const search = window.location.search;
-  const lang = langOf(search) ?? locale;
+  const lang = langOf(search) ?? contentLang(locale);
   const speaker = new URLSearchParams(search).get('view') === 'speaker';
   const { load, reload } = useDeck(id, lang);
 

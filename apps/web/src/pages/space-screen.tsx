@@ -9,7 +9,7 @@
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { ApiError } from '../api/api-client';
 import { type SpaceDetail, fetchSpace, readErrorOf } from '../api/content-api';
-import { useI18n } from '../i18n/i18n';
+import { contentLang, useI18n } from '../i18n/i18n';
 import { AppShell, type BreadcrumbItem, SHELL_PATHS } from '../layout/app-shell';
 import { ErrorPanel } from './error-screen';
 import { CollectionGrid, DocumentPanel, SpaceLoading } from './space-documents';
@@ -41,7 +41,7 @@ function useSpace(slug: string): { load: SpaceLoad; reload(): Promise<void> } {
   const [result, setResult] = useState<{ key: string; load: SpaceLoad } | null>(null);
   const request = useCallback(async (): Promise<SpaceLoad> => {
     try {
-      return { status: 'ready', detail: await fetchSpace(slug, locale) };
+      return { status: 'ready', detail: await fetchSpace(slug, contentLang(locale)) };
     } catch (error) {
       if (!(error instanceof ApiError)) console.error('space load failed', error);
       return { status: 'failed', error: spaceLoadError(error) };

@@ -103,6 +103,11 @@ describe('signed in through the hoandat.com account', () => {
     expect(authorize.searchParams.get('prompt')).toBe('create');
     expect(authorize.searchParams.get('client_id')).toBe(CLIENT_ID);
     expect(authorize.searchParams.get('ui_locales')).toBe('en');
+    // The shared shell's languages pass through, Simplified Chinese included; anything else asks in Vietnamese.
+    const uiLocales = async (lang: string): Promise<string | null> =>
+      new URL(location(await fetch(`${server.origin}/auth/login?lang=${lang}`, { redirect: 'manual' }))).searchParams.get('ui_locales');
+    expect(await uiLocales('zh-CN')).toBe('zh-CN');
+    expect(await uiLocales('fr')).toBe('vi');
     // Any other value is a plain sign-in.
     const other = new URL(location(await fetch(`${server.origin}/auth/login?signup=yes`, { redirect: 'manual' })));
     expect(other.searchParams.get('prompt')).toBeNull();

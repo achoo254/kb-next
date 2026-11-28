@@ -4,7 +4,7 @@
  */
 import { type ReactNode, useEffect, useState } from 'react';
 import { type SpaceListItem, fetchSpaces } from '../api/content-api';
-import { useI18n } from '../i18n/i18n';
+import { contentLang, useI18n } from '../i18n/i18n';
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { Button } from '../ui/button';
 import { Crystal } from '../ui/crystal';
@@ -68,7 +68,7 @@ export function SpacesScreen(): ReactNode {
                   tint={space.tint}
                   glow={space.glow}
                   name={spaceName(space, locale)}
-                  count={space.caption[locale]}
+                  count={space.caption[contentLang(locale)]}
                   href={spaceHref(space.slug)}
                 />
                 <span className="spaces-planets">{t('spaces.planets', { count: space.collectionCount })}</span>

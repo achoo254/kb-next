@@ -98,7 +98,54 @@ export const memoryEn: Record<MemoryMessageKey, string> = {
   'memory.undo.close': 'Close',
 };
 
-const MEMORY_TEXT: Record<Locale, Record<MemoryMessageKey, string>> = { vi: memoryVi, en: memoryEn };
+export const memoryZh: Record<MemoryMessageKey, string> = {
+  'memory.title': '记忆',
+  'memory.sub':
+    'Chat 中的 AI 会把你告诉它的内容记在这里，下次就不用再问。只有你能查看（系统管理员可以像查看任何私密笔记一样看到，但他们的 AI 看不到）。应用拒绝保存密码、密钥、证件号和账号；你的职业和收入记录在各自的应用中。',
+  'memory.loading': '正在打开记忆…',
+  'memory.failed': '无法加载记忆。',
+  'memory.retry': '重试',
+  'memory.switches': 'AI 如何使用记忆',
+  'memory.paused': '暂停记忆',
+  'memory.paused.sub': '在你重新开启之前，AI 不会保存也不会读取记忆。',
+  'memory.sensitive': '也记住敏感话题',
+  'memory.sensitive.sub': '健康、宗教、政治…… 默认情况下 AI 会识别并跳过这些内容；再次关闭后，AI 将不再读取已保存的敏感话题。',
+  'memory.saveFailed': '未能保存你的选择。请重试。',
+  'memory.general': '通用',
+  'memory.general.sub': '用于所有对话',
+  'memory.chats': '按对话',
+  'memory.chats.sub': '仅用于该对话',
+  'memory.chat': '对话 #{id}',
+  'memory.updated': '{when}编辑',
+  'memory.edit': '编辑',
+  'memory.delete': '删除',
+  'memory.empty': 'AI 还没有记住任何内容。在 Chat 中向 AI 介绍你自己，值得记住的内容会显示在这里。',
+  'memory.groupEmpty': '还没有主题。',
+  'memory.deleteOne.title': '删除主题“{title}”？',
+  'memory.deleteOne.text': 'AI 将忘记这个主题。它会在回收站保留 30 天，你可以在“我的”页面恢复。',
+  'memory.deleteOne.done': '“{title}”已移入回收站。',
+  'memory.deleteAll': '删除全部记忆',
+  'memory.deleteAll.title': '删除全部记忆？',
+  'memory.deleteAll.text': 'AI 记住的所有主题都会进入回收站保留 30 天，之后被永久删除。AI 将从头开始。',
+  'memory.deleteAll.done': '已将 {count} 个主题移入回收站。',
+  'memory.cancel': '取消',
+  'memory.actionFailed': '操作未成功。请重试。',
+  'memory.undo.title': '撤销刚才的记忆？',
+  'memory.undo.text': 'AI 刚刚向你的记忆中保存了一些内容。如果你不希望 AI 记住，请撤销。',
+  'memory.undo.action': '撤销',
+  'memory.undo.working': '正在撤销…',
+  'memory.undo.trashed': '已撤销：新建的主题已移入回收站。',
+  'memory.undo.reverted': '已撤销：刚保存的内容已移除。',
+  'memory.undo.invalid': '此撤销链接无效。',
+  'memory.undo.expired': '此撤销链接已超过 24 小时。你仍然可以在下方编辑或删除该主题。',
+  'memory.undo.used': '这次保存已经撤销过了。',
+  'memory.undo.stale': '该内容已不在主题中（可能你已编辑过）。请在下方查看并编辑主题。',
+  'memory.undo.notFound': '找不到这个主题；可能你已删除它。',
+  'memory.undo.failed': '无法撤销。请重试。',
+  'memory.undo.close': '关闭',
+};
+
+const MEMORY_TEXT: Record<Locale, Record<MemoryMessageKey, string>> = { vi: memoryVi, en: memoryEn, 'zh-CN': memoryZh };
 
 export function useMemoryText(): { t: ScreenTranslate<MemoryMessageKey>; locale: Locale } {
   return useScreenText(MEMORY_TEXT);

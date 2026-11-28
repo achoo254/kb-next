@@ -15,7 +15,7 @@ import { fetchMe, type Me, updateMe } from '../api/content-api';
 import { type KeysResponse, fetchKeys } from '../api/keys-api';
 import { signOut } from '../api/session-api';
 import { IDP_ACCOUNT_URL, brand } from '../brand';
-import { type Locale, useI18n } from '../i18n/i18n';
+import { LOCALES, LOCALE_NAMES, type Locale, contentLang, useI18n } from '../i18n/i18n';
 import { AppShell, SHELL_PATHS, accountInitial } from '../layout/app-shell';
 import { LegalLinks } from '../layout/legal-links';
 import { signedInUser, useSessionState } from '../layout/session-context';
@@ -65,8 +65,6 @@ const THEME_ICON: Record<ThemeChoice, string> = {
   light: 'M12 4V2M12 22v-2M4 12H2M22 12h-2M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z',
   system: 'M3 5h18v11H3zM8 20h8M12 16v4',
 };
-
-const LANGUAGE_NAMES: Record<Locale, string> = { vi: 'Tiếng Việt', en: 'English' };
 
 /**
  * The account as the server keeps it; the screen works from the session and this browser's copy until it answers.
@@ -201,7 +199,7 @@ export function SettingsScreen(): ReactNode {
     writePreference('lang', next, { domain: brand.primaryTenant.domain });
     setLocale(next);
     try {
-      setMe(await updateMe({ lang: next }));
+      setMe(await updateMe({ lang: contentLang(next) }));
     } catch (error) {
       console.warn('language not saved', error);
       setToast(t('settings.saveFailed'));
@@ -291,9 +289,9 @@ export function SettingsScreen(): ReactNode {
         <section className="h03-card h03-look" aria-label={`${t('settings.lang')} · ${t('settings.motion')}`} data-id="settings-look">
           <span className="h03-label">{t('settings.lang')}</span>
           <div role="group" aria-label={t('settings.lang')} className="h03-pair">
-            {(['vi', 'en'] as const).map((l) => (
+            {LOCALES.map((l) => (
               <button key={l} type="button" className="h03-choice h03-lang" aria-pressed={locale === l} onClick={() => void chooseLanguage(l)} data-id={`settings-lang-${l}`}>
-                {LANGUAGE_NAMES[l]}
+                {LOCALE_NAMES[l]}
               </button>
             ))}
           </div>

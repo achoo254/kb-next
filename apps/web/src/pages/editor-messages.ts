@@ -1,5 +1,5 @@
 /** Strings of the editor (board C02) and of creating a note, vi and en. */
-import type { Locale } from '../i18n/i18n';
+import { type Locale, intlLocale } from '../i18n/i18n';
 import { type ScreenTranslate, useScreenText } from './space-messages';
 
 export const editorVi = {
@@ -244,7 +244,127 @@ export const editorEn: Record<EditorMessageKey, string> = {
   'editor.new.failed': 'Could not create the note.',
 };
 
-const EDITOR_TEXT: Record<Locale, Record<EditorMessageKey, string>> = { vi: editorVi, en: editorEn };
+export const editorZh: Record<EditorMessageKey, string> = {
+  'editor.crumbDrafts': '草稿',
+  'editor.untitled': '无标题',
+  'editor.tag.own': '你的 · 私密',
+  'editor.tag.community': '社区',
+  'editor.tag.official': '官方',
+  'editor.toolbar': '编辑工具栏',
+  'editor.save.typing': '正在输入…',
+  'editor.save.saving': '正在保存…',
+  'editor.save.saved': '已于 {time} 保存',
+  'editor.save.offline': '离线 · 已保存在本设备',
+  'editor.save.failed': '未保存',
+  'editor.save.retry': '重试',
+  'editor.save.conflict': '已在别处更改',
+  'editor.save.keepMine': '保留此版本',
+  'editor.save.loadServer': '载入另一个版本',
+  'editor.save.restored': '已重新打开本设备上尚未保存的内容。',
+  'editor.undo': '撤销（⌘Z）',
+  'editor.undoTitle': '撤销 · ⌘Z',
+  'editor.redo': '重做（⇧⌘Z）',
+  'editor.redoTitle': '重做 · ⇧⌘Z',
+  'editor.words': '{words} 字 · 约 {minutes} 分钟读完',
+  'editor.preview': '预览',
+  'editor.submit': '发布',
+  'editor.soon': '即将推出',
+  'editor.titleLabel': '标题',
+  'editor.titlePlaceholder': '简短的标题…',
+  'editor.titleRequired': '发布前请添加标题。',
+  'editor.history': '历史 · v{version}',
+  'editor.body': '正文',
+  'editor.placeholder': '输入 / 插入内容块',
+  'editor.settings': '文档设置',
+  'editor.planet': '文章的星球',
+  'editor.planetColours': '星球颜色',
+  'editor.planet.violet': '紫罗兰',
+  'editor.planet.teal': '青绿',
+  'editor.planet.cyan': '青色',
+  'editor.planet.amber': '琥珀',
+  'editor.planet.emerald': '翡翠绿',
+  'editor.planet.pink': '粉色',
+  'editor.blocks': '插入内容块',
+  'editor.block.paragraph': '段落',
+  'editor.block.heading': '标题',
+  'editor.block.list': '列表',
+  'editor.block.image': '图片',
+  'editor.block.diagram': '图表',
+  'editor.block.table': '表格',
+  'editor.block.office': '嵌入 Office 文件',
+  'editor.block.ai': 'AI 写作',
+  'editor.links': '链接到文档',
+  'editor.links.searching': '正在搜索…',
+  'editor.links.none': '没有标题包含“{query}”的文档。',
+  'editor.links.type': '输入要链接的标题',
+  'editor.origin.official': '官方',
+  'editor.origin.community': '社区',
+  'editor.origin.own': '你的',
+  'editor.origin.ownFile': '你的文件',
+  'editor.steps': '{count} 个步骤的图表：{steps}',
+  'editor.steps.edit': '编辑步骤',
+  'editor.steps.help': '每行一个步骤：先写名称，然后可加“—”和说明。2 到 6 个步骤。',
+  'editor.steps.field': '步骤',
+  'editor.steps.invalid': '请写 2 到 6 个步骤，每个都要有名称。',
+  'editor.image.title': '插入图片',
+  'editor.image.url': '图片地址',
+  'editor.image.alt': '图片描述',
+  'editor.image.invalid': '地址必须以 https:// 开头',
+  'editor.dialog.insert': '插入',
+  'editor.dialog.save': '保存',
+  'editor.dialog.cancel': '取消',
+  'editor.assistant': '写作助手',
+  'editor.assistant.sub': 'AI 用你的密钥写作 · Jev 免费提供建议',
+  'editor.tab.ai': 'AI 写作',
+  'editor.tab.links': '链接',
+  'editor.tab.jev': 'Jev 建议',
+  'editor.key': '{provider} 密钥 ••••{last4} · {model}',
+  'editor.key.none': '还没有自有密钥',
+  'editor.key.off': '此服务器已关闭 AI 写作',
+  'editor.key.needTitle': 'AI 写作需要你的密钥',
+  'editor.key.needText': '添加 OpenAI、Gemini 或 Claude 密钥。密钥经过加密。Jev 的建议依然免费。',
+  'editor.key.open': '打开自有密钥',
+  'editor.key.change': '更换密钥、模型',
+  'editor.ai.continue': '续写',
+  'editor.ai.shorten': '缩短',
+  'editor.ai.outline': '大纲',
+  'editor.ai.explain': '为初学者解释',
+  'editor.ai.label': 'AI 建议',
+  'editor.ai.writing': 'AI 正在写作 · {task}',
+  'editor.ai.done': '完成 · 接受前请检查',
+  'editor.ai.accept': '接受',
+  'editor.ai.discard': '舍弃',
+  'editor.ai.stop': '停止',
+  'editor.ai.accepted': '已插入 · ⌘Z 撤销',
+  'editor.ai.empty': '请先写几个字，让 AI 有所依据。',
+  'editor.ai.rejected': '服务商拒绝了密钥 ••••{last4}。请在自有密钥中检查。',
+  'editor.ai.noCredit': '密钥 ••••{last4} 余额已用完。',
+  'editor.ai.model': '此模型对你的密钥不可用；请在自有密钥中选择其他模型。',
+  'editor.ai.unreadable': '服务器已无法读取你的密钥。请在自有密钥中重新保存。',
+  'editor.ai.cut': '服务商中途停止了，请重试。',
+  'editor.ai.failed': '无法写出内容，请重试。',
+  'editor.ai.busy': '这一分钟内你使用 AI 太多次了。请稍等片刻再试。',
+  'editor.ai.offline': '没有网络连接，无法连接 AI。',
+  'editor.links.in': '被提及 · {count}',
+  'editor.links.out': '链接到 · {count}',
+  'editor.links.inNone': '还没有文档提及这篇文档。',
+  'editor.links.outNone': '输入 [[ 链接到另一篇文档。',
+  'editor.links.loading': '正在加载链接…',
+  'editor.links.failed': '无法加载链接。',
+  'editor.jev.title': 'Jev 建议 · 免费',
+  'editor.jev.text': 'Jev 将直接在编辑器中建议空间、标签和可能的重复内容。尚未开放。',
+  'editor.loading': '正在打开文章…',
+  'editor.notEditable.title': '此文件不在这里编辑',
+  'editor.notEditable.text': 'Office 文件在文件查看器中打开，而不是在编辑器中。',
+  'editor.read': '阅读',
+  'editor.offline.title': '你已离线',
+  'editor.offline.text': '本设备上还没有这篇文章的副本。恢复联网后即可打开。',
+  'editor.offline.retry': '重试',
+  'editor.new.creating': '正在创建笔记…',
+  'editor.new.failed': '无法创建笔记。',
+};
+
+const EDITOR_TEXT: Record<Locale, Record<EditorMessageKey, string>> = { vi: editorVi, en: editorEn, 'zh-CN': editorZh };
 
 export function useEditorText(): { t: ScreenTranslate<EditorMessageKey>; locale: Locale } {
   return useScreenText(EDITOR_TEXT);
@@ -255,8 +375,8 @@ export function savedTime(locale: Locale, iso: string, now: Date = new Date()): 
   const at = new Date(iso);
   const zone = 'Asia/Ho_Chi_Minh';
   const day = (d: Date): string => new Intl.DateTimeFormat('en-CA', { timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
-  const time = new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-GB', { timeZone: zone, hour: '2-digit', minute: '2-digit', hour12: false }).format(at);
+  const time = new Intl.DateTimeFormat(intlLocale(locale), { timeZone: zone, hour: '2-digit', minute: '2-digit', hour12: false }).format(at);
   if (day(at) === day(now)) return time;
-  const date = new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-GB', { timeZone: zone, day: '2-digit', month: '2-digit' }).format(at);
+  const date = new Intl.DateTimeFormat(intlLocale(locale), { timeZone: zone, day: '2-digit', month: '2-digit' }).format(at);
   return `${date} ${time}`;
 }

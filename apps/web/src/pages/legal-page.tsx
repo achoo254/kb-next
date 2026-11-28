@@ -6,7 +6,7 @@
 import { writePreference } from '@achoo254/app-shell/preferences';
 import { type ReactNode, useEffect } from 'react';
 import { brand } from '../brand';
-import { type Locale, format, useI18n } from '../i18n/i18n';
+import { LOCALE_MARKS, format, nextLocale, useI18n } from '../i18n/i18n';
 import { LegalLinks } from '../layout/legal-links';
 import { ScreenPage } from '../layout/screen-page';
 import { Button } from '../ui/button';
@@ -15,7 +15,6 @@ import { LEGAL_DOCS, type LegalKind } from './legal-docs';
 import './legal-page.css';
 
 const SCREEN_CODE: Record<LegalKind, string> = { privacy: 'Privacy', terms: 'Terms' };
-const OTHER_LOCALE: Record<Locale, Locale> = { vi: 'en', en: 'vi' };
 
 /**
  * The page's own `<meta name="description">` while it is open (search engines run the app's script), the app's
@@ -52,7 +51,7 @@ export function LegalPage({ kind }: { kind: LegalKind }): ReactNode {
   usePageDescription(intro);
   useSectionFromAddress();
   const switchLanguage = (): void => {
-    const next = OTHER_LOCALE[locale];
+    const next = nextLocale(locale);
     writePreference('lang', next, { domain: brand.primaryTenant.domain });
     setLocale(next);
   };
@@ -67,7 +66,7 @@ export function LegalPage({ kind }: { kind: LegalKind }): ReactNode {
       actions={
         <>
           <Button variant="ghost" className="legal-lang" aria-label={t('layout.lang')} onClick={switchLanguage} dataId="legal-lang">
-            {locale.toUpperCase()}
+            {LOCALE_MARKS[locale]}
           </Button>
           <Button variant="ghost" href="/" className="legal-home" dataId="legal-home">
             {t('layout.backHome')}

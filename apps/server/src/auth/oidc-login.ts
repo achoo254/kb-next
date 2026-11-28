@@ -35,6 +35,13 @@ function hasControlChar(value: string): boolean {
   return false;
 }
 
+/** The languages of the shared shell; the sign-in link's `lang` is passed to the IdP as `ui_locales`. */
+export const LOGIN_LANGS = ['vi', 'en', 'zh-CN'] as const;
+export type LoginLang = (typeof LOGIN_LANGS)[number];
+export function isLoginLang(value: unknown): value is LoginLang {
+  return LOGIN_LANGS.some((lang) => lang === value);
+}
+
 /**
  * A same-site path to return to, or "/" for anything else (open-redirect guard): the value must start with "/",
  * hold no control character or backslash, and resolve to this origin; what comes back is the resolved path, query

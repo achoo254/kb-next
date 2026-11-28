@@ -1,12 +1,38 @@
 import { readPreferences, subscribePreferences } from '@achoo254/app-shell/preferences';
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { brand } from '../brand';
-import { type MessageKey, type Messages, en, vi } from './messages';
+import { type MessageKey, type Messages, en, vi, zhCN } from './messages';
 
-export const LOCALES = ['vi', 'en'] as const;
+/** The languages of the shared shell, in the order the language choices show them. */
+export const LOCALES = ['vi', 'en', 'zh-CN'] as const;
 export type Locale = (typeof LOCALES)[number];
 
-const DICTIONARIES: Record<Locale, Messages> = { vi, en };
+const DICTIONARIES: Record<Locale, Messages> = { vi, en, 'zh-CN': zhCN };
+
+/** Each language in its own words, never translated (the shell's names). */
+export const LOCALE_NAMES: Readonly<Record<Locale, string>> = { vi: 'Tiếng Việt', en: 'English', 'zh-CN': '中文' };
+
+/** The short mark of the language toggles on the landing and legal pages. */
+export const LOCALE_MARKS: Readonly<Record<Locale, string>> = { vi: 'VI', en: 'EN', 'zh-CN': '中文' };
+
+/** The language after `locale` for the one-button toggles: vi → en → zh-CN → vi. */
+export function nextLocale(locale: Locale): Locale {
+  return LOCALES[(LOCALES.indexOf(locale) + 1) % LOCALES.length] ?? 'vi';
+}
+
+/**
+ * The language of texts (articles, Space names, the account's reading and writing language), which are written in
+ * Vietnamese and English only: a Chinese page reads the English ones.
+ */
+export type ContentLang = 'vi' | 'en';
+export function contentLang(locale: Locale): ContentLang {
+  return locale === 'vi' ? 'vi' : 'en';
+}
+
+/** The BCP 47 tag for `Intl` dates and numbers in `locale`. */
+export function intlLocale(locale: Locale): string {
+  return locale === 'vi' ? 'vi-VN' : locale === 'en' ? 'en-GB' : 'zh-CN';
+}
 
 export type Translate = (key: MessageKey, vars?: Record<string, string | number>) => string;
 
@@ -24,22 +50,29 @@ export function translator(locale: Locale): Translate {
   return (key, vars) => format(dictionary[key], vars);
 }
 
-export const isLocale = (value: unknown): value is Locale => value === 'vi' || value === 'en';
+export const isLocale = (value: unknown): value is Locale => LOCALES.some((locale) => locale === value);
+
+/** Vietnamese and Chinese browser tags pick their page language; English is the rest. */
+const BROWSER_LOCALES: Readonly<Record<string, Locale>> = { vi: 'vi', zh: 'zh-CN' };
 
 /**
- * `?lang=` wins (a shared link), then the language picked in any hoandat.com app (cookie `hd_lang`), then
- * Vietnamese for a browser set to Vietnamese; everyone else reads English.
+ * `?lang=` wins (a shared link), then the language picked in any hoandat.com app (cookie `hd_lang`), then the first
+ * Vietnamese or Chinese language of the browser; everyone else reads English.
  */
 export function initialLocale(search: string, stored: Locale | undefined, browserLanguages: readonly string[]): Locale {
   const fromQuery = new URLSearchParams(search).get('lang');
   if (isLocale(fromQuery)) return fromQuery;
   if (stored) return stored;
-  return browserLanguages.some((tag) => tag.toLowerCase().split('-')[0] === 'vi') ? 'vi' : 'en';
+  for (const tag of browserLanguages) {
+    const match = BROWSER_LOCALES[tag.toLowerCase().split('-')[0] ?? ''];
+    if (match) return match;
+  }
+  return 'en';
 }
 
-/** The language picked in any hoandat.com app (cookie `hd_lang`), if any. */
+/** The language picked in any hoandat.com app (cookie `hd_lang`), if any of this app's. */
 function storedLocale(): Locale | undefined {
-  return readPreferences({ domain: brand.primaryTenant.domain }).lang;
+  return readPreferences({ domain: brand.primaryTenant.domain, locales: LOCALES }).lang;
 }
 
 interface I18n {

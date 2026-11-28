@@ -1,5 +1,5 @@
 /** Strings of "Trạm điều khiển" (board H03, personal settings), vi and en. */
-import type { Locale } from '../i18n/i18n';
+import { type Locale, intlLocale } from '../i18n/i18n';
 import { type ScreenTranslate, useScreenText } from './space-messages';
 
 export const settingsVi = {
@@ -100,7 +100,55 @@ export const settingsEn: Record<SettingsMessageKey, string> = {
   'settings.retry': 'Try again',
 };
 
-const SETTINGS_TEXT: Record<Locale, Record<SettingsMessageKey, string>> = { vi: settingsVi, en: settingsEn };
+export const settingsZh: Record<SettingsMessageKey, string> = {
+  'settings.title': '控制站',
+  'settings.back': '返回宇宙',
+  'settings.account': 'hoandat 账号',
+  'settings.account.noEmail': '暂无邮箱',
+  'settings.account.noName': '你的账号',
+  'settings.apps': '用同一账号切换到其他应用',
+  'settings.apps.open': '打开 {name}',
+  'settings.workspace': '工作区设置',
+  'settings.workspace.badge': '管理员',
+  'settings.lang': '语言',
+  'settings.theme': '外观',
+  'settings.theme.dark': '深色',
+  'settings.theme.light': '浅色',
+  'settings.theme.system': '跟随系统',
+  'settings.theme.follows': '跟随设备：当前为{theme}',
+  'settings.motion': '减少动效',
+  'settings.motion.sub': '星星、轨道、流动线条',
+  'settings.motion.on': '已停止星星闪烁、轨道和流动线条。转场仅保留淡入淡出。',
+  'settings.saveFailed': '尚未保存到服务器。此设备会保留你的选择；请稍后重试。',
+  'settings.view': '打开应用时使用',
+  'settings.view.orbit': '轨道',
+  'settings.view.list': '列表',
+  'settings.view.note': '列表适合屏幕阅读器和性能较低的设备。',
+  'settings.offline': '在此设备上离线保存',
+  'settings.offline.allowed': '/ 允许 {size}',
+  'settings.offline.unknown': '浏览器未提供可用空间信息',
+  'settings.offline.usage': '已用空间',
+  'settings.offline.note': '{files} 个 Office 文件，{drafts} 份未发送的草稿',
+  'settings.offline.cleared': '已清除副本。打开时文件会重新下载。未发送的草稿仍会保留。',
+  'settings.offline.clear': '清除缓存',
+  'settings.offline.clearFailed': '无法清除缓存。请重试。',
+  'settings.keys': 'AI 密钥',
+  'settings.keys.active': '{provider} ••••{last4} · 使用中',
+  'settings.keys.none': '暂无密钥 · 添加后即可使用 AI',
+  'settings.keys.loading': '正在检查你的密钥…',
+  'settings.memory': 'AI 的记忆',
+  'settings.logout': '退出登录',
+  'settings.logout.sub': '在此浏览器中退出 {app}',
+  'settings.logout.title': '离开控制站？',
+  'settings.logout.text': '你将在此浏览器中退出 {app}。离线草稿仍保留在此设备上。',
+  'settings.logout.stay': '留下',
+  'settings.logout.failed': '无法退出登录。请重试。',
+  'settings.delete': '在 {host} 删除你的账号',
+  'settings.failed': '无法加载你的设置。',
+  'settings.retry': '重试',
+};
+
+const SETTINGS_TEXT: Record<Locale, Record<SettingsMessageKey, string>> = { vi: settingsVi, en: settingsEn, 'zh-CN': settingsZh };
 
 export function useSettingsText(): { t: ScreenTranslate<SettingsMessageKey>; locale: Locale } {
   return useScreenText(SETTINGS_TEXT);
@@ -109,6 +157,6 @@ export function useSettingsText(): { t: ScreenTranslate<SettingsMessageKey>; loc
 /** "512 MB", "1,2 GB": a size in the page's language. */
 export function sizeText(bytes: number, locale: Locale): string {
   const mb = bytes / (1024 * 1024);
-  const number = new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-GB', { maximumFractionDigits: mb >= 1024 ? 1 : 0 });
+  const number = new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: mb >= 1024 ? 1 : 0 });
   return mb >= 1024 ? `${number.format(mb / 1024)} GB` : `${number.format(mb)} MB`;
 }

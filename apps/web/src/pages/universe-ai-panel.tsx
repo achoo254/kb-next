@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { DocumentSummary, SpaceListItem } from '../api/content-api';
-import { type Locale, type Translate, useI18n } from '../i18n/i18n';
+import { type Locale, type Translate, contentLang, useI18n } from '../i18n/i18n';
 import { AiAvatar } from '../ui/ai-avatar';
 import { AskInput } from '../ui/ask-input';
 import { ChatBubble } from '../ui/chat-bubble';
@@ -55,7 +55,7 @@ function PanelIntro({ spaces, recent, question, onAsk }: Omit<UniversePanelProps
             <li key={space.slug}>
               <a href={spaceHref(space.slug)} className="universe-ai-space">
                 {spaceName(space, locale)}
-                <span className="universe-ai-space-count">{space.caption[locale]}</span>
+                <span className="universe-ai-space-count">{space.caption[contentLang(locale)]}</span>
               </a>
             </li>
           ))}

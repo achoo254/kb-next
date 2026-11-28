@@ -1,9 +1,12 @@
 import { Editor } from '@tiptap/core';
 import { afterEach, describe, expect, it } from 'vitest';
 import { LOCALES } from '../i18n/i18n';
-import { DOCUMENT_TEMPLATES, findTemplate, templateHref, templateRequest } from './create-templates';
+import { DOCUMENT_TEMPLATES, findTemplate, templateCard, templateHref, templateRequest } from './create-templates';
 import { readMarkdown, writeMarkdown } from './editor-markdown';
 import { editorExtensions } from './editor-schema';
+
+/** The languages texts are written in (a Chinese page drafts in English). */
+const CONTENT_LANGS = ['vi', 'en'] as const;
 
 let editor: Editor | null = null;
 
@@ -20,11 +23,16 @@ describe('the built-in templates', () => {
   it('are the lab, meeting notes, incident runbook, exercise and comparison, each in Vietnamese and English', () => {
     expect(DOCUMENT_TEMPLATES.map((t) => t.id)).toEqual(['lab', 'meeting', 'runbook', 'exercise', 'compare']);
     for (const template of DOCUMENT_TEMPLATES) {
-      for (const locale of LOCALES) {
+      for (const locale of CONTENT_LANGS) {
         const text = template.text[locale];
         expect(text.name.trim()).not.toBe('');
         expect(text.title).toMatch(/\[.+\]/);
         expect(headings(text.body).length).toBeGreaterThanOrEqual(4);
+      }
+      // a card in every language of the page, Simplified Chinese included
+      for (const locale of LOCALES) {
+        expect(templateCard(template, locale).name.trim()).not.toBe('');
+        expect(templateCard(template, locale).sub.trim()).not.toBe('');
       }
       // the same outline in both languages
       expect(headings(template.text.vi.body)).toHaveLength(headings(template.text.en.body).length);
@@ -56,11 +64,14 @@ describe('the built-in templates', () => {
     if (!meeting) throw new Error('no meeting template');
     expect(templateRequest(meeting, 'en')).toEqual({ type: 'note', title: 'Meeting: [topic] · [date]', body: meeting.text.en.body, lang: 'en', planet: 'cyan' });
     expect(templateRequest(meeting, 'vi').lang).toBe('vi');
+    // texts are written in Vietnamese and English only: a Chinese page drafts in English, under a Chinese card
+    expect(templateRequest(meeting, 'zh-CN')).toEqual(templateRequest(meeting, 'en'));
+    expect(templateCard(meeting, 'zh-CN').name).toBe('会议记录');
   });
 
   it('open in the editor with every section, numbered list and table kept', () => {
     for (const template of DOCUMENT_TEMPLATES) {
-      for (const locale of LOCALES) {
+      for (const locale of CONTENT_LANGS) {
         const body = template.text[locale].body;
         editor?.destroy();
         editor = new Editor({ extensions: editorExtensions(''), content: '' });

@@ -121,6 +121,62 @@ export const spaceEn: Record<SpaceMessageKey, string> = {
   'progress.label': '{percent}% read',
 };
 
+export const spaceZh: Record<SpaceMessageKey, string> = {
+  'space.kicker.public': '空间 · 官方',
+  'space.kicker.personal': '空间 · 私密',
+  'space.collectionCount': '{count} 个合集',
+  'space.views': '空间查看方式',
+  'space.view.overview': '概览',
+  'space.view.canvas': '画布',
+  'space.view.graph': '图谱',
+  'space.askCopilot': '向 Copilot 询问这个空间',
+  'space.collections': '合集',
+  'space.documentCount': '{count} 篇文档',
+  'space.documents': '合集中的文档',
+  'space.allDocuments': '文档',
+  'space.filter': '按来源筛选',
+  'space.filter.all': '全部',
+  'space.filter.official': '官方',
+  'space.filter.community': '社区',
+  'space.sortInProgress': '排序：未读完的优先',
+  'space.loading': '正在打开空间…',
+  'space.loadingLabel': '正在加载空间',
+  'space.empty.title': '这个合集还是空的',
+  'space.empty.text': '写下第一篇文章。公开发布后，文章会在这里展示给所有人。',
+  'space.empty.action': '写第一篇文章',
+  'space.filteredEmpty': '没有符合此筛选条件的文档。',
+  'space.members': '成员与权限',
+  'space.membersLabel': '成员和权限',
+  'space.who.read': '谁可以阅读',
+  'space.who.contribute': '贡献',
+  'space.read.public': '所有已登录的人',
+  'space.read.personal': '仅你自己',
+  'space.contribute.public': '成员自行撰写并发布文章',
+  'space.contribute.personal': '仅你自己',
+  'space.related': '相关空间',
+  'space.relatedNote': '因为两个空间的文档互相链接，所以与此空间相连。',
+  'space.relatedLabel': '{name}，{caption}，相关度 {relevance}',
+  'space.relatedNone': '还没有空间与此空间链接。',
+  'role.owner': '所有者',
+  'role.admin': '管理员',
+  'role.member': '成员',
+  'kind.lab': 'Lab',
+  'kind.note': '笔记',
+  'kind.process': '流程',
+  'kind.office': '文件',
+  'kind.officeWord': 'Word 文件',
+  'kind.officeExcel': 'Excel 文件',
+  'kind.officePowerPoint': 'PowerPoint 文件',
+  'kind.officePdf': 'PDF 文件',
+  'kind.web': '网页',
+  'kind.journey': '路径',
+  'kind.yours': '你的',
+  'progress.unread': '未读',
+  'progress.done': '已读',
+  'progress.percent': '{percent}%',
+  'progress.label': '已读 {percent}%',
+};
+
 export type ScreenTranslate<K extends string> = (key: K, vars?: Record<string, string | number>) => string;
 
 /** A translate function over a screen's own vi/en strings, in the page's language. */
@@ -132,7 +188,7 @@ export function useScreenText<K extends string>(dictionaries: Record<Locale, Rec
   }, [dictionaries, locale]);
 }
 
-const SPACE_TEXT: Record<Locale, Record<SpaceMessageKey, string>> = { vi: spaceVi, en: spaceEn };
+const SPACE_TEXT: Record<Locale, Record<SpaceMessageKey, string>> = { vi: spaceVi, en: spaceEn, 'zh-CN': spaceZh };
 
 export function useSpaceText(): { t: ScreenTranslate<SpaceMessageKey>; locale: Locale } {
   return useScreenText(SPACE_TEXT);

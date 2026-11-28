@@ -36,6 +36,7 @@ import { ILLUSTRATIONS } from '../ui/art';
 import { Button } from '../ui/button';
 import { Icon } from '../ui/icon';
 import { Modal } from '../ui/modal';
+import type { Locale } from '../i18n/i18n';
 import { ErrorPanel } from './error-screen';
 import { type ReaderFailure, readerLoadError } from './reader-states';
 import { type ShareMessageKey, isToday, shareDate, shareTime, useShareText } from './share-messages';
@@ -59,7 +60,7 @@ export function shareState(view: ShareView): ShareState {
 }
 
 /** The words of one history line (C18 "Lịch sử truy cập"); `opens`: the 7-day count, on the latest opening only. */
-export function historyText(t: Translate, line: ShareHistoryLine, now: Date, locale: 'vi' | 'en', opens: number | null): { title: string; sub: string } {
+export function historyText(t: Translate, line: ShareHistoryLine, now: Date, locale: Locale, opens: number | null): { title: string; sub: string } {
   const time = shareTime(locale, line.at, now);
   const by = line.by ?? '';
   const byLine = by ? t('share.history.by', { by, time }) : time;

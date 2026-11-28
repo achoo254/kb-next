@@ -23,6 +23,7 @@ import {
 import { AppShell, SHELL_PATHS } from '../layout/app-shell';
 import { ORB_ART } from '../ui/art';
 import { Icon } from '../ui/icon';
+import { type Locale, intlLocale } from '../i18n/i18n';
 import { FileBadge } from './file-badge';
 import { type OfficeMessageKey, clockTime, fileSize, useOfficeText } from './office-messages';
 import { spaceName } from './space-panels';
@@ -252,7 +253,7 @@ interface Destination {
   collection: string;
 }
 
-function placeOf(locale: 'vi' | 'en', upload: Upload, personalName: string): string {
+function placeOf(locale: Locale, upload: Upload, personalName: string): string {
   const space = upload.space.kind === 'personal' ? personalName : spaceName(locale, upload.space);
   return upload.collection ? `${space} › ${spaceName(locale, upload.collection)}` : space;
 }
@@ -271,7 +272,7 @@ function SuggestionRow({ upload, onApplied }: SuggestionProps): ReactNode {
   if (!suggestions) return null;
   const target = suggestions.collection;
   const place = target ? `${spaceName(locale, target.space)} › ${spaceName(locale, target)}` : null;
-  const probability = target ? target.probability.toLocaleString(locale === 'vi' ? 'vi-VN' : 'en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+  const probability = target ? target.probability.toLocaleString(intlLocale(locale), { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
   const accept = async (): Promise<void> => {
     setState('sending');
     try {

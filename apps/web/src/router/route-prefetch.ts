@@ -12,6 +12,7 @@ import { fetchCanvases } from '../api/canvas-api';
 import { type Lang, fetchDocument, fetchMe, fetchRecent, fetchSpace, fetchSpaces } from '../api/content-api';
 import { fetchGraph } from '../api/graph-api';
 import { fetchInbox } from '../api/notifications-api';
+import { contentLang, isLocale } from '../i18n/i18n';
 import { SPACE_PARAM } from '../pages/graph-screen';
 import { langOf } from '../pages/present-screen';
 import { matchRoute, routeParam } from '../routes';
@@ -39,10 +40,10 @@ const LOADERS: Readonly<Partial<Record<string, Loader>>> = {
   C20: () => fetchInbox(),
 };
 
-/** The language the screens ask in: the page's, as the I18nProvider sets it on <html>. */
+/** The language the screens ask in: the texts' language of the page's, as the I18nProvider sets it on <html>. */
 function pageLang(): Lang | undefined {
   const lang = typeof document === 'undefined' ? '' : document.documentElement.lang;
-  return lang === 'vi' || lang === 'en' ? lang : undefined;
+  return isLocale(lang) ? contentLang(lang) : undefined;
 }
 
 /**

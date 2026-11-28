@@ -1,5 +1,5 @@
 import type { SpaceListItem } from '../api/content-api';
-import type { Locale } from '../i18n/i18n';
+import { type Locale, contentLang } from '../i18n/i18n';
 import type { SceneSpace } from '../layout/universe-scene';
 import { SPACE_KINDS, type SpaceKind } from '../ui/art';
 
@@ -36,7 +36,7 @@ export function sceneSpaces(spaces: readonly SpaceListItem[], locale: Locale): S
     tint: space.tint,
     glow: space.glow,
     name: spaceName(space, locale),
-    count: space.caption[locale],
+    count: space.caption[contentLang(locale)],
     href: spaceHref(space.slug),
   }));
 }

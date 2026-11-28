@@ -35,11 +35,12 @@ export const PAGE_CSP =
 /** The Permissions-Policy of `location /` in the same nginx file, sent here too (og-page.test.ts keeps them equal). */
 export const PAGE_PERMISSIONS = 'camera=(), microphone=(), geolocation=()';
 
-type PreviewLocale = 'vi' | 'en';
+type PreviewLocale = 'vi' | 'en' | 'zh-CN';
 
 const PREVIEW_TEXT: Record<PreviewLocale, { title: (doc: string) => string; description: string }> = {
   vi: { title: (doc) => `${doc} · ${brandConfig.appName}`, description: `Một bài được chia sẻ trên ${brandConfig.appName} song ngữ Anh – Việt` },
   en: { title: (doc) => `${doc} · ${brandConfig.appName}`, description: `A text shared on the bilingual English – Vietnamese ${brandConfig.appName}` },
+  'zh-CN': { title: (doc) => `${doc} · ${brandConfig.appName}`, description: `在英越双语的 ${brandConfig.appName} 上分享的一篇文章` },
 };
 
 const HTML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -116,7 +117,7 @@ export function defaultTemplateLoader(config: ServerConfig): TemplateLoader {
 }
 
 function previewLocale(req: Request): PreviewLocale {
-  return req.query.lang === 'en' ? 'en' : 'vi';
+  return req.query.lang === 'en' || req.query.lang === 'zh-CN' ? req.query.lang : 'vi';
 }
 
 export interface OgPageOptions {

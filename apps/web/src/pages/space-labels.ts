@@ -3,7 +3,7 @@
  * progress, how related it is. One place for both screens so a card and a link say the same thing.
  */
 import type { DocumentSummary, Lang } from '../api/content-api';
-import type { Locale } from '../i18n/i18n';
+import { type Locale, intlLocale } from '../i18n/i18n';
 import type { ContentOrigin } from '../ui/origin-tag';
 import type { ScreenTranslate, SpaceMessageKey } from './space-messages';
 
@@ -49,7 +49,7 @@ export function progressText(t: ScreenTranslate<SpaceMessageKey>, progress: numb
 /** A relevance of 0–100 as the boards write it: 0,92 in Vietnamese, 0.92 in English. */
 export function relevanceText(locale: Locale, relevance: number): string {
   const share = Math.min(100, Math.max(0, relevance)) / 100;
-  return share.toLocaleString(locale === 'vi' ? 'vi-VN' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return share.toLocaleString(intlLocale(locale), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /** Languages as the boards list them: "VI · EN". */

@@ -64,7 +64,13 @@ describe('LandingPage', () => {
 
   it('switches the language from the top bar', () => {
     renderWithI18n(<LandingPage session={OUT} />);
+    // vi → en → zh-CN → vi: from English the next language is Simplified Chinese, then Vietnamese.
     fireEvent.click(screen.getByRole('button', { name: 'Change language (now English)' }));
+    expect(screen.getByRole('button', { name: '切换语言（当前：中文）' }).textContent).toBe('中文');
+    expect(document.cookie).toContain('hd_lang=zh-CN');
+    expect(document.documentElement.lang).toBe('zh-CN');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('知识宇宙\n每个答案都有出处');
+    fireEvent.click(screen.getByRole('button', { name: '切换语言（当前：中文）' }));
     expect(screen.getByRole('button', { name: 'Đổi ngôn ngữ (đang dùng Tiếng Việt)' }).textContent).toBe('VI');
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Vũ trụ tri thức\nhỏi gì cũng có nguồn');
   });

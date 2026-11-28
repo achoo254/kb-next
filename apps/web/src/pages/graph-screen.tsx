@@ -6,6 +6,7 @@
  * (X02 panels). Without `space`, the first Space of the Universe opens.
  */
 import { useDevice } from '../layout/device';
+import { contentLang } from '../i18n/i18n';
 import { usePhoneText } from './phone-messages';
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiError, NETWORK_ERROR } from '../api/api-client';
@@ -121,7 +122,7 @@ export function GraphScreen(): ReactNode {
   const phone = usePhoneText();
   const device = useDevice();
   const slug = useSpaceSlug();
-  const { load, reload } = useGraph(slug === 'none' ? null : slug, locale);
+  const { load, reload } = useGraph(slug === 'none' ? null : slug, contentLang(locale));
   const graph = load.status === 'ready' ? load.graph : null;
 
   const [filter, setFilter] = useState<GraphFilter>(NO_FILTER);
@@ -174,7 +175,7 @@ export function GraphScreen(): ReactNode {
     const node = selectedNode.id;
     setSuggestions({ status: 'loading', node });
     try {
-      const items = await fetchEdgeSuggestions(node, locale);
+      const items = await fetchEdgeSuggestions(node, contentLang(locale));
       setSuggestions({ status: 'ready', node, items });
     } catch (error) {
       setSuggestions({ status: 'failed', node, message: requestMessage(error, 'graph.suggest.failed') });

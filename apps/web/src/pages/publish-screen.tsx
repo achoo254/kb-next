@@ -24,6 +24,7 @@ import { PhoneShell } from '../layout/phone-shell';
 import { previewPath, sharePagePath, submitPath } from '../layout/shell-paths';
 import { CRYSTAL_ART, ILLUSTRATIONS, ORB_ART } from '../ui/art';
 import { RimPanel, SheetHandle } from '../ui/rim-panel';
+import type { Locale } from '../i18n/i18n';
 import { usePhoneText } from './phone-messages';
 import { Icon } from '../ui/icon';
 import { ErrorPanel } from './error-screen';
@@ -97,7 +98,7 @@ function firstLine(view: DocumentView): string {
   return line && line.length > 120 ? `${line.slice(0, 119).trimEnd()}…` : (line ?? '');
 }
 
-function spaceName(space: { nameVi: string; nameEn: string }, locale: Lang): string {
+function spaceName(space: { nameVi: string; nameEn: string }, locale: Locale): string {
   return locale === 'vi' ? space.nameVi : space.nameEn;
 }
 

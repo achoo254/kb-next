@@ -1,7 +1,7 @@
 import { type CSSProperties, type PointerEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { type DocumentSummary, type SpaceDetail, type SpaceListItem, fetchSpace } from '../api/content-api';
 import { gateHref } from '../api/session-api';
-import { type Locale, useI18n } from '../i18n/i18n';
+import { type Locale, contentLang, useI18n } from '../i18n/i18n';
 import { PHONE_BOARD_WIDTH, PhoneShell, usePhoneScale } from '../layout/phone-shell';
 import { signedInUser, useSessionState } from '../layout/session-context';
 import { SHELL_PATHS, journeyPath } from '../layout/shell-paths';
@@ -120,7 +120,7 @@ function useSpaceSheet(slug: string | null, locale: Locale): SheetLoad | null {
   useEffect(() => {
     if (!slug) return undefined;
     let live = true;
-    fetchSpace(slug, locale)
+    fetchSpace(slug, contentLang(locale))
       .then((detail) => live && setLoad({ key, status: 'ready', detail, tally: tallySpace(detail) }))
       .catch(() => live && setLoad({ key, status: 'failed' }));
     return () => {
@@ -152,7 +152,7 @@ function SpaceSheet({ planet, onClose }: { planet: PhonePlanet | undefined; onCl
   const space = planet?.space;
   const detail = load?.status === 'ready' ? load.detail : null;
   const tally = load?.status === 'ready' ? load.tally : null;
-  const line = detail ? ((locale === 'vi' ? detail.space.descriptionVi : detail.space.descriptionEn) ?? space?.caption[locale]) : space?.caption[locale];
+  const line = detail ? ((locale === 'vi' ? detail.space.descriptionVi : detail.space.descriptionEn) ?? space?.caption[contentLang(locale)]) : space?.caption[contentLang(locale)];
   const journey = tally?.documents.find((doc) => doc.type === 'journey');
   const texts = tally?.documents.filter((doc) => doc.type !== 'journey').slice(0, 6) ?? [];
   const chips: Array<{ key: keyof Omit<SpaceTally, 'documents'>; label: PhoneMessageKey }> = [

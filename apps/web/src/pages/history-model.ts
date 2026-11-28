@@ -1,6 +1,6 @@
 /** How C17 tells each event: its sentence, who did it, its avatar, tag and filter, and the default comparison. */
 import type { HistoryEvent } from '../api/history-api';
-import type { Locale } from '../i18n/i18n';
+import { type Locale, intlLocale } from '../i18n/i18n';
 import type { HistoryMessageKey } from './history-messages';
 import type { ScreenTranslate } from './space-messages';
 
@@ -88,7 +88,7 @@ export function pickVersion(pair: [number, number], version: number): [number, n
 
 /** "03/11 21:40" in Asia/Saigon. */
 export function eventTime(locale: Locale, iso: string): string {
-  const parts = new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-GB', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(iso));
+  const parts = new Intl.DateTimeFormat(intlLocale(locale), { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(iso));
   const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? '';
   return `${part('day')}/${part('month')} ${part('hour')}:${part('minute')}`;
 }

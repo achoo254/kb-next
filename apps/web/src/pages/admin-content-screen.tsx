@@ -14,6 +14,7 @@ import { readDefaultView } from '../ui/display-prefs';
 import { Icon } from '../ui/icon';
 import { Loader } from '../ui/loader';
 import { Toast } from '../ui/toast';
+import type { Locale } from '../i18n/i18n';
 import { dayText, useAdminText } from './admin-messages';
 import './admin-screens.css';
 
@@ -75,7 +76,7 @@ export interface Cluster {
  * last sits in the middle, larger. Spaces past the slots are
  * left out of the field (the list view has them all).
  */
-export function clustersOf(items: readonly PublishedItem[], locale: 'vi' | 'en'): Cluster[] {
+export function clustersOf(items: readonly PublishedItem[], locale: Locale): Cluster[] {
   const bySpace = new Map<string, PublishedItem[]>();
   for (const item of items) bySpace.set(item.space.slug, [...(bySpace.get(item.space.slug) ?? []), item]);
   const ordered = [...bySpace.values()].sort((a, b) => b.length - a.length);

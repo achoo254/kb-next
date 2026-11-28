@@ -74,7 +74,42 @@ export const translateEn: Record<TranslateMessageKey, string> = {
   'translate.back': 'Back to the original',
 };
 
-const TRANSLATE_TEXT: Record<Locale, Record<TranslateMessageKey, string>> = { vi: translateVi, en: translateEn };
+export const translateZh: Record<TranslateMessageKey, string> = {
+  'translate.badge': 'AI 翻译 · 尚未审核',
+  'translate.progress': '翻译进度',
+  'translate.stop': '停止',
+  'translate.read': '阅读译文',
+  'translate.again': '重新翻译',
+  'translate.openKeys': '打开私有密钥',
+  'translate.original': '原文 · {lang}',
+  'translate.originalLabel': '{lang}原文',
+  'translate.translation': '译文 · {lang}',
+  'translate.translationLabel': '{lang}译文',
+  'translate.lang.vi': '越南语',
+  'translate.lang.en': '英语',
+  'translate.by': '{model} · 密钥 ••••{last4}',
+  'translate.loading': '正在打开文档',
+  'translate.noKey.title': '添加密钥后才能翻译',
+  'translate.noKey.text': '翻译使用你自己的模型（OpenAI、Gemini 或 Claude）。这篇文档约 {words} 字。',
+  'translate.off.title': 'AI 翻译已关闭',
+  'translate.off.text': '此服务器尚未启用私有密钥，因此无法翻译。原文仍可正常阅读。',
+  'translate.done': '翻译完成，已保存为仅你可见的草稿。',
+  'translate.stopped': '已停止。已翻译的部分未保存。',
+  'translate.error.rejected': '服务商拒绝了你的密钥。请在私有密钥中修改后重新翻译。',
+  'translate.error.noCredit': '你的密钥额度已用完。请充值或更换密钥后重新翻译。',
+  'translate.error.unreadable': '服务器无法再读取你的密钥。请在私有密钥中重新保存后再翻译。',
+  'translate.error.tooLong': '这篇文档太长，无法一次翻译完。',
+  'translate.error.model': '你的密钥无法使用所选模型。请在私有密钥中选择其他模型后重新翻译。',
+  'translate.error.provider': '服务商中途停止。已翻译的部分未保存，请重试。',
+  'translate.error.rateLimited': '你一分钟内使用 AI 过于频繁。请稍等片刻再翻译。',
+  'translate.error.network': '连接中途中断。已翻译的部分未保存。',
+  'translate.error.notTranslatable': '这篇文档是文件，暂时无法用 AI 翻译。',
+  'translate.error.sameLanguage': '这篇文档已经是{lang}。',
+  'translate.error.other': '暂时无法翻译，请重试。',
+  'translate.back': '回到原文',
+};
+
+const TRANSLATE_TEXT: Record<Locale, Record<TranslateMessageKey, string>> = { vi: translateVi, en: translateEn, 'zh-CN': translateZh };
 
 export function useTranslateText(): { t: ScreenTranslate<TranslateMessageKey>; locale: Locale } {
   return useScreenText(TRANSLATE_TEXT);

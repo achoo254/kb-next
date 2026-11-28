@@ -22,6 +22,7 @@ import { OriginTag } from '../ui/origin-tag';
 import { RimPanel } from '../ui/rim-panel';
 import { Skeleton } from '../ui/skeleton';
 import { Tooltip } from '../ui/tooltip';
+import { type Locale, contentLang } from '../i18n/i18n';
 import { sourceHref, sourceTitle } from './copilot-answer';
 import { copilotHref, readCopilotLink, sameScope } from './copilot-links';
 import { type CopilotMessageKey, useCopilotText } from './copilot-messages';
@@ -70,7 +71,7 @@ export function historyGroups(items: readonly HistoryItem[], now: Date = new Dat
   return (['today', 'yesterday', 'earlier'] as const).filter((key) => groups[key].length > 0).map((key) => ({ key, items: groups[key] }));
 }
 
-function documentChips(view: DocumentView, t: Translate, locale: 'vi' | 'en'): ScopeChip[] {
+function documentChips(view: DocumentView, t: Translate, locale: Locale): ScopeChip[] {
   const doc = view.document;
   const chips: ScopeChip[] = [
     { scope: { kind: 'universe' }, label: t('copilot.scope.universe') },
@@ -102,8 +103,8 @@ function useScopeContext(scope: AskScope, from: string | undefined): ScopeContex
       if (!(error instanceof ApiError)) console.error('copilot scope load failed', error);
       done({});
     };
-    if (documentId) fetchDocument(documentId, locale).then((view) => done({ view }), failed);
-    else if (spaceSlug) fetchSpace(spaceSlug, locale).then((space) => done({ spaceName: spaceName(locale, space.space) }), failed);
+    if (documentId) fetchDocument(documentId, contentLang(locale)).then((view) => done({ view }), failed);
+    else if (spaceSlug) fetchSpace(spaceSlug, contentLang(locale)).then((space) => done({ spaceName: spaceName(locale, space.space) }), failed);
     return () => {
       current = false;
     };

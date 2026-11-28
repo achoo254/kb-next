@@ -6,7 +6,7 @@
 import type { MyDocument, TrashedDocument } from '../api/authoring-api';
 import type { CanvasListItem } from '../api/canvas-api';
 import type { CollectionBrief, DocumentSummary, SpaceBrief } from '../api/content-api';
-import type { Locale } from '../i18n/i18n';
+import { type Locale, intlLocale } from '../i18n/i18n';
 
 export const MINE_TABS = ['universe', 'recent', 'favorites', 'trash'] as const;
 export type MineTab = (typeof MINE_TABS)[number];
@@ -215,7 +215,7 @@ export function ago(locale: Locale, iso: string, now: number, unit: 'week' | 'da
 /** `day`: never in weeks (a deletion counts down in days: "Xoá 27 ngày trước · còn 3 ngày"). */
 function relative(locale: Locale, iso: string, now: number, largest: 'week' | 'day'): string {
   const seconds = Math.round((new Date(iso).getTime() - now) / 1000);
-  const format = new Intl.RelativeTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-GB', { numeric: 'auto' });
+  const format = new Intl.RelativeTimeFormat(intlLocale(locale), { numeric: 'auto' });
   const steps: ReadonlyArray<readonly [Intl.RelativeTimeFormatUnit, number]> = [
     ['year', 365 * 86400],
     ['month', 30 * 86400],

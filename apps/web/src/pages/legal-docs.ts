@@ -1,5 +1,5 @@
 /**
- * The text of /privacy and /terms in Vietnamese and English. `{app}` is the brand name (filled by `format`); hosts and
+ * The text of /privacy and /terms in Vietnamese, English and Simplified Chinese. `{app}` is the brand name (filled by `format`); hosts and
  * the account name come from brand.ts. Every duration the server enforces is printed from apps/server/src/retention.ts,
  * so the page says what the code does. The facts behind the rest: docs/settings-and-roles.md (what deleting your data
  * removes and keeps), docs/deployment-guide.md ("Key riêng", "Link chia sẻ", "Sao lưu và khôi phục").
@@ -40,9 +40,9 @@ export interface LegalDoc {
 const { account, idp, host } = BRAND_WORDS;
 
 /** Where a reader asks questions (the ecosystem's page, as on the other hoandat apps). */
-const CONTACT = { vi: 'Trang Facebook Hoandat Apps', en: 'the Hoandat Apps Facebook Page' } as const;
+const CONTACT = { vi: 'Trang Facebook Hoandat Apps', en: 'the Hoandat Apps Facebook Page', 'zh-CN': 'Hoandat Apps 的 Facebook 主页' } as const;
 
-const UPDATED = { vi: 'Cập nhật ngày 13/11/2026', en: 'Last updated 13 November 2026' } as const;
+const UPDATED = { vi: 'Cập nhật ngày 13/11/2026', en: 'Last updated 13 November 2026', 'zh-CN': '最后更新：2026 年 11 月 13 日' } as const;
 
 /** Where an account is deleted: the hoandat account page, at its deletion section (auth-next ADR 0018). */
 const ACCOUNT_DELETE_URL = `${IDP_ACCOUNT_URL}#account-delete`;
@@ -311,6 +311,138 @@ const PRIVACY_EN: LegalDoc = {
   ],
 };
 
+const PRIVACY_ZH: LegalDoc = {
+  title: '隐私',
+  updated: UPDATED['zh-CN'],
+  intro: `{app}（${host}）是 ${account} 生态系统中的英越双语知识库，由一名独立开发者运营。本页说明应用保存什么、把什么发送到哪里、保存多久，以及你如何删除自己的数据。`,
+  sections: [
+    {
+      id: 'account',
+      heading: '你的账号与登录',
+      items: [
+        `你通过 ${idp} 使用 ${account} 账号登录，这个账号由各个 ${account} 应用共用。{app} 从不接触你的密码。`,
+        '应用请求 "openid profile email" 权限范围，获得账号标识、显示名称、邮箱和头像地址。这些信息与你的账号一起保存，并在每次登录时更新。应用不会给你发邮件。',
+        '头像由你的浏览器直接从其存放处（Google 或 GitHub）加载，应用不保存副本。',
+        '应用还保存你的设置：语言、浅色或深色主题、减少动态效果、开始使用时选择的空间，以及你在工作区中的角色（成员、管理员）。',
+        '管理员可以在工作区设置页面看到每个账号的名称、邮箱和角色。',
+      ],
+    },
+    {
+      id: 'cookies',
+      heading: 'Cookie 与会话',
+      items: [
+        `__Host-kb_session 让你保持登录最长 ${SESSION_ABSOLUTE_DAYS} 天；连续 ${SESSION_IDLE_DAYS} 天未使用会提前失效。服务器只保存它的哈希值（sha256）。无论在应用中还是在 ${idp} 上退出登录，服务器上的会话都会结束。`,
+        `kb_login 只在登录过程中存在（最多 10 分钟）：它保存往返 ${idp} 时的防伪代码。`,
+        `hd_lang 记住你选择的语言，由各个 ${account} 应用共用。`,
+        '应用不使用任何广告或追踪 Cookie。',
+      ],
+    },
+    {
+      id: 'texts',
+      heading: '你的文章、文件与动态',
+      items: [
+        '服务器保存你写的文章及其各个版本、你的评论、收藏、阅读和学习路径进度、你的画布、发给你的通知（提及、评论、长期未更新的文章、管理员隐藏或重新显示你的文章），以及你的 Copilot 历史（问题、回答、引用的来源；只有你能看到）。',
+        '你可以选择发布文章或保持私密。已发布且未被隐藏的文章是公开的：发布后，所有人（包括未登录的访客）都能阅读和搜索到。草稿和私密文章只有你能读；你可以随时编辑、撤下或删除自己的文章。管理员可以阅读所有文章，包括私密文章。',
+        `你删除的文章会在回收站中保留 ${TRASH_DAYS} 天，之后连同其版本和文件被永久删除。你也可以提前永久删除。`,
+        'AI 记忆：当你连接自己的 AI（通过 Chat 或 MCP）时，它可能会把你告诉它的关于你自己的事情，作为私密笔记写入你个人空间中的“记忆”合集，无需每次询问；每次写入都附有 24 小时内有效的撤销链接。应用会拒绝它识别出的密钥、证件号码或金融账号（按格式识别，因此并非所有情况都能识别）；敏感话题（健康、宗教、政治…）由 AI 识别并排除，除非你开启。暂停期间，AI 既不保存也不读取你的记忆。其他账号的 AI（包括管理员的）都无法读取你的记忆。在记忆页面，你可以查看、编辑或删除每一条，暂停记忆或全部删除。',
+        '上传的文件（docx、xlsx、pptx、pdf、md，最大 25 MB）以随机名称保存在 {app} 服务器的磁盘上。文件中的文字由同一台服务器上运行的 Apache Tika（扫描页使用 Tesseract OCR）提取：提取过程不会把文件发送到任何地方。Jev 会读取部分提取出的文字进行评估（见 Jev 一节）。',
+        'Office 编辑器在你的浏览器中运行，从 {app} 自己的域名加载；文件不经过任何第三方服务。',
+        `当你以幻灯片形式查看文章时，服务器会记录文章、你看到第几页以及幻灯片总页数，用来了解幻灯片是否被看完。该记录既不包含你的账号，也不包含你的 IP 地址，并在 ${PRESENT_VIEWS_KEEP_DAYS} 天后删除。你选择的幻灯片配色只记在你的浏览器中。`,
+      ],
+    },
+    {
+      id: 'ai',
+      heading: 'Copilot 与 AI 使用你自己的密钥',
+      items: [
+        'Copilot、阅读时的 AI 按钮（解释、总结）、编辑器中的“AI 写作助手”和 AI 翻译，只使用你自己的 AI 密钥和你选择的服务商：OpenAI、Google Gemini 或 Anthropic Claude。{app} 服务器没有用于这些功能的 AI 密钥；没有你的密钥，什么都不会发送。',
+        '当你提问时，服务器会把你的问题、你选中的段落（如有）以及知识库中作为来源的摘录发送给该服务商。“AI 写作助手”发送你正在写的草稿的标题和正文；翻译发送待翻译的文章。服务商按照其适用于你账号的条款和政策处理收到的内容。',
+        '当 Jev 判断知识库无法回答时，Copilot 会直接说明，不会调用服务商。',
+        '密钥在保存前使用 AES-256-GCM 加密，加密用的密钥保存在数据库之外：数据库或备份泄露也不会泄露密钥。应用只再显示最后 4 个字符，密钥从不写入日志，你可以随时在“自有密钥”页面删除密钥。',
+        'Copilot 的回答保存在你的历史中；翻译保存为你的草稿；“AI 写作助手”的建议不会保存。',
+      ],
+      link: { href: '/settings/keys', label: '打开自有密钥' },
+    },
+    {
+      id: 'jev',
+      heading: 'Jev（TypeSafe）：搜索与排序',
+      paragraphs: [
+        'Jev 是 TypeSafe（typesafe.ai）的判断服务。{app} 服务器用服务器自己的密钥为所有用户调用 Jev，Jev 只返回选择和评分，不写任何文字。根据任务不同，服务器会发送给 Jev：',
+      ],
+      items: [
+        '语义搜索：你的查询、候选文章的标题和摘要（或第一段），然后是所选文章的段落；',
+        'Copilot：你的问题和候选段落（用来挑选来源并判断知识库能否回答），然后是回答中的句子及其引用的段落（用来核对引用）；',
+        '图谱和画布中的链接建议，以及知识路径中的下一步建议：标题和一段短文（摘要、第一段、画布卡片文字）；',
+        '上传的文件：每页文字的样本（文字层是否可读、OCR 是否识别出文字）、标题和部分正文（用来建议合集和标签）。',
+        '候选文章只包括你有权阅读的文章，因此可能包含你的私密文章。应用按天记录调用次数和 token 数量以控制成本；该记录不包含任何发送或返回的内容。',
+        '关键词搜索在 {app} 服务器自身的 Meilisearch 上运行。',
+      ],
+    },
+    {
+      id: 'share',
+      heading: '分享链接',
+      items: [
+        '作者或管理员可以为已发布的文章创建链接。链接只包含一个随机代码；服务器只保存它的哈希值（sha256）和最后 4 个字符，从不保存或记录代码本身。链接可以设置过期（7 天或 30 天后），也可以随时撤销。',
+        `每次有人打开链接（作者或管理员除外），服务器会在链接的访问历史中记录打开时间和打开的账号，未登录时记为“访客”；作者和管理员可以查看。超过 ${SHARE_OPENINGS_KEEP_DAYS} 天的打开记录会自动删除。链接粘贴到 Zalo 或 Messenger 时显示的预览卡片不算作一次打开。`,
+      ],
+    },
+    {
+      id: 'admin',
+      heading: '管理与日志',
+      items: [
+        '审计日志记录谁在何时做了什么：角色变更、移除和恢复成员、邀请链接、API 令牌、登录、数据删除、隐藏和显示文章。它从不记录令牌、邮箱或文章内容，且只有管理员可以查看。',
+        `管理员 API 调用日志（方法、路径、结果、创建或修改的文章）保留 ${ADMIN_CALL_LOG_DAYS} 天。`,
+      ],
+    },
+    {
+      id: 'device',
+      heading: '在你的设备上',
+      items: [
+        '为了离线阅读和编辑，你的浏览器会在 IndexedDB 中保存 Office 文件副本、未发送的草稿和离线保存的 Office 文件；正在编辑的画布在 localStorage 中有一份草稿。浏览器还会记住你的主题、视图和上次使用的账号，因此离线副本只对该账号打开。',
+        `这些副本留在该设备上。设置中的“清除缓存”会移除服务器已有的副本；退出登录后，设备在你重新登录前不再显示你的离线副本；删除账号不会移除它们：要彻底清除，请在浏览器中清除 ${host} 的网站数据。`,
+      ],
+    },
+    {
+      id: 'server',
+      heading: '服务器、网站日志与备份',
+      items: [
+        '所有流量都经过 Cloudflare（防护和加速）。网站可能使用 Cloudflare Web Analytics 统计页面浏览量；它不设置 Cookie，也不会在其他网站上追踪你。应用不展示广告，也不出售数据。',
+        '网站服务器日志记录 IP 地址、浏览器、页面路径和时间；从不记录查询字符串或来源页面，分享链接和邀请链接的代码也从不进入日志。访问频率限制只在内存中按 IP 地址或账号计数，从不写入存储。',
+        `服务器每天备份数据库和上传的文件，每份备份保留 ${BACKUP_KEEP_DAYS} 天。因此，已删除的数据可能在备份中最多保留 ${BACKUP_KEEP_DAYS} 天。加密 AI 密钥所用的密钥不在备份中。`,
+      ],
+    },
+    {
+      id: 'delete',
+      heading: '删除你的账号和数据',
+      paragraphs: [
+        `你的 ${account} 账号只能在 ${idp} 的账号页面删除。你在那里删除后，${idp} 会通知 {app}，{app} 会立即一次性删除：`,
+      ],
+      items: [
+        '未发布且非官方的文章（草稿、私密文章，以及旧审核流程遗留的文章）、回收站中的所有文章、你个人空间中的所有文章以及该空间本身；',
+        '不再被任何剩余文章使用的上传文件，包括磁盘上的文件；',
+        '你的 AI 密钥和密钥选择、Copilot 历史、阅读和学习路径进度、收藏、通知、画布、评论，以及你打开过的分享链接记录；',
+        '所有会话。',
+      ],
+      link: { href: ACCOUNT_DELETE_URL, label: '打开账号删除页面' },
+    },
+    {
+      id: 'kept',
+      heading: '删除后保留的内容',
+      items: [
+        '你个人空间之外的官方文章，无论处于哪个阶段：它们属于工作区。',
+        '你发布的社区文章：它们是他人阅读和链接的公开文章，作者将显示为“已删除的账号”。如要撤下，请在删除账号前取消发布或删除。',
+        '你在保留文章上写的版本和审核决定，以及审计日志（附有一条说明账号已删除的记录）。',
+        `备份，直到其 ${BACKUP_KEEP_DAYS} 天保留期结束。`,
+        '你创建的分享链接、API 令牌和邀请链接会被撤销。你的名称、邮箱和头像会从账号中移除：只保留一条无名记录，让保留的文章仍有作者。',
+      ],
+    },
+    {
+      id: 'contact',
+      heading: '联系',
+      paragraphs: [`如有疑问，或需要帮助删除数据：请在 ${CONTACT['zh-CN']}留言。`],
+    },
+  ],
+};
+
 const TERMS_VI: LegalDoc = {
   title: 'Điều khoản sử dụng',
   updated: UPDATED.vi,
@@ -431,9 +563,69 @@ const TERMS_EN: LegalDoc = {
   ],
 };
 
+const TERMS_ZH: LegalDoc = {
+  title: '使用条款',
+  updated: UPDATED['zh-CN'],
+  intro: `{app}（${host}）是免费、无广告的知识库。使用本应用即表示你同意以下条款，以及隐私页面所述的数据处理方式。`,
+  sections: [
+    {
+      id: 'account',
+      heading: '你的账号',
+      items: [
+        `你使用自己的 ${account} 账号（${idp}）使用本应用；保护该账号的安全由你负责。`,
+        '管理员可以更改你的角色或将你移出工作区：此后在恢复之前你无法登录，你的文章保持原样。',
+      ],
+    },
+    {
+      id: 'texts',
+      heading: '你放入的内容',
+      items: [
+        '你对自己放入的文章、评论和文件负责。只放入你有权分享的内容；不要发布任何违法、辱骂、欺诈、恶意的内容或他人的私人信息。',
+        '你可以选择发布文章或保持私密；公开文章一经发布，所有人都能阅读。管理员管理所有文章：可以隐藏、重新显示、编辑、移动或删除。被管理员隐藏的文章只有在管理员重新显示后才会再次出现。',
+        '已发布的文章是公开的：应用用户可以阅读和搜索到它，Copilot 会把它作为来源，作者或管理员可以通过链接分享它。收到允许“Remix”的链接的人可以把文章复制到自己的草稿中。',
+        '官方文章属于工作区，在你的账号删除后仍会保留；你发布的社区文章也会保留，作者显示为“已删除的账号”（详见隐私页面）。',
+      ],
+    },
+    {
+      id: 'ai',
+      heading: 'AI',
+      items: [
+        'AI 的回答可能出错。Copilot 只根据知识库中的来源回答，并在每句话后标注来源编号：在依赖某个回答之前，请打开来源进行核对。',
+        '使用你自己的密钥时，你需遵守 AI 服务商的条款，并为使用该密钥产生的调用付费。应用会限制每分钟的 AI 调用次数。',
+      ],
+    },
+    {
+      id: 'share',
+      heading: '分享链接',
+      items: [
+        '任何拿到链接的人都能看到文章的标题、作者和各个章节，因此只把链接发给你想分享的人。链接在过期、被撤销或文章不再发布时失效。',
+      ],
+    },
+    {
+      id: 'fair-use',
+      heading: '合理使用',
+      items: [
+        '不要扫描、攻击服务或使其过载，不要绕过访问频率限制，也不要试图阅读你无权阅读的文章。自动化访问只能通过管理员 API，使用管理员创建的令牌。',
+      ],
+    },
+    {
+      id: 'liability',
+      heading: '责任',
+      paragraphs: [
+        '本应用按“现状”提供。知识库仅供参考，不构成专业建议。数据每天备份，但对你重要的内容请自行保留副本。开发者可能更改、暂停或停止本应用，并可能删除违反本条款的内容或账号。本条款可能更新；最新版本始终在本页。',
+      ],
+    },
+    {
+      id: 'contact',
+      heading: '联系',
+      paragraphs: [`请在 ${CONTACT['zh-CN']}留言。`],
+    },
+  ],
+};
+
 export const LEGAL_DOCS: Record<LegalKind, Record<Locale, LegalDoc>> = {
-  privacy: { vi: PRIVACY_VI, en: PRIVACY_EN },
-  terms: { vi: TERMS_VI, en: TERMS_EN },
+  privacy: { vi: PRIVACY_VI, en: PRIVACY_EN, 'zh-CN': PRIVACY_ZH },
+  terms: { vi: TERMS_VI, en: TERMS_EN, 'zh-CN': TERMS_ZH },
 };
 
 /** The address of each page. */

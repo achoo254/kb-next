@@ -106,9 +106,14 @@ describe('the privacy page', () => {
     }
   });
 
-  it('switches to Vietnamese and keeps the choice for every hoandat app', () => {
+  it('switches to Simplified Chinese, then Vietnamese, and keeps the choice for every hoandat app', () => {
     renderWithI18n(<LegalPage kind="privacy" />);
     fireEvent.click(screen.getByRole('button', { name: 'Change language (now English)' }));
+    expect(screen.getByRole('heading', { level: 1, name: '隐私' })).toBeTruthy();
+    expect(sectionText('分享链接')).toContain(`超过 ${SHARE_OPENINGS_KEEP_DAYS} 天的打开记录会自动删除`);
+    expect(document.cookie).toContain('hd_lang=zh-CN');
+    expect(screen.getByRole('button', { name: '切换语言（当前：中文）' }).textContent).toBe('中文');
+    fireEvent.click(screen.getByRole('button', { name: '切换语言（当前：中文）' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Quyền riêng tư' })).toBeTruthy();
     expect(sectionText('Link chia sẻ')).toContain(`Lượt mở cũ hơn ${SHARE_OPENINGS_KEEP_DAYS} ngày`);
     expect(document.cookie).toContain('hd_lang=vi');
@@ -141,17 +146,19 @@ describe('the terms page', () => {
 });
 
 describe('the legal texts', () => {
-  it('have the same sections in both languages, none empty', () => {
+  it('have the same sections in every language, none empty', () => {
     for (const kind of ['privacy', 'terms'] as const satisfies readonly LegalKind[]) {
-      const { vi, en } = LEGAL_DOCS[kind];
-      expect(vi.sections.map((s) => s.id)).toEqual(en.sections.map((s) => s.id));
-      vi.sections.forEach((section, i) => {
-        const other = en.sections[i];
-        expect(section.items?.length).toBe(other?.items?.length);
-        expect(section.paragraphs?.length).toBe(other?.paragraphs?.length);
-        expect(section.link?.href).toBe(other?.link?.href);
-        for (const line of [...(section.items ?? []), ...(section.paragraphs ?? [])]) expect(line.trim()).not.toBe('');
-      });
+      const { vi, en, 'zh-CN': zh } = LEGAL_DOCS[kind];
+      for (const doc of [en, zh]) {
+        expect(vi.sections.map((s) => s.id)).toEqual(doc.sections.map((s) => s.id));
+        vi.sections.forEach((section, i) => {
+          const other = doc.sections[i];
+          expect(section.items?.length).toBe(other?.items?.length);
+          expect(section.paragraphs?.length).toBe(other?.paragraphs?.length);
+          expect(section.link?.href).toBe(other?.link?.href);
+          for (const line of [...(section.items ?? []), ...(section.paragraphs ?? []), ...(other?.items ?? []), ...(other?.paragraphs ?? [])]) expect(line.trim()).not.toBe('');
+        });
+      }
     }
   });
 });
