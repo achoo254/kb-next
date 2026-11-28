@@ -149,6 +149,8 @@ describe('layout', () => {
     const placed = [...layoutGraph(many, [], spots12).values()];
     expect(Math.max(...placed.map((p) => p.r))).toBeLessThan(nodeRadius(6));
     expect(Math.min(...placed.map((p) => p.r))).toBeGreaterThanOrEqual(8);
+    // Clear of the Space filter, which wraps onto three rows with that many Spaces.
+    expect(Math.min(...placed.map((p) => p.y))).toBeGreaterThanOrEqual(140);
   });
 
   it('gives the reader’s own Space the spot under the graph’s own', () => {

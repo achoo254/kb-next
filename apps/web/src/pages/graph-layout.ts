@@ -40,6 +40,8 @@ const TICKS = 320;
  */
 const RING_FOCUS: SpaceSpot = { x: WORLD.width / 2, y: WORLD.height / 2, pull: 0.06 };
 const RING = { rx: 430, ry: 250 } as const;
+/** Room above a ring: that many Spaces wrap the Space filter onto three rows over the top of the stage. */
+const RING_MARGIN_TOP = 140;
 /** The smallest node once a large graph is scaled down to fit: still a target a pointer can hit. */
 const MIN_RADIUS = 8;
 
@@ -158,7 +160,7 @@ export function layoutGraph(
   // The ring is drawn round the middle, so it is centred too.
   const shared = new Set(nodes.filter((n) => spots.get(n.space) !== PERSONAL_SPOT).map((n) => n.space));
   const ring = [...spots.values()].includes(RING_FOCUS);
-  return fit(sim, shared.size <= 1 || ring);
+  return fit(sim, shared.size <= 1 || ring, ring ? RING_MARGIN_TOP : MARGIN_TOP);
 }
 
 /**
@@ -166,7 +168,7 @@ export function layoutGraph(
  * middle of the room instead of near where the forces left them. The nodes shrink with the positions (not below
  * MIN_RADIUS): scaling the gaps alone piled the nodes of a large graph onto each other (seen on prod 28/11/2026).
  */
-function fit(sim: readonly SimNode[], centre: boolean): Map<string, PlacedNode> {
+function fit(sim: readonly SimNode[], centre: boolean, marginTop: number): Map<string, PlacedNode> {
   const placed = new Map<string, PlacedNode>();
   if (sim.length === 0) return placed;
   const xs = sim.map((n) => n.x ?? 0);
@@ -175,7 +177,7 @@ function fit(sim: readonly SimNode[], centre: boolean): Map<string, PlacedNode> 
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
-  const room = { w: WORLD.width - 2 * MARGIN_X, h: WORLD.height - MARGIN_TOP - MARGIN_BOTTOM };
+  const room = { w: WORLD.width - 2 * MARGIN_X, h: WORLD.height - marginTop - MARGIN_BOTTOM };
   const scale = Math.min(1, room.w / Math.max(1, maxX - minX), room.h / Math.max(1, maxY - minY));
   // Inside the room when it fits as is; else centred in it.
   const shiftX = (value: number): number => {
@@ -186,8 +188,8 @@ function fit(sim: readonly SimNode[], centre: boolean): Map<string, PlacedNode> 
   };
   const shiftY = (value: number): number => {
     const height = (maxY - minY) * scale;
-    const kept = Math.min(Math.max(minY, MARGIN_TOP), MARGIN_TOP + room.h - height);
-    const top = height <= room.h ? (centre ? MARGIN_TOP + (room.h - height) / 2 : kept) : MARGIN_TOP;
+    const kept = Math.min(Math.max(minY, marginTop), marginTop + room.h - height);
+    const top = height <= room.h ? (centre ? marginTop + (room.h - height) / 2 : kept) : marginTop;
     return top + (value - minY) * scale;
   };
   for (const n of sim) placed.set(n.id, { id: n.id, x: Math.round(shiftX(n.x ?? 0)), y: Math.round(shiftY(n.y ?? 0)), r: Math.max(Math.min(n.r, MIN_RADIUS), Math.round(n.r * scale)) });
