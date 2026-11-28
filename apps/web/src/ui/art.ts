@@ -16,8 +16,7 @@ export const CRYSTAL_ART: Record<SpaceKind, string> = {
   docker: '/art/crystal-docker.webp',
   weekly: '/art/crystal-weekly.webp',
   personal: '/art/crystal-personal.webp',
-  // No crystal drawn for Cloud yet: the orb stands in.
-  cloud: '/art/orb-universe.webp',
+  cloud: '/art/crystal-cloud.webp',
 };
 
 export const SPACE_ICON: Record<SpaceKind, IconName> = {
@@ -35,7 +34,7 @@ export const SPACE_ICON: Record<SpaceKind, IconName> = {
 export const ORB_ART = '/art/orb-universe.webp';
 
 /**
- * The crystal art (480px; the orb standing in for Cloud is 768px) shows at 168px, so each also has a 336px copy
+ * The crystal art (480px; the orb is 768px) shows at 168px, so each also has a 336px copy
  * (`-336.webp`, 2× the crystal) the browser picks on 1× and 2× screens. Art from the API without a copy keeps one src.
  */
 const CRYSTAL_ART_WIDTH: Readonly<Record<string, number>> = {
