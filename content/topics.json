@@ -261,7 +261,7 @@
       "name": "Mạng và lưu trữ trên Kubernetes",
       "nameEn": "Networking and storage on Kubernetes",
       "tech": true,
-      "brief": "Gợi ý 3 bài: Service (ClusterIP, NodePort, LoadBalancer) và cách Pod tìm nhau qua DNS của cụm; Ingress với IngressClass, so với Gateway API, đưa ứng dụng ra ngoài qua HTTPS; PersistentVolume, PersistentVolumeClaim và StorageClass cho ứng dụng cần giữ dữ liệu. Nối tới \"Deployment và rolling update trong Kubernetes: cập nhật ứng dụng mà không gián đoạn\" và \"ConfigMap và Secret: tách cấu hình khỏi image ứng dụng trên Kubernetes\"; không lặp lại rolling update hay rollback.",
+      "brief": "Gợi ý 3 bài: Service (ClusterIP, NodePort, LoadBalancer) và cách Pod tìm nhau qua DNS của cụm; Ingress với IngressClass, so với Gateway API, đưa ứng dụng ra ngoài qua HTTPS; PersistentVolume, PersistentVolumeClaim và StorageClass cho ứng dụng cần giữ dữ liệu. Nối tới \"Deployment và rolling update trong Kubernetes: cập nhật ứng dụng mà không gián đoạn\" và \"ConfigMap và Secret: tách cấu hình khỏi image ứng dụng trên Kubernetes\"; không lặp lại rolling update hay rollback. Có thể so DNS của cụm với \"Mạng bridge tự tạo trong Docker: container gọi nhau bằng tên nhờ DNS nội bộ\".",
       "status": "todo"
     },
     {
@@ -321,7 +321,7 @@
       "name": "Dùng AI agent viết code",
       "nameEn": "Coding with AI agents",
       "tech": true,
-      "brief": "Gợi ý 3 bài: chia việc cho agent (kế hoạch, thực hiện, rà soát) và viết yêu cầu đủ rõ; kiểm chứng kết quả bằng test, lint, typecheck thay vì tin lời agent; những việc không nên giao cho agent.",
+      "brief": "Gợi ý 3 bài: chia việc cho agent (kế hoạch, thực hiện, rà soát) và viết yêu cầu đủ rõ; kiểm chứng kết quả bằng test, lint, typecheck thay vì tin lời agent; những việc không nên giao cho agent. Nối tới \"MCP là gì: giao thức giúp ứng dụng AI kết nối với công cụ và dữ liệu\" và \"Phân quyền và an toàn khi cho AI gọi công cụ thật qua MCP\" (giới hạn công cụ và quyền của agent), \"Pipeline CI/CD gồm những giai đoạn nào: build, test, deploy, artifact và cache\" (cổng kiểm chứng tự động) và \"Quản lý bí mật trong kho mã và CI/CD: không commit khoá, quét rò rỉ và xoay vòng khi lộ\" (không để agent đọc hay ghi khoá); không lặp lại phần giải thích MCP. Viết chung, không gắn với một sản phẩm agent cụ thể, ví dụ là một dự án Node.js nhỏ.",
       "status": "todo"
     },
     {
@@ -341,7 +341,7 @@
       "name": "TypeScript thực hành",
       "nameEn": "Practical TypeScript",
       "tech": true,
-      "brief": "Gợi ý 3 bài: kiểu hẹp dần (narrowing) và type guard thay cho any; generic và utility types dùng hằng ngày; cấu hình tsconfig nghiêm ngặt và lỗi hay gặp khi bật strict.",
+      "brief": "Gợi ý 3 bài: kiểu hẹp dần (narrowing) và type guard thay cho any; generic và utility types dùng hằng ngày; cấu hình tsconfig nghiêm ngặt và lỗi hay gặp khi bật strict. Nối tới \"Viết MCP server đầu tiên bằng TypeScript: hai công cụ chạy qua stdio\" (ví dụ kiểu cho tham số công cụ) và \"Lỗi thống nhất, idempotency và phiên bản hoá REST API: những quy ước giúp API sống lâu\" (union có nhãn cho phản hồi lỗi); ghi rõ phiên bản TypeScript đã thử, đối chiếu typescriptlang.org.",
       "status": "todo"
     },
     {
@@ -361,7 +361,7 @@
       "name": "Quản trị Zimbra",
       "nameEn": "Zimbra administration",
       "tech": true,
-      "brief": "Gợi ý 3 bài: các thành phần của Zimbra (MTA, mailbox, LDAP, proxy); tạo tài khoản, lớp dịch vụ và hạn mức qua zmprov; hàng đợi thư và cách đọc nhật ký khi thư không tới.",
+      "brief": "Gợi ý 3 bài: các thành phần của Zimbra (MTA, mailbox, LDAP, proxy); tạo tài khoản, lớp dịch vụ và hạn mức qua zmprov; hàng đợi thư và cách đọc nhật ký khi thư không tới. Nối tới \"Thư điện tử đi từ máy gửi đến hộp thư nhận: MUA, MSA, MTA, bản ghi MX và hai địa chỉ người gửi\" (vị trí của Postfix trong Zimbra) và \"SPF, DKIM và DMARC: ba bản ghi DNS chứng minh thư gửi từ tên miền của bạn\" (bật DKIM cho tên miền trong Zimbra), không giải thích lại SPF, DKIM, DMARC. Ghi rõ phiên bản Zimbra đã đối chiếu, theo tài liệu chính thức zimbra.com.",
       "status": "todo"
     },
     {
@@ -371,7 +371,7 @@
       "name": "Ceph cơ bản",
       "nameEn": "Ceph basics",
       "tech": true,
-      "brief": "Gợi ý 3 bài: kiến trúc Ceph (MON, OSD, MGR) và thuật toán CRUSH; ba kiểu lưu trữ RBD, CephFS, RGW; theo dõi sức khoẻ cụm và xử lý khi một OSD hỏng.",
+      "brief": "Gợi ý 3 bài: kiến trúc Ceph (MON, OSD, MGR) và thuật toán CRUSH; ba kiểu lưu trữ RBD, CephFS, RGW; theo dõi sức khoẻ cụm và xử lý khi một OSD hỏng. Nối tới \"Object, bucket và key trong object storage: khác tập tin và thư mục ở chỗ nào\" và \"Ký yêu cầu S3, URL có chữ ký tạm và chính sách truy cập bucket\" (RGW nói giao thức S3, không lặp lại phần S3) và \"Cảnh báo với Prometheus và Alertmanager: metric khác log thế nào\" (module prometheus của MGR); ghi rõ bản phát hành Ceph, đối chiếu docs.ceph.com.",
       "status": "todo"
     },
     {
@@ -421,7 +421,7 @@
       "name": "Tìm kiếm toàn văn",
       "nameEn": "Full-text search",
       "tech": true,
-      "brief": "Gợi ý 3 bài: chỉ mục ngược và cách một công cụ tìm kiếm xếp hạng; so sánh Elasticsearch, Typesense và Meilisearch khi nào dùng cái nào; xử lý tiếng Việt có dấu trong tìm kiếm.",
+      "brief": "Gợi ý 3 bài: chỉ mục ngược và cách một công cụ tìm kiếm xếp hạng; so sánh Elasticsearch, Typesense và Meilisearch khi nào dùng cái nào; xử lý tiếng Việt có dấu trong tìm kiếm. Nối tới \"Phân trang, lọc và sắp xếp trong REST API: offset, cursor và những quy ước nên thống nhất\" (API tìm kiếm trả kết quả theo trang) và \"Docker Compose chạy ứng dụng nhiều dịch vụ: depends_on chờ healthy và tệp .env\" (chạy thử máy tìm kiếm cạnh ứng dụng); nhắc tìm kiếm toàn văn có sẵn trong PostgreSQL (tsvector) như lựa chọn khi chưa cần máy riêng. Ghi rõ phiên bản đã đối chiếu.",
       "status": "todo"
     },
     {
@@ -431,7 +431,7 @@
       "name": "Node.js và hiệu năng",
       "nameEn": "Node.js performance",
       "tech": true,
-      "brief": "Gợi ý 3 bài: vòng lặp sự kiện và vì sao một tác vụ nặng làm cả server đứng; đo bằng profiler và đọc flame graph; luồng (stream), áp lực ngược và pool kết nối.",
+      "brief": "Gợi ý 3 bài: vòng lặp sự kiện và vì sao một tác vụ nặng làm cả server đứng; đo bằng profiler và đọc flame graph; luồng (stream), áp lực ngược và pool kết nối. Nối tới \"Cân bằng tải bằng nginx: upstream, thuật toán chọn máy và kiểm tra sức khoẻ thụ động\" (chạy nhiều tiến trình Node sau nginx) và \"PromQL cơ bản: counter, gauge, rate và sum by qua ví dụ CPU, RAM, ổ đĩa\" (theo dõi độ trễ vòng lặp sự kiện bằng metric); ghi rõ phiên bản Node.js LTS đã thử, đối chiếu nodejs.org.",
       "status": "todo"
     }
   ]
