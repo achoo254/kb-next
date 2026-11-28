@@ -14,7 +14,7 @@ import type { Lang } from '../api/content-views';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
 import { collections, spaces } from '../db/schema';
-import { MEMORY_PURPOSE, SENSITIVE_TAG, memorySettings } from '../memory/memory-store';
+import { MEMORY_PURPOSE, SENSITIVE_TAG, memorySettings } from '../access/memory-store';
 import type { IndexSync } from '../search/index-sync';
 import type { LayeredSearchDeps } from '../search/layered-search';
 import type { ConfirmTokens } from './confirm-token';

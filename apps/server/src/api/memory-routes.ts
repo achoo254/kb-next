@@ -8,7 +8,7 @@ import express, { type Request, type Router } from 'express';
 import { z } from 'zod';
 import type { Viewer } from '../access/viewer';
 import { HttpError } from '../http-error';
-import { listMemoryTopics, memorySettings, setMemorySettings } from '../memory/memory-store';
+import { listMemoryTopics, memorySettings, setMemorySettings } from '../access/memory-store';
 import { forgetAll, undoMemory } from '../memory/memory-write';
 import type { IndexSync } from '../search/index-sync';
 import { perAccountLimit, signedIn } from './account-limit';

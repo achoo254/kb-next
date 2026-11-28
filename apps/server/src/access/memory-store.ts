@@ -5,9 +5,9 @@
  * The account's two settings (paused, sensitive topics) are columns of `users`.
  */
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
-import type { DocumentRow } from '../access/content';
-import { ensurePersonalSpace, findPersonalSpace } from '../access/spaces-write';
-import type { Viewer } from '../access/viewer';
+import type { DocumentRow } from './content';
+import { ensurePersonalSpace, findPersonalSpace } from './spaces-write';
+import type { Viewer } from './viewer';
 import { bodyOf } from '../authoring/markdown-text';
 import type { Db } from '../db/client';
 import { collections, documents, documentVersions, users } from '../db/schema';

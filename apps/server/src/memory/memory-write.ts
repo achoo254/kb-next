@@ -18,7 +18,7 @@ import type { Db } from '../db/client';
 import { memoryUndos } from '../db/schema';
 import { keepTextPrivate } from '../review/moderation';
 import type { IndexSync } from '../search/index-sync';
-import { SENSITIVE_TAG, chatTag, findTopic, listMemoryTopics, memoryCollectionId, memorySettings } from './memory-store';
+import { SENSITIVE_TAG, chatTag, findTopic, listMemoryTopics, memoryCollectionId, memorySettings } from '../access/memory-store';
 
 type UserViewer = Extract<Viewer, { kind: 'user' }>;
 

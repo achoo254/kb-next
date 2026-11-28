@@ -6,7 +6,7 @@
  */
 import { z } from 'zod';
 import { MAX_TITLE_CHARS } from '../authoring/markdown-text';
-import { listMemoryTopics, memorySettings } from '../memory/memory-store';
+import { listMemoryTopics, memorySettings } from '../access/memory-store';
 import { MemoryRefusal, rememberFact } from '../memory/memory-write';
 import { holdsNeverKeptNumber } from '../memory/never-kept';
 import { refuseSecrets } from './secret-guard';
