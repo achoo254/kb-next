@@ -30,6 +30,7 @@ Jev xử lý tìm kiếm phía server, cookie, link chia sẻ, sao lưu, xoá t�
 Chữ ở [`apps/web/src/pages/legal-docs.ts`](apps/web/src/pages/legal-docs.ts); mọi thời hạn lưu giữ in từ
 [`apps/server/src/retention.ts`](apps/server/src/retention.ts), cùng hằng số server dùng. Đổi cách app giữ hay gửi dữ
 liệu thì sửa trang này cùng lúc. Link tới hai trang ở chân landing, trang đăng nhập, H02 và H03.
+Trang `/memory` (Trí nhớ, cần đăng nhập, không có board): những gì AI trong Chat nhớ về người dùng (ghi chú riêng tư ở Collection "Trí nhớ" của Space riêng), tạm dừng, nhớ chủ đề nhạy cảm, sửa, xoá, xoá hết và hoàn tác lần ghi nhớ từ link `?undo=`; lối vào từ H03 và C08.
 
 Ảnh AI trong `apps/web/public/art/`: xem [`CREDITS.md`](CREDITS.md). Deploy: [`docs/deployment-guide.md`](docs/deployment-guide.md).
 Kiểm giống mock: [`docs/parity-testing.md`](docs/parity-testing.md); chỗ buộc phải khác mock: [`docs/mock-deviations.md`](docs/mock-deviations.md).

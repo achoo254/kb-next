@@ -145,7 +145,7 @@ describe('MCP discovery and authentication', () => {
     expect(get.headers.get('allow')).toBe('POST');
   });
 
-  it('initializes, lists the six tools and takes notifications without answering', async () => {
+  it('initializes, lists the eight tools and takes notifications without answering', async () => {
     const token = tokenFor('alice-sub');
     const init = await post(token, { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 't', version: '1' } } });
     expect(init.status).toBe(200);
@@ -153,8 +153,8 @@ describe('MCP discovery and authentication', () => {
     const note = await post(token, { jsonrpc: '2.0', method: 'notifications/initialized' });
     expect(note.status).toBe(202);
     const list = (await (await post(token, { jsonrpc: '2.0', id: 2, method: 'tools/list' })).json()) as { result: { tools: Array<{ name: string; annotations: { readOnlyHint: boolean } }> } };
-    expect(list.result.tools.map((t) => t.name)).toEqual(['search', 'get_document', 'list_spaces', 'recent', 'save_note', 'update_note']);
-    expect(list.result.tools.filter((t) => !t.annotations.readOnlyHint).map((t) => t.name)).toEqual(['save_note', 'update_note']);
+    expect(list.result.tools.map((t) => t.name)).toEqual(['search', 'get_document', 'list_spaces', 'recent', 'save_note', 'update_note', 'remember', 'memory_index']);
+    expect(list.result.tools.filter((t) => !t.annotations.readOnlyHint).map((t) => t.name)).toEqual(['save_note', 'update_note', 'remember']);
     expect((await post(token, [{ jsonrpc: '2.0', id: 3, method: 'ping' }])).status).toBe(400);
   });
 

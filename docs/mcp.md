@@ -58,12 +58,49 @@ chính mình, không bao giờ thấy bài trong Space quản trị đã ẩn ha
 | `recent` | `kb:read` | `limit?` (1–20, mặc định 8) | `{documents[]}`: bài đọc được đổi gần nhất, mỗi văn bản một bản theo ngôn ngữ của tài khoản |
 | `save_note` | `kb:write` | `title` (một dòng, ≤ 200), `markdown` (≤ 200 000), `space?` (slug), `lang?` (`vi`/`en`), `confirm_token?` | lần 1: `{preview, similar[], confirm_token, confirm_token_expires_at, next}`; lần 2: `{saved: true, document}` |
 | `update_note` | `kb:write` | `id` (id hoặc link), `mode` (`append`/`replace`), `markdown` (≤ 200 000), `title?`, `confirm_token?` | lần 1: `{preview, confirm_token, confirm_token_expires_at, next}`; lần 2: `{saved: true, changed, version, document}` |
+| `remember` | `kb:write` | `topic` (một dòng, ≤ 120), `fact` (≤ 2 000), `chat_id?`, `sensitive?`, `lang?` | ghi ngay: `{remembered, action: created/appended, topic, memory_id, url, undo_url}` |
+| `memory_index` | `kb:read` | `chat_id?` | `{paused, sensitive, topics[] {id, title, summary, updated_at, chat_id, url}, text}` |
 
 `search` có `scope?`: `all` (mặc định, như trước), `mine` (chỉ Space riêng của người dùng: trí nhớ của họ; chưa có
 Space riêng thì không có kết quả), `library` (chỉ các Space dùng chung). `space` thu hẹp thêm trong phạm vi đó.
 
 Thông tin bài: `id`, `title`, `url`, `lang`, `type`, `visibility` (`public`/`private`), `status`, `updated_at`,
 `author`, `space {slug, name, kind, url}`.
+
+### Trí nhớ của AI (`remember`, `memory_index`)
+
+Như trí nhớ của trợ lý AI: agent tự ghi điều bền về người dùng trong lúc trò chuyện, **không qua bản xem trước**, vì
+mỗi lần ghi đều thấy được (Chat hiện "Đã ghi nhớ" kèm `undo_url`) và hoàn tác được. Mã: [`src/memory/`](../apps/server/src/memory),
+[`memory-tools.ts`](../apps/server/src/mcp/memory-tools.ts); trang web `/memory` và API `/api/memory` ([`memory-routes.ts`](../apps/server/src/api/memory-routes.ts)).
+
+- **Nơi giữ:** Collection `purpose = 'memory'` ("Trí nhớ" / "Memory") trong Space riêng, tạo lần đầu ghi. Mỗi chủ đề
+  một ghi chú riêng tư, thân là các dòng `- yyyy-mm-dd: ý` (ngày giờ Việt Nam). Chủ đề gắn với một hội thoại Chat có nhãn
+  `chat:<chat_id>`; không nhãn là trí nhớ chung.
+- **Ghi:** cùng chủ đề (so tiêu đề bỏ dấu, không phân biệt hoa thường) và cùng phạm vi thì nối dòng mới, khác thì tạo
+  (chủ đề gắn hội thoại và chủ đề chung cùng tên là hai chủ đề riêng). Ghi và hoàn tác của một tài khoản chạy lần lượt
+  (kb chạy một tiến trình): hai lần `remember` cùng lúc vào một chủ đề giữ cả hai ý, không sinh chủ đề trùng; lần nối
+  mang `baseRev`, gặp bản sửa trên web xen giữa thì đọc lại và thử lại, quá 3 lần thì `topic_unavailable`.
+  Từ chối: bí mật (`secret_detected`), số giấy tờ tuỳ thân hay tài khoản tài chính (`never_remembered`,
+  [`never-kept.ts`](../apps/server/src/memory/never-kept.ts): số đứng cạnh từ khoá, có dấu hay không, hoặc số thẻ hợp
+  lệ Luhn; theo mẫu nên không bắt hết), chủ đề nhạy cảm khi người dùng chưa bật (`sensitive_off`; agent tự đánh giá qua
+  `sensitive`, chủ đề lưu khi đã bật mang nhãn `sensitive`), trí nhớ đang tạm dừng (`memory_paused`), chủ đề đầy
+  (`too_long`).
+- **Hoàn tác:** mỗi lần ghi để lại một token (bảng `memory_undos`, chỉ giữ sha256, sống 24 giờ, dùng một lần, chỉ chủ
+  tài khoản; lịch dọn thùng rác hằng ngày xoá token hết hạn). `undo_url` = `/memory?undo=<token>`: trang chỉ gửi
+  `POST /api/memory/undo` khi người dùng bấm, rồi bỏ token khỏi địa chỉ. Chủ đề còn đúng phiên bản vừa ghi thì: mới tạo
+  vào thùng rác, nối thêm về phiên bản trước. Đã đổi sau đó (ý mới hơn, người dùng tự sửa) thì chỉ gỡ đúng dòng đã ghi;
+  không còn thấy dòng đó thì `undo-stale`. Token chỉ bị tính đã dùng khi hoàn tác xong.
+- **Đọc:** `memory_index` trả trí nhớ chung, cộng chủ đề của `chat_id` khi có, mới sửa trước, mỗi chủ đề kèm hai ý mới
+  nhất; `text` gọn tối đa 4 000 ký tự (dừng ở chủ đề đầu tiên không vừa). Đang tạm dừng thì rỗng; chủ đề nhạy cảm bị bỏ
+  khi người dùng tắt.
+- **Agent không đọc được** (mọi tool, chặn chung ở `documentViews` của [`tool-kit.ts`](../apps/server/src/mcp/tool-kit.ts)):
+  trí nhớ của tài khoản khác, kể cả khi agent chạy bằng tài khoản quản trị (quản trị vẫn xem trên web như mọi bài riêng
+  tư); trí nhớ của chính mình khi đang tạm dừng; chủ đề nhạy cảm của chính mình khi đang tắt.
+- **Người dùng điều khiển** ở `/memory`: tạm dừng (`users.memory_paused`), cho phép chủ đề nhạy cảm
+  (`users.memory_sensitive`, mặc định tắt), sửa hay xoá từng chủ đề như mọi bài, "Xoá toàn bộ trí nhớ" (`DELETE
+  /api/memory`, vào thùng rác 30 ngày).
+- **Rủi ro đã biết:** `remember` ghi không qua duyệt, nên nội dung độc (một bài, một tin của người khác) có thể xui agent
+  ghi điều sai. Giảm bằng lời dặn của tool (chỉ ghi điều người dùng tự nói hay xác nhận), chip "Đã ghi nhớ" và hoàn tác.
 
 ### Trí nhớ cá nhân
 
@@ -98,7 +135,8 @@ trả `space_not_found`.
 
 Lỗi của tool là kết quả `isError: true` với `{"error": {"code", "message"}}`: `invalid_arguments`, `not_found`,
 `no_access`, `hidden`, `space_not_found`, `kb_account_required`, `insufficient_scope`, các mã `confirm_token_*`,
-`not_editable`, `not_private`, `too_long`, `stale`, `secret_detected`, `internal`.
+`not_editable`, `not_private`, `too_long`, `stale`, `secret_detected`, `never_remembered`, `sensitive_off`,
+`memory_paused`, `topic_unavailable`, `internal`.
 
 ## Kiểm thử
 
@@ -108,3 +146,6 @@ metadata, 401/403, step-up, tài khoản chưa có, bài riêng tư của ngư�
 nối và thay (vẫn riêng tư), token hỏng khi bài đã đổi, không sửa được bài người khác, từ chối bí mật.
 [`secret-guard.test.ts`](../apps/server/src/mcp/secret-guard.test.ts): mẫu bí mật và các ghi chú thường không bị chặn.
 Test route cần Meilisearch, chưa có bản cho Windows: chạy trên CI (Linux).
+[`memory.test.ts`](../apps/server/src/memory/memory.test.ts) (không cần Meilisearch): tạo và nối chủ đề, phạm vi
+hội thoại, không lộ sang tài khoản khác, từ chối bí mật, số giấy tờ và chủ đề nhạy cảm, `/api/memory` (cài đặt, hoàn
+tác một lần, tạm dừng, xoá hết, cần phiên).

@@ -281,6 +281,9 @@ export function MineScreen(): ReactNode {
               dataId="mine-tab"
             />
             <span className="mine-bar-fill" />
+            <a className="mine-memory" href={SHELL_PATHS.memory} data-id="mine-memory">
+              {t('mine.memory')}
+            </a>
             {tab === 'universe' && (
               <div role="group" aria-label={t('mine.views')} className="mine-views">
                 {(['orbit', 'list'] as const).map((v) => (

@@ -14,6 +14,8 @@ export const SHELL_PATHS = {
   settings: '/settings',
   /** Own AI keys (F03). */
   keys: '/settings/keys',
+  /** What the AI in Chat remembered about the account (no board). */
+  memory: '/memory',
   inbox: '/inbox',
   /** Uploading Office files (C03), the Import Center (C16), the offline sync queue (H04). */
   upload: '/upload',

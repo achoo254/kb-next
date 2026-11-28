@@ -28,6 +28,8 @@ describe('routes', () => {
     ['/inbox', 'C20'],
     ['/settings', 'H03'],
     ['/settings/keys', 'F03'],
+    ['/memory', 'Memory'],
+    ['/memory/x', 'X02'],
     ['/d/dhcp-dora/translate', 'F04'],
     ['/admin', 'A02'],
     ['/admin/content', 'A02'],

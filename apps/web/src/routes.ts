@@ -66,6 +66,8 @@ export const ROUTES: readonly ScreenRoute[] = [
   { code: 'C20', titleKey: 'screen.C20', access: 'signed-in', pattern: /^\/inbox$/ },
   { code: 'H03', titleKey: 'screen.H03', access: 'signed-in', pattern: /^\/settings$/ },
   { code: 'F03', titleKey: 'screen.F03', access: 'signed-in', pattern: /^\/settings\/keys$/ },
+  // What the AI in Chat remembered about the account (no board, pages/memory-screen.tsx).
+  { code: 'Memory', titleKey: 'screen.Memory', access: 'signed-in', pattern: /^\/memory$/ },
   // An invite link (C19 "Mời bằng link"): signed in through the IdP first, then accepted here.
   { code: 'Invite', titleKey: 'screen.Invite', access: 'signed-in', pattern: new RegExp(`^/i/${segment}$`) },
   // The admin station (admins only; others get X02 403): workspace settings, published texts (also the station's

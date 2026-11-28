@@ -6,7 +6,7 @@
  *   applied at once to every screen, kept per account on the server and in this browser for the first paint
  *   (ui/display-prefs.ts). The theme switch lives only here.
  * - How C08 and A02 open on this device (orbit or list), what is kept offline here (Office copies and unsent drafts)
- *   with "Xoá bộ nhớ đệm" (synced copies only), the own keys (F03), signing out, and one line pointing to the hoandat
+ *   with "Xoá bộ nhớ đệm" (synced copies only), the own keys (F03) and, under them, what the AI remembers (/memory), signing out, and one line pointing to the hoandat
  *   account page: an account is deleted there only, and this app's data goes with it (auth-next ADR 0018).
  */
 import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
@@ -394,6 +394,10 @@ export function SettingsScreen(): ReactNode {
             <span className="h03-note">{keyLine}</span>
           </span>
           <Svg d="M9 6l6 6-6 6" strokeWidth={2.4} />
+        </a>
+        <a className="h03-memory" href={SHELL_PATHS.memory} data-id="settings-memory">
+          {t('settings.memory')}
+          <Svg d="M9 6l6 6-6 6" size={14} strokeWidth={2.4} />
         </a>
 
         <button type="button" className="h03-card h03-row h03-logout" onClick={() => setLogout(true)} data-id="settings-logout">

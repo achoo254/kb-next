@@ -101,6 +101,21 @@
   display: flex;
 }
 
+/* Not on the board: a quiet link to what the AI remembers (/memory), before the view switch. */
+.mine-memory {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  color: var(--c-link);
+  font: 600 13px var(--font-sans);
+  text-decoration: none;
+}
+
+.mine-memory:hover {
+  text-decoration: underline;
+}
+
 .mine-tabs.kf-tabs[data-variant="pill"] .kf-tab {
   padding: 0 14px;
 }
@@ -194,6 +209,7 @@
 }
 
 .mine-view:focus-visible,
+.mine-memory:focus-visible,
 .mine-chip:focus-visible,
 .mine-planet:focus-visible,
 .mine-row:focus-visible,

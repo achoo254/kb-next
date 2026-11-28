@@ -164,6 +164,8 @@ export interface NewDocument {
   planet: Planet | null;
   /** The new document is another language of an existing text: it joins that text's group (`translationGroupId`). */
   translation?: { groupId: string; aiTranslated: boolean };
+  /** Tags of a draft, written with it (a publication brings its own). */
+  tags?: readonly string[];
 }
 
 /**
@@ -197,7 +199,7 @@ export async function createDocument(db: Db, author: UserViewer, input: NewDocum
         origin: publication ? 'official' : 'own',
         status: publication ? 'approved' : 'draft',
         hidden: publication?.hidden ?? false,
-        tags: publication ? [...publication.tags] : [],
+        tags: [...(publication?.tags ?? input.tags ?? [])],
         authorId: author.userId,
         contentHash: contentHash(markdown),
         planet: input.planet,

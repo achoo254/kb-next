@@ -233,6 +233,7 @@ export const vi = {
   'screen.H02': 'Link chia sẻ',
   'screen.X02': 'Không tìm thấy trang',
   'screen.Privacy': 'Quyền riêng tư',
+  'screen.Memory': 'Trí nhớ',
   'screen.Terms': 'Điều khoản sử dụng',
   'origin.official': 'Chính thức',
   'origin.community': 'Cộng đồng',
@@ -482,6 +483,7 @@ export const en: Messages = {
   'screen.H02': 'Shared link',
   'screen.X02': 'Page not found',
   'screen.Privacy': 'Privacy',
+  'screen.Memory': 'Memory',
   'screen.Terms': 'Terms of use',
 
   'origin.official': 'Official',

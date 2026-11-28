@@ -15,6 +15,7 @@ import { historyRoutes } from './api/history-routes';
 import { internalRoutes } from './api/internal-routes';
 import { JOURNEY_BODY_LIMIT, journeyRoutes } from './api/journey-routes';
 import { meRoutes } from './api/me-routes';
+import { memoryRoutes } from './api/memory-routes';
 import { myContentRoutes } from './api/my-content-routes';
 import { notificationRoutes } from './api/notification-routes';
 import { reviewRoutes } from './api/review-routes';
@@ -150,6 +151,7 @@ export function createApp({
   app.use(authoringRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(historyRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(myContentRoutes({ config, db, now, sync: search?.sync ?? null }));
+  app.use(memoryRoutes({ config, db, now, sync: search?.sync ?? null }));
   // Publishing (an author's publish and unpublish, the admins' published texts), the inbox, admin tokens.
   app.use(reviewRoutes({ config, db, now, sync: search?.sync ?? null }));
   app.use(notificationRoutes({ config, db, now }));

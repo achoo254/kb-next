@@ -7,6 +7,7 @@ import { type PurgeResult, purgeTrash } from '../access/authoring';
 import type { Db } from '../db/client';
 import { removeStoredFiles } from '../files/file-store';
 import { safeErrorText } from '../log-error';
+import { purgeExpiredUndos } from '../memory/memory-write';
 import type { IndexSync } from '../search/index-sync';
 
 export const TRASH_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000;
@@ -19,10 +20,14 @@ export async function finishPurge(result: PurgeResult, sync: SearchSync | null, 
   if (result.documentIds.length > 0) sync?.enqueue(result.documentIds);
 }
 
-/** One run of the job: deletes what has been in the trash for 30 days or more, then finishes the purge. */
+/**
+ * One run of the job: deletes what has been in the trash for 30 days or more, then finishes the purge; the AI
+ * memory's undo tokens past their 24 hours go too.
+ */
 export async function runTrashPurge(db: Db, sync: SearchSync | null, filesDir: string, now: Date): Promise<PurgeResult> {
   const result = await purgeTrash(db, now);
   await finishPurge(result, sync, filesDir);
+  await purgeExpiredUndos(db, now);
   return result;
 }
 

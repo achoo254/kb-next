@@ -545,6 +545,25 @@
   font-size: 15px;
 }
 
+/* Not on the board: a quiet link to what the AI remembers (/memory), under the own keys. */
+.h03-memory {
+  position: absolute;
+  left: 280px;
+  top: 790px;
+  width: 300px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-link);
+  font: 600 13px var(--font-sans);
+  text-decoration: none;
+}
+
+.h03-memory:hover {
+  text-decoration: underline;
+}
+
 /* Not on the board: the way to delete the account (at the IdP), quiet under the station, away from everyday controls. */
 .h03-delete {
   position: absolute;

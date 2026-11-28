@@ -64,6 +64,10 @@ export const users = pgTable('users', {
   onboardedAt: timestamp('onboarded_at', { withTimezone: true }),
   /** Slugs of the Spaces the account picked as its interests during onboarding (S03), in the order picked. */
   interests: text('interests').array().notNull().default(sql`'{}'::text[]`),
+  /** The account paused its AI memory (/memory): agents neither save nor read it until it is turned back on. */
+  memoryPaused: boolean('memory_paused').notNull().default(false),
+  /** The account lets its AI memory keep sensitive topics (health, religion, politics…); off by default. */
+  memorySensitive: boolean('memory_sensitive').notNull().default(false),
 });
 
 /**
@@ -161,9 +165,41 @@ export const collections = pgTable(
     glow: text('glow').notNull(),
     art: text('art'),
     sortOrder: integer('sort_order').notNull().default(0),
+    /** What the app uses the Collection for: `memory` holds the AI memory topics of a personal Space; null: the user's own. */
+    purpose: text('purpose'),
     createdAt: createdAt(),
   },
-  (table) => [index('collections_space_id_idx').on(table.spaceId)],
+  (table) => [
+    index('collections_space_id_idx').on(table.spaceId),
+    uniqueIndex('collections_space_purpose_unique').on(table.spaceId, table.purpose).where(sql`${table.purpose} is not null`),
+  ],
+);
+
+/**
+ * One AI memory write that can still be undone (24 hours, once). Undoing takes `line` back out: when the topic is
+ * still at `writtenVersion`, a new topic goes to the trash and an appended one back to `previousVersion`; when it
+ * changed since, only `line` is removed from its body, so later facts and the user's own edits stay. Only the sha256
+ * of the token is kept.
+ */
+export const memoryUndos = pgTable(
+  'memory_undos',
+  {
+    tokenHash: text('token_hash').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    documentId: uuid('document_id')
+      .notNull()
+      .references(() => documents.id, { onDelete: 'cascade' }),
+    action: text('action', { enum: ['created', 'appended'] }).notNull(),
+    previousVersion: integer('previous_version'),
+    writtenVersion: integer('written_version').notNull(),
+    line: text('line').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (table) => [index('memory_undos_expires_at_idx').on(table.expiresAt)],
 );
 
 export const documentType = pgEnum('document_type', ['lab', 'note', 'process', 'office', 'web', 'journey']);

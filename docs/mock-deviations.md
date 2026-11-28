@@ -115,3 +115,4 @@ của bộ kiểm giống mock ([`parity-testing.md`](parity-testing.md)) chỉ 
 | C17 | Tài khoản từng là Người duyệt hiện vai trò Thành viên (Linh); các lượt duyệt cũ vẫn hiện như dữ liệu lịch sử | Chủ dự án chốt 07/11/2026: tác giả toàn quyền, bỏ duyệt | |
 | C02, C07 | Không còn màn "bài chờ duyệt hay đã đăng bị khoá với tác giả": tác giả sửa được bài của mình ở mọi bước. Nút sang C04 ghi "Xuất bản" (board "Gửi duyệt") | Chủ dự án chốt 07/11/2026: tác giả toàn quyền, bỏ duyệt | |
 | C20 | Không có thông báo mới loại duyệt. Thông báo "bài mới chờ duyệt" cũ của quản trị mở thẳng bài (không còn A01) và ghi rằng tác giả giờ tự đăng bài | Chủ dự án chốt 07/11/2026: tác giả toàn quyền, bỏ duyệt | |
+| H03, C08 | Thêm một link nhỏ "Trí nhớ của AI" tới `/memory` (màn không có board): H03 dưới thẻ "Key riêng", C08 trên thanh tab, trước nút đổi kiểu xem | Trang trí nhớ của AI trong Chat cần lối vào từ cài đặt và trang của tôi; link chữ nhỏ ít lệch board nhất (28/11/2026) | |

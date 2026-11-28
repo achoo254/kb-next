@@ -28,6 +28,7 @@ import { KeysScreen } from './pages/keys-screen';
 import { LandingPage } from './pages/landing-page';
 import { LegalPage } from './pages/legal-page';
 import { LoginPage, UniverseOpening } from './pages/login-page';
+import { MemoryScreen } from './pages/memory-screen';
 import { MineScreen } from './pages/mine-screen';
 import { NewNote } from './pages/new-note';
 import { PresentScreen } from './pages/present-screen';
@@ -83,6 +84,7 @@ export const SCREEN_CHROME: Record<string, { rail?: RailId; view?: ViewId; veil?
   C20: { veil: 'strong' },
   H03: { rail: 'settings', veil: 'strong' },
   F03: { rail: 'settings', veil: 'radial' },
+  Memory: { rail: 'settings', veil: 'strong' },
   F04: { rail: 'spaces', veil: 'strong' },
   A01: { veil: 'strong' },
   A02: { veil: 'strong' },
@@ -158,6 +160,8 @@ function AppScreen({ route, path }: { route: ScreenRoute; path: string }): React
       return <JourneyRunScreen id={routeParam(route, path)} />;
     case 'F03':
       return <KeysScreen />;
+    case 'Memory':
+      return <MemoryScreen />;
     case 'F04':
       return <TranslateScreen id={routeParam(route, path)} />;
     case 'C04':

@@ -3,6 +3,7 @@
  * (its scope, a zod input checked at the boundary, the JSON Schema clients read), how it fails (`ToolError`, a code the
  * model can act on) and how a document is described (always with its canonical `url`, for source cards).
  */
+import { and, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import brandConfig from '../../../../brand.config.json';
 import type { DocumentRow, SpaceRow } from '../access/content';
@@ -12,6 +13,8 @@ import { isPublic } from '../access/visibility';
 import type { Lang } from '../api/content-views';
 import type { ServerConfig } from '../config';
 import type { Db } from '../db/client';
+import { collections, spaces } from '../db/schema';
+import { MEMORY_PURPOSE, SENSITIVE_TAG, memorySettings } from '../memory/memory-store';
 import type { IndexSync } from '../search/index-sync';
 import type { LayeredSearchDeps } from '../search/layered-search';
 import type { ConfirmTokens } from './confirm-token';
@@ -135,8 +138,37 @@ export interface DocumentView {
   space: SpaceView;
 }
 
-/** Views of readable documents (already read through src/access/ for the caller), in their order. */
-export async function documentViews(ctx: ToolContext, docs: readonly DocumentRow[]): Promise<DocumentView[]> {
+/**
+ * Documents of `docs` no agent may read, though the account reads them on the web: AI memory topics of another account
+ * (an admin reads every private text on the web, never someone's memory through an agent), the account's own while
+ * its memory is paused, and its own sensitive topics while it keeps sensitive topics off.
+ */
+async function unreadableMemory(ctx: ToolContext, docs: readonly DocumentRow[]): Promise<Set<string>> {
+  const collectionIds = [...new Set(docs.flatMap((d) => (d.collectionId ? [d.collectionId] : [])))];
+  if (collectionIds.length === 0) return new Set();
+  const memories = await ctx.db
+    .select({ id: collections.id, ownerId: spaces.ownerId })
+    .from(collections)
+    .innerJoin(spaces, eq(spaces.id, collections.spaceId))
+    .where(and(inArray(collections.id, collectionIds), eq(collections.purpose, MEMORY_PURPOSE)));
+  if (memories.length === 0) return new Set();
+  const own = memories.some((m) => m.ownerId === ctx.viewer.userId) ? await memorySettings(ctx.db, ctx.viewer.userId) : null;
+  const owners = new Map(memories.map((m) => [m.id, m.ownerId]));
+  return new Set(
+    docs
+      .filter((doc) => {
+        if (!doc.collectionId || !owners.has(doc.collectionId)) return false;
+        if (owners.get(doc.collectionId) !== ctx.viewer.userId || doc.authorId !== ctx.viewer.userId) return true;
+        return own !== null && (own.paused || (!own.sensitive && doc.tags.includes(SENSITIVE_TAG)));
+      })
+      .map((doc) => doc.id),
+  );
+}
+
+/** Views of readable documents (already read through src/access/ for the caller), in their order; never a memory topic an agent may not read. */
+export async function documentViews(ctx: ToolContext, readable: readonly DocumentRow[]): Promise<DocumentView[]> {
+  const hidden = await unreadableMemory(ctx, readable);
+  const docs = hidden.size > 0 ? readable.filter((d) => !hidden.has(d.id)) : readable;
   const [spaceRows, authors] = await Promise.all([
     spacesById(ctx.db, [...new Set(docs.map((d) => d.spaceId))]),
     userNames(
