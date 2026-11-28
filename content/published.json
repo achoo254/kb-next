@@ -227,6 +227,12 @@
       "space": "kubernetes",
       "collectionId": "b26823e1-a85a-4f8d-b30b-13f3f1dfbf48",
       "at": "2026-11-28T02:37:33.338Z"
+    },
+    {
+      "slug": "doc-xu-huong-cong-nghe",
+      "space": "marketing-ky-thuat",
+      "collectionId": "38fa75df-5f9d-43cd-ba3d-08a5e293462f",
+      "at": "2026-11-28T14:38:03.851Z"
     }
   ],
   "posts": [
@@ -1448,6 +1454,36 @@
       "en": {
         "id": "6f261ad6-5825-492c-a12e-bca1dd7e49ed",
         "title": "PersistentVolumes, PersistentVolumeClaims and StorageClasses: keeping data in Kubernetes Pods"
+      }
+    },
+    {
+      "slug": "doc-xu-huong-cong-nghe/bien-tin-hieu-xu-huong-thanh-quyet-dinh",
+      "id": "0aeb0918-d465-45bc-929a-de97105503ef",
+      "title": "Biến tín hiệu xu hướng thành quyết định về nội dung và sản phẩm",
+      "at": "2026-11-28T14:38:04.196Z",
+      "en": {
+        "id": "c86e40b9-c058-4946-97d9-eb83b13034fe",
+        "title": "Turning trend signals into content and product decisions"
+      }
+    },
+    {
+      "slug": "doc-xu-huong-cong-nghe/doc-so-lieu-khao-sat-cong-nghe-dung-cach",
+      "id": "3914bb43-2ebb-43f8-85e8-3e87ade18615",
+      "title": "Đọc số liệu khảo sát công nghệ đúng cách: thiên lệch người trả lời, cỡ mẫu và so sánh giữa các năm",
+      "at": "2026-11-28T14:38:04.830Z",
+      "en": {
+        "id": "8a1e2c0a-bed4-4a40-a987-f898951544d8",
+        "title": "Reading technology survey data correctly: respondent bias, sample size and year-over-year comparisons"
+      }
+    },
+    {
+      "slug": "doc-xu-huong-cong-nghe/nguon-du-lieu-cong-khai-ve-xu-huong-ky-su",
+      "id": "5bc03670-2b03-4e57-bcd6-d9a408ebc6da",
+      "title": "Năm nguồn dữ liệu công khai để biết kỹ sư đang quan tâm điều gì",
+      "at": "2026-11-28T14:38:05.435Z",
+      "en": {
+        "id": "31f4659a-2e72-4485-9719-8638b5526b23",
+        "title": "Five public data sources for seeing what engineers care about"
       }
     }
   ]
