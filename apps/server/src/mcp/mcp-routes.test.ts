@@ -274,8 +274,8 @@ describe('personal memory', () => {
     if (!shown) throw new Error('no zebra-net Space');
     alicePublic = await createDocument(db, { spaceId: shown.id, authorId: ids.alice, title: 'Alice public zebra guide', texts: ['Zebra guide for everyone.'] });
     await rebuildIndexes(db, meili.client);
-    memory = await savedNote('alice-sub', 'Quokka backup routine', 'Quokka backups run nightly at two.');
-    bobMemory = await savedNote('bob-sub', 'Quokka backup of Bob', 'Bob keeps quokka backups weekly.');
+    memory = await savedNote('alice-sub', 'Quokka backup routine', 'Quokka backups of the zebra router run nightly at two.');
+    bobMemory = await savedNote('bob-sub', 'Quokka backup of Bob', 'Bob keeps zebra quokka backups weekly.');
   }, MEILI_SETUP_TIMEOUT_MS);
 
   it('searches only the user’s own Space with scope mine, and only shared Spaces with scope library', async () => {
@@ -285,7 +285,7 @@ describe('personal memory', () => {
     expect(mine).not.toContain(bobMemory);
     expect(mine).not.toContain(ids.publicDoc);
     expect(mine).not.toContain(ids.alicePrivate);
-    const library = idsIn((await data(token, 'search', { query: 'quokka zebra', scope: 'library', mode: 'keyword' })).results);
+    const library = idsIn((await data(token, 'search', { query: 'zebra', scope: 'library', limit: 30, mode: 'keyword' })).results);
     expect(library).not.toContain(memory);
     expect(library).not.toContain(bobMemory);
     expect(library).toEqual(expect.arrayContaining([ids.publicDoc, ids.alicePrivate]));
@@ -314,7 +314,7 @@ describe('personal memory', () => {
     const appended = await data(token, 'update_note', { id: memory, mode: 'append', markdown: '- 2026-11-28: moved to three.', confirm_token: preview.confirm_token });
     expect(appended).toMatchObject({ saved: true, changed: true, document: { visibility: 'private' } });
     const read = (await data(token, 'get_document', { id: memory })).markdown as string;
-    expect(read).toContain('Quokka backups run nightly at two.');
+    expect(read).toContain('Quokka backups of the zebra router run nightly at two.');
     expect(read).toContain('moved to three.');
 
     await updated('alice-sub', { id: memory, mode: 'replace', markdown: 'Quokka backups run nightly at three.', title: 'Quokka backups' });
