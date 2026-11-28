@@ -56,12 +56,38 @@ chính mình, không bao giờ thấy bài trong Space quản trị đã ẩn ha
 | `get_document` | `kb:read` | `id`: id bài hoặc link kb (`…/d/<id>`) | thông tin bài, `markdown` (bản mới nhất; tệp lưu trữ thì chữ đã trích), `source_url`, `tags`, `translations[]` |
 | `list_spaces` | `kb:read` | không | `{spaces[]}`: `slug`, `name_vi`, `name_en`, `kind`, `url`, `document_count`, `updated_at` |
 | `recent` | `kb:read` | `limit?` (1–20, mặc định 8) | `{documents[]}`: bài đọc được đổi gần nhất, mỗi văn bản một bản theo ngôn ngữ của tài khoản |
-| `save_note` | `kb:write` | `title` (một dòng, ≤ 200), `markdown` (≤ 200 000), `space?` (slug), `lang?` (`vi`/`en`), `confirm_token?` | lần 1: `{preview, confirm_token, confirm_token_expires_at, next}`; lần 2: `{saved: true, document}` |
+| `save_note` | `kb:write` | `title` (một dòng, ≤ 200), `markdown` (≤ 200 000), `space?` (slug), `lang?` (`vi`/`en`), `confirm_token?` | lần 1: `{preview, similar[], confirm_token, confirm_token_expires_at, next}`; lần 2: `{saved: true, document}` |
+| `update_note` | `kb:write` | `id` (id hoặc link), `mode` (`append`/`replace`), `markdown` (≤ 200 000), `title?`, `confirm_token?` | lần 1: `{preview, confirm_token, confirm_token_expires_at, next}`; lần 2: `{saved: true, changed, version, document}` |
+
+`search` có `scope?`: `all` (mặc định, như trước), `mine` (chỉ Space riêng của người dùng: trí nhớ của họ; chưa có
+Space riêng thì không có kết quả), `library` (chỉ các Space dùng chung). `space` thu hẹp thêm trong phạm vi đó.
 
 Thông tin bài: `id`, `title`, `url`, `lang`, `type`, `visibility` (`public`/`private`), `status`, `updated_at`,
 `author`, `space {slug, name, kind, url}`.
 
-`save_note` là tool ghi duy nhất (`readOnlyHint: false`), chạy hai lượt như `chatmcp` của Chat: lượt không có
+### Trí nhớ cá nhân
+
+Space riêng là trí nhớ của người dùng: agent nhớ lại bằng `search` scope `mine` trước, rồi mới ra thư viện. Mỗi chủ đề
+giữ một ghi chú: bản xem trước của `save_note` kèm `similar` (tối đa 3 bài của chính người dùng trong Space đích, tìm
+theo từ khoá của tiêu đề, không tìm theo nghĩa; tìm lỗi thì ghi log và để rỗng, không làm hỏng bản xem trước) để agent
+đề xuất `update_note` thay vì tạo bài mới. Ghi chú riêng tư nhận mọi chủ đề; luật "chỉ chủ đề kỹ thuật" chỉ áp cho bài
+công khai.
+
+`update_note` chỉ sửa **ghi chú riêng tư do chính người dùng viết** (quản trị cũng vậy): bài người khác trả
+`no_access`, bài đã công khai trả `not_private` (sửa trên web, nơi người đọc thấy thay đổi), tệp lưu trữ và lối đi trả
+`not_editable`. `append` nối khối mới sau thân bài, `replace` thay toàn bộ thân (bản cũ vẫn trong lịch sử); `markdown`
+toàn khoảng trắng là `invalid_arguments`. Token gắn thêm với `updatedAt` của bài lúc xem trước: bài đổi sau đó thì
+token thành `confirm_token_invalid`, agent xem trước lại. Lưu bằng `saveDocument` như trình soạn, phiên bản riêng
+`via: api`, đánh dấu AI viết; bài vẫn riêng tư. Thân dài quá 200 000 ký tự trả `too_long`.
+
+`save_note` và `update_note` từ chối nội dung có dạng bí mật ([`secret-guard.ts`](../apps/server/src/mcp/secret-guard.ts):
+khoá riêng PEM, token GitHub/GitLab/Slack, khoá AWS/Google/nhà cung cấp AI, JWT, token quản trị kb, gán
+`password=…`/`api_key: …` có giá trị thật) bằng `secret_detected`, chỉ nêu loại, không nhắc lại giá trị. Không bị tính:
+chỗ giữ chỗ (`<your key>`, `${VAR}`, `***`, `xxxxxxxx`, `your-…`, `REDACTED…`), biểu thức code (`process.env.API_KEY`,
+`z.string().min(8)`, `getpass()`) và đường dẫn. Bộ chặn không bắt hết: giá trị dưới 8 ký tự, có khoảng trắng,
+`Authorization: Bearer …` hay "mật khẩu: …" lọt qua; mô tả tool vẫn dặn agent không lưu bí mật.
+
+Hai tool ghi (`readOnlyHint: false`) chạy hai lượt như `chatmcp` của Chat; mô tả dưới đây cho `save_note`: lượt không có
 `confirm_token` chỉ trả bản xem trước và token, **không ghi gì**; agent đưa bản xem trước cho người dùng duyệt (thẻ
 duyệt), rồi gọi lại với đúng các đối số cũ cộng `confirm_token`. Token gắn với `sub`, tên tool và đối số, sống 5 phút,
 dùng một lần (`confirm_token_invalid`, `confirm_token_expired`, `confirm_token_used`); khoá và nonce đã dùng nằm trong
@@ -72,10 +98,13 @@ trả `space_not_found`.
 
 Lỗi của tool là kết quả `isError: true` với `{"error": {"code", "message"}}`: `invalid_arguments`, `not_found`,
 `no_access`, `hidden`, `space_not_found`, `kb_account_required`, `insufficient_scope`, các mã `confirm_token_*`,
-`internal`.
+`not_editable`, `not_private`, `too_long`, `stale`, `secret_detected`, `internal`.
 
 ## Kiểm thử
 
 [`mcp-routes.test.ts`](../apps/server/src/mcp/mcp-routes.test.ts) (IdP giả ký access token, Meilisearch thật):
 metadata, 401/403, step-up, tài khoản chưa có, bài riêng tư của người khác và Space ẩn không lộ qua mọi tool,
-`save_note` chỉ xem trước khi thiếu token và tạo bài riêng tư khi có.
+`save_note` chỉ xem trước khi thiếu token và tạo bài riêng tư khi có; scope `mine`/`library`, `similar`, `update_note`
+nối và thay (vẫn riêng tư), token hỏng khi bài đã đổi, không sửa được bài người khác, từ chối bí mật.
+[`secret-guard.test.ts`](../apps/server/src/mcp/secret-guard.test.ts): mẫu bí mật và các ghi chú thường không bị chặn.
+Test route cần Meilisearch, chưa có bản cho Windows: chạy trên CI (Linux).

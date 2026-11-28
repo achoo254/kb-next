@@ -10,12 +10,16 @@ import type { SpaceRow } from '../access/content';
 import { createDocument } from '../access/authoring';
 import { findPersonalSpace, ensurePersonalSpace, PERSONAL_SPACE_LOOK, spaceForWriting } from '../access/spaces-write';
 import { MAX_BODY_CHARS, MAX_TITLE_CHARS } from '../authoring/markdown-text';
+import { safeErrorText } from '../log-error';
 import { keepTextPrivate } from '../review/moderation';
 import { CONFIRM_TOKEN_TTL_MS } from './confirm-token';
-import { APP_NAME, SCOPE_WRITE, ToolError, type ToolContext, defineTool, documentViews, spaceView } from './tool-kit';
+import { searchResults } from './read-tools';
+import { refuseSecrets } from './secret-guard';
+import { APP_NAME, SCOPE_WRITE, SLUG, ToolError, type ToolContext, defineTool, documentViews, spaceView } from './tool-kit';
 
-const SLUG = /^[a-z0-9][a-z0-9-]{0,119}$/;
 const PREVIEW_CHARS = 500;
+/** Notes of the user a preview names as maybe on the same subject. */
+const SIMILAR_NOTES = 3;
 const TOOL = 'save_note';
 
 const Input = z.strictObject({
@@ -43,7 +47,31 @@ async function targetSpace(ctx: ToolContext, slug: string | undefined): Promise<
 /** The arguments a confirm token is bound to, in a fixed key order. */
 const bindingArgs = (input: SaveNoteInput): Record<string, unknown> => ({ title: input.title, markdown: input.markdown, space: input.space ?? null, lang: input.lang ?? null });
 
+interface SimilarNote {
+  id: string;
+  title: string;
+  url: string;
+  excerpt: string;
+}
+
+/**
+ * The user's own private notes in the target Space closest to the new title, so the agent can offer update_note
+ * instead of a second note on one subject. A failed search leaves the list empty: the preview never fails for it.
+ */
+async function similarNotes(ctx: ToolContext, space: SpaceRow | null, title: string): Promise<SimilarNote[]> {
+  if (!space) return [];
+  try {
+    // Keywords of the title are enough to spot a note on the same subject; no search by meaning on every preview.
+    const { results } = await searchResults(ctx, title, [space.id], SIMILAR_NOTES, false, ctx.viewer.userId);
+    return results.map((r) => ({ id: r.id, title: r.title, url: r.url, excerpt: r.excerpt }));
+  } catch (error) {
+    console.error('mcp: similar notes failed', safeErrorText(error));
+    return [];
+  }
+}
+
 async function preview(ctx: ToolContext, input: SaveNoteInput, space: SpaceRow | null): Promise<Record<string, unknown>> {
+  const similar = await similarNotes(ctx, space, input.title);
   const { token, expiresAt } = ctx.confirm.issue({ subject: ctx.subject, tool: TOOL, args: bindingArgs(input) });
   const where = space ? spaceView(ctx.config, space, ctx.lang) : { slug: null, name: ctx.lang === 'en' ? PERSONAL_SPACE_LOOK.nameEn : PERSONAL_SPACE_LOOK.nameVi, kind: 'personal' };
   const body = input.markdown.trim();
@@ -57,9 +85,12 @@ async function preview(ctx: ToolContext, input: SaveNoteInput, space: SpaceRow |
       characters: body.length,
       excerpt: body.length > PREVIEW_CHARS ? `${body.slice(0, PREVIEW_CHARS - 1)}…` : body,
     },
+    similar,
     confirm_token: token,
     confirm_token_expires_at: expiresAt.toISOString(),
-    next: `Nothing is saved yet. Show this preview to the user; only if they agree, call ${TOOL} again with the same arguments and this confirm_token (valid ${CONFIRM_TOKEN_TTL_MS / 60_000} minutes, once).`,
+    next:
+      `Nothing is saved yet. Show this preview to the user; only if they agree, call ${TOOL} again with the same arguments and this confirm_token (valid ${CONFIRM_TOKEN_TTL_MS / 60_000} minutes, once).` +
+      (similar.length > 0 ? ' The user already has notes in `similar` that may be on this subject: offer update_note on one of them instead of a new note.' : ''),
   };
 }
 
@@ -72,6 +103,7 @@ export const saveNote = defineTool({
   annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   input: Input,
   async run(ctx, input) {
+    refuseSecrets(input.title, input.markdown);
     const space = await targetSpace(ctx, input.space);
     if (!input.confirm_token) return preview(ctx, input, space);
     const refused = ctx.confirm.consume(input.confirm_token, { subject: ctx.subject, tool: TOOL, args: bindingArgs(input) });

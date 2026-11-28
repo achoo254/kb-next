@@ -94,6 +94,17 @@ export function defineTool<S extends z.ZodType>(def: {
   };
 }
 
+/** A Space slug as tools take it. */
+export const SLUG = /^[a-z0-9][a-z0-9-]{0,119}$/;
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+/** A document id from an id or a kb link (`…/d/<id>`, with or without `#anchor`). */
+export function documentIdOf(value: string): string {
+  const match = UUID.exec(value);
+  if (!match) throw new ToolError('invalid_arguments', 'id: give the document id or its kb link (…/d/<id>)');
+  return match[0].toLowerCase();
+}
+
 export const READ_ONLY: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false };
 
 export const documentUrl = (config: ServerConfig, id: string): string => `${config.publicOrigin}/d/${id}`;

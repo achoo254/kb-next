@@ -41,7 +41,8 @@ Xuất bản (tác giả tự đăng công khai hay giữ riêng tư, không qua
 thông báo, API đăng bài bằng token quản trị (C04–C06, C18, H02, C20, A02–A03):
 [`docs/admin-api.md`](docs/admin-api.md).
 MCP cho AI Agent (`/mcp`, token IdP scope `kb:read`/`kb:write` của client `tunelo-agent`; tìm, đọc, liệt kê Space, bài
-gần đây theo đúng quyền người dùng, lưu ghi chú riêng tư qua hai lượt có `confirm_token`): [`docs/mcp.md`](docs/mcp.md).
+gần đây theo đúng quyền người dùng, tìm riêng trong Space của mình, lưu và sửa ghi chú riêng tư qua hai lượt có
+`confirm_token`, từ chối lưu bí mật): [`docs/mcp.md`](docs/mcp.md).
 Trình bày (C21, `/d/<id>/present`): mọi bài mở được thành bộ slide dọc kiểu Stories, chiếu 16:9 trên màn ngang, ai đọc
 được bài thì xem được slide. Slide cắt lúc mở từ các phần `##` của bản mới nhất, giữ toàn văn
 ([`present-slides.ts`](apps/web/src/pages/present-slides.ts)); khối `> [!TLDR]` đầu bài thành slide 2, sau đó là mục lục.

@@ -10,11 +10,10 @@ import { MAX_QUERY_LENGTH } from '../access/search';
 import { pickTexts } from '../api/content-views';
 import { openDocument } from '../api/request-context';
 import { mergeResults } from '../api/search-routes';
-import { layeredSearch, textKey } from '../search/layered-search';
-import { APP_NAME, READ_ONLY, SCOPE_READ, ToolError, defineTool, documentUrl, documentViews, spaceUrl } from './tool-kit';
+import { type SourceState, layeredSearch, textKey } from '../search/layered-search';
+import { findPersonalSpace } from '../access/spaces-write';
+import { APP_NAME, type DocumentView, READ_ONLY, SCOPE_READ, SLUG, type ToolContext, ToolError, defineTool, documentIdOf, documentUrl, documentViews, spaceUrl } from './tool-kit';
 
-const SLUG = /^[a-z0-9][a-z0-9-]{0,119}$/;
-const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
 /** Longest passage excerpt a search result carries. */
 const EXCERPT_CHARS = 600;
 const MAX_SEARCH_RESULTS = 30;
@@ -22,43 +21,81 @@ const MAX_RECENT = 20;
 
 const excerpt = (text: string): string => (text.length > EXCERPT_CHARS ? `${text.slice(0, EXCERPT_CHARS - 1)}…` : text);
 
-/** A document id from an id or a kb link (`…/d/<id>`, with or without `#anchor`). */
-function documentIdOf(value: string): string {
-  const match = UUID.exec(value);
-  if (!match) throw new ToolError('invalid_arguments', 'id: give the document id or its kb link (…/d/<id>)');
-  return match[0].toLowerCase();
+/**
+ * The Spaces a search looks in: `mine` the user's own private Space (none yet: nothing), `library` every shared Space
+ * the user reads, `all` no limit; a named Space narrows any of them.
+ */
+async function searchSpaceIds(ctx: ToolContext, scope: 'mine' | 'library' | 'all', slug: string | undefined): Promise<string[] | undefined> {
+  const { db, viewer } = ctx;
+  const readable = await listSpaces(db, viewer);
+  let ids: string[] | undefined;
+  if (scope === 'mine') {
+    const own = await findPersonalSpace(db, viewer.userId);
+    ids = own ? [own.id] : [];
+  } else if (scope === 'library') {
+    ids = readable.filter((s) => s.kind === 'public').map((s) => s.id);
+  }
+  if (!slug) return ids;
+  const space = readable.find((s) => s.slug === slug);
+  if (!space) throw new ToolError('space_not_found', `No Space "${slug}" the user can read; see list_spaces.`);
+  return ids === undefined || ids.includes(space.id) ? [space.id] : [];
+}
+
+export interface SearchResultView extends DocumentView {
+  heading: string | null;
+  excerpt: string;
+  passage_url: string;
+  match: ReturnType<typeof mergeResults>[number]['match'];
+}
+
+/**
+ * One result per text, best first, in `spaceIds` (undefined: any Space; empty: none), only texts of `authorId` when
+ * given. Shared by search and save_note's similar notes.
+ */
+export async function searchResults(
+  ctx: ToolContext,
+  query: string,
+  spaceIds: string[] | undefined,
+  limit: number,
+  meaning: boolean,
+  authorId?: string,
+): Promise<{ keyword: SourceState; meaning: SourceState; results: SearchResultView[] }> {
+  if (spaceIds?.length === 0) return { keyword: 'skipped', meaning: 'skipped', results: [] };
+  const found = await layeredSearch(ctx.search, ctx.viewer, query, { spaceIds }, { allVariants: true, meaning });
+  const merged = mergeResults(found.keywordFound, found.meaningFound)
+    .filter((f) => authorId === undefined || f.doc.authorId === authorId)
+    .slice(0, limit);
+  const views = new Map((await documentViews(ctx, merged.map((f) => f.doc))).map((v) => [v.id, v]));
+  const results = merged.flatMap((f) => {
+    const view = views.get(f.doc.id);
+    if (!view) return [];
+    return [{ ...view, heading: f.chunk.heading, excerpt: excerpt(f.chunk.text), passage_url: `${view.url}#${f.chunk.anchor}`, match: f.match }];
+  });
+  return { keyword: found.keyword.state, meaning: found.meaning, results };
 }
 
 const search = defineTool({
   name: 'search',
   title: `Search the ${APP_NAME}`,
   description:
-    `Search the documents the user can read on the ${APP_NAME}, their private ones included, by keywords and by meaning. One result per text, best first, each with the passage that matched and the url to cite.`,
+    `Search the documents the user can read on the ${APP_NAME}, their private ones included, by keywords and by meaning. One result per text, best first, each with the passage that matched and the url to cite. To recall what the user saved for themselves, search scope "mine" first.`,
   scope: SCOPE_READ,
   annotations: READ_ONLY,
   input: z.strictObject({
     query: z.string().trim().min(1).max(MAX_QUERY_LENGTH).describe('What to look for, in Vietnamese or English.'),
+    scope: z
+      .enum(['all', 'mine', 'library'])
+      .optional()
+      .default('all')
+      .describe("`mine`: only the user's own private Space (their notes and memory); `library`: only the shared Spaces; `all`: both."),
     space: z.string().regex(SLUG).optional().describe('Only this Space (its slug, from list_spaces).'),
     limit: z.number().int().min(1).max(MAX_SEARCH_RESULTS).optional().default(10),
     mode: z.enum(['all', 'keyword']).optional().default('all').describe('`keyword` skips the search by meaning (faster).'),
   }),
   async run(ctx, input) {
-    const { db, viewer } = ctx;
-    let spaceIds: string[] | undefined;
-    if (input.space) {
-      const space = (await listSpaces(db, viewer)).find((s) => s.slug === input.space);
-      if (!space) throw new ToolError('space_not_found', `No Space "${input.space}" the user can read; see list_spaces.`);
-      spaceIds = [space.id];
-    }
-    const found = await layeredSearch(ctx.search, viewer, input.query, { spaceIds }, { allVariants: true, meaning: input.mode === 'all' });
-    const merged = mergeResults(found.keywordFound, found.meaningFound).slice(0, input.limit);
-    const views = new Map((await documentViews(ctx, merged.map((f) => f.doc))).map((v) => [v.id, v]));
-    const results = merged.flatMap((f) => {
-      const view = views.get(f.doc.id);
-      if (!view) return [];
-      return [{ ...view, heading: f.chunk.heading, excerpt: excerpt(f.chunk.text), passage_url: `${view.url}#${f.chunk.anchor}`, match: f.match }];
-    });
-    return { query: input.query, keyword: found.keyword.state, meaning: found.meaning, results };
+    const spaceIds = await searchSpaceIds(ctx, input.scope, input.space);
+    const results = await searchResults(ctx, input.query, spaceIds, input.limit, input.mode === 'all');
+    return { query: input.query, scope: input.scope, keyword: results.keyword, meaning: results.meaning, results: results.results };
   },
 });
 

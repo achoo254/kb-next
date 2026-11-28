@@ -8,8 +8,9 @@ import { safeErrorText } from '../log-error';
 import { READ_TOOLS } from './read-tools';
 import { saveNote } from './save-note-tool';
 import { APP_NAME, type McpTool, type ToolContext, ToolError } from './tool-kit';
+import { updateNote } from './update-note-tool';
 
-export const TOOLS: readonly McpTool[] = [...READ_TOOLS, saveNote];
+export const TOOLS: readonly McpTool[] = [...READ_TOOLS, saveNote, updateNote];
 const TOOL_BY_NAME = new Map(TOOLS.map((t) => [t.name, t]));
 
 export const toolNamed = (name: unknown): McpTool | undefined => (typeof name === 'string' ? TOOL_BY_NAME.get(name) : undefined);
@@ -20,7 +21,9 @@ const SERVER_INFO = { name: 'kb', title: APP_NAME, version: '1.0.0' };
 
 const INSTRUCTIONS = `Tools act as the signed-in user of the ${APP_NAME}, with exactly the rights the user has on the web: published texts, the user's own private texts, nothing else.
 Find texts with search (or recent, list_spaces), then read one with get_document. Cite a text by its url.
-save_note saves a private note in two calls: the first returns a preview and a confirm_token; show the preview to the user, and only after the user agrees call save_note again with the same arguments plus confirm_token.`;
+The user's own private Space is their memory: to recall what they saved, search with scope "mine" first, then the library.
+save_note saves a private note and update_note changes one the user wrote (append or replace); both run in two calls: the first returns a preview and a confirm_token; show the preview to the user, and only after the user agrees call the tool again with the same arguments plus confirm_token.
+Keep one note per subject: when save_note's preview lists similar notes, offer update_note on one of them instead. Never save secrets (keys, tokens, passwords); write where they are kept instead.`;
 
 export type JsonRpcId = string | number;
 

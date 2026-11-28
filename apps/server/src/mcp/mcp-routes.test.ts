@@ -9,7 +9,7 @@ import { createDocument, createSpace, createUser } from '../../test/content-fixt
 import { type FakeIdp, startFakeIdp } from '../../test/fake-idp';
 import { MEILI_SETUP_TIMEOUT_MS, type TestMeili, startTestMeili } from '../../test/meili';
 import { type TestServer, startTestServer } from '../../test/test-server';
-import { documents, spaces } from '../db/schema';
+import { documents, spaces, users } from '../db/schema';
 import { IndexSync } from '../search/index-sync';
 import { rebuildIndexes } from '../search/rebuild-indexes';
 
@@ -19,14 +19,21 @@ let idp: FakeIdp;
 let meili: TestMeili;
 let server: TestServer;
 let resource: string;
+/** The server's index sync: a search right after a write waits for it. */
+let sync: IndexSync | undefined;
 const ids = { alice: '', bob: '', publicDoc: '', alicePrivate: '', bobPrivate: '', hiddenDoc: '' };
+
+const indexed = async (): Promise<void> => {
+  await sync?.idle();
+};
 
 beforeAll(async () => {
   idp = await startFakeIdp({ clientId: 'kb-web', clientSecret: SECRET, sub: 'alice-sub' });
   meili = await startTestMeili();
-  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET }, {}, undefined, null, (db) => ({
-    search: { meili: meili.client, sync: new IndexSync(db, meili.client), close: () => undefined },
-  }));
+  server = await startTestServer({ AUTH_ISSUER: idp.issuer, AUTH_CLIENT_SECRET: SECRET }, {}, undefined, null, (db) => {
+    sync = new IndexSync(db, meili.client);
+    return { search: { meili: meili.client, sync, close: () => undefined } };
+  });
   resource = `${server.origin}/mcp`;
   const db = server.database.db;
   ids.alice = await createUser(db, 'alice-sub');
@@ -138,7 +145,7 @@ describe('MCP discovery and authentication', () => {
     expect(get.headers.get('allow')).toBe('POST');
   });
 
-  it('initializes, lists the five tools and takes notifications without answering', async () => {
+  it('initializes, lists the six tools and takes notifications without answering', async () => {
     const token = tokenFor('alice-sub');
     const init = await post(token, { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 't', version: '1' } } });
     expect(init.status).toBe(200);
@@ -146,8 +153,8 @@ describe('MCP discovery and authentication', () => {
     const note = await post(token, { jsonrpc: '2.0', method: 'notifications/initialized' });
     expect(note.status).toBe(202);
     const list = (await (await post(token, { jsonrpc: '2.0', id: 2, method: 'tools/list' })).json()) as { result: { tools: Array<{ name: string; annotations: { readOnlyHint: boolean } }> } };
-    expect(list.result.tools.map((t) => t.name)).toEqual(['search', 'get_document', 'list_spaces', 'recent', 'save_note']);
-    expect(list.result.tools.filter((t) => !t.annotations.readOnlyHint).map((t) => t.name)).toEqual(['save_note']);
+    expect(list.result.tools.map((t) => t.name)).toEqual(['search', 'get_document', 'list_spaces', 'recent', 'save_note', 'update_note']);
+    expect(list.result.tools.filter((t) => !t.annotations.readOnlyHint).map((t) => t.name)).toEqual(['save_note', 'update_note']);
     expect((await post(token, [{ jsonrpc: '2.0', id: 3, method: 'ping' }])).status).toBe(400);
   });
 
@@ -233,5 +240,112 @@ describe('save_note', () => {
     expect(await tool(token, 'save_note', { ...note, space: 'zebra-hidden' })).toEqual({ ok: false, code: 'space_not_found' });
     expect(await tool(token, 'save_note', { title: 'two\nlines', markdown: 'x' })).toEqual({ ok: false, code: 'invalid_arguments' });
     expect(await tool(token, 'save_note', { title: 'ok', markdown: 'x', extra: 1 })).toEqual({ ok: false, code: 'invalid_arguments' });
+  });
+});
+
+/** Saves a private note for `sub` through both calls of save_note, waits for the index; its id. */
+async function savedNote(sub: string, title: string, markdown: string): Promise<string> {
+  const token = tokenFor(sub);
+  const preview = await data(token, 'save_note', { title, markdown });
+  const saved = await data(token, 'save_note', { title, markdown, confirm_token: preview.confirm_token });
+  await indexed();
+  return (saved.document as { id: string }).id;
+}
+
+/** Runs both calls of update_note, waits for the index; the second answer. */
+async function updated(sub: string, args: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const token = tokenFor(sub);
+  const preview = await data(token, 'update_note', args);
+  const answer = await data(token, 'update_note', { ...args, confirm_token: preview.confirm_token });
+  await indexed();
+  return answer;
+}
+
+describe('personal memory', () => {
+  let memory = '';
+  let bobMemory = '';
+  let alicePublic = '';
+
+  beforeAll(async () => {
+    const db = server.database.db;
+    const carol = await createUser(db, 'carol-sub');
+    await db.update(users).set({ role: 'admin' }).where(eq(users.id, carol));
+    const [shown] = await db.select({ id: spaces.id }).from(spaces).where(eq(spaces.slug, 'zebra-net'));
+    if (!shown) throw new Error('no zebra-net Space');
+    alicePublic = await createDocument(db, { spaceId: shown.id, authorId: ids.alice, title: 'Alice public zebra guide', texts: ['Zebra guide for everyone.'] });
+    await rebuildIndexes(db, meili.client);
+    memory = await savedNote('alice-sub', 'Quokka backup routine', 'Quokka backups run nightly at two.');
+    bobMemory = await savedNote('bob-sub', 'Quokka backup of Bob', 'Bob keeps quokka backups weekly.');
+  }, MEILI_SETUP_TIMEOUT_MS);
+
+  it('searches only the user’s own Space with scope mine, and only shared Spaces with scope library', async () => {
+    const token = tokenFor('alice-sub');
+    const mine = idsIn((await data(token, 'search', { query: 'quokka zebra', scope: 'mine', mode: 'keyword' })).results);
+    expect(mine).toContain(memory);
+    expect(mine).not.toContain(bobMemory);
+    expect(mine).not.toContain(ids.publicDoc);
+    expect(mine).not.toContain(ids.alicePrivate);
+    const library = idsIn((await data(token, 'search', { query: 'quokka zebra', scope: 'library', mode: 'keyword' })).results);
+    expect(library).not.toContain(memory);
+    expect(library).not.toContain(bobMemory);
+    expect(library).toEqual(expect.arrayContaining([ids.publicDoc, ids.alicePrivate]));
+    expect(idsIn((await data(token, 'search', { query: 'quokka', scope: 'mine', space: 'zebra-net', mode: 'keyword' })).results)).toEqual([]);
+    const bobs = idsIn((await data(tokenFor('bob-sub'), 'search', { query: 'quokka', scope: 'mine', mode: 'keyword' })).results);
+    expect(bobs).toContain(bobMemory);
+    expect(bobs).not.toContain(memory);
+  });
+
+  it('names only the user’s own similar notes in the preview of a new one', async () => {
+    const preview = await data(tokenFor('alice-sub'), 'save_note', { title: 'Quokka backup', markdown: 'again' });
+    expect(idsIn(preview.similar)).toContain(memory);
+    expect(idsIn(preview.similar)).not.toContain(bobMemory);
+    expect(preview.next).toContain('update_note');
+    const bobs = idsIn((await data(tokenFor('bob-sub'), 'save_note', { title: 'Quokka backup', markdown: 'again' })).similar);
+    expect(bobs).toContain(bobMemory);
+    expect(bobs).not.toContain(memory);
+  });
+
+  it('appends to a note, then replaces its body and title, keeping it private', async () => {
+    const token = tokenFor('alice-sub');
+    const preview = await data(token, 'update_note', { id: memory, mode: 'append', markdown: '- 2026-11-28: moved to three.' });
+    expect(preview.preview).toMatchObject({ mode: 'append', title_before: 'Quokka backup routine' });
+    expect((await data(token, 'get_document', { id: memory })).markdown).not.toContain('moved to three');
+
+    const appended = await data(token, 'update_note', { id: memory, mode: 'append', markdown: '- 2026-11-28: moved to three.', confirm_token: preview.confirm_token });
+    expect(appended).toMatchObject({ saved: true, changed: true, document: { visibility: 'private' } });
+    const read = (await data(token, 'get_document', { id: memory })).markdown as string;
+    expect(read).toContain('Quokka backups run nightly at two.');
+    expect(read).toContain('moved to three.');
+
+    await updated('alice-sub', { id: memory, mode: 'replace', markdown: 'Quokka backups run nightly at three.', title: 'Quokka backups' });
+    const replaced = await data(token, 'get_document', { id: memory });
+    expect(replaced).toMatchObject({ title: 'Quokka backups', visibility: 'private' });
+    expect(replaced.markdown).not.toContain('at two');
+    expect(await tool(token, 'update_note', { id: memory, mode: 'replace', markdown: '   \n ' })).toEqual({ ok: false, code: 'invalid_arguments' });
+  });
+
+  it('refuses a confirm token once the note changed after the preview', async () => {
+    const token = tokenFor('alice-sub');
+    const args = { id: memory, mode: 'append', markdown: 'late plan' };
+    const preview = await data(token, 'update_note', args);
+    await updated('alice-sub', { id: memory, mode: 'append', markdown: 'an edit in between' });
+    expect(await tool(token, 'update_note', { ...args, confirm_token: preview.confirm_token })).toEqual({ ok: false, code: 'confirm_token_invalid' });
+    expect((await data(token, 'get_document', { id: memory })).markdown).not.toContain('late plan');
+  });
+
+  it('changes only the user’s own private notes: not another account’s, not a public text, not as an admin', async () => {
+    const edit = { mode: 'append', markdown: 'x' };
+    expect(await tool(tokenFor('bob-sub'), 'update_note', { id: memory, ...edit })).toEqual({ ok: false, code: 'no_access' });
+    expect(await tool(tokenFor('carol-sub'), 'update_note', { id: memory, ...edit })).toEqual({ ok: false, code: 'no_access' });
+    expect(await tool(tokenFor('alice-sub'), 'update_note', { id: ids.publicDoc, ...edit })).toEqual({ ok: false, code: 'no_access' });
+    expect(await tool(tokenFor('alice-sub'), 'update_note', { id: alicePublic, ...edit })).toEqual({ ok: false, code: 'not_private' });
+    expect(await tool(tokenFor('alice-sub'), 'update_note', { id: ids.hiddenDoc, ...edit })).toEqual({ ok: false, code: 'not_found' });
+  });
+
+  it('refuses to store a secret in a new note or an update', async () => {
+    const token = tokenFor('alice-sub');
+    const secret = `deploy key ghp_${'a1B2'.repeat(9)}`;
+    expect(await tool(token, 'save_note', { title: 'Keys', markdown: secret })).toEqual({ ok: false, code: 'secret_detected' });
+    expect(await tool(token, 'update_note', { id: memory, mode: 'append', markdown: 'DB_PASSWORD=Tr0ub4dor&3xyz' })).toEqual({ ok: false, code: 'secret_detected' });
   });
 });
