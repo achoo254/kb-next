@@ -264,10 +264,6 @@
   --tone: var(--amber-500);
 }
 
-.h03-app[data-tone="pink"] {
-  --tone: var(--planet-pink);
-}
-
 .h03-app-orb {
   width: 26px;
   height: 26px;

@@ -38,7 +38,6 @@ export const HOANDAT_APPS = [
   { id: 'scribe', name: 'Scribe', href: 'https://scribe.hoandat.com', tone: 'cyan' },
   { id: 'chat', name: 'Chat', href: 'https://chat.hoandat.com', tone: 'emerald' },
   { id: 'localman', name: 'Localman', href: 'https://localman.hoandat.com', tone: 'amber' },
-  { id: 'miu', name: 'Miu', href: 'https://miu.hoandat.com', tone: 'pink' },
 ] as const;
 
 /** The board's centre and the six cards its dashed lines run to (board coordinates, before the stage's scale). */
